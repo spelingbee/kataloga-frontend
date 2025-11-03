@@ -28,9 +28,9 @@
         </NuxtLink>
         
         <button
-          @click="checkConnection"
           :disabled="checking"
           class="block w-full bg-neutral-20 hover:bg-neutral-20/90 text-neutral-80 py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50"
+          @click="checkConnection"
         >
           {{ checking ? 'Checking...' : 'Try Again' }}
         </button>

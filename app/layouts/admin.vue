@@ -20,14 +20,14 @@
             </button>
 
             <!-- User Dropdown -->
-            <div class="admin-header__user-menu" ref="userMenuRef">
+            <div ref="userMenuRef" class="admin-header__user-menu">
               <button
-                @click="toggleUserMenu"
+                id="user-menu-button"
                 type="button"
                 class="admin-header__user-btn"
-                id="user-menu-button"
                 aria-expanded="false"
                 aria-haspopup="true"
+                @click="toggleUserMenu"
               >
                 <div class="admin-header__user-avatar">
                   <span class="admin-header__user-initials">
@@ -55,9 +55,9 @@
                     Profile Settings
                   </NuxtLink>
                   <button
-                    @click="handleLogout"
                     class="admin-header__dropdown-item"
                     role="menuitem"
+                    @click="handleLogout"
                   >
                     Sign out
                   </button>

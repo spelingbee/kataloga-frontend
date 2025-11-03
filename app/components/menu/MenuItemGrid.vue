@@ -21,8 +21,8 @@
       <BaseButton
         v-if="showViewAll && hasMoreItems"
         variant="ghost"
-        @click="$emit('viewAll')"
         class="menu-item-grid__view-all-btn"
+        @click="$emit('viewAll')"
       >
         View All
         <BaseIcon name="chevron-right" size="sm" class="u-ml-1" />
@@ -44,16 +44,16 @@
       >
         <BaseCard class="menu-item-grid__skeleton-card">
           <div class="menu-item-grid__skeleton-header">
-            <div class="menu-item-grid__skeleton-image"></div>
+            <div class="menu-item-grid__skeleton-image"/>
             <div class="menu-item-grid__skeleton-content">
-              <div class="menu-item-grid__skeleton-title"></div>
-              <div class="menu-item-grid__skeleton-description"></div>
-              <div class="menu-item-grid__skeleton-description menu-item-grid__skeleton-description--short"></div>
+              <div class="menu-item-grid__skeleton-title"/>
+              <div class="menu-item-grid__skeleton-description"/>
+              <div class="menu-item-grid__skeleton-description menu-item-grid__skeleton-description--short"/>
             </div>
           </div>
           <div class="menu-item-grid__skeleton-footer">
-            <div class="menu-item-grid__skeleton-price"></div>
-            <div class="menu-item-grid__skeleton-button"></div>
+            <div class="menu-item-grid__skeleton-price"/>
+            <div class="menu-item-grid__skeleton-button"/>
           </div>
         </BaseCard>
       </div>
@@ -97,10 +97,10 @@
         :menu-item="item"
         :is-selected="selectedItemId === item.id"
         :show-popular-indicator="showPopularIndicator"
+        class="menu-item-grid__item"
         @click="handleItemClick"
         @add-to-cart="handleAddToCart"
         @toggle-favorite="handleToggleFavorite"
-        class="menu-item-grid__item"
       />
     </div>
     
@@ -111,8 +111,8 @@
     >
       <BaseButton
         variant="secondary"
-        @click="$emit('loadMore')"
         :loading="loadingMore"
+        @click="$emit('loadMore')"
       >
         Load More Items
       </BaseButton>

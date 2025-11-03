@@ -21,7 +21,7 @@ export default defineNuxtPlugin(async () => {
   apiClient.setErrorStore(errorStore)
 
   // Initialize authentication on client side
-  if (process.client) {
+  if (import.meta.client) {
     await authStore.initializeAuth()
   }
 

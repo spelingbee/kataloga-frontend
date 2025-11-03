@@ -2,22 +2,22 @@
   <div class="menu-item-skeleton">
     <!-- Image Skeleton -->
     <div class="image-skeleton">
-      <div class="skeleton-circle"></div>
+      <div class="skeleton-circle"/>
     </div>
     
     <!-- Content Skeleton -->
     <div class="content-skeleton">
       <!-- Title -->
-      <div class="skeleton-line title-line"></div>
+      <div class="skeleton-line title-line"/>
       
       <!-- Description -->
-      <div class="skeleton-line description-line"></div>
-      <div class="skeleton-line description-line short"></div>
+      <div class="skeleton-line description-line"/>
+      <div class="skeleton-line description-line short"/>
       
       <!-- Price and Actions -->
       <div class="bottom-skeleton">
-        <div class="skeleton-line price-line"></div>
-        <div class="skeleton-circle action-button"></div>
+        <div class="skeleton-line price-line"/>
+        <div class="skeleton-circle action-button"/>
       </div>
     </div>
   </div>

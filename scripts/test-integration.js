@@ -380,7 +380,7 @@ function generateReport(results) {
   ]
   
   let passedTests = 0
-  let totalTests = allTests.length
+  const totalTests = allTests.length
   
   allTests.forEach(test => {
     const status = test.result?.success ? '✅ PASS' : '❌ FAIL'

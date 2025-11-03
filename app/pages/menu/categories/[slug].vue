@@ -102,7 +102,7 @@
     <div class="px-6">
       <!-- Loading State -->
       <div v-if="menuStore.loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading {{ category?.name || 'category' }}...</AppText>
       </div>
 
@@ -189,6 +189,7 @@
 
 <script setup lang="ts">
 import type { MenuItem, Category } from '~/types'
+import { useMenuStore } from '~/stores/menu'
 
 // Page setup
 definePageMeta({
@@ -198,7 +199,6 @@ definePageMeta({
 // Route and stores
 const route = useRoute()
 const router = useRouter()
-import { useMenuStore } from '~/stores/menu'
 
 const menuStore = useMenuStore()
 

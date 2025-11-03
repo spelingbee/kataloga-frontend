@@ -25,8 +25,8 @@
         <BaseButton
           variant="ghost"
           size="sm"
-          @click="$emit('close')"
           aria-label="Close dish details"
+          @click="$emit('close')"
         >
           <BaseIcon name="x" size="md" />
         </BaseButton>
@@ -90,9 +90,9 @@
           <div class="flex items-center justify-center">
             <QuantitySelector
               :quantity="selectedQuantity"
-              @update="updateQuantity"
               :min="1"
               :max="10"
+              @update="updateQuantity"
             />
           </div>
 
@@ -101,9 +101,9 @@
             :dish="dish"
             :quantity="selectedQuantity"
             :disabled="!dish"
-            @added="onAddedToCart"
             class="w-full"
             size="lg"
+            @added="onAddedToCart"
           />
 
           <!-- Total Price -->

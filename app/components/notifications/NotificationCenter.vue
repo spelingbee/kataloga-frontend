@@ -3,9 +3,9 @@
     <!-- Notification Bell Icon -->
     <div class="relative">
       <button
-        @click="toggleNotifications"
         class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg"
         :class="{ 'text-blue-600': hasUnread }"
+        @click="toggleNotifications"
       >
         <BaseIcon name="bell" class="w-6 h-6" />
         
@@ -30,14 +30,14 @@
           <div class="flex space-x-2">
             <button
               v-if="unreadCount > 0"
-              @click="markAllAsRead"
               class="text-sm text-blue-600 hover:text-blue-800"
+              @click="markAllAsRead"
             >
               Mark all read
             </button>
             <button
-              @click="clearAll"
               class="text-sm text-gray-600 hover:text-gray-800"
+              @click="clearAll"
             >
               Clear all
             </button>
@@ -83,7 +83,7 @@
 
               <!-- Unread Indicator -->
               <div v-if="!notification.isRead" class="flex-shrink-0">
-                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div class="w-2 h-2 bg-blue-500 rounded-full"/>
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@
       v-if="showNotifications"
       class="fixed inset-0 z-40"
       @click="showNotifications = false"
-    ></div>
+    />
   </div>
 </template>
 

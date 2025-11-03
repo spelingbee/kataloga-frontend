@@ -65,8 +65,8 @@
           variant="ghost"
           size="sm"
           class="text-primary-green hover:text-green-400"
-          @click="getCurrentLocation"
           :loading="gettingLocation"
+          @click="getCurrentLocation"
         >
           <BaseIcon name="location" size="sm" class="mr-1" />
           Use Current Location

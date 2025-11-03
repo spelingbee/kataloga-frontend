@@ -20,8 +20,8 @@
         <BaseButton
           variant="ghost"
           size="sm"
-          @click="$emit('close')"
           aria-label="Close categories"
+          @click="$emit('close')"
         >
           <BaseIcon name="x" size="md" />
         </BaseButton>
@@ -34,8 +34,8 @@
           :key="category.id"
           :category="category"
           :is-active="isActiveCategory(category.id)"
-          @click="selectCategory(category)"
           class="w-full"
+          @click="selectCategory(category)"
         />
       </nav>
 
@@ -46,8 +46,8 @@
           <BaseButton
             variant="ghost"
             size="sm"
-            @click="clearFilters"
             class="text-caption"
+            @click="clearFilters"
           >
             Clear filters
           </BaseButton>

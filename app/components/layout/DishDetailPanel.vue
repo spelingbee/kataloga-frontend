@@ -10,8 +10,8 @@
         <BaseButton
           variant="ghost"
           size="sm"
-          @click="closeDishDetail"
           aria-label="Close dish details"
+          @click="closeDishDetail"
         >
           <BaseIcon name="x" size="md" />
         </BaseButton>
@@ -52,9 +52,9 @@
       <div class="flex items-center justify-center">
         <QuantitySelector
           :quantity="selectedQuantity"
-          @update="updateQuantity"
           :min="1"
           :max="10"
+          @update="updateQuantity"
         />
       </div>
 
@@ -65,8 +65,8 @@
         :customizations="selectedCustomizations"
         :ingredients="selectedIngredients"
         :disabled="!dish"
-        @added="onAddedToCart"
         class="w-full"
+        @added="onAddedToCart"
       />
 
       <!-- Total Price -->

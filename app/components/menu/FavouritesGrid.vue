@@ -18,8 +18,8 @@
       <BaseButton
         v-if="favouriteItems.length > 0"
         variant="ghost"
-        @click="clearAllFavorites"
         class="text-primary-red hover:text-primary-red/80"
+        @click="clearAllFavorites"
       >
         Clear All
       </BaseButton>
@@ -34,16 +34,16 @@
       >
         <BaseCard class="p-4 space-y-3">
           <div class="flex items-start space-x-3">
-            <div class="w-20 h-20 bg-background-dark rounded-full"></div>
+            <div class="w-20 h-20 bg-background-dark rounded-full"/>
             <div class="flex-1 space-y-2">
-              <div class="h-4 bg-background-dark rounded w-3/4"></div>
-              <div class="h-3 bg-background-dark rounded w-full"></div>
-              <div class="h-3 bg-background-dark rounded w-2/3"></div>
+              <div class="h-4 bg-background-dark rounded w-3/4"/>
+              <div class="h-3 bg-background-dark rounded w-full"/>
+              <div class="h-3 bg-background-dark rounded w-2/3"/>
             </div>
           </div>
           <div class="flex justify-between items-center pt-2">
-            <div class="h-6 bg-background-dark rounded w-16"></div>
-            <div class="h-8 bg-background-dark rounded w-20"></div>
+            <div class="h-6 bg-background-dark rounded w-16"/>
+            <div class="h-8 bg-background-dark rounded w-20"/>
           </div>
         </BaseCard>
       </div>
@@ -102,8 +102,8 @@
     <div v-if="favouriteItems.length > 0" class="mt-8 flex flex-wrap gap-3 justify-center">
       <BaseButton
         variant="secondary"
-        @click="addAllToCart"
         :disabled="!hasAvailableFavorites"
+        @click="addAllToCart"
       >
         <BaseIcon name="cart" size="sm" class="mr-2" />
         Add All to Cart

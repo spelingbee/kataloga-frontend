@@ -1,6 +1,6 @@
 export default defineNuxtPlugin(async () => {
   // Only run on client side
-  if (process.server) return
+  if (import.meta.server) return
 
   const { useWebSocketService } = await import('~/services/websocket.service')
   const { useNotificationService } = await import('~/services/notification.service')

@@ -23,7 +23,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-16">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading options...</AppText>
       </div>
     </div>
@@ -204,8 +204,8 @@
           variant="primary"
           size="lg"
           class="flex-1"
-          @click="confirmSelection"
           :disabled="!selectedOption"
+          @click="confirmSelection"
         >
           <BaseIcon name="check" size="sm" class="mr-2" />
           Confirm Selection

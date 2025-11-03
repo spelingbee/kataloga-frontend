@@ -49,7 +49,7 @@ const overlayClasses = computed(() => [
 
 // Prevent body scroll when overlay is shown
 watch(() => props.show, (show) => {
-  if (process.client) {
+  if (import.meta.client) {
     if (show) {
       document.body.style.overflow = 'hidden'
     } else {
@@ -60,7 +60,7 @@ watch(() => props.show, (show) => {
 
 // Cleanup on unmount
 onUnmounted(() => {
-  if (process.client) {
+  if (import.meta.client) {
     document.body.style.overflow = ''
   }
 })

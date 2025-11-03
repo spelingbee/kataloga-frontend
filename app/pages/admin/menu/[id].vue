@@ -20,7 +20,7 @@
 
     <LoadingWrapper :loading="initialLoading">
       <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="space-y-8">
+      <form class="space-y-8" @submit.prevent="handleSubmit">
         <!-- Basic Information -->
         <div class="bg-white shadow rounded-lg">
           <div class="px-4 py-5 sm:p-6">
@@ -76,7 +76,7 @@
                   rows="3"
                   placeholder="Describe the menu item"
                   required
-                ></textarea>
+                />
                 <p v-if="errors.description" class="mt-1 text-sm text-red-600">
                   {{ errors.description }}
                 </p>
@@ -150,9 +150,9 @@
                   class="h-24 w-24 rounded-lg object-cover"
                 />
                 <button
-                  @click="removeImage"
                   type="button"
                   class="text-red-600 hover:text-red-800 text-sm font-medium"
+                  @click="removeImage"
                 >
                   Remove Image
                 </button>
@@ -172,8 +172,8 @@
                         ref="imageInput"
                         type="file"
                         accept="image/*"
-                        @change="handleImageUpload"
                         class="sr-only"
+                        @change="handleImageUpload"
                       />
                     </label>
                     <p class="pl-1">or drag and drop</p>
@@ -202,18 +202,18 @@
                   class="flex-1"
                 />
                 <button
-                  @click="removeIngredient(index)"
                   type="button"
                   class="p-2 text-red-600 hover:text-red-800"
+                  @click="removeIngredient(index)"
                 >
                   <BaseIcon name="trash" class="h-4 w-4" />
                 </button>
               </div>
               
               <button
-                @click="addIngredient"
                 type="button"
                 class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                @click="addIngredient"
               >
                 <BaseIcon name="plus" class="mr-2 h-4 w-4" />
                 Add Ingredient

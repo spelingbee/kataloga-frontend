@@ -3,7 +3,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading dish details...</AppText>
       </div>
     </div>
@@ -50,8 +50,8 @@
         <div class="flex items-center gap-2">
           <BaseButton
             variant="ghost"
-            @click="toggleFavourite"
             :class="isFavourite ? 'text-primary-red' : 'text-neutral-80'"
+            @click="toggleFavourite"
           >
             <BaseIcon :name="isFavourite ? 'heart-filled' : 'heart'" size="md" />
           </BaseButton>
@@ -205,8 +205,8 @@
                 </NuxtLink>
               </div>
               <SubcategorySelector 
-                :options="subcategoryOptions"
                 v-model="selectedSubcategory"
+                :options="subcategoryOptions"
                 :compact="true"
               />
             </div>
@@ -224,8 +224,8 @@
                 </NuxtLink>
               </div>
               <DishCustomization 
-                :dish="dish"
                 v-model="customizations"
+                :dish="dish"
                 :compact="true"
               />
             </div>
@@ -332,6 +332,8 @@
 
 <script setup lang="ts">
 import type { MenuItem, NutritionInfo } from '~/types'
+import { useMenuStore } from '~/stores/menu'
+import { useCartStore } from '~/stores/cart'
 
 // Page setup
 definePageMeta({
@@ -341,8 +343,6 @@ definePageMeta({
 // Route and stores
 const route = useRoute()
 const router = useRouter()
-import { useMenuStore } from '~/stores/menu'
-import { useCartStore } from '~/stores/cart'
 
 const menuStore = useMenuStore()
 const cartStore = useCartStore()

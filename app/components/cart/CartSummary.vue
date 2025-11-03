@@ -37,7 +37,7 @@
     </div>
 
     <!-- Divider -->
-    <hr class="cart-summary__divider">
+    <hr class="cart-summary__divider"/>
 
     <!-- Total -->
     <div class="cart-summary__total">

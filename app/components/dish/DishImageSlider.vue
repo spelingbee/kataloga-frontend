@@ -6,8 +6,8 @@
         :images="images"
         :current-index="currentIndex"
         :alt="alt"
-        @update:current-index="currentIndex = $event"
         class="w-full h-full"
+        @update:current-index="currentIndex = $event"
       />
     </div>
 
@@ -16,8 +16,8 @@
       v-if="images.length > 1"
       :total="images.length"
       :current="currentIndex"
-      @select="currentIndex = $event"
       class="mt-4"
+      @select="currentIndex = $event"
     />
 
     <!-- Navigation Arrows (for larger screens) -->
@@ -30,8 +30,8 @@
         variant="ghost"
         size="sm"
         class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 bg-background-card/80 hover:bg-background-card"
-        @click="previousImage"
         :disabled="currentIndex === 0"
+        @click="previousImage"
       >
         <BaseIcon name="chevron-left" size="sm" />
       </BaseButton>
@@ -41,8 +41,8 @@
         variant="ghost"
         size="sm"
         class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 bg-background-card/80 hover:bg-background-card"
-        @click="nextImage"
         :disabled="currentIndex === images.length - 1"
+        @click="nextImage"
       >
         <BaseIcon name="chevron-right" size="sm" />
       </BaseButton>

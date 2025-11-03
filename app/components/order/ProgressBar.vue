@@ -15,7 +15,7 @@
             v-if="index > 0"
             class="absolute right-full w-full h-0.5 -translate-x-2"
             :class="getLineClass(index - 1)"
-          ></div>
+          />
           
           <!-- Step Circle -->
           <div
@@ -34,7 +34,7 @@
             v-if="index < progressSteps.length - 1"
             class="absolute left-full w-full h-0.5 translate-x-2"
             :class="getLineClass(index)"
-          ></div>
+          />
         </div>
         
         <!-- Step Label -->
@@ -62,7 +62,7 @@
       <div
         class="bg-gradient-to-r from-primary-green to-green-400 h-2 rounded-full transition-all duration-500 ease-out"
         :style="{ width: `${progressPercentage}%` }"
-      ></div>
+      />
     </div>
     
     <!-- Progress Text -->

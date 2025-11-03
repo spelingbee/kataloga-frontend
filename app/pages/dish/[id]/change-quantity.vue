@@ -23,7 +23,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-16">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading quantity options...</AppText>
       </div>
     </div>
@@ -77,9 +77,9 @@
           <BaseButton
             variant="secondary"
             size="xl"
-            @click="decreaseQuantity"
             :disabled="selectedQuantity <= 1"
             class="w-16 h-16 rounded-full"
+            @click="decreaseQuantity"
           >
             <BaseIcon name="minus" size="lg" />
           </BaseButton>
@@ -96,9 +96,9 @@
           <BaseButton
             variant="secondary"
             size="xl"
-            @click="increaseQuantity"
             :disabled="selectedQuantity >= maxQuantity"
             class="w-16 h-16 rounded-full"
+            @click="increaseQuantity"
           >
             <BaseIcon name="plus" size="lg" />
           </BaseButton>
@@ -111,8 +111,8 @@
             :key="qty"
             :variant="selectedQuantity === qty ? 'primary' : 'secondary'"
             size="lg"
-            @click="selectedQuantity = qty"
             class="aspect-square"
+            @click="selectedQuantity = qty"
           >
             {{ qty }}
           </BaseButton>
@@ -133,8 +133,8 @@
           />
           <BaseButton 
             variant="ghost"
-            @click="applyCustomQuantity"
             :disabled="!isValidCustomQuantity"
+            @click="applyCustomQuantity"
           >
             Apply
           </BaseButton>
@@ -329,6 +329,7 @@
 
 <script setup lang="ts">
 import type { MenuItem } from '~/types'
+import { useCartStore } from '~/stores/cart'
 
 // Page setup
 definePageMeta({
@@ -338,7 +339,6 @@ definePageMeta({
 // Route and stores
 const route = useRoute()
 const router = useRouter()
-import { useCartStore } from '~/stores/cart'
 
 const cartStore = useCartStore()
 

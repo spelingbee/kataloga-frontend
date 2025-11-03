@@ -29,7 +29,7 @@
     <div class="px-6">
       <!-- Loading State -->
       <div v-if="menuStore.loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading categories...</AppText>
       </div>
 
@@ -148,13 +148,13 @@
 <script setup lang="ts">
 import type { Category } from '~/types'
 
+// Stores
+import { useMenuStore } from '~/stores/menu'
+
 // Page setup
 definePageMeta({
   title: 'Categories - Menu Ordering App'
 })
-
-// Stores
-import { useMenuStore } from '~/stores/menu'
 
 const menuStore = useMenuStore()
 

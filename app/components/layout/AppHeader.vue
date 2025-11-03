@@ -6,9 +6,9 @@
       <BaseButton
         variant="ghost"
         size="sm"
-        @click="$emit('toggle-sidebar')"
         class="app-header__menu-btn app-header__menu-btn--mobile"
         aria-label="Toggle menu"
+        @click="$emit('toggle-sidebar')"
       >
         <BaseIcon name="menu" size="md" />
       </BaseButton>
@@ -17,9 +17,9 @@
       <BaseButton
         variant="ghost"
         size="sm"
-        @click="$emit('toggle-sidebar')"
         class="app-header__menu-btn app-header__menu-btn--desktop"
         aria-label="Toggle sidebar"
+        @click="$emit('toggle-sidebar')"
       >
         <BaseIcon name="sidebar" size="md" />
       </BaseButton>
@@ -44,9 +44,9 @@
       <BaseButton
         variant="ghost"
         size="sm"
-        @click="openMobileSearch"
         class="app-header__search-btn"
         aria-label="Search"
+        @click="openMobileSearch"
       >
         <BaseIcon name="search" size="md" />
       </BaseButton>
@@ -56,9 +56,9 @@
         v-if="!isTelegram"
         variant="ghost"
         size="sm"
-        @click="openNotifications"
         class="u-relative"
         aria-label="Notifications"
+        @click="openNotifications"
       >
         <BaseIcon name="bell" size="md" />
         <BaseBadge
@@ -72,9 +72,9 @@
       <BaseButton
         variant="ghost"
         size="sm"
-        @click="$emit('toggle-cart')"
         class="u-relative"
         aria-label="Shopping cart"
+        @click="$emit('toggle-cart')"
       >
         <BaseIcon name="cart" size="md" />
         <BaseBadge
@@ -89,9 +89,9 @@
         <BaseButton
           variant="ghost"
           size="sm"
-          @click="toggleUserMenu"
           class="u-flex u-items-center u-gap-2"
           aria-label="User menu"
+          @click="toggleUserMenu"
         >
           <BaseIcon name="user" size="md" />
           <span class="app-header__brand u-text-body-sm">{{ userName }}</span>
@@ -123,10 +123,10 @@
           >
             Favourites
           </NuxtLink>
-          <hr class="app-header__dropdown-divider">
+          <hr class="app-header__dropdown-divider"/>
           <button
-            @click="logout"
             class="app-header__dropdown-item"
+            @click="logout"
           >
             Logout
           </button>
@@ -142,8 +142,8 @@
       <BaseButton
         variant="ghost"
         size="sm"
-        @click="closeMobileSearch"
         aria-label="Close search"
+        @click="closeMobileSearch"
       >
         <BaseIcon name="arrow-left" size="md" />
       </BaseButton>

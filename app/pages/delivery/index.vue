@@ -214,8 +214,8 @@
                 class="flex-1"
               />
               <BaseButton 
-                @click="checkDeliveryAvailability"
                 :disabled="!addressToCheck.trim()"
+                @click="checkDeliveryAvailability"
               >
                 Check
               </BaseButton>
@@ -288,8 +288,8 @@
     <!-- Tracking Details Modal -->
     <BaseModal 
       v-if="showTrackingDetails" 
-      @close="showTrackingDetails = false"
       title="Live Tracking"
+      @close="showTrackingDetails = false"
     >
       <div class="p-6">
         <OrderTracker 
@@ -305,14 +305,14 @@
 <script setup lang="ts">
 import type { Delivery, CourierInfo, DeliveryZone } from '~/types'
 
+// Stores
+import { useDeliveryStore } from '~/stores/delivery'
+import { useLocationStore } from '~/stores/location'
+
 // Page setup
 definePageMeta({
   title: 'Delivery - Menu Ordering App'
 })
-
-// Stores
-import { useDeliveryStore } from '~/stores/delivery'
-import { useLocationStore } from '~/stores/location'
 
 const deliveryStore = useDeliveryStore()
 const locationStore = useLocationStore()

@@ -10,8 +10,8 @@
         v-if="hasActiveFilters"
         variant="ghost"
         size="sm"
-        @click="clearAllFilters"
         class="text-primary-red hover:text-primary-red/80"
+        @click="clearAllFilters"
       >
         Clear All
       </BaseButton>
@@ -108,8 +108,8 @@
           :key="diet.value"
           :variant="isDietarySelected(diet.value) ? 'primary' : 'secondary'"
           size="sm"
-          @click="toggleDietary(diet.value)"
           class="justify-start text-left"
+          @click="toggleDietary(diet.value)"
         >
           <BaseIcon :name="diet.icon" size="sm" class="mr-2" />
           {{ diet.label }}
@@ -149,8 +149,8 @@
           :key="time.value"
           :variant="localFilters.cookingTime === time.value ? 'primary' : 'secondary'"
           size="sm"
-          @click="setCookingTime(time.value)"
           class="w-full justify-start"
+          @click="setCookingTime(time.value)"
         >
           {{ time.label }}
         </BaseButton>
@@ -162,9 +162,9 @@
       <BaseButton
         variant="primary"
         size="md"
-        @click="applyFilters"
         class="w-full"
         :disabled="!hasChanges"
+        @click="applyFilters"
       >
         Apply Filters
         <span v-if="filteredCount !== undefined" class="ml-2">

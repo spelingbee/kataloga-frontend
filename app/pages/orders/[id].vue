@@ -3,7 +3,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading order details...</AppText>
       </div>
     </div>
@@ -184,16 +184,16 @@
           <div class="flex flex-col sm:flex-row gap-4">
             <BaseButton 
               variant="primary"
-              @click="reorderItems"
               class="flex-1"
+              @click="reorderItems"
             >
               <BaseIcon name="repeat" size="sm" class="mr-2" />
               Reorder Items
             </BaseButton>
             <BaseButton 
               variant="secondary"
-              @click="shareOrder"
               class="flex-1"
+              @click="shareOrder"
             >
               <BaseIcon name="share" size="sm" class="mr-2" />
               Share Order
@@ -201,8 +201,8 @@
             <BaseButton 
               v-if="canCancelOrder"
               variant="ghost"
-              @click="cancelOrder"
               class="flex-1"
+              @click="cancelOrder"
             >
               <BaseIcon name="x" size="sm" class="mr-2" />
               Cancel Order
@@ -376,7 +376,7 @@
                 Report an Issue
               </AppHeading>
               
-              <form @submit.prevent="submitIssue" class="space-y-4">
+              <form class="space-y-4" @submit.prevent="submitIssue">
                 <div>
                   <label class="block text-white text-sm font-medium mb-2">
                     Issue Type
@@ -434,6 +434,9 @@
 
 <script setup lang="ts">
 import type { Order } from '~/types'
+import { useOrderStore } from '~/stores/order'
+import { useCartStore } from '~/stores/cart'
+import { OrderStatus } from '~/types'
 
 // Page setup
 definePageMeta({
@@ -443,9 +446,6 @@ definePageMeta({
 // Route and stores
 const route = useRoute()
 const router = useRouter()
-import { useOrderStore } from '~/stores/order'
-import { useCartStore } from '~/stores/cart'
-import { OrderStatus } from '~/types'
 
 const orderStore = useOrderStore()
 const cartStore = useCartStore()

@@ -78,7 +78,7 @@ export default defineNuxtPlugin(() => {
     }
 
     // Monitor memory every 30 seconds in development
-    if (process.dev) {
+    if (import.meta.dev) {
       setInterval(monitorMemory, 30000)
     }
 

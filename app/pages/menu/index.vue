@@ -19,8 +19,8 @@
         <div class="menu-controls__actions">
           <BaseButton 
             variant="secondary" 
-            @click="showFilters = !showFilters"
             class="u-whitespace-nowrap"
+            @click="showFilters = !showFilters"
           >
             <BaseIcon name="filter" size="sm" class="u-mr-2" />
             Filters
@@ -64,7 +64,7 @@
 
         <!-- Loading State -->
         <div v-if="menuStore.loading" class="menu-state menu-state--loading">
-          <div class="menu-loading-spinner"></div>
+          <div class="menu-loading-spinner"/>
           <AppText class="menu-state__text">Loading menu...</AppText>
         </div>
 
@@ -126,13 +126,13 @@
 <script setup lang="ts">
 import type { MenuItem } from '~/types'
 
+// Stores
+import { useMenuStore } from '~/stores/menu'
+
 // Page setup
 definePageMeta({
   title: 'Menu - Menu Ordering App'
 })
-
-// Stores
-import { useMenuStore } from '~/stores/menu'
 
 const menuStore = useMenuStore()
 const route = useRoute()

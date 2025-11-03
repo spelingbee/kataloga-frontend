@@ -2,13 +2,13 @@
   <div class="category-skeleton">
     <!-- Icon Skeleton -->
     <div class="icon-skeleton">
-      <div class="skeleton-circle"></div>
+      <div class="skeleton-circle"/>
     </div>
     
     <!-- Text Skeleton -->
     <div class="text-skeleton">
-      <div class="skeleton-line name-line"></div>
-      <div class="skeleton-line count-line"></div>
+      <div class="skeleton-line name-line"/>
+      <div class="skeleton-line count-line"/>
     </div>
   </div>
 </template>

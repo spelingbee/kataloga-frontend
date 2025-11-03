@@ -59,8 +59,8 @@
             :key="suggestion"
             variant="ghost"
             size="sm"
-            @click="searchQuery = suggestion"
             class="text-neutral-20 hover:text-white border border-neutral-80/30 hover:border-primary-green/50"
+            @click="searchQuery = suggestion"
           >
             {{ suggestion }}
           </BaseButton>
@@ -109,7 +109,7 @@
     <div class="px-6">
       <!-- Loading State -->
       <div v-if="isSearching" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Searching...</AppText>
       </div>
 
@@ -181,8 +181,8 @@
         <div v-if="hasMoreResults" class="text-center mt-8">
           <BaseButton 
             variant="secondary"
-            @click="loadMoreResults"
             :disabled="loadingMore"
+            @click="loadMoreResults"
           >
             <BaseIcon 
               v-if="loadingMore"
@@ -230,8 +230,8 @@
               :key="suggestion"
               variant="ghost"
               size="sm"
-              @click="searchQuery = suggestion"
               class="text-neutral-20 hover:text-primary-green"
+              @click="searchQuery = suggestion"
             >
               {{ suggestion }}
             </BaseButton>
@@ -261,8 +261,8 @@
           :key="recent"
           variant="ghost"
           size="sm"
-          @click="searchQuery = recent"
           class="text-neutral-20 hover:text-white border border-neutral-80/30 hover:border-primary-green/50"
+          @click="searchQuery = recent"
         >
           <BaseIcon name="clock" size="xs" class="mr-2" />
           {{ recent }}
@@ -275,13 +275,13 @@
 <script setup lang="ts">
 import type { MenuItem } from '~/types'
 
+// Stores
+import { useMenuStore } from '~/stores/menu'
+
 // Page setup
 definePageMeta({
   title: 'Search Menu - Menu Ordering App'
 })
-
-// Stores
-import { useMenuStore } from '~/stores/menu'
 
 const menuStore = useMenuStore()
 const router = useRouter()

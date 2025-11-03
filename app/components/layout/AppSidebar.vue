@@ -33,8 +33,8 @@
         <BaseButton
           variant="ghost"
           size="sm"
-          @click="clearFilters"
           class="u-text-caption"
+          @click="clearFilters"
         >
           Clear filters
         </BaseButton>

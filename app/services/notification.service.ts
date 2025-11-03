@@ -344,7 +344,7 @@ export class NotificationService {
     notification.isRead = true
 
     // Navigate based on notification type
-    if (process.client) {
+    if (import.meta.client) {
       const router = useRouter()
       
       switch (notification.type) {
