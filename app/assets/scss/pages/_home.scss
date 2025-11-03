@@ -1,0 +1,138 @@
+// Home Page Styles
+.home-page {
+  min-height: calc(100vh - 60px);
+  background-color: $color-background-dark;
+
+  @include breakpoint(lg) {
+    min-height: 100vh;
+  }
+}
+
+.home-hero {
+  text-align: center;
+  padding: $spacing-2xl $spacing-lg;
+
+  &__title {
+    margin-bottom: $spacing-md;
+    color: white;
+  }
+
+  &__subtitle {
+    color: $color-neutral-20;
+    max-width: 32rem;
+    margin: 0 auto;
+  }
+}
+
+.home-section {
+  padding: 0 $spacing-lg;
+  margin-bottom: $spacing-2xl;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__title {
+    color: white;
+  }
+
+  &__icon {
+    display: inline-block;
+    margin-left: $spacing-sm;
+  }
+
+  &__link {
+    color: $color-primary-green;
+    font-weight: $font-weight-medium;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: rgba($color-primary-green, 0.8);
+    }
+  }
+}
+
+.home-categories {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+
+  @include breakpoint(md) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @include breakpoint(lg) {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+.home-category {
+  background-color: $color-background-card;
+  border-radius: $radius-xl;
+  padding: $spacing-md;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  display: block;
+
+  &:hover {
+    background-color: rgba($color-background-card, 0.8);
+    text-decoration: none;
+
+    .home-category__name {
+      color: $color-primary-green;
+    }
+  }
+
+  &__icon {
+    margin: 0 auto $spacing-md;
+  }
+
+  &__name {
+    font-weight: $font-weight-medium;
+    color: white;
+    transition: color 0.2s ease;
+  }
+
+  &__count {
+    color: $color-neutral-20;
+    margin-top: $spacing-xs;
+  }
+}
+
+.home-actions {
+  padding: 0 $spacing-lg;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $spacing-lg;
+
+  @include breakpoint(md) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.home-action-card {
+  padding: $spacing-lg;
+  text-align: center;
+  background-color: $color-background-card;
+  border: 1px solid rgba($color-neutral-80, 0.2);
+
+  &__icon {
+    margin: 0 auto $spacing-md;
+  }
+
+  &__title {
+    margin-bottom: $spacing-sm;
+    color: white;
+  }
+
+  &__description {
+    color: $color-neutral-20;
+    margin-bottom: $spacing-md;
+  }
+}

@@ -1,0 +1,539 @@
+// =============================================================================
+// Layout Utilities
+// =============================================================================
+
+// Display Utilities
+// -----------------------------------------------------------------------------
+.u-block {
+  display: block;
+}
+
+.u-inline-block {
+  display: inline-block;
+}
+
+.u-inline {
+  display: inline;
+}
+
+.u-flex {
+  display: flex;
+}
+
+.u-inline-flex {
+  display: inline-flex;
+}
+
+.u-grid {
+  display: grid;
+}
+
+.u-hidden {
+  display: none;
+}
+
+// Flexbox Utilities
+// -----------------------------------------------------------------------------
+.u-flex-row {
+  flex-direction: row;
+}
+
+.u-flex-col {
+  flex-direction: column;
+}
+
+.u-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.u-flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+.u-items-start {
+  align-items: flex-start;
+}
+
+.u-items-center {
+  align-items: center;
+}
+
+.u-items-end {
+  align-items: flex-end;
+}
+
+.u-items-stretch {
+  align-items: stretch;
+}
+
+.u-justify-start {
+  justify-content: flex-start;
+}
+
+.u-justify-center {
+  justify-content: center;
+}
+
+.u-justify-end {
+  justify-content: flex-end;
+}
+
+.u-justify-between {
+  justify-content: space-between;
+}
+
+.u-justify-around {
+  justify-content: space-around;
+}
+
+.u-justify-evenly {
+  justify-content: space-evenly;
+}
+
+.u-flex-1 {
+  flex: 1 1 0%;
+}
+
+.u-flex-auto {
+  flex: 1 1 auto;
+}
+
+.u-flex-initial {
+  flex: 0 1 auto;
+}
+
+.u-flex-none {
+  flex: none;
+}
+
+.u-flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+.u-flex-grow {
+  flex-grow: 1;
+}
+
+// Position Utilities
+// -----------------------------------------------------------------------------
+.u-static {
+  position: static;
+}
+
+.u-fixed {
+  position: fixed;
+}
+
+.u-absolute {
+  position: absolute;
+}
+
+.u-relative {
+  position: relative;
+}
+
+.u-sticky {
+  position: sticky;
+}
+
+// Position Values
+.u-inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.u-top-0 {
+  top: 0;
+}
+
+.u-right-0 {
+  right: 0;
+}
+
+.u-bottom-0 {
+  bottom: 0;
+}
+
+.u-left-0 {
+  left: 0;
+}
+
+// Width and Height Utilities
+// -----------------------------------------------------------------------------
+.u-w-full {
+  width: 100%;
+}
+
+.u-w-auto {
+  width: auto;
+}
+
+.u-h-full {
+  height: 100%;
+}
+
+.u-h-auto {
+  height: auto;
+}
+
+.u-h-screen {
+  height: 100vh;
+}
+
+.u-min-h-screen {
+  min-height: 100vh;
+}
+
+.u-max-w-full {
+  max-width: 100%;
+}
+
+.u-max-h-full {
+  max-height: 100%;
+}
+
+// Overflow Utilities
+// -----------------------------------------------------------------------------
+.u-overflow-auto {
+  overflow: auto;
+}
+
+.u-overflow-hidden {
+  overflow: hidden;
+}
+
+.u-overflow-visible {
+  overflow: visible;
+}
+
+.u-overflow-scroll {
+  overflow: scroll;
+}
+
+.u-overflow-x-auto {
+  overflow-x: auto;
+}
+
+.u-overflow-y-auto {
+  overflow-y: auto;
+}
+
+.u-overflow-x-hidden {
+  overflow-x: hidden;
+}
+
+.u-overflow-y-hidden {
+  overflow-y: hidden;
+}
+
+// Z-Index Utilities
+// -----------------------------------------------------------------------------
+.u-z-0 {
+  z-index: 0;
+}
+
+.u-z-10 {
+  z-index: $z-index-dropdown;
+}
+
+.u-z-20 {
+  z-index: $z-index-sticky;
+}
+
+.u-z-30 {
+  z-index: $z-index-fixed;
+}
+
+.u-z-40 {
+  z-index: $z-index-modal-backdrop;
+}
+
+.u-z-50 {
+  z-index: $z-index-modal;
+}
+
+// Responsive Visibility Utilities
+// -----------------------------------------------------------------------------
+.mobile-only {
+  @include tablet-up {
+    display: none;
+  }
+}
+
+.tablet-up {
+  @include mobile-only {
+    display: none;
+  }
+}
+
+.desktop-only {
+  @include mobile-only {
+    display: none;
+  }
+  
+  @media (max-width: #{$breakpoint-lg - 1px}) {
+    display: none;
+  }
+}
+
+.large-desktop-only {
+  @media (max-width: #{$breakpoint-xl - 1px}) {
+    display: none;
+  }
+}
+
+// Responsive Display Utilities
+// -----------------------------------------------------------------------------
+@include breakpoint(sm) {
+  .u-sm-block { display: block; }
+  .u-sm-hidden { display: none; }
+  .u-sm-flex { display: flex; }
+  .u-sm-inline-block { display: inline-block; }
+}
+
+@include breakpoint(md) {
+  .u-md-block { display: block; }
+  .u-md-hidden { display: none; }
+  .u-md-flex { display: flex; }
+  .u-md-inline-block { display: inline-block; }
+}
+
+@include breakpoint(lg) {
+  .u-lg-block { display: block; }
+  .u-lg-hidden { display: none; }
+  .u-lg-flex { display: flex; }
+  .u-lg-inline-block { display: inline-block; }
+}
+
+@include breakpoint(xl) {
+  .u-xl-block { display: block; }
+  .u-xl-hidden { display: none; }
+  .u-xl-flex { display: flex; }
+  .u-xl-inline-block { display: inline-block; }
+}// G
+rid Utilities
+// -----------------------------------------------------------------------------
+.u-grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.u-grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.u-grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.u-grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.u-grid-cols-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.u-grid-cols-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.u-grid-cols-7 {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+// Responsive Grid Utilities
+@include tablet-up {
+  .u-md-grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .u-md-grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .u-md-grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  .u-md-grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  .u-md-grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  
+  .u-md-grid-cols-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  
+  .u-md-grid-cols-7 {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+@include desktop-up {
+  .u-lg-grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .u-lg-grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .u-lg-grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  .u-lg-grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  .u-lg-grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  
+  .u-lg-grid-cols-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  
+  .u-lg-grid-cols-7 {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+@include large-desktop-up {
+  .u-xl-grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .u-xl-grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .u-xl-grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  .u-xl-grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  .u-xl-grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  
+  .u-xl-grid-cols-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  
+  .u-xl-grid-cols-7 {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: #{$breakpoint-2xl}) {
+  .u-2xl-grid-cols-1 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  
+  .u-2xl-grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .u-2xl-grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  .u-2xl-grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  
+  .u-2xl-grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  
+  .u-2xl-grid-cols-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  
+  .u-2xl-grid-cols-7 {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+// Gap Utilities
+.u-gap-1 {
+  gap: 0.25rem;
+}
+
+.u-gap-2 {
+  gap: 0.5rem;
+}
+
+.u-gap-3 {
+  gap: 0.75rem;
+}
+
+.u-gap-4 {
+  gap: 1rem;
+}
+
+.u-gap-5 {
+  gap: 1.25rem;
+}
+
+.u-gap-6 {
+  gap: 1.5rem;
+}
+
+.u-gap-8 {
+  gap: 2rem;
+}
+
+// Additional Utilities
+// -----------------------------------------------------------------------------
+.u-whitespace-nowrap {
+  white-space: nowrap;
+}
+
+.u-text-center {
+  text-align: center;
+}
+
+.u-text-left {
+  text-align: left;
+}
+
+.u-text-right {
+  text-align: right;
+}
+
+.u-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Size utilities for icons and elements
+.u-w-4 { width: 1rem; }
+.u-w-5 { width: 1.25rem; }
+.u-w-6 { width: 1.5rem; }
+.u-w-8 { width: 2rem; }
+.u-w-10 { width: 2.5rem; }
+.u-w-12 { width: 3rem; }
+
+.u-h-4 { height: 1rem; }
+.u-h-5 { height: 1.25rem; }
+.u-h-6 { height: 1.5rem; }
+.u-h-8 { height: 2rem; }
+.u-h-10 { height: 2.5rem; }
+.u-h-12 { height: 3rem; }

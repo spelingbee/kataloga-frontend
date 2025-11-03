@@ -1,0 +1,138 @@
+// Grid System and Layout Utilities
+.layout-grid {
+  display: grid;
+  min-height: 100vh;
+  grid-template-rows: auto 1fr auto;
+
+  &--three-column {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: 
+      "sidebar header header"
+      "sidebar main detail"
+      "sidebar main detail";
+
+    @include breakpoint-down(lg) {
+      grid-template-columns: 1fr;
+      grid-template-areas: 
+        "header"
+        "main"
+        "navigation";
+    }
+  }
+}
+
+.layout-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  grid-area: main;
+
+  &__header {
+    flex-shrink: 0;
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
+.layout-detail {
+  display: none;
+  width: 20rem;
+  flex-shrink: 0;
+  background-color: $color-background-card;
+  border-left: 1px solid $color-border-subtle;
+  grid-area: detail;
+
+  @include breakpoint(xl) {
+    display: flex;
+  }
+
+  @include breakpoint(2xl) {
+    width: 24rem;
+  }
+
+  &--hidden {
+    @include breakpoint(xl) {
+      display: none;
+    }
+  }
+
+  &__content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    color: $color-neutral-80;
+    text-align: center;
+  }
+}
+
+// Responsive container
+.layout-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+
+  @include breakpoint(sm) {
+    padding: 0 $spacing-lg;
+  }
+
+  @include breakpoint(lg) {
+    padding: 0 $spacing-xl;
+  }
+}
+
+// Flex layouts
+.layout-flex {
+  display: flex;
+
+  &--column {
+    flex-direction: column;
+  }
+
+  &--row {
+    flex-direction: row;
+  }
+
+  &--center {
+    align-items: center;
+    justify-content: center;
+  }
+
+  &--between {
+    justify-content: space-between;
+  }
+
+  &--around {
+    justify-content: space-around;
+  }
+
+  &--wrap {
+    flex-wrap: wrap;
+  }
+}
+
+// Screen height utilities
+.layout-screen {
+  min-height: 100vh;
+
+  &--full {
+    height: 100vh;
+  }
+
+  &--content {
+    min-height: calc(100vh - 60px); // Account for mobile navigation
+    
+    @include breakpoint(lg) {
+      min-height: 100vh;
+    }
+  }
+}

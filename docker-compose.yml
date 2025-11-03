@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NUXT_PUBLIC_API_BASE_URL=${NUXT_PUBLIC_API_BASE_URL:-https://api.menuapp.com}
+      - NUXT_PUBLIC_TENANT_SLUG=${NUXT_PUBLIC_TENANT_SLUG:-production}
+      - NUXT_PUBLIC_WEBSOCKET_URL=${NUXT_PUBLIC_WEBSOCKET_URL:-wss://api.menuapp.com}
+      - NUXT_PUBLIC_TELEGRAM_BOT_TOKEN=${NUXT_PUBLIC_TELEGRAM_BOT_TOKEN}
+      - NUXT_PUBLIC_VAPID_PUBLIC_KEY=${NUXT_PUBLIC_VAPID_PUBLIC_KEY}
+      - NUXT_PUBLIC_SENTRY_DSN=${NUXT_PUBLIC_SENTRY_DSN}
+      - NUXT_PUBLIC_ANALYTICS_ID=${NUXT_PUBLIC_ANALYTICS_ID}
+      - NUXT_PUBLIC_CDN_URL=${NUXT_PUBLIC_CDN_URL}
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - menu-app-network
+
+  # Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - frontend
+    restart: unless-stopped
+    networks:
+      - menu-app-network
+
+networks:
+  menu-app-network:
+    driver: bridge

@@ -1,0 +1,173 @@
+// =============================================================================
+// Main SCSS Entry Point
+// =============================================================================
+
+// 1. Abstracts - Variables, functions, mixins
+@import 'abstracts/variables';
+@import 'abstracts/functions';
+@import 'abstracts/mixins';
+
+// 2. Base - Reset, typography, base element styles
+@import 'base/reset';
+@import 'base/typography';
+@import 'base/base';
+
+// 3. Layout - Grid system, header, footer, sidebar
+@import 'layout/grid';
+@import 'layout/header';
+@import 'layout/sidebar';
+@import 'layout/navigation';
+@import 'layout/admin';
+
+// 4. Components - Buttons, cards, forms, etc.
+@import 'components/buttons';
+@import 'components/cards';
+@import 'components/icons';
+@import 'components/order-tracker';
+
+// 5. Pages - Page-specific styles
+@import 'pages/home';
+@import 'pages/menu';
+@import 'pages/auth';
+
+// 6. Utilities - Helper classes
+@import 'utilities/spacing';
+@import 'utilities/layout';
+@import 'utilities/typography';
+@import 'utilities/colors';
+
+// 7. Themes - Theme-specific overrides
+@import 'themes/dark';
+
+// 8. Animations and Keyframes
+// -----------------------------------------------------------------------------
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+// 9. Animation Utility Classes
+// -----------------------------------------------------------------------------
+.fade-in {
+  @include fade-in;
+}
+
+.slide-in-up {
+  @include slide-in-up;
+}
+
+.slide-in-right {
+  animation: slideInRight $transition-normal $ease-in-out;
+}
+
+.slide-in-left {
+  animation: slideInLeft $transition-normal $ease-in-out;
+}
+
+.hover-scale {
+  @include hover-scale;
+}
+
+// 10. Custom Scrollbar Styles
+// -----------------------------------------------------------------------------
+.scrollbar-thin {
+  @include custom-scrollbar;
+}
+
+// 11. Safe Area Support
+// -----------------------------------------------------------------------------
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+// 12. Touch Device Optimizations
+// -----------------------------------------------------------------------------
+@media (hover: none) and (pointer: coarse) {
+  .hover-scale:hover {
+    transform: none;
+  }
+  
+  .hover\:scale-105:hover {
+    transform: none;
+  }
+}
+
+// 13. High DPI Display Optimizations
+// -----------------------------------------------------------------------------
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  // High DPI specific styles can be added here
+}

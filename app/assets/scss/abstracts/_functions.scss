@@ -1,0 +1,118 @@
+// =============================================================================
+// SCSS Functions
+// =============================================================================
+
+// Color Functions
+// -----------------------------------------------------------------------------
+@use 'sass:color';
+
+// Lighten a color by a percentage
+@function lighten-color($color, $percentage) {
+  @return color.scale($color, $lightness: $percentage);
+}
+
+// Darken a color by a percentage
+@function darken-color($color, $percentage) {
+  @return color.scale($color, $lightness: -$percentage);
+}
+
+// Add alpha transparency to a color
+@function alpha-color($color, $alpha) {
+  @return rgba($color, $alpha);
+}
+
+// Spacing Functions
+// -----------------------------------------------------------------------------
+
+// Convert pixel values to rem
+@function px-to-rem($px, $base-font-size: 16px) {
+  @return ($px / $base-font-size) * 1rem;
+}
+
+// Get spacing value by multiplier
+@function spacing($multiplier) {
+  @return $spacing-md * $multiplier;
+}
+
+// Typography Functions
+// -----------------------------------------------------------------------------
+
+// Calculate line height based on font size
+@function calculate-line-height($font-size, $target-line-height: 1.5) {
+  @return $font-size * $target-line-height;
+}
+
+// Utility Functions
+// -----------------------------------------------------------------------------
+
+// Strip unit from a value
+@function strip-unit($value) {
+  @return $value / ($value * 0 + 1);
+}
+
+// Convert em to px
+@function em-to-px($em, $base-font-size: 16px) {
+  @return strip-unit($em) * $base-font-size * 1px;
+}
+
+// Z-index function for consistent layering
+@function z-index($layer) {
+  $z-indexes: (
+    'dropdown': $z-index-dropdown,
+    'sticky': $z-index-sticky,
+    'fixed': $z-index-fixed,
+    'modal-backdrop': $z-index-modal-backdrop,
+    'modal': $z-index-modal,
+    'popover': $z-index-popover,
+    'tooltip': $z-index-tooltip
+  );
+  
+  @return map-get($z-indexes, $layer);
+}
+
+// Responsive Functions
+// -----------------------------------------------------------------------------
+
+// Get breakpoint value
+@function breakpoint($name) {
+  $breakpoints: (
+    'sm': $breakpoint-sm,
+    'md': $breakpoint-md,
+    'lg': $breakpoint-lg,
+    'xl': $breakpoint-xl,
+    '2xl': $breakpoint-2xl
+  );
+  
+  @return map-get($breakpoints, $name);
+}
+
+// Category Color Functions
+// -----------------------------------------------------------------------------
+
+// Get category color by name
+@function category-color($category) {
+  $category-colors: (
+    'all': $color-category-all,
+    'salad': $color-category-salad,
+    'main': $color-category-main,
+    'meat': $color-category-meat,
+    'fastfood': $color-category-fastfood,
+    'dessert': $color-category-dessert,
+    'drinks': $color-category-drinks
+  );
+  
+  @return map-get($category-colors, $category);
+}
+
+// Math Functions
+// -----------------------------------------------------------------------------
+
+// Clamp function for older browser support
+@function clamp-value($min, $val, $max) {
+  @return max($min, min($val, $max));
+}
+
+// Calculate fluid typography
+@function fluid-size($min-size, $max-size, $min-vw: $breakpoint-sm, $max-vw: $breakpoint-xl) {
+  @return calc(#{$min-size} + #{strip-unit($max-size - $min-size)} * ((100vw - #{$min-vw}) / #{strip-unit($max-vw - $min-vw)}));
+}

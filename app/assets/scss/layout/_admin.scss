@@ -1,0 +1,215 @@
+// Admin Layout Styles
+.admin-header {
+  background-color: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid #e5e7eb;
+
+  &__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 4rem;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+  }
+
+  &__title {
+    font-size: $font-size-heading-lg;
+    font-weight: $font-weight-semibold;
+    color: #111827;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+  }
+
+  &__notification-btn {
+    padding: $spacing-sm;
+    color: #9ca3af;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #6b7280;
+      background-color: #f3f4f6;
+    }
+  }
+
+  &__user-menu {
+    position: relative;
+  }
+
+  &__user-btn {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    font-size: $font-size-body-sm;
+    border-radius: 50px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: $spacing-xs;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #6366f1;
+    }
+  }
+
+  &__user-avatar {
+    height: 2rem;
+    width: 2rem;
+    border-radius: 50%;
+    background-color: #6366f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__user-initials {
+    font-size: $font-size-body-sm;
+    font-weight: $font-weight-medium;
+    color: white;
+  }
+
+  &__user-name {
+    color: #374151;
+    font-weight: $font-weight-medium;
+  }
+
+  &__user-chevron {
+    width: 1rem;
+    height: 1rem;
+    color: #9ca3af;
+  }
+
+  &__dropdown {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    margin-top: $spacing-sm;
+    width: 12rem;
+    border-radius: $radius-md;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 50;
+  }
+
+  &__dropdown-content {
+    padding: $spacing-xs 0;
+  }
+
+  &__dropdown-item {
+    display: block;
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-body-sm;
+    color: #374151;
+    text-decoration: none;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #f3f4f6;
+    }
+  }
+}
+
+.admin-layout {
+  display: flex;
+}
+
+.admin-sidebar {
+  width: 16rem;
+  background-color: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  min-height: calc(100vh - 4rem);
+  position: relative;
+
+  &__content {
+    padding: $spacing-md;
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__nav-item {
+    // No additional styles needed
+  }
+
+  &__nav-link {
+    display: flex;
+    align-items: center;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-body-sm;
+    font-weight: $font-weight-medium;
+    border-radius: $radius-md;
+    text-decoration: none;
+    color: #6b7280;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #f9fafb;
+      color: #111827;
+    }
+
+    &--active {
+      background-color: #e0e7ff;
+      color: #3730a3;
+    }
+  }
+
+  &__nav-icon {
+    margin-right: $spacing-md;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &__footer {
+    position: absolute;
+    bottom: $spacing-md;
+    left: $spacing-md;
+    right: $spacing-md;
+  }
+
+  &__back-link {
+    display: flex;
+    align-items: center;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-body-sm;
+    font-weight: $font-weight-medium;
+    color: #6b7280;
+    text-decoration: none;
+    border-radius: $radius-md;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: #f9fafb;
+      color: #111827;
+    }
+  }
+}
+
+.admin-main {
+  flex: 1;
+  padding: $spacing-xl;
+}

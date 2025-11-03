@@ -1,0 +1,139 @@
+// =============================================================================
+// SCSS Variables - Design System
+// =============================================================================
+
+// Font Family
+// -----------------------------------------------------------------------------
+$font-family-primary: 'Work Sans', sans-serif;
+
+// Colors - Primary Palette
+// -----------------------------------------------------------------------------
+$color-primary-red: #e43a05;
+$color-primary-green: #20ab47;
+$color-primary-orange: #fea529;
+
+// Colors - Neutral Palette
+// -----------------------------------------------------------------------------
+$color-neutral-20: #eeeeee;
+$color-neutral-80: #22222a;
+
+// Colors - Background
+// -----------------------------------------------------------------------------
+$color-background-dark: #1a1a1a;
+$color-background-card: #2a2a2a;
+$color-background-sidebar: #1f1f1f;
+
+// Colors - Border
+// -----------------------------------------------------------------------------
+$color-border-subtle: #333333;
+
+// Colors - Text
+// -----------------------------------------------------------------------------
+$color-text-primary: $color-neutral-80;
+$color-text-secondary: #6b7280;
+$color-text-muted: #9ca3af;
+
+// Colors - Category Palette
+// -----------------------------------------------------------------------------
+$color-category-all: #4ade80;
+$color-category-salad: #22c55e;
+$color-category-main: #f59e0b;
+$color-category-meat: #ef4444;
+$color-category-fastfood: #f97316;
+$color-category-dessert: #ec4899;
+$color-category-drinks: #8b5cf6;
+
+// Typography - Font Sizes
+// -----------------------------------------------------------------------------
+$font-size-display-lg: 3.5rem;
+$font-size-display-md: 2.75rem;
+$font-size-display-sm: 2.25rem;
+$font-size-heading-xl: 1.875rem;
+$font-size-heading-lg: 1.5rem;
+$font-size-heading-md: 1.25rem;
+$font-size-heading-sm: 1.125rem;
+$font-size-body-lg: 1.125rem;
+$font-size-body-md: 1rem;
+$font-size-body-sm: 0.875rem;
+$font-size-caption: 0.75rem;
+$font-size-category: 0.875rem;
+
+// Typography - Font Weights
+// -----------------------------------------------------------------------------
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Typography - Line Heights
+// -----------------------------------------------------------------------------
+$line-height-tight: 1.25;
+$line-height-snug: 1.375;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.625;
+
+// Spacing System
+// -----------------------------------------------------------------------------
+$spacing-xs: 0.25rem;   // 4px
+$spacing-sm: 0.5rem;    // 8px
+$spacing-md: 1rem;      // 16px
+$spacing-lg: 1.5rem;    // 24px
+$spacing-xl: 2rem;      // 32px
+$spacing-2xl: 3rem;     // 48px
+
+// Border Radius
+// -----------------------------------------------------------------------------
+$radius-sm: 0.5rem;     // 8px
+$radius-md: 1rem;       // 16px
+$radius-lg: 1.5rem;     // 24px
+$radius-xl: 2rem;       // 32px
+$radius-full: 9999px;
+$radius-category: 0.75rem; // 12px
+
+// Shadows
+// -----------------------------------------------------------------------------
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+$shadow-category: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+// Component Sizes
+// -----------------------------------------------------------------------------
+$size-category-icon: 2rem;      // 32px
+$size-dish-image: 4rem;         // 64px
+$size-dish-image-large: 6rem;   // 96px
+$size-dish-slider: 20rem;       // 320px
+$size-button-sm: 2rem;          // 32px
+$size-button-md: 2.5rem;        // 40px
+$size-slider-dot: 0.5rem;       // 8px
+$size-slider-dot-active: 0.75rem; // 12px
+
+// Breakpoints
+// -----------------------------------------------------------------------------
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Z-Index Scale
+// -----------------------------------------------------------------------------
+$z-index-dropdown: 10;
+$z-index-sticky: 20;
+$z-index-fixed: 30;
+$z-index-modal-backdrop: 40;
+$z-index-modal: 50;
+$z-index-popover: 60;
+$z-index-tooltip: 70;
+
+// Transition Durations
+// -----------------------------------------------------------------------------
+$transition-fast: 0.15s;
+$transition-normal: 0.2s;
+$transition-slow: 0.3s;
+
+// Transition Easings
+// -----------------------------------------------------------------------------
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-out: cubic-bezier(0, 0, 0.2, 1);
+$ease-in: cubic-bezier(0.4, 0, 1, 1);

@@ -1,0 +1,271 @@
+<template>
+  <section class="w-full">
+    <!-- Section Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center space-x-3">
+        <FireIcon size="lg" :animated="true" />
+        <div>
+          <AppHeading level="h2" size="heading-xl" class="text-white">
+            For You
+          </AppHeading>
+          <AppText size="body-md" class="text-neutral-80">
+            Popular dishes you might like
+          </AppText>
+        </div>
+      </div>
+      
+      <!-- View All Button -->
+      <BaseButton
+        v-if="showViewAll"
+        variant="ghost"
+        @click="$emit('viewAll')"
+        class="text-primary-green hover:text-primary-green/80"
+      >
+        View All
+        <BaseIcon name="chevron-right" size="sm" class="ml-1" />
+      </BaseButton>
+    </div>
+    
+    <!-- Popular Items Grid -->
+    <MenuItemGrid
+      :items="popularItems"
+      :columns="gridColumns"
+      :loading="loading"
+      :show-header="false"
+      :show-popular-indicator="true"
+      :max-items="maxItems"
+      :show-view-all="false"
+      :empty-title="'No popular items'"
+      :empty-message="'Check back later for trending dishes'"
+      @item-click="handleItemClick"
+      @add-to-cart="handleAddToCart"
+      @toggle-favorite="handleToggleFavorite"
+    />
+    
+    <!-- Refresh Button -->
+    <div v-if="showRefresh && !loading" class="text-center mt-6">
+      <BaseButton
+        variant="ghost"
+        @click="refreshRecommendations"
+        class="text-neutral-80 hover:text-white"
+      >
+        <BaseIcon name="refresh" size="sm" class="mr-2" />
+        Refresh Recommendations
+      </BaseButton>
+    </div>
+    
+    <!-- Personalization Notice -->
+    <div v-if="showPersonalizationNotice" class="mt-6 p-4 bg-background-card/50 rounded-lg border border-border-subtle">
+      <div class="flex items-start space-x-3">
+        <BaseIcon name="info" size="sm" class="text-primary-orange mt-0.5 flex-shrink-0" />
+        <div>
+          <AppText size="body-sm" class="text-neutral-20 mb-1">
+            Personalized Recommendations
+          </AppText>
+          <AppText size="caption" class="text-neutral-80">
+            These suggestions are based on popular items and your preferences. 
+            <button 
+              @click="$emit('learnMore')"
+              class="text-primary-green hover:underline"
+            >
+              Learn more
+            </button>
+          </AppText>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, onMounted, onUnmounted } from 'vue'
+import type { MenuItem } from '~/types'
+import { useMenuStore } from '~/stores/menu'
+import { useUserStore } from '~/stores/user'
+
+interface Props {
+  items?: MenuItem[]
+  loading?: boolean
+  maxItems?: number
+  gridColumns?: 1 | 2 | 3 | 4 | 5 | 6 | 7
+  showViewAll?: boolean
+  showRefresh?: boolean
+  showPersonalizationNotice?: boolean
+  refreshInterval?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  maxItems: 8,
+  gridColumns: 4,
+  showViewAll: true,
+  showRefresh: false,
+  showPersonalizationNotice: false,
+  refreshInterval: 300000 // 5 minutes
+})
+
+const emit = defineEmits<{
+  itemClick: [item: MenuItem]
+  addToCart: [item: MenuItem]
+  toggleFavorite: [item: MenuItem]
+  viewAll: []
+  refresh: []
+  learnMore: []
+}>()
+
+// Stores
+const menuStore = useMenuStore()
+const userStore = useUserStore()
+
+// Local state
+const lastRefresh = ref(Date.now())
+
+// Computed properties
+const popularItems = computed(() => {
+  if (props.items) {
+    return props.items
+  }
+  
+  // Get popular items from store
+  let items = menuStore.popularItems
+  
+  // Apply user preferences if available
+  if (userStore.user?.preferences?.favoriteItems) {
+    const favoriteCategories = new Set(
+      userStore.user.preferences.favoriteItems
+        .map(id => menuStore.menuItems.find(item => item.id === id)?.categoryId)
+        .filter(Boolean)
+    )
+    
+    // Boost items from favorite categories
+    items = items.sort((a, b) => {
+      const aIsFavoriteCategory = favoriteCategories.has(a.categoryId)
+      const bIsFavoriteCategory = favoriteCategories.has(b.categoryId)
+      
+      if (aIsFavoriteCategory && !bIsFavoriteCategory) return -1
+      if (!aIsFavoriteCategory && bIsFavoriteCategory) return 1
+      return 0
+    })
+  }
+  
+  return items
+})
+
+const shouldShowRefresh = computed(() => {
+  if (!props.showRefresh) return false
+  
+  const timeSinceRefresh = Date.now() - lastRefresh.value
+  return timeSinceRefresh > props.refreshInterval
+})
+
+// Methods
+const handleItemClick = (item: MenuItem) => {
+  emit('itemClick', item)
+  
+  // Track interaction for better recommendations
+  trackInteraction('view', item)
+}
+
+const handleAddToCart = (item: MenuItem) => {
+  emit('addToCart', item)
+  
+  // Track interaction for better recommendations
+  trackInteraction('add_to_cart', item)
+}
+
+const handleToggleFavorite = (item: MenuItem) => {
+  emit('toggleFavorite', item)
+  
+  // Track interaction for better recommendations
+  trackInteraction('favorite', item)
+}
+
+const refreshRecommendations = () => {
+  lastRefresh.value = Date.now()
+  emit('refresh')
+  
+  // Add haptic feedback
+  if ('vibrate' in navigator) {
+    navigator.vibrate(30)
+  }
+}
+
+const trackInteraction = (action: string, item: MenuItem) => {
+  // This would typically send analytics data to improve recommendations
+  console.log(`Tracked ${action} for item:`, item.id)
+  
+  // Could integrate with analytics service here
+  // analytics.track('popular_item_interaction', {
+  //   action,
+  //   itemId: item.id,
+  //   categoryId: item.categoryId,
+  //   timestamp: Date.now()
+  // })
+}
+
+// Auto-refresh functionality
+let refreshTimer: NodeJS.Timeout | null = null
+
+onMounted(() => {
+  if (props.refreshInterval > 0) {
+    refreshTimer = setInterval(() => {
+      if (shouldShowRefresh.value) {
+        refreshRecommendations()
+      }
+    }, props.refreshInterval)
+  }
+})
+
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+  }
+})
+</script>
+
+<style scoped>
+/* Section animations */
+section {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header fire icon animation */
+.flex.items-center.space-x-3 > :first-child {
+  animation: fireGlow 3s ease-in-out infinite;
+}
+
+@keyframes fireGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px rgba(254, 165, 41, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(254, 165, 41, 0.6));
+  }
+}
+
+/* Personalization notice */
+.bg-background-card\/50 {
+  backdrop-filter: blur(8px);
+}
+
+/* Smooth transitions */
+button {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus styles */
+button:focus-visible {
+  outline: 2px solid var(--color-primary-green);
+  outline-offset: 2px;
+}
+</style>

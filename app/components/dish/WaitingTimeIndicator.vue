@@ -1,0 +1,89 @@
+<template>
+  <div :class="containerClasses">
+    <!-- Clock Icon -->
+    <BaseIcon name="clock" :size="iconSize" class="text-neutral-20" />
+    
+    <!-- Time Text -->
+    <AppText :size="textSize" class="text-neutral-20">
+      {{ timeText }}
+    </AppText>
+
+    <!-- Status Indicator -->
+    <div 
+      v-if="showStatus"
+      :class="[
+        'w-2 h-2 rounded-full',
+        statusColor
+      ]"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+
+interface Props {
+  time: number // in minutes
+  size?: 'sm' | 'md' | 'lg'
+  showStatus?: boolean
+  status?: 'fast' | 'normal' | 'slow'
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  size: 'md',
+  showStatus: true,
+  status: 'normal'
+})
+
+const containerClasses = computed(() => [
+  'flex items-center justify-center space-x-2',
+  {
+    'text-sm': props.size === 'sm',
+    'text-base': props.size === 'md',
+    'text-lg': props.size === 'lg'
+  }
+])
+
+const iconSize = computed(() => {
+  switch (props.size) {
+    case 'sm': return 'xs'
+    case 'lg': return 'md'
+    default: return 'sm'
+  }
+})
+
+const textSize = computed(() => {
+  switch (props.size) {
+    case 'sm': return 'body-sm'
+    case 'lg': return 'body-lg'
+    default: return 'body-md'
+  }
+})
+
+const timeText = computed(() => {
+  if (props.time < 60) {
+    return `Ready in ${props.time} min`
+  } else {
+    const hours = Math.floor(props.time / 60)
+    const minutes = props.time % 60
+    return minutes > 0 
+      ? `Ready in ${hours}h ${minutes}min`
+      : `Ready in ${hours}h`
+  }
+})
+
+const statusColor = computed(() => {
+  switch (props.status) {
+    case 'fast': return 'bg-primary-green'
+    case 'slow': return 'bg-primary-orange'
+    default: return 'bg-neutral-20'
+  }
+})
+
+// Determine status based on time
+const computedStatus = computed(() => {
+  if (props.time <= 15) return 'fast'
+  if (props.time >= 45) return 'slow'
+  return 'normal'
+})
+</script>

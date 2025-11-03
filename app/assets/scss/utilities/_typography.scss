@@ -1,0 +1,296 @@
+// =============================================================================
+// Typography Utilities
+// =============================================================================
+
+// Font Size Utilities
+// -----------------------------------------------------------------------------
+.u-text-display-lg {
+  font-size: $font-size-display-lg;
+}
+
+.u-text-display-md {
+  font-size: $font-size-display-md;
+}
+
+.u-text-display-sm {
+  font-size: $font-size-display-sm;
+}
+
+.u-text-heading-xl {
+  font-size: $font-size-heading-xl;
+}
+
+.u-text-heading-lg {
+  font-size: $font-size-heading-lg;
+}
+
+.u-text-heading-md {
+  font-size: $font-size-heading-md;
+}
+
+.u-text-heading-sm {
+  font-size: $font-size-heading-sm;
+}
+
+.u-text-body-lg {
+  font-size: $font-size-body-lg;
+}
+
+.u-text-body-md {
+  font-size: $font-size-body-md;
+}
+
+.u-text-body-sm {
+  font-size: $font-size-body-sm;
+}
+
+.u-text-caption {
+  font-size: $font-size-caption;
+}
+
+.u-text-category {
+  font-size: $font-size-category;
+}
+
+// Font Weight Utilities
+// -----------------------------------------------------------------------------
+.u-font-normal {
+  font-weight: $font-weight-normal;
+}
+
+.u-font-medium {
+  font-weight: $font-weight-medium;
+}
+
+.u-font-semibold {
+  font-weight: $font-weight-semibold;
+}
+
+.u-font-bold {
+  font-weight: $font-weight-bold;
+}
+
+// Text Alignment Utilities
+// -----------------------------------------------------------------------------
+.u-text-left {
+  text-align: left;
+}
+
+.u-text-center {
+  text-align: center;
+}
+
+.u-text-right {
+  text-align: right;
+}
+
+.u-text-justify {
+  text-align: justify;
+}
+
+// Line Height Utilities
+// -----------------------------------------------------------------------------
+.u-leading-tight {
+  line-height: $line-height-tight;
+}
+
+.u-leading-snug {
+  line-height: $line-height-snug;
+}
+
+.u-leading-normal {
+  line-height: $line-height-normal;
+}
+
+.u-leading-relaxed {
+  line-height: $line-height-relaxed;
+}
+
+// Text Transform Utilities
+// -----------------------------------------------------------------------------
+.u-uppercase {
+  text-transform: uppercase;
+}
+
+.u-lowercase {
+  text-transform: lowercase;
+}
+
+.u-capitalize {
+  text-transform: capitalize;
+}
+
+.u-normal-case {
+  text-transform: none;
+}
+
+// Text Decoration Utilities
+// -----------------------------------------------------------------------------
+.u-underline {
+  text-decoration: underline;
+}
+
+.u-line-through {
+  text-decoration: line-through;
+}
+
+.u-no-underline {
+  text-decoration: none;
+}
+
+// Text Overflow Utilities
+// -----------------------------------------------------------------------------
+.u-truncate {
+  @include truncate;
+}
+
+.u-text-ellipsis {
+  text-overflow: ellipsis;
+}
+
+.u-text-clip {
+  text-overflow: clip;
+}
+
+// Line Clamp Utilities
+// -----------------------------------------------------------------------------
+.u-line-clamp-1 {
+  @include line-clamp(1);
+}
+
+.u-line-clamp-2 {
+  @include line-clamp(2);
+}
+
+.u-line-clamp-3 {
+  @include line-clamp(3);
+}
+
+.u-line-clamp-4 {
+  @include line-clamp(4);
+}
+
+.u-line-clamp-5 {
+  @include line-clamp(5);
+}
+
+.u-line-clamp-6 {
+  @include line-clamp(6);
+}
+
+// White Space Utilities
+// -----------------------------------------------------------------------------
+.u-whitespace-normal {
+  white-space: normal;
+}
+
+.u-whitespace-nowrap {
+  white-space: nowrap;
+}
+
+.u-whitespace-pre {
+  white-space: pre;
+}
+
+.u-whitespace-pre-line {
+  white-space: pre-line;
+}
+
+.u-whitespace-pre-wrap {
+  white-space: pre-wrap;
+}
+
+// Word Break Utilities
+// -----------------------------------------------------------------------------
+.u-break-normal {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.u-break-words {
+  overflow-wrap: break-word;
+}
+
+.u-break-all {
+  word-break: break-all;
+}
+
+// Letter Spacing Utilities
+// -----------------------------------------------------------------------------
+.u-tracking-tighter {
+  letter-spacing: -0.05em;
+}
+
+.u-tracking-tight {
+  letter-spacing: -0.025em;
+}
+
+.u-tracking-normal {
+  letter-spacing: 0em;
+}
+
+.u-tracking-wide {
+  letter-spacing: 0.025em;
+}
+
+.u-tracking-wider {
+  letter-spacing: 0.05em;
+}
+
+.u-tracking-widest {
+  letter-spacing: 0.1em;
+}
+
+// Responsive Typography Utilities
+// -----------------------------------------------------------------------------
+@include tablet-up {
+  .tablet\:u-text-display-lg {
+    font-size: $font-size-display-lg;
+  }
+  
+  .tablet\:u-text-display-md {
+    font-size: $font-size-display-md;
+  }
+  
+  .tablet\:u-text-heading-xl {
+    font-size: $font-size-heading-xl;
+  }
+  
+  .tablet\:u-text-heading-lg {
+    font-size: $font-size-heading-lg;
+  }
+  
+  .tablet\:u-text-center {
+    text-align: center;
+  }
+  
+  .tablet\:u-text-left {
+    text-align: left;
+  }
+}
+
+@include desktop-up {
+  .desktop\:u-text-display-lg {
+    font-size: $font-size-display-lg;
+  }
+  
+  .desktop\:u-text-display-md {
+    font-size: $font-size-display-md;
+  }
+  
+  .desktop\:u-text-heading-xl {
+    font-size: $font-size-heading-xl;
+  }
+  
+  .desktop\:u-text-heading-lg {
+    font-size: $font-size-heading-lg;
+  }
+  
+  .desktop\:u-text-center {
+    text-align: center;
+  }
+  
+  .desktop\:u-text-left {
+    text-align: left;
+  }
+}

@@ -1,0 +1,103 @@
+// Icon BEM blocks
+// Base icon class
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Size modifiers
+.icon--xs {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.icon--sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon--md {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.icon--lg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon--xl {
+  width: 2rem;
+  height: 2rem;
+}
+
+.icon--category-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+// Color modifiers
+.icon--current {
+  color: currentColor;
+}
+
+.icon--primary {
+  color: $color-neutral-80;
+  
+  .dark & {
+    color: white;
+  }
+}
+
+.icon--secondary {
+  color: #6b7280;
+  
+  .dark & {
+    color: #d1d5db;
+  }
+}
+
+.icon--muted {
+  color: #9ca3af;
+  
+  .dark & {
+    color: #6b7280;
+  }
+}
+
+.icon--white {
+  color: white;
+}
+
+.icon--red {
+  color: $color-primary-red;
+}
+
+.icon--green {
+  color: $color-primary-green;
+}
+
+.icon--orange {
+  color: $color-primary-orange;
+}
+
+// Icon elements
+.icon__emoji {
+  font-size: inherit;
+  
+  &--fire {
+    color: $color-primary-orange;
+  }
+}
+
+.icon__svg {
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.icon__fallback {
+  color: #9ca3af;
+  font-weight: $font-weight-bold;
+}

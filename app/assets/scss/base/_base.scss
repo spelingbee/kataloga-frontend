@@ -1,0 +1,191 @@
+// =============================================================================
+// Base Element Styles
+// =============================================================================
+
+html {
+  font-family: $font-family-primary;
+}
+
+body {
+  background-color: $color-background-dark;
+  color: $color-neutral-20;
+  font-size: $font-size-body-md;
+  font-weight: $font-weight-normal;
+  line-height: $line-height-relaxed;
+}
+
+// Headings
+// -----------------------------------------------------------------------------
+h1 {
+  @extend .heading-xl;
+}
+
+h2 {
+  @extend .heading-lg;
+}
+
+h3 {
+  @extend .heading-md;
+}
+
+h4 {
+  @extend .heading-sm;
+}
+
+h5 {
+  @extend .body-lg;
+  font-weight: $font-weight-medium;
+}
+
+h6 {
+  @extend .body-md;
+  font-weight: $font-weight-medium;
+}
+
+// Paragraphs
+// -----------------------------------------------------------------------------
+p {
+  @extend .body-md;
+  margin-bottom: $spacing-md;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Links
+// -----------------------------------------------------------------------------
+a {
+  color: $color-primary-green;
+  transition: color $transition-normal $ease-in-out;
+  
+  &:hover {
+    color: lighten-color($color-primary-green, 10%);
+  }
+  
+  &:focus-visible {
+    outline: 2px solid $color-primary-green;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+// Images
+// -----------------------------------------------------------------------------
+img {
+  height: auto;
+  max-width: 100%;
+}
+
+// Form Elements
+// -----------------------------------------------------------------------------
+input,
+textarea,
+select {
+  background-color: $color-background-card;
+  border: 1px solid $color-border-subtle;
+  border-radius: $radius-sm;
+  color: $color-neutral-20;
+  padding: $spacing-sm $spacing-md;
+  transition: border-color $transition-normal $ease-in-out;
+  
+  &:focus {
+    border-color: $color-primary-green;
+    outline: none;
+  }
+  
+  &::placeholder {
+    color: rgba($color-neutral-20, 0.6);
+  }
+}
+
+// Buttons
+// -----------------------------------------------------------------------------
+button {
+  cursor: pointer;
+  font-family: inherit;
+  transition: all $transition-normal $ease-in-out;
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+// Code
+// -----------------------------------------------------------------------------
+code {
+  background-color: rgba($color-neutral-20, 0.1);
+  border-radius: $radius-sm;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.875em;
+  padding: 0.125rem 0.25rem;
+}
+
+pre {
+  background-color: $color-background-card;
+  border-radius: $radius-md;
+  overflow-x: auto;
+  padding: $spacing-md;
+  
+  code {
+    background: none;
+    padding: 0;
+  }
+}
+
+// Horizontal Rule
+// -----------------------------------------------------------------------------
+hr {
+  border: none;
+  border-top: 1px solid $color-border-subtle;
+  margin: $spacing-xl 0;
+}
+
+// Tables
+// -----------------------------------------------------------------------------
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border-bottom: 1px solid $color-border-subtle;
+  padding: $spacing-sm $spacing-md;
+  text-align: left;
+}
+
+th {
+  background-color: $color-background-card;
+  font-weight: $font-weight-medium;
+}
+
+// Lists
+// -----------------------------------------------------------------------------
+ul,
+ol {
+  margin-bottom: $spacing-md;
+  padding-left: $spacing-lg;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+li {
+  margin-bottom: $spacing-xs;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Blockquotes
+// -----------------------------------------------------------------------------
+blockquote {
+  border-left: 4px solid $color-primary-green;
+  font-style: italic;
+  margin: $spacing-lg 0;
+  padding-left: $spacing-lg;
+}

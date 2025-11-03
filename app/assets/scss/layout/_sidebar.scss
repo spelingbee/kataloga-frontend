@@ -1,0 +1,119 @@
+// Sidebar Layout Styles
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: $color-background-sidebar;
+
+  &__header {
+    padding: $spacing-md;
+    border-bottom: 1px solid $color-border-subtle;
+  }
+
+  &__nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-md;
+
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
+
+  &__nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &__footer {
+    padding: $spacing-md;
+    border-top: 1px solid $color-border-subtle;
+  }
+
+  &__footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: $font-size-caption;
+    color: $color-neutral-80;
+  }
+}
+
+// Category item styles
+.category-item {
+  display: block;
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  text-decoration: none;
+  color: $color-neutral-20;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: $color-primary-green;
+  }
+
+  &--active {
+    background-color: $color-primary-green;
+    color: white;
+
+    &:hover {
+      background-color: darken-color($color-primary-green, 10%);
+    }
+  }
+
+  &__icon {
+    margin-right: $spacing-sm;
+  }
+
+  &__name {
+    font-weight: $font-weight-medium;
+  }
+
+  &__count {
+    font-size: $font-size-caption;
+    opacity: 0.8;
+    margin-left: auto;
+  }
+}
+
+// Responsive sidebar behavior
+.layout-sidebar {
+  display: none;
+  width: 16rem;
+  flex-shrink: 0;
+
+  @include breakpoint(lg) {
+    display: flex;
+  }
+
+  @include breakpoint(xl) {
+    width: 18rem;
+  }
+
+  &--hidden {
+    @include breakpoint(lg) {
+      display: none;
+    }
+  }
+}

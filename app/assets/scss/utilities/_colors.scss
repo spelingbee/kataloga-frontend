@@ -1,0 +1,169 @@
+// =============================================================================
+// Color Utilities
+// =============================================================================
+
+// Background Color Utilities
+// -----------------------------------------------------------------------------
+.u-bg-primary {
+  background-color: $color-primary-green;
+}
+
+.u-bg-primary-red {
+  background-color: $color-primary-red;
+}
+
+.u-bg-primary-orange {
+  background-color: $color-primary-orange;
+}
+
+.u-bg-background-dark {
+  background-color: $color-background-dark;
+}
+
+.u-bg-background-card {
+  background-color: $color-background-card;
+}
+
+.u-bg-background-sidebar {
+  background-color: $color-background-sidebar;
+}
+
+.u-bg-transparent {
+  background-color: transparent;
+}
+
+.u-bg-white {
+  background-color: white;
+}
+
+.u-bg-black {
+  background-color: black;
+}
+
+// Category Background Colors
+.u-bg-category-all {
+  background-color: $color-category-all;
+}
+
+.u-bg-category-salad {
+  background-color: $color-category-salad;
+}
+
+.u-bg-category-main {
+  background-color: $color-category-main;
+}
+
+.u-bg-category-meat {
+  background-color: $color-category-meat;
+}
+
+.u-bg-category-fastfood {
+  background-color: $color-category-fastfood;
+}
+
+.u-bg-category-dessert {
+  background-color: $color-category-dessert;
+}
+
+.u-bg-category-drinks {
+  background-color: $color-category-drinks;
+}
+
+// Text Color Utilities
+// -----------------------------------------------------------------------------
+.u-text-primary {
+  color: $color-primary-green;
+}
+
+.u-text-primary-red {
+  color: $color-primary-red;
+}
+
+.u-text-primary-orange {
+  color: $color-primary-orange;
+}
+
+.u-text-white {
+  color: white;
+}
+
+.u-text-black {
+  color: black;
+}
+
+.u-text-neutral-20 {
+  color: $color-neutral-20;
+}
+
+.u-text-neutral-80 {
+  color: $color-neutral-80;
+}
+
+// Category Text Colors
+.u-text-category-all {
+  color: $color-category-all;
+}
+
+.u-text-category-salad {
+  color: $color-category-salad;
+}
+
+.u-text-category-main {
+  color: $color-category-main;
+}
+
+.u-text-category-meat {
+  color: $color-category-meat;
+}
+
+.u-text-category-fastfood {
+  color: $color-category-fastfood;
+}
+
+.u-text-category-dessert {
+  color: $color-category-dessert;
+}
+
+.u-text-category-drinks {
+  color: $color-category-drinks;
+}
+
+// Border Color Utilities
+// -----------------------------------------------------------------------------
+.u-border-primary {
+  border-color: $color-primary-green;
+}
+
+.u-border-subtle {
+  border-color: $color-border-subtle;
+}
+
+.u-border-white {
+  border-color: white;
+}
+
+.u-border-transparent {
+  border-color: transparent;
+}
+
+// Opacity Utilities
+// -----------------------------------------------------------------------------
+.u-opacity-0 {
+  opacity: 0;
+}
+
+.u-opacity-25 {
+  opacity: 0.25;
+}
+
+.u-opacity-50 {
+  opacity: 0.5;
+}
+
+.u-opacity-75 {
+  opacity: 0.75;
+}
+
+.u-opacity-100 {
+  opacity: 1;
+}

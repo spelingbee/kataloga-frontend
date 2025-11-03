@@ -1,0 +1,40 @@
+// =============================================================================
+// Dark Theme Variables
+// =============================================================================
+
+// Dark theme is the default theme, but we can override specific variables here
+// if needed for theme switching functionality
+
+// Dark Theme Color Overrides
+// -----------------------------------------------------------------------------
+$dark-color-background-primary: $color-background-dark;
+$dark-color-background-secondary: $color-background-card;
+$dark-color-background-tertiary: $color-background-sidebar;
+
+$dark-color-text-primary: $color-neutral-20;
+$dark-color-text-secondary: rgba($color-neutral-20, 0.8);
+$dark-color-text-tertiary: rgba($color-neutral-20, 0.6);
+
+$dark-color-border-primary: $color-border-subtle;
+$dark-color-border-secondary: rgba($color-border-subtle, 0.5);
+
+// Dark Theme Component Overrides
+// -----------------------------------------------------------------------------
+$dark-card-background: $color-background-card;
+$dark-card-border: $color-border-subtle;
+$dark-card-shadow: $shadow-category;
+
+$dark-button-primary-bg: $color-primary-green;
+$dark-button-primary-text: white;
+$dark-button-secondary-bg: $color-background-card;
+$dark-button-secondary-text: $color-neutral-20;
+
+// Dark Theme Category Colors (same as main theme)
+// -----------------------------------------------------------------------------
+$dark-category-all: $color-category-all;
+$dark-category-salad: $color-category-salad;
+$dark-category-main: $color-category-main;
+$dark-category-meat: $color-category-meat;
+$dark-category-fastfood: $color-category-fastfood;
+$dark-category-dessert: $color-category-dessert;
+$dark-category-drinks: $color-category-drinks;
