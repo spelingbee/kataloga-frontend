@@ -26,11 +26,24 @@
 
       <!-- Logo/Brand -->
       <NuxtLink to="/" class="app-header__logo">
-        <BaseIcon name="logo" size="lg" class="u-text-primary-red" />
+        <img 
+          v-if="tenantBranding?.logo" 
+          :src="tenantBranding.logo" 
+          :alt="tenantBranding.appName || appName"
+          class="app-header__logo-image"
+        />
+        <BaseIcon v-else name="logo" size="lg" class="u-text-primary-red" />
         <AppHeading level="h1" size="heading-lg" class="app-header__brand">
-          {{ appName }}
+          {{ tenantBranding?.appName || appName }}
         </AppHeading>
       </NuxtLink>
+      
+      <!-- Tenant Indicator (multi-tenant mode only) -->
+      <div v-if="isMultiTenant && currentTenant" class="app-header__tenant-indicator">
+        <BaseBadge variant="secondary" size="sm">
+          {{ currentTenant.name }}
+        </BaseBadge>
+      </div>
     </div>
 
     <!-- Center section - Search (hidden on mobile) -->
@@ -158,6 +171,8 @@
 import { ref, computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
+import { useTenantStore } from '~/stores/tenant'
+import { useTenant } from '~/composables/useTenant'
 
 // Emits
 defineEmits<{
@@ -168,8 +183,12 @@ defineEmits<{
 // Stores
 const userStore = useUserStore()
 const cartStore = useCartStore()
+const tenantStore = useTenantStore()
 const notificationStore = useNotificationStore()
 const { $router } = useNuxtApp()
+
+// Tenant composable
+const { currentTenant, isMultiTenant, tenantBranding } = useTenant()
 
 // Reactive state
 const showUserMenu = ref(false)

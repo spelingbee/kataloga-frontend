@@ -58,6 +58,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useTenant } from '~/composables/useTenant'
 
 // Props
 interface Props {
@@ -78,18 +79,33 @@ const props = withDefaults(defineProps<Props>(), {
   minOrderAmount: 0
 })
 
+// Tenant context
+const { tenantSettings } = useTenant()
+
 // Computed properties
 const calculatedSubtotal = computed(() => {
   return props.subtotal || (props.total - props.deliveryFee - props.serviceFee + props.discount)
 })
 
+const currency = computed(() => tenantSettings.value?.currency || 'USD')
+const locale = computed(() => {
+  // Map currency to locale
+  const currencyLocaleMap: Record<string, string> = {
+    USD: 'en-US',
+    EUR: 'de-DE',
+    GBP: 'en-GB',
+    RUB: 'ru-RU'
+  }
+  return currencyLocaleMap[currency.value] || 'en-US'
+})
+
 // Helper methods
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('ru-RU', {
+  return new Intl.NumberFormat(locale.value, {
     style: 'currency',
-    currency: 'RUB',
+    currency: currency.value,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    maximumFractionDigits: 2
   }).format(price)
 }
 </script>

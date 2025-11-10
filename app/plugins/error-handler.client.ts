@@ -42,8 +42,12 @@ export default defineNuxtPlugin((nuxtApp) => {
     try {
       const response = await originalFetch(...args)
       
-      // Log failed HTTP requests
-      if (!response.ok) {
+      // Skip error reporting for error logging endpoint to prevent loops
+      const url = typeof args[0] === 'string' ? args[0] : (args[0] instanceof Request ? args[0].url : String(args[0]))
+      const isErrorEndpoint = url.includes('/api/errors')
+      
+      // Log failed HTTP requests (except for error reporting endpoint)
+      if (!response.ok && !isErrorEndpoint) {
         const error = new Error(`HTTP ${response.status}: ${response.statusText}`)
         reportError(error, {
           type: 'http-error',
@@ -55,11 +59,17 @@ export default defineNuxtPlugin((nuxtApp) => {
       
       return response
     } catch (error) {
-      // Log network errors
-      reportError(error, {
-        type: 'network-error',
-        url: args[0],
-      })
+      // Skip error reporting for error logging endpoint to prevent loops
+      const url = typeof args[0] === 'string' ? args[0] : (args[0] instanceof Request ? args[0].url : String(args[0]))
+      const isErrorEndpoint = url.includes('/api/errors')
+      
+      // Log network errors (except for error reporting endpoint)
+      if (!isErrorEndpoint) {
+        reportError(error, {
+          type: 'network-error',
+          url: args[0],
+        })
+      }
       throw error
     }
   }

@@ -146,7 +146,7 @@
               Clear Search
             </BaseButton>
             <NuxtLink to="/menu/categories">
-              <BaseButton variant="ghost">
+              <BaseButton variant="secondary">
                 Browse Other Categories
               </BaseButton>
             </NuxtLink>

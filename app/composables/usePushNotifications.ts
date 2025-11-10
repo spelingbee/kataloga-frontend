@@ -3,6 +3,8 @@ export function usePushNotifications() {
   const isSubscribed = ref(false)
   const subscription = ref<PushSubscription | null>(null)
   const permission = ref<NotificationPermission>('default')
+  const tenantStore = import.meta.client ? useTenantStore() : null
+  const currentTenantId = computed(() => tenantStore?.tenantId || null)
 
   // Check if push notifications are supported
   const checkSupport = () => {
@@ -200,10 +202,48 @@ export function usePushNotifications() {
     return outputArray
   }
 
+  // Update subscription when tenant changes
+  const updateSubscriptionForTenant = async (): Promise<boolean> => {
+    if (!isSubscribed.value || !subscription.value) {
+      return false
+    }
+
+    try {
+      const { useNotificationService } = await import('~/services/notification.service')
+      const notificationService = useNotificationService()
+      
+      // Re-register subscription with new tenant context
+      const success = await notificationService.updatePushSubscriptionForTenant()
+      
+      if (success) {
+        console.log('Push subscription updated for tenant:', currentTenantId.value)
+      }
+      
+      return success
+    } catch (error) {
+      console.error('Failed to update subscription for tenant:', error)
+      return false
+    }
+  }
+
   // Initialize on mount
   onMounted(() => {
     checkSupport()
     checkSubscription()
+
+    // Watch for tenant changes and update subscription
+    if (tenantStore) {
+      watch(
+        () => tenantStore.tenantId,
+        async (newTenantId, oldTenantId) => {
+          // Only update if tenant actually changed and we have a subscription
+          if (newTenantId && oldTenantId && newTenantId !== oldTenantId && isSubscribed.value) {
+            console.log('Tenant changed, updating push notification subscription...')
+            await updateSubscriptionForTenant()
+          }
+        }
+      )
+    }
   })
 
   return {
@@ -211,12 +251,14 @@ export function usePushNotifications() {
     isSubscribed: readonly(isSubscribed),
     permission: readonly(permission),
     subscription: readonly(subscription),
+    currentTenantId: readonly(currentTenantId),
     requestPermission,
     subscribe,
     unsubscribe,
     checkSubscription,
     sendTestNotification,
     updatePreferences,
-    getPreferences
+    getPreferences,
+    updateSubscriptionForTenant
   }
 }

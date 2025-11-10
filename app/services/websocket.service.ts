@@ -27,6 +27,8 @@ export class WebSocketService {
   private isConnecting = false
   private listeners: Map<string, Set<(data: any) => void>> = new Map()
   private authStore: any = null
+  private tenantStore: any = null
+  private currentTenantSlug: string | null = null
 
   constructor() {
     // Initialize listeners map
@@ -39,6 +41,25 @@ export class WebSocketService {
 
   setAuthStore(authStore: any) {
     this.authStore = authStore
+  }
+
+  setTenantStore(tenantStore: any) {
+    this.tenantStore = tenantStore
+    this.currentTenantSlug = tenantStore?.tenantSlug || null
+  }
+
+  setTenant(tenantSlug: string) {
+    const previousTenant = this.currentTenantSlug
+    this.currentTenantSlug = tenantSlug
+    
+    // Reconnect with new tenant context if already connected
+    if (this.ws?.readyState === WebSocket.OPEN && previousTenant !== tenantSlug) {
+      console.log('Tenant changed, reconnecting WebSocket with new tenant context...')
+      this.disconnect()
+      this.connect().catch(error => {
+        console.error('Failed to reconnect after tenant change:', error)
+      })
+    }
   }
 
   connect(): Promise<void> {
@@ -65,13 +86,19 @@ export class WebSocketService {
 
       this.isConnecting = true
       const config = useRuntimeConfig()
-      const wsUrl = config.public.apiBaseUrl.replace(/^http/, 'ws') + '/ws'
+      let wsUrl = config.public.apiBaseUrl.replace(/^http/, 'ws') + '/ws'
+      
+      // Add tenant slug as query parameter if available
+      if (this.currentTenantSlug) {
+        const separator = wsUrl.includes('?') ? '&' : '?'
+        wsUrl += `${separator}tenant=${encodeURIComponent(this.currentTenantSlug)}`
+      }
 
       try {
         this.ws = new WebSocket(wsUrl)
 
         this.ws.onopen = () => {
-          console.log('WebSocket connected')
+          console.log('WebSocket connected', this.currentTenantSlug ? `(tenant: ${this.currentTenantSlug})` : '')
           this.isConnecting = false
           this.reconnectAttempts = 0
           
@@ -81,7 +108,8 @@ export class WebSocketService {
               type: 'auth',
               data: { 
                 token: this.authStore.accessToken,
-                tenantId: this.authStore.user?.tenantId 
+                tenantId: this.authStore.user?.tenantId,
+                tenantSlug: this.currentTenantSlug
               },
               timestamp: new Date().toISOString(),
             })
@@ -90,7 +118,10 @@ export class WebSocketService {
           // Notify connection status listeners
           this.handleMessage({
             type: 'connection_status',
-            data: { status: 'connected' },
+            data: { 
+              status: 'connected',
+              tenantSlug: this.currentTenantSlug
+            },
             timestamp: new Date().toISOString()
           })
           
@@ -150,6 +181,12 @@ export class WebSocketService {
   }
 
   private handleMessage(message: WebSocketMessage) {
+    // Filter messages by tenant if tenant context is available
+    if (this.shouldFilterMessage(message)) {
+      console.debug('Message filtered out due to tenant mismatch:', message)
+      return
+    }
+
     const listeners = this.listeners.get(message.type)
     if (listeners) {
       listeners.forEach(callback => {
@@ -160,6 +197,23 @@ export class WebSocketService {
         }
       })
     }
+  }
+
+  private shouldFilterMessage(message: WebSocketMessage): boolean {
+    // Don't filter connection status or auth messages
+    if (message.type === 'connection_status' || message.type === 'auth') {
+      return false
+    }
+
+    // If we have a tenant context and message has tenantId, verify they match
+    if (this.currentTenantSlug && message.tenantId) {
+      const currentTenantId = this.tenantStore?.tenantId
+      if (currentTenantId && message.tenantId !== currentTenantId) {
+        return true // Filter out messages from other tenants
+      }
+    }
+
+    return false
   }
 
   private send(message: WebSocketMessage) {
@@ -208,17 +262,29 @@ export class WebSocketService {
   trackOrder(orderId: string) {
     this.send({
       type: 'track_order',
-      data: { orderId },
+      data: { 
+        orderId,
+        tenantSlug: this.currentTenantSlug
+      },
       timestamp: new Date().toISOString(),
+      tenantId: this.tenantStore?.tenantId,
     })
   }
 
   stopTrackingOrder(orderId: string) {
     this.send({
       type: 'stop_tracking',
-      data: { orderId },
+      data: { 
+        orderId,
+        tenantSlug: this.currentTenantSlug
+      },
       timestamp: new Date().toISOString(),
+      tenantId: this.tenantStore?.tenantId,
     })
+  }
+
+  getCurrentTenant(): string | null {
+    return this.currentTenantSlug
   }
 
   disconnect() {

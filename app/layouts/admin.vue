@@ -6,7 +6,20 @@
         <div class="admin-header__content">
           <!-- Logo and Title -->
           <div class="admin-header__brand">
-            <h1 class="admin-header__title">Admin Panel</h1>
+            <img 
+              v-if="tenantBranding?.logo" 
+              :src="tenantBranding.logo" 
+              :alt="tenantBranding.appName || 'Admin Panel'"
+              class="admin-header__logo"
+            />
+            <h1 class="admin-header__title">
+              {{ tenantBranding?.appName || 'Admin Panel' }}
+            </h1>
+            
+            <!-- Tenant Indicator (multi-tenant mode only) -->
+            <BaseBadge v-if="isMultiTenant && currentTenant" variant="primary" size="sm" class="admin-header__tenant-badge">
+              {{ currentTenant.name }}
+            </BaseBadge>
           </div>
 
           <!-- User Menu -->
@@ -140,12 +153,24 @@
         <!-- Back to Store Link -->
         <div class="admin-sidebar__footer">
           <NuxtLink
-            to="/"
+            :to="tenantAwareRoute('/')"
             class="admin-sidebar__back-link"
           >
             <BaseIcon name="arrow-left" class="admin-sidebar__nav-icon" />
             Back to Store
           </NuxtLink>
+          
+          <!-- Tenant Switcher (multi-tenant mode only) -->
+          <BaseButton
+            v-if="isMultiTenant"
+            variant="ghost"
+            size="sm"
+            @click="navigateToTenantSelector"
+            class="admin-sidebar__tenant-switcher"
+          >
+            <BaseIcon name="refresh" class="admin-sidebar__nav-icon" />
+            Switch Restaurant
+          </BaseButton>
         </div>
       </nav>
 
@@ -160,9 +185,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
+import { useTenant } from '~/composables/useTenant'
 
 // Store
 const authStore = useAuthStore()
+
+// Tenant composable
+const { currentTenant, isMultiTenant, tenantBranding } = useTenant()
 
 // Reactive state
 const showUserMenu = ref(false)
@@ -195,6 +224,18 @@ const isActiveRoute = (path: string) => {
     return route.path === '/admin'
   }
   return route.path.startsWith(path)
+}
+
+const tenantAwareRoute = (path: string) => {
+  const route = useRoute()
+  if (route.query.tenant) {
+    return `${path}?tenant=${route.query.tenant}`
+  }
+  return path
+}
+
+const navigateToTenantSelector = async () => {
+  await navigateTo('/select-restaurant')
 }
 
 const handleClickOutside = (event: Event) => {

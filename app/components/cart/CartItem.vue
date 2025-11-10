@@ -57,7 +57,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { CartItem } from '~/types'
+import { useTenant } from '~/composables/useTenant'
 
 // Props & Emits
 interface Props {
@@ -70,6 +72,42 @@ const emit = defineEmits<{
   'update-quantity': [itemId: string, quantity: number]
   remove: [itemId: string]
 }>()
+
+// Tenant context
+const { tenantSettings } = useTenant()
+
+// Computed
+const formattedPrice = computed(() => {
+  const currency = tenantSettings.value?.currency || 'USD'
+  const price = props.item.menuItem.price
+  
+  // Simple currency formatting
+  const currencySymbols: Record<string, string> = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    RUB: '₽'
+  }
+  
+  const symbol = currencySymbols[currency] || currency
+  return `${symbol}${price.toFixed(2)}`
+})
+
+const formattedSubtotal = computed(() => {
+  const currency = tenantSettings.value?.currency || 'USD'
+  const subtotal = props.item.subtotal
+  
+  // Simple currency formatting
+  const currencySymbols: Record<string, string> = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    RUB: '₽'
+  }
+  
+  const symbol = currencySymbols[currency] || currency
+  return `${symbol}${subtotal.toFixed(2)}`
+})
 
 // Methods
 const updateQuantity = (quantity: number) => {

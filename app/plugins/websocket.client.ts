@@ -1,6 +1,9 @@
-export default defineNuxtPlugin(async () => {
-  // Only run on client side
-  if (process.server) return
+export default defineNuxtPlugin({
+  name: 'websocket' as any,
+  dependsOn: ['tenant-resolver'] as any, // Ensure tenant is resolved before WebSocket connects
+  async setup() {
+    // Only run on client side
+    if (process.server) return
 
   const { useWebSocketService } = await import('~/services/websocket.service')
   const { useNotificationService } = await import('~/services/notification.service')
@@ -10,7 +13,17 @@ export default defineNuxtPlugin(async () => {
   
   // Initialize WebSocket connection when user is authenticated
   const { useAuthStore } = await import('~/stores/auth')
+  const { useTenantStore } = await import('~/stores/tenant')
   const authStore = useAuthStore()
+  const tenantStore = useTenantStore()
+  
+  // Set tenant store reference for WebSocket service
+  wsService.setTenantStore(tenantStore)
+  
+  // Set initial tenant if available
+  if (tenantStore.tenantSlug) {
+    wsService.setTenant(tenantStore.tenantSlug)
+  }
   
   if (authStore.isAuthenticated) {
     // Set auth store reference for WebSocket service
@@ -24,6 +37,14 @@ export default defineNuxtPlugin(async () => {
       console.error('Failed to connect to WebSocket:', error)
     }
   }
+
+  // Listen for tenant changes to update WebSocket context
+  watch(() => tenantStore.tenantSlug, (newTenantSlug) => {
+    if (newTenantSlug) {
+      wsService.setTenant(newTenantSlug)
+      console.log('WebSocket tenant context updated:', newTenantSlug)
+    }
+  })
 
   // Listen for auth state changes to connect/disconnect WebSocket
   watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
@@ -71,11 +92,12 @@ export default defineNuxtPlugin(async () => {
     })
   }
 
-  // Provide services globally
-  return {
-    provide: {
-      wsService,
-      notificationService
+    // Provide services globally
+    return {
+      provide: {
+        wsService,
+        notificationService
+      }
     }
   }
 })

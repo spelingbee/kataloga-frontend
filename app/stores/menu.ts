@@ -2,6 +2,17 @@ import { defineStore } from 'pinia'
 import { useMenuService } from '~/services/menu.service'
 import type { Category, MenuItem, MenuFilters } from '~/types'
 
+// Helper function to get tenant store (to avoid circular dependency)
+function getTenantSlug(): string {
+  try {
+    const { useTenantStore } = require('./tenant')
+    const tenantStore = useTenantStore()
+    return tenantStore.tenantSlug || ''
+  } catch {
+    return ''
+  }
+}
+
 interface MenuState {
   categories: Category[]
   menuItems: MenuItem[]
@@ -100,10 +111,16 @@ export const useMenuStore = defineStore('menu', {
 
         if (categoriesResponse.success && categoriesResponse.data) {
           this.categories = categoriesResponse.data
+          console.log('Categories loaded from API:', this.categories)
+        } else {
+          console.error('Failed to load categories:', categoriesResponse.message)
         }
 
         if (menuItemsResponse.success && menuItemsResponse.data) {
           this.menuItems = menuItemsResponse.data.items
+          console.log('Menu items loaded from API:', this.menuItems.length, 'items')
+        } else {
+          console.error('Failed to load menu items:', menuItemsResponse.message)
         }
 
         // Initialize favourites after menu items are loaded
@@ -189,9 +206,11 @@ export const useMenuStore = defineStore('menu', {
           this.favourites.push(item)
         }
 
-        // Persist to localStorage
+        // Persist to localStorage with tenant context
         if (import.meta.client) {
-          localStorage.setItem('favourites', JSON.stringify(this.favourites.map(item => item.id)))
+          const tenantSlug = getTenantSlug()
+          const storageKey = tenantSlug ? `favourites_${tenantSlug}` : 'favourites'
+          localStorage.setItem(storageKey, JSON.stringify(this.favourites.map(item => item.id)))
         }
       } catch (error) {
         console.error('Failed to toggle favourite:', error)
@@ -216,7 +235,12 @@ export const useMenuStore = defineStore('menu', {
     // Initialize favourites from localStorage
     initializeFavourites() {
       if (import.meta.client) {
-        const savedFavourites = localStorage.getItem('favourites')
+        // Get tenant context for tenant-specific storage
+        const tenantSlug = getTenantSlug()
+        
+        // Use tenant-specific key if tenant is set
+        const storageKey = tenantSlug ? `favourites_${tenantSlug}` : 'favourites'
+        const savedFavourites = localStorage.getItem(storageKey)
         if (savedFavourites) {
           const favouriteIds = JSON.parse(savedFavourites)
           this.favourites = this.menuItems.filter(item => favouriteIds.includes(item.id))
@@ -271,9 +295,11 @@ export const useMenuStore = defineStore('menu', {
         if (response.success && response.data) {
           this.favourites = response.data
           
-          // Persist to localStorage
+          // Persist to localStorage with tenant context
           if (import.meta.client) {
-            localStorage.setItem('favourites', JSON.stringify(this.favourites.map(item => item.id)))
+            const tenantSlug = getTenantSlug()
+            const storageKey = tenantSlug ? `favourites_${tenantSlug}` : 'favourites'
+            localStorage.setItem(storageKey, JSON.stringify(this.favourites.map(item => item.id)))
           }
         }
       } catch (error) {

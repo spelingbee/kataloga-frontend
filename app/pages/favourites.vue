@@ -1,14 +1,14 @@
 <template>
   <div class="min-h-screen bg-background-dark">
     <!-- Header Section -->
-    <div class="px-6 py-8">
-      <div class="flex items-center gap-3 mb-4">
-        <BaseIcon name="heart" size="lg" class="text-primary-red" />
-        <AppHeading level="h1" size="display-md" class="text-white">
+    <div class="favourites-header">
+      <div class="favourites-header__title-row">
+        <BaseIcon name="heart" size="md" class="favourites-header__icon" />
+        <AppHeading level="h1" size="display-md" class="favourites-header__title">
           Your Favourites
         </AppHeading>
       </div>
-      <AppText size="body-lg" class="text-neutral-20">
+      <AppText size="body-lg" class="favourites-header__subtitle">
         Your favorite dishes, ready to order again
       </AppText>
     </div>
@@ -221,7 +221,34 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+@import '~/assets/scss/abstracts/variables';
+
+.favourites-header {
+  margin-bottom: $spacing-2xl;
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    margin-bottom: $spacing-md;
+  }
+
+  &__icon {
+    color: $color-primary-red;
+    width: 32px;
+    height: 32px;
+  }
+
+  &__title {
+    color: $color-neutral-20;
+  }
+
+  &__subtitle {
+    color: $color-text-secondary;
+  }
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

@@ -1,51 +1,15 @@
 <template>
   <div class="layout-screen u-bg-background-dark u-text-neutral-20">
-    <!-- Three-column responsive layout -->
-    <div class="u-flex layout-screen--full u-overflow-hidden">
-      <!-- Left Sidebar - Categories (hidden on mobile, shown on tablet+) -->
-      <aside 
-        :class="[
-          'layout-sidebar',
-          { 'layout-sidebar--hidden': !showSidebar }
-        ]"
-      >
-        <AppSidebar />
-      </aside>
+    <!-- Desktop Navigation Sidebar -->
+    <AppNavbar class="u-hidden u-lg-block" />
 
-      <!-- Main Content Area -->
-      <main class="layout-main">
-        <!-- Header -->
-        <div class="layout-main__header">
-          <AppHeader 
-            @toggle-sidebar="toggleSidebar"
-            @toggle-cart="toggleCart"
-          />
-        </div>
-        
-        <!-- Content -->
-        <div class="layout-main__content">
-          <!-- Main content -->
-          <div class="layout-main__body">
-            <slot />
-          </div>
-          
-          <!-- Right Panel - Dish Details (hidden on mobile, shown on desktop) -->
-          <aside 
-            :class="[
-              'layout-detail',
-              { 'layout-detail--hidden': !showDetailPanel }
-            ]"
-          >
-            <DishDetailPanel v-if="selectedDish" :dish="selectedDish" />
-            <div v-else class="layout-detail__content">
-              <AppText class="u-text-center">
-                Select a dish to view details
-              </AppText>
-            </div>
-          </aside>
-        </div>
-      </main>
-    </div>
+    <!-- Main Content Area -->
+    <main class="layout-main">
+      <!-- Content -->
+      <div class="layout-main__content">
+        <slot />
+      </div>
+    </main>
 
     <!-- Mobile Navigation (bottom tabs on mobile) -->
     <nav class="mobile-navigation">
@@ -85,14 +49,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 // Stores
 import { useUserStore } from '~/stores/user'
 import { useMenuStore } from '~/stores/menu'
+import { useTenantStore } from '~/stores/tenant'
 
 const userStore = useUserStore()
 const menuStore = useMenuStore()
+const tenantStore = useTenantStore()
 
 // Reactive state
 const showSidebar = ref(true)
@@ -105,6 +71,34 @@ const windowWidth = ref(0)
 const isMobile = computed(() => windowWidth.value < 1024)
 const isTelegram = computed(() => userStore.platform === 'telegram')
 const selectedDish = computed(() => menuStore.selectedDish)
+const tenantBranding = computed(() => tenantStore.tenantBranding)
+
+// Apply tenant branding to document
+watch(
+  () => tenantBranding.value,
+  (branding) => {
+    if (branding && process.client) {
+      // Update CSS variables for tenant colors
+      document.documentElement.style.setProperty('--tenant-primary-color', branding.primaryColor)
+      document.documentElement.style.setProperty('--tenant-secondary-color', branding.secondaryColor)
+      
+      // Update favicon
+      if (branding.favicon) {
+        const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link')
+        link.type = 'image/x-icon'
+        link.rel = 'shortcut icon'
+        link.href = branding.favicon
+        document.getElementsByTagName('head')[0].appendChild(link)
+      }
+      
+      // Update page title
+      if (branding.appName) {
+        document.title = branding.appName
+      }
+    }
+  },
+  { immediate: true }
+)
 
 // Methods
 const toggleSidebar = () => {
@@ -133,11 +127,6 @@ const updateWindowWidth = () => {
 onMounted(() => {
   updateWindowWidth()
   window.addEventListener('resize', updateWindowWidth)
-  
-  // Auto-hide sidebar on tablet
-  if (windowWidth.value >= 768 && windowWidth.value < 1024) {
-    showSidebar.value = false
-  }
 })
 
 onUnmounted(() => {
@@ -151,3 +140,39 @@ watch(() => route.path, () => {
   showMobileSidebar.value = false
 })
 </script>
+
+<style lang="scss" scoped>
+@import '~/assets/scss/abstracts/variables';
+
+.layout-screen {
+  min-height: 100vh;
+  display: flex;
+}
+
+.layout-main {
+  flex: 1;
+  margin-left: 0;
+  width: 100%;
+  
+  @media (min-width: $breakpoint-lg) {
+    // margin-left: 240px;  Width of navbar
+  }
+
+  &__content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg;
+    width: 100%;
+
+    @media (min-width: $breakpoint-md) {
+      padding: $spacing-2xl $spacing-xl;
+    }
+  }
+}
+
+.mobile-navigation {
+  @media (min-width: $breakpoint-lg) {
+    display: none;
+  }
+}
+</style>

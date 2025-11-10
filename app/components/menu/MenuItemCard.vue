@@ -71,7 +71,7 @@
       <div class="menu-item-card__footer">
         <!-- Price -->
         <div class="menu-item-card__price">
-          ${{ menuItem.price.toFixed(2) }}
+          {{ formattedPrice }}
         </div>
         
         <!-- Action Buttons -->
@@ -123,6 +123,7 @@ import { computed } from 'vue'
 import type { MenuItem } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
+import { useTenant } from '~/composables/useTenant'
 
 interface Props {
   menuItem: MenuItem
@@ -145,6 +146,9 @@ const emit = defineEmits<{
 const menuStore = useMenuStore()
 const cartStore = useCartStore()
 
+// Tenant context
+const { currentTenant, tenantSettings } = useTenant()
+
 // Computed properties
 const isPopular = computed(() => {
   if (!props.showPopularIndicator) return false
@@ -155,6 +159,23 @@ const isPopular = computed(() => {
 
 const isFavorite = computed(() => {
   return menuStore.favourites.some(item => item.id === props.menuItem.id)
+})
+
+// Format price with tenant currency
+const formattedPrice = computed(() => {
+  const currency = tenantSettings.value?.currency || 'USD'
+  const price = props.menuItem.price
+  
+  // Simple currency formatting
+  const currencySymbols: Record<string, string> = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    RUB: '₽'
+  }
+  
+  const symbol = currencySymbols[currency] || currency
+  return `${symbol}${price.toFixed(2)}`
 })
 
 // Methods

@@ -3,6 +3,17 @@ import { useOrderService } from '~/services/order.service'
 import { useOfflineCart } from '~/composables/useOfflineCart'
 import type { CartItem, MenuItem, ApiResponse } from '~/types'
 
+// Helper function to get tenant store (to avoid circular dependency)
+function getTenantSlug(): string {
+  try {
+    const { useTenantStore } = require('./tenant')
+    const tenantStore = useTenantStore()
+    return tenantStore.tenantSlug || ''
+  } catch {
+    return ''
+  }
+}
+
 interface CartState {
   items: CartItem[]
   loading: boolean
@@ -92,12 +103,32 @@ export const useCartStore = defineStore('cart', {
 
     clearCart() {
       this.items = []
-      this.persistCart()
+      
+      if (import.meta.client) {
+        // Clear tenant-specific cart from localStorage
+        const tenantSlug = getTenantSlug()
+        const storageKey = tenantSlug ? `cart_${tenantSlug}` : 'cart'
+        
+        try {
+          localStorage.removeItem(storageKey)
+        } catch (error) {
+          console.error('Failed to clear cart from localStorage:', error)
+        }
+        
+        // Also clear offline cart
+        const { saveCartOffline } = useOfflineCart()
+        saveCartOffline([])
+      }
     },
 
     persistCart() {
       if (import.meta.client) {
-        localStorage.setItem('cart', JSON.stringify(this.items))
+        // Get tenant context for tenant-specific storage
+        const tenantSlug = getTenantSlug()
+        
+        // Use tenant-specific key if tenant is set
+        const storageKey = tenantSlug ? `cart_${tenantSlug}` : 'cart'
+        localStorage.setItem(storageKey, JSON.stringify(this.items))
         
         // Also save to offline cart for PWA functionality
         const { saveCartOffline } = useOfflineCart()
@@ -110,8 +141,12 @@ export const useCartStore = defineStore('cart', {
 
     restoreCart() {
       if (import.meta.client) {
-        // Try to restore from regular localStorage first
-        const savedCart = localStorage.getItem('cart')
+        // Get tenant context for tenant-specific storage
+        const tenantSlug = getTenantSlug()
+        
+        // Try to restore from tenant-specific localStorage first
+        const storageKey = tenantSlug ? `cart_${tenantSlug}` : 'cart'
+        const savedCart = localStorage.getItem(storageKey)
         if (savedCart) {
           try {
             this.items = JSON.parse(savedCart)

@@ -108,16 +108,8 @@ import { useMenuStore } from '~/stores/menu'
 
 const menuStore = useMenuStore()
 
-// Sample data - will be replaced with real data from API
-const categories = [
-  { id: 'all', name: 'All', icon: '🍔', count: 24 },
-  { id: 'salads', name: 'Salads', icon: '🥗', count: 8 },
-  { id: 'main-dishes', name: 'Main Dishes', icon: '🍽️', count: 12 },
-  { id: 'meat', name: 'Meat', icon: '🥩', count: 10 },
-  { id: 'fastfood', name: 'Fastfood', icon: '🍟', count: 15 },
-  { id: 'desserts', name: 'Desserts', icon: '🧁', count: 6 },
-  { id: 'drinks', name: 'Drinks', icon: '🥤', count: 12 }
-]
+// Computed
+const categories = computed(() => menuStore.categories)
 
 // Initialize menu data
 onMounted(() => {

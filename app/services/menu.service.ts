@@ -30,7 +30,7 @@ export class MenuService {
     const cached = this.getCachedData<ApiResponse<Category[]>>(cacheKey)
     if (cached) return cached
 
-    // Get categories from public menu endpoint
+    // Get categories from public categories endpoint
     const tenantSlug = this.getTenantSlug()
     if (!tenantSlug) {
       return {
@@ -41,10 +41,18 @@ export class MenuService {
     }
 
     try {
-      const response = await this.getApiClient().get(`/public/menu/${tenantSlug}`)
+      const response = await this.getApiClient().get(`/public/menu/${tenantSlug}/categories`)
       if (response.success && response.data) {
-        // Extract categories from menu data
-        const categories = this.extractCategoriesFromMenus(response.data)
+        // Map backend categories to frontend format
+        const categories = response.data.map((cat: any) => ({
+          id: cat.id,
+          name: cat.name,
+          description: `${cat.itemCount} items available`,
+          icon: this.getCategoryIcon(cat.name),
+          count: cat.itemCount,
+          sortOrder: 0
+        }))
+        
         const categoriesResponse = {
           success: true,
           data: categories,

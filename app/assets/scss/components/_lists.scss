@@ -1,0 +1,183 @@
+// =============================================================================
+// Lists Component Styles
+// =============================================================================
+
+// List Container
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding: $spacing-lg 0;
+}
+
+// List Item
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background-color: $color-background-card;
+  border-radius: $radius-md;
+  transition: all $transition-normal;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    transform: translateX(4px);
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    color: $color-primary-green;
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: $font-size-body-md;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-20;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__description {
+    font-size: $font-size-body-sm;
+    color: $color-text-secondary;
+  }
+
+  &__action {
+    flex-shrink: 0;
+  }
+}
+
+// Grid List
+.grid-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $spacing-lg;
+  padding: $spacing-lg 0;
+
+  @media (min-width: $breakpoint-md) {
+    gap: $spacing-xl;
+  }
+}
+
+// Menu Items List
+.menu-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+  padding: $spacing-lg 0;
+}
+
+// Category List
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.category-list-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  border-radius: $radius-md;
+  transition: all $transition-normal;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  &--active {
+    background-color: rgba(32, 171, 71, 0.1);
+    border-left-color: $color-primary-green;
+
+    .category-list-item__name {
+      color: $color-primary-green;
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    font-size: $font-size-heading-lg;
+  }
+
+  &__name {
+    flex: 1;
+    font-size: $font-size-body-md;
+    font-weight: $font-weight-medium;
+    color: $color-neutral-20;
+  }
+
+  &__count {
+    flex-shrink: 0;
+    font-size: $font-size-caption;
+    color: $color-text-muted;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-sm;
+  }
+}
+
+// Order List
+.order-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.order-list-item {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  background-color: $color-background-card;
+  border-radius: $radius-md;
+  border: 1px solid $color-border-subtle;
+  transition: all $transition-normal;
+
+  &:hover {
+    border-color: $color-primary-green;
+    box-shadow: 0 4px 12px rgba(32, 171, 71, 0.1);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__title {
+    font-size: $font-size-heading-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-neutral-20;
+  }
+
+  &__status {
+    font-size: $font-size-caption;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-sm;
+    font-weight: $font-weight-medium;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: $spacing-md;
+    border-top: 1px solid $color-border-subtle;
+  }
+}

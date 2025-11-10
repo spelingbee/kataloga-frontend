@@ -47,7 +47,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001',
-      tenantSlug: process.env.NUXT_PUBLIC_TENANT_SLUG || 'default',
+      tenantSlug: process.env.NUXT_PUBLIC_TENANT_SLUG || '',
       websocketUrl: process.env.NUXT_PUBLIC_WEBSOCKET_URL || 'ws://localhost:3001',
       telegramBotToken: process.env.NUXT_PUBLIC_TELEGRAM_BOT_TOKEN || '',
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'Menu Ordering App',
@@ -55,6 +55,15 @@ export default defineNuxtConfig({
       sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',
       analyticsId: process.env.NUXT_PUBLIC_ANALYTICS_ID || '',
       cdnUrl: process.env.NUXT_PUBLIC_CDN_URL || '',
+      
+      // Multi-tenant configuration
+      multiTenantMode: process.env.NUXT_PUBLIC_MULTI_TENANT_MODE === 'true',
+      defaultTenant: process.env.NUXT_PUBLIC_DEFAULT_TENANT || '',
+      tenantQueryParam: process.env.NUXT_PUBLIC_TENANT_QUERY_PARAM || 'tenant',
+      preserveTenantInUrl: process.env.NUXT_PUBLIC_PRESERVE_TENANT_IN_URL !== 'false',
+      requireTenantValidation: process.env.NUXT_PUBLIC_REQUIRE_TENANT_VALIDATION !== 'false',
+      tenantCacheTimeout: parseInt(process.env.NUXT_PUBLIC_TENANT_CACHE_TIMEOUT || '300000'), // 5 minutes
+      allowTenantSwitching: process.env.NUXT_PUBLIC_ALLOW_TENANT_SWITCHING !== 'false',
     },
   },
 
@@ -200,6 +209,9 @@ export default defineNuxtConfig({
   routeRules: {
     // Homepage - SSR for SEO
     '/': { ssr: true },
+    
+    // Tenant selection page - SSR for SEO
+    '/select-restaurant': { ssr: true },
     
     // Menu pages - SSR for SEO and performance
     '/menu': { ssr: true },

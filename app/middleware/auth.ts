@@ -1,5 +1,6 @@
 import { useAuth } from '~/composables/useAuth'
 import { useTelegram } from '~/composables/useTelegram'
+import { useTenantStore } from '~/stores/tenant'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   // Only run on client side
@@ -7,10 +8,23 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const { isAuthenticated, initializeAuth, user } = useAuth()
   const { isTelegram } = useTelegram()
+  const tenantStore = useTenantStore()
 
   // Initialize authentication on first load
   if (!isAuthenticated.value && !isTelegram.value) {
     await initializeAuth()
+  }
+
+  // Ensure tenant is initialized for tenant-specific routes
+  const tenantSpecificRoutes = ['/orders', '/favourites', '/menu', '/cart', '/checkout']
+  const isTenantSpecificRoute = tenantSpecificRoutes.some(route => to.path.startsWith(route))
+  
+  if (isTenantSpecificRoute && !tenantStore.currentTenant) {
+    try {
+      await tenantStore.initializeTenant()
+    } catch (error) {
+      console.error('Failed to initialize tenant in auth middleware:', error)
+    }
   }
 
   // Define protected routes with role requirements

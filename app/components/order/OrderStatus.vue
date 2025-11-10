@@ -128,6 +128,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Order, OrderStatus as OrderStatusEnum } from '~/types'
+import { useTenant } from '~/composables/useTenant'
 
 // Props & Emits
 interface Props {
@@ -238,23 +239,40 @@ const getStatusDescription = (status: OrderStatusEnum): string => {
   return descriptions[status] || 'Status information not available.'
 }
 
+// Tenant context
+const { tenantSettings } = useTenant()
+
+const locale = computed(() => {
+  const language = tenantSettings.value?.language || 'en'
+  const localeMap: Record<string, string> = {
+    en: 'en-US',
+    ru: 'ru-RU',
+    de: 'de-DE',
+    fr: 'fr-FR',
+    es: 'es-ES'
+  }
+  return localeMap[language] || 'en-US'
+})
+
 // Date/time formatting
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
-  return new Intl.DateTimeFormat('ru-RU', {
+  return new Intl.DateTimeFormat(locale.value, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: tenantSettings.value?.timezone || 'UTC'
   }).format(date)
 }
 
 const formatTime = (dateString: string): string => {
   const date = new Date(dateString)
-  return new Intl.DateTimeFormat('ru-RU', {
+  return new Intl.DateTimeFormat(locale.value, {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: tenantSettings.value?.timezone || 'UTC'
   }).format(date)
 }
 

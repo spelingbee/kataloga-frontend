@@ -36,14 +36,44 @@ export class NotificationService {
   private wsService: any = null
   private inAppNotifications: InAppNotification[] = []
   private notificationListeners: Set<(notification: InAppNotification) => void> = new Set()
+  private tenantStore: any = null
+  private currentTenantId: string | null = null
 
   constructor() {
     this.initializeWebSocketIntegration()
+    this.initializeTenantContext()
   }
 
   private getApiClient(): any {
     const nuxtApp = useNuxtApp()
     return (nuxtApp as any).$apiClient
+  }
+
+  private async initializeTenantContext() {
+    if (import.meta.client) {
+      try {
+        const { useTenantStore } = await import('~/stores/tenant')
+        this.tenantStore = useTenantStore()
+        this.currentTenantId = this.tenantStore?.tenantId || null
+        
+        // Watch for tenant changes
+        watch(
+          () => this.tenantStore?.tenantId,
+          (newTenantId) => {
+            const previousTenantId = this.currentTenantId
+            this.currentTenantId = newTenantId
+            
+            // Clear notifications when tenant changes
+            if (previousTenantId && previousTenantId !== newTenantId) {
+              console.log('Tenant changed, clearing notifications...')
+              this.clearNotifications()
+            }
+          }
+        )
+      } catch (error) {
+        console.debug('Tenant store not available for notification service')
+      }
+    }
   }
 
   private async initializeWebSocketIntegration() {
@@ -80,7 +110,14 @@ export class NotificationService {
         },
       }
 
-      const response = await this.getApiClient().post('/notifications/subscribe', subscriptionData)
+      // Include tenant context in subscription
+      const payload = {
+        ...subscriptionData,
+        tenantId: this.currentTenantId,
+        tenantSlug: this.tenantStore?.tenantSlug,
+      }
+
+      const response = await this.getApiClient().post('/notifications/subscribe', payload)
       return response.success
     } catch (error) {
       console.error('Failed to register push subscription:', error)
@@ -189,7 +226,14 @@ export class NotificationService {
     reminders: boolean
   }): Promise<boolean> {
     try {
-      const response = await this.getApiClient().put('/notifications/preferences', preferences)
+      // Include tenant context in preferences
+      const payload = {
+        ...preferences,
+        tenantId: this.currentTenantId,
+        tenantSlug: this.tenantStore?.tenantSlug,
+      }
+
+      const response = await this.getApiClient().put('/notifications/preferences', payload)
       return response.success
     } catch (error) {
       console.error('Failed to update notification preferences:', error)
@@ -204,12 +248,39 @@ export class NotificationService {
     reminders: boolean
   } | null> {
     try {
+      // Tenant context is automatically added by API client via headers
       const response = await this.getApiClient().get('/notifications/preferences')
       return response.success ? response.data : null
     } catch (error) {
       console.error('Failed to get notification preferences:', error)
       return null
     }
+  }
+
+  // Update push subscription for current tenant
+  async updatePushSubscriptionForTenant(): Promise<boolean> {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      return false
+    }
+
+    try {
+      const registration = await navigator.serviceWorker.getRegistration()
+      if (!registration) return false
+
+      const subscription = await registration.pushManager.getSubscription()
+      if (!subscription) return false
+
+      // Re-register subscription with new tenant context
+      return await this.registerPushSubscription(subscription)
+    } catch (error) {
+      console.error('Failed to update push subscription for tenant:', error)
+      return false
+    }
+  }
+
+  // Get current tenant context
+  getCurrentTenantId(): string | null {
+    return this.currentTenantId
   }
 
   // Utility functions
@@ -235,6 +306,12 @@ export class NotificationService {
 
   // WebSocket notification handlers
   private handleWebSocketNotification(data: any) {
+    // Filter by tenant if tenant context is available
+    if (!this.shouldProcessNotification(data)) {
+      console.debug('Notification filtered out due to tenant mismatch:', data)
+      return
+    }
+
     const notification: InAppNotification = {
       id: data.id || this.generateNotificationId(),
       type: data.type || 'system',
@@ -250,6 +327,12 @@ export class NotificationService {
   }
 
   private handleOrderUpdateNotification(data: any) {
+    // Filter by tenant if tenant context is available
+    if (!this.shouldProcessNotification(data)) {
+      console.debug('Order notification filtered out due to tenant mismatch:', data)
+      return
+    }
+
     const notification: InAppNotification = {
       id: this.generateNotificationId(),
       type: 'order',
@@ -265,6 +348,12 @@ export class NotificationService {
   }
 
   private handlePromotionNotification(data: any) {
+    // Filter by tenant if tenant context is available
+    if (!this.shouldProcessNotification(data)) {
+      console.debug('Promotion notification filtered out due to tenant mismatch:', data)
+      return
+    }
+
     const notification: InAppNotification = {
       id: this.generateNotificationId(),
       type: 'promotion',
@@ -280,6 +369,12 @@ export class NotificationService {
   }
 
   private handleSystemNotification(data: any) {
+    // Filter by tenant if tenant context is available
+    if (!this.shouldProcessNotification(data)) {
+      console.debug('System notification filtered out due to tenant mismatch:', data)
+      return
+    }
+
     const notification: InAppNotification = {
       id: this.generateNotificationId(),
       type: 'system',
@@ -292,6 +387,21 @@ export class NotificationService {
 
     this.addInAppNotification(notification)
     this.showBrowserNotification(notification)
+  }
+
+  private shouldProcessNotification(data: any): boolean {
+    // If no tenant context, process all notifications
+    if (!this.currentTenantId) {
+      return true
+    }
+
+    // If notification has tenantId, verify it matches current tenant
+    if (data.tenantId) {
+      return data.tenantId === this.currentTenantId
+    }
+
+    // If notification doesn't have tenantId, allow it (might be system-wide)
+    return true
   }
 
   // In-app notification management

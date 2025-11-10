@@ -1,4 +1,5 @@
 import type { ApiResponse, ApiError } from '~/types'
+import type { TenantInfo, TenantRequestConfig } from '~/types/tenant'
 
 export interface ApiClientConfig {
   baseURL: string
@@ -14,12 +15,15 @@ export interface RequestConfig {
   body?: any
   timeout?: number
   retries?: number
+  bypassTenant?: boolean // For system-wide requests
+  targetTenant?: string  // Override current tenant
 }
 
 export class ApiClient {
   private config: Required<ApiClientConfig>
   private tokenStore: any
   private errorStore: any
+  private tenantStore: any
 
   constructor(config: ApiClientConfig) {
     this.config = {
@@ -39,31 +43,81 @@ export class ApiClient {
     this.errorStore = errorStore
   }
 
-  setTenantSlug(tenantSlug: string) {
-    this.config.tenantSlug = tenantSlug
+  setTenantStore(tenantStore: any) {
+    this.tenantStore = tenantStore
   }
 
-  private async getBaseHeaders(): Promise<Record<string, string>> {
+  /**
+   * Set tenant slug for API requests
+   * Requirements: 1.1, 4.1
+   */
+  setTenant(tenantSlug: string): void {
+    this.config.tenantSlug = tenantSlug
+    console.log('API Client tenant set to:', tenantSlug)
+  }
+
+  /**
+   * Get current tenant slug
+   * Requirements: 1.1, 4.1
+   */
+  getCurrentTenant(): string {
+    // Try to get from tenant store first
+    if (this.tenantStore && 'tenantSlug' in this.tenantStore) {
+      return this.tenantStore.tenantSlug || this.config.tenantSlug
+    }
+    return this.config.tenantSlug
+  }
+
+  /**
+   * Clear tenant configuration
+   * Requirements: 4.1
+   */
+  clearTenant(): void {
+    this.config.tenantSlug = ''
+    console.log('API Client tenant cleared')
+  }
+
+  /**
+   * Get base headers for requests
+   * Requirements: 1.1, 1.5, 4.1
+   */
+  private async getBaseHeaders(config?: RequestConfig): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
 
-    // Add tenant slug header if configured
-    if (this.config.tenantSlug) {
-      headers['X-Tenant-Slug'] = this.config.tenantSlug
+    // Add tenant slug header if not bypassed
+    if (!config?.bypassTenant) {
+      const tenantSlug = config?.targetTenant || this.getCurrentTenant()
+      if (tenantSlug) {
+        headers['X-Tenant-Slug'] = tenantSlug
+      }
+    } else {
+      // Add bypass header for system-wide requests
+      headers['X-Bypass-Tenant'] = 'true'
     }
 
     return headers
   }
 
-  private async getAuthHeaders(): Promise<Record<string, string>> {
+  /**
+   * Get authenticated headers for requests
+   * Requirements: 1.1, 1.5, 4.1
+   */
+  private async getAuthHeaders(config?: RequestConfig): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
 
-    // Add tenant slug header if configured
-    if (this.config.tenantSlug) {
-      headers['X-Tenant-Slug'] = this.config.tenantSlug
+    // Add tenant slug header if not bypassed
+    if (!config?.bypassTenant) {
+      const tenantSlug = config?.targetTenant || this.getCurrentTenant()
+      if (tenantSlug) {
+        headers['X-Tenant-Slug'] = tenantSlug
+      }
+    } else {
+      // Add bypass header for system-wide requests
+      headers['X-Bypass-Tenant'] = 'true'
     }
 
     // Add authorization header if token is available
@@ -75,6 +129,40 @@ export class ApiClient {
     }
 
     return headers
+  }
+
+  /**
+   * Handle tenant-specific errors
+   * Requirements: 1.4, 4.5
+   */
+  private async handleTenantError(error: ApiError, config?: RequestConfig): Promise<void> {
+    // Skip tenant error handling for bypass requests
+    if (config?.bypassTenant) {
+      return
+    }
+
+    // Check for tenant-related error codes
+    const tenantErrorCodes = [
+      'TENANT_NOT_FOUND',
+      'TENANT_INACTIVE',
+      'TENANT_ACCESS_DENIED',
+      'TENANT_VALIDATION_FAILED',
+      'INVALID_TENANT',
+    ]
+
+    const isTenantError = tenantErrorCodes.includes(error.code || '') || 
+                          (error.message && error.message.toLowerCase().includes('tenant'))
+
+    if (isTenantError && this.tenantStore) {
+      console.error('Tenant-specific error detected:', error)
+      
+      // Notify tenant store about the error
+      if ('handleTenantError' in this.tenantStore && typeof this.tenantStore.handleTenantError === 'function') {
+        await this.tenantStore.handleTenantError(new Error(error.message))
+      } else if ('setError' in this.tenantStore && typeof this.tenantStore.setError === 'function') {
+        this.tenantStore.setError(error.message)
+      }
+    }
   }
 
   private async handleTokenRefresh(): Promise<boolean> {
@@ -111,13 +199,17 @@ export class ApiClient {
     return false
   }
 
+  /**
+   * Make HTTP request with tenant context
+   * Requirements: 1.1, 1.5, 4.1
+   */
   private async makeRequest<T>(
     endpoint: string,
     config: RequestConfig = {},
     useAuth: boolean = true
   ): Promise<ApiResponse<T>> {
     const url = `${this.config.baseURL}${endpoint}`
-    const headers = useAuth ? await this.getAuthHeaders() : await this.getBaseHeaders()
+    const headers = useAuth ? await this.getAuthHeaders(config) : await this.getBaseHeaders(config)
 
     const requestConfig: RequestInit = {
       method: config.method || 'GET',
@@ -161,9 +253,19 @@ export class ApiClient {
             details: data.details,
           }
           
+          // Handle tenant-specific errors
+          await this.handleTenantError(error, config)
+          
           // Report error to error store
           if (this.errorStore && 'addError' in this.errorStore) {
             this.errorStore.addError(error)
+          }
+          
+          // Don't retry 4xx errors except 408 and 429
+          if (response.status >= 400 && response.status < 500) {
+            if (response.status !== 408 && response.status !== 429) {
+              throw error
+            }
           }
           
           throw error
@@ -178,11 +280,26 @@ export class ApiClient {
           this.errorStore.addError(error as ApiError)
         }
         
-        // Don't retry on authentication errors or client errors (4xx)
+        // Don't retry on client errors (4xx) except for specific retryable ones
         if (error instanceof Error && 'status' in error) {
           const apiError = error as ApiError
-          if (apiError.status && apiError.status >= 400 && apiError.status < 500) {
-            throw error
+          if (apiError.status) {
+            // Don't retry 4xx errors except 408 (timeout) and 429 (rate limit)
+            if (apiError.status >= 400 && apiError.status < 500) {
+              if (apiError.status !== 408 && apiError.status !== 429) {
+                throw error
+              }
+            }
+          }
+        }
+        
+        // Also check for response status in case error doesn't have status property
+        if (lastError && typeof lastError === 'object' && 'response' in lastError) {
+          const response = (lastError as any).response
+          if (response && response.status >= 400 && response.status < 500) {
+            if (response.status !== 408 && response.status !== 429) {
+              throw lastError
+            }
           }
         }
 
@@ -217,6 +334,95 @@ export class ApiClient {
 
   async delete<T>(endpoint: string, config?: Omit<RequestConfig, 'method' | 'body'>): Promise<ApiResponse<T>> {
     return this.makeRequest<T>(endpoint, { ...config, method: 'DELETE' })
+  }
+
+  /**
+   * Get tenant information by slug
+   * Requirements: 1.2, 4.5
+   */
+  async getTenantInfo(slug: string): Promise<TenantInfo> {
+    const response = await this.get<TenantInfo>(`/tenants/${slug}`, {
+      bypassTenant: true, // System-wide request
+    })
+
+    if (!response.success || !response.data) {
+      throw new Error(`Tenant not found: ${slug}`)
+    }
+
+    return response.data
+  }
+
+  /**
+   * Validate tenant access
+   * Requirements: 1.2, 4.5
+   */
+  async validateTenantAccess(slug: string): Promise<boolean> {
+    try {
+      const response = await this.get<{ valid: boolean; isActive: boolean }>(`/tenants/${slug}/validate`, {
+        bypassTenant: true, // System-wide request
+      })
+
+      return response.success && response.data?.valid === true && response.data?.isActive === true
+    } catch (error) {
+      console.error('Tenant validation failed:', error)
+      return false
+    }
+  }
+
+  /**
+   * Get list of available tenants
+   * Requirements: 1.2, 4.5
+   */
+  async getAvailableTenants(): Promise<TenantInfo[]> {
+    try {
+      const response = await this.get<TenantInfo[]>('/tenants', {
+        bypassTenant: true, // System-wide request
+      })
+
+      if (response.success && response.data) {
+        return response.data
+      }
+
+      return []
+    } catch (error) {
+      console.error('Failed to fetch available tenants:', error)
+      return []
+    }
+  }
+
+  /**
+   * Make a request with a specific tenant override
+   * Requirements: 1.2, 4.5
+   */
+  async withTenant<T>(
+    tenantSlug: string,
+    requestFn: (client: ApiClient) => Promise<ApiResponse<T>>
+  ): Promise<ApiResponse<T>> {
+    const originalTenant = this.config.tenantSlug
+    
+    try {
+      // Temporarily set the target tenant
+      this.config.tenantSlug = tenantSlug
+      
+      // Execute the request
+      const result = await requestFn(this)
+      
+      return result
+    } finally {
+      // Restore original tenant
+      this.config.tenantSlug = originalTenant
+    }
+  }
+
+  /**
+   * Make a system-wide request bypassing tenant context
+   * Requirements: 1.2, 4.5
+   */
+  async withoutTenant<T>(
+    requestFn: (client: ApiClient) => Promise<ApiResponse<T>>
+  ): Promise<ApiResponse<T>> {
+    // Execute request with bypass flag
+    return requestFn(this)
   }
 }
 
