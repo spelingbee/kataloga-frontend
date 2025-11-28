@@ -10,7 +10,7 @@
       </AppText>
     </div>
 
-    <form @submit.prevent="handleSubmit" class="space-y-6">
+    <form class="space-y-6" @submit.prevent="handleSubmit">
       <!-- Customer Information -->
       <div class="bg-background-card/50 rounded-lg p-4 border border-border-subtle">
         <AppHeading level="h2" size="heading-md" class="text-white mb-4">

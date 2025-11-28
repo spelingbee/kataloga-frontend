@@ -46,8 +46,8 @@
             </label>
             <select
               v-model="filters.categoryId"
-              @change="loadMenuItems"
               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              @change="loadMenuItems"
             >
               <option value="">All Categories</option>
               <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -61,8 +61,8 @@
             </label>
             <select
               v-model="filters.isActive"
-              @change="loadMenuItems"
               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              @change="loadMenuItems"
             >
               <option value="">All Items</option>
               <option value="true">Active</option>
@@ -71,8 +71,8 @@
           </div>
           <div class="flex items-end">
             <button
-              @click="resetFilters"
               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              @click="resetFilters"
             >
               Reset
             </button>
@@ -174,14 +174,14 @@
                         Edit
                       </NuxtLink>
                       <button
-                        @click="toggleItemStatus(item)"
                         class="text-gray-600 hover:text-gray-900"
+                        @click="toggleItemStatus(item)"
                       >
                         {{ item.isActive ? 'Deactivate' : 'Activate' }}
                       </button>
                       <button
-                        @click="confirmDelete(item)"
                         class="text-red-600 hover:text-red-900"
+                        @click="confirmDelete(item)"
                       >
                         Delete
                       </button>
@@ -201,29 +201,29 @@
             </div>
             <div class="flex space-x-2">
               <button
-                @click="changePage(pagination.currentPage - 1)"
                 :disabled="pagination.currentPage === 1"
                 class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="changePage(pagination.currentPage - 1)"
               >
                 Previous
               </button>
               <button
                 v-for="page in visiblePages"
                 :key="page"
-                @click="changePage(page)"
                 :class="[
                   'px-3 py-2 text-sm font-medium rounded-md',
                   page === pagination.currentPage
                     ? 'text-white bg-indigo-600'
                     : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
                 ]"
+                @click="changePage(page)"
               >
                 {{ page }}
               </button>
               <button
-                @click="changePage(pagination.currentPage + 1)"
                 :disabled="pagination.currentPage === pagination.totalPages"
                 class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="changePage(pagination.currentPage + 1)"
               >
                 Next
               </button>
@@ -244,14 +244,14 @@
         </p>
         <div class="flex justify-end space-x-3">
           <button
-            @click="showDeleteModal = false"
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            @click="showDeleteModal = false"
           >
             Cancel
           </button>
           <button
-            @click="deleteItem"
             class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+            @click="deleteItem"
           >
             Delete
           </button>

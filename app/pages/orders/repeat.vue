@@ -187,8 +187,8 @@
               <BaseButton
                 variant="ghost"
                 size="sm"
-                @click="decreaseQuantity(index)"
                 :disabled="item.quantity <= 0"
+                @click="decreaseQuantity(index)"
               >
                 <BaseIcon name="minus" size="sm" />
               </BaseButton>
@@ -210,8 +210,8 @@
             <BaseButton
               variant="ghost"
               size="sm"
-              @click="removeItem(index)"
               class="text-primary-red hover:text-primary-red/80"
+              @click="removeItem(index)"
             >
               <BaseIcon name="trash" size="sm" />
             </BaseButton>
@@ -243,8 +243,8 @@
           <BaseButton 
             variant="primary"
             class="flex-1"
-            @click="addCustomOrderToCart"
             :disabled="totalItems === 0"
+            @click="addCustomOrderToCart"
           >
             <BaseIcon name="shopping-cart" size="sm" class="mr-2" />
             Add to Cart ({{ formatPrice(customTotal) }})
@@ -320,15 +320,15 @@
 <script setup lang="ts">
 import type { Order, MenuItem, OrderItem } from '~/types'
 
-// Page setup
-definePageMeta({
-  title: 'Repeat Order - Menu Ordering App'
-})
-
 // Stores
 import { useOrderStore } from '~/stores/order'
 import { useCartStore } from '~/stores/cart'
 import { OrderStatus } from '~/types'
+
+// Page setup
+definePageMeta({
+  title: 'Repeat Order - Menu Ordering App'
+})
 
 const orderStore = useOrderStore()
 const cartStore = useCartStore()

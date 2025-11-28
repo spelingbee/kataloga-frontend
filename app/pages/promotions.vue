@@ -18,8 +18,8 @@
       <div class="relative bg-gradient-to-r from-primary-orange to-primary-red rounded-2xl p-8 overflow-hidden">
         <!-- Background Pattern -->
         <div class="absolute inset-0 opacity-10">
-          <div class="absolute top-4 right-4 w-32 h-32 bg-white rounded-full"></div>
-          <div class="absolute bottom-4 left-4 w-24 h-24 bg-white rounded-full"></div>
+          <div class="absolute top-4 right-4 w-32 h-32 bg-white rounded-full"/>
+          <div class="absolute bottom-4 left-4 w-24 h-24 bg-white rounded-full"/>
         </div>
         
         <div class="relative z-10">
@@ -66,8 +66,8 @@
               <BaseButton 
                 variant="secondary"
                 size="lg"
-                @click="usePromotion(featuredPromotion)"
                 class="bg-white text-primary-orange hover:bg-white/90"
+                @click="usePromotion(featuredPromotion)"
               >
                 <BaseIcon name="shopping-cart" size="sm" class="mr-2" />
                 Use Now
@@ -75,8 +75,8 @@
               <BaseButton 
                 variant="ghost"
                 size="lg"
-                @click="sharePromotion(featuredPromotion)"
                 class="text-white border-white/30 hover:bg-white/10"
+                @click="sharePromotion(featuredPromotion)"
               >
                 <BaseIcon name="share" size="sm" class="mr-2" />
                 Share
@@ -136,7 +136,7 @@
     <div class="px-6">
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading promotions...</AppText>
       </div>
 
@@ -244,8 +244,8 @@
                 variant="primary"
                 size="sm"
                 class="flex-1"
-                @click="usePromotion(promotion)"
                 :disabled="!promotion.isActive"
+                @click="usePromotion(promotion)"
               >
                 <BaseIcon name="shopping-cart" size="sm" class="mr-2" />
                 {{ promotion.isActive ? 'Use Now' : 'Expired' }}
@@ -274,7 +274,7 @@
           Subscribe to our newsletter and be the first to know about exclusive promotions and special offers.
         </AppText>
         
-        <form @submit.prevent="subscribeNewsletter" class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+        <form class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto" @submit.prevent="subscribeNewsletter">
           <BaseInput
             v-model="newsletterEmail"
             type="email"

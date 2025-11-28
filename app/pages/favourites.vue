@@ -30,8 +30,8 @@
           <BaseButton 
             variant="ghost" 
             size="sm"
-            @click="clearAllFavourites"
             :disabled="favourites.length === 0"
+            @click="clearAllFavourites"
           >
             Clear All
           </BaseButton>
@@ -43,7 +43,7 @@
     <div class="px-6">
       <!-- Loading State -->
       <div v-if="menuStore.loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading favourites...</AppText>
       </div>
 
@@ -128,8 +128,8 @@
               <BaseButton
                 variant="ghost"
                 size="sm"
-                @click="onToggleFavourite(item.id)"
                 class="text-primary-red hover:text-primary-red/80"
+                @click="onToggleFavourite(item.id)"
               >
                 <BaseIcon name="heart-filled" size="sm" />
               </BaseButton>
@@ -146,8 +146,8 @@
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <BaseButton 
               variant="primary"
-              @click="addAllToCart"
               :disabled="favourites.length === 0"
+              @click="addAllToCart"
             >
               <BaseIcon name="shopping-cart" size="sm" class="mr-2" />
               Add All to Cart
@@ -168,14 +168,14 @@
 <script setup lang="ts">
 import type { MenuItem } from '~/types'
 
+// Stores
+import { useMenuStore } from '~/stores/menu'
+import { useCartStore } from '~/stores/cart'
+
 // Page setup
 definePageMeta({
   title: 'Favourites - Menu Ordering App'
 })
-
-// Stores
-import { useMenuStore } from '~/stores/menu'
-import { useCartStore } from '~/stores/cart'
 
 const menuStore = useMenuStore()
 const cartStore = useCartStore()

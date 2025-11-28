@@ -19,23 +19,23 @@
     <!-- Mobile Cart Drawer -->
     <CartDrawer 
       v-if="showCart" 
-      @close="toggleCart"
       class="u-lg-hidden"
+      @close="toggleCart"
     />
 
     <!-- Mobile Category Sidebar -->
     <MobileCategorySidebar 
       v-if="showMobileSidebar" 
-      @close="toggleMobileSidebar"
       class="u-lg-hidden"
+      @close="toggleMobileSidebar"
     />
 
     <!-- Mobile Dish Detail Modal -->
     <DishDetailModal 
       v-if="selectedDish && isMobile" 
       :dish="selectedDish"
-      @close="clearSelectedDish"
       class="u-xl-hidden"
+      @close="clearSelectedDish"
     />
 
     <!-- Web Footer (only on web, not in Telegram) -->

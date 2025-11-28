@@ -125,7 +125,7 @@ onMounted(() => {
 
 // Prevent body scroll when modal is open
 watch(() => props.modelValue, (isOpen) => {
-  if (process.client) {
+  if (import.meta.client) {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
     } else {

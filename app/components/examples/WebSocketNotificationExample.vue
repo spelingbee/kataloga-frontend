@@ -8,7 +8,7 @@
         <div 
           class="w-3 h-3 rounded-full"
           :class="isConnected ? 'bg-green-500' : 'bg-red-500'"
-        ></div>
+        />
         <span class="text-sm font-medium">
           WebSocket: {{ connectionState }}
         </span>
@@ -21,7 +21,7 @@
         <div 
           class="w-3 h-3 rounded-full"
           :class="isSubscribed ? 'bg-green-500' : 'bg-gray-500'"
-        ></div>
+        />
         <span class="text-sm font-medium">
           Push Notifications: {{ isSubscribed ? 'Enabled' : 'Disabled' }}
         </span>
@@ -38,33 +38,33 @@
     <!-- Action Buttons -->
     <div class="flex flex-wrap gap-2">
       <button
-        @click="connectWebSocket"
         :disabled="isConnected"
         class="px-3 py-1 bg-blue-600 text-white rounded text-sm disabled:opacity-50"
+        @click="connectWebSocket"
       >
         Connect WebSocket
       </button>
       
       <button
-        @click="disconnectWebSocket"
         :disabled="!isConnected"
         class="px-3 py-1 bg-red-600 text-white rounded text-sm disabled:opacity-50"
+        @click="disconnectWebSocket"
       >
         Disconnect WebSocket
       </button>
       
       <button
-        @click="enablePushNotifications"
         :disabled="isSubscribed"
         class="px-3 py-1 bg-green-600 text-white rounded text-sm disabled:opacity-50"
+        @click="enablePushNotifications"
       >
         Enable Push
       </button>
       
       <button
-        @click="sendTestNotification"
         :disabled="!isSubscribed"
         class="px-3 py-1 bg-purple-600 text-white rounded text-sm disabled:opacity-50"
+        @click="sendTestNotification"
       >
         Test Notification
       </button>

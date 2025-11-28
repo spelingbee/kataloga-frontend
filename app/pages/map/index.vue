@@ -36,8 +36,8 @@
               <BaseButton 
                 variant="ghost" 
                 size="sm"
-                @click="getCurrentLocation"
                 :disabled="gettingLocation"
+                @click="getCurrentLocation"
               >
                 <BaseIcon 
                   :name="gettingLocation ? 'loader' : 'refresh'" 
@@ -53,8 +53,8 @@
         <div class="flex gap-2">
           <BaseButton 
             variant="secondary"
-            @click="findNearestRestaurant"
             :disabled="!userLocation"
+            @click="findNearestRestaurant"
           >
             <BaseIcon name="navigation" size="sm" class="mr-2" />
             Find Nearest
@@ -77,7 +77,7 @@
               v-model="filters.deliveryAvailable"
               type="checkbox"
               class="rounded border-neutral-80"
-            >
+            />
             <label for="delivery-available" class="text-white text-sm">
               Delivery Available
             </label>
@@ -88,7 +88,7 @@
               v-model="filters.openNow"
               type="checkbox"
               class="rounded border-neutral-80"
-            >
+            />
             <label for="open-now" class="text-white text-sm">
               Open Now
             </label>
@@ -126,7 +126,7 @@
 
           <!-- Loading State -->
           <div v-if="locationStore.loading" class="text-center py-8">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-green mx-auto mb-4"></div>
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-green mx-auto mb-4"/>
             <AppText size="body-sm" class="text-neutral-20">Loading restaurants...</AppText>
           </div>
 
@@ -170,7 +170,7 @@
                   <div 
                     class="w-2 h-2 rounded-full"
                     :class="restaurant.isActive ? 'bg-primary-green' : 'bg-neutral-80'"
-                  ></div>
+                  />
                   <AppText 
                     size="caption" 
                     :class="restaurant.isActive ? 'text-primary-green' : 'text-neutral-80'"
@@ -252,13 +252,13 @@
 import type { Restaurant } from '~/types'
 import { useGeolocation } from '~/composables/useGeolocation'
 
+// Stores
+import { useLocationStore } from '~/stores/location'
+
 // Page setup
 definePageMeta({
   title: 'Restaurant Map - Menu Ordering App'
 })
-
-// Stores
-import { useLocationStore } from '~/stores/location'
 
 const locationStore = useLocationStore()
 const router = useRouter()

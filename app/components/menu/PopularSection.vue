@@ -18,8 +18,8 @@
       <BaseButton
         v-if="showViewAll"
         variant="ghost"
-        @click="$emit('viewAll')"
         class="text-primary-green hover:text-primary-green/80"
+        @click="$emit('viewAll')"
       >
         View All
         <BaseIcon name="chevron-right" size="sm" class="ml-1" />
@@ -46,8 +46,8 @@
     <div v-if="showRefresh && !loading" class="text-center mt-6">
       <BaseButton
         variant="ghost"
-        @click="refreshRecommendations"
         class="text-neutral-80 hover:text-white"
+        @click="refreshRecommendations"
       >
         <BaseIcon name="refresh" size="sm" class="mr-2" />
         Refresh Recommendations
@@ -65,8 +65,8 @@
           <AppText size="caption" class="text-neutral-80">
             These suggestions are based on popular items and your preferences. 
             <button 
-              @click="$emit('learnMore')"
               class="text-primary-green hover:underline"
+              @click="$emit('learnMore')"
             >
               Learn more
             </button>

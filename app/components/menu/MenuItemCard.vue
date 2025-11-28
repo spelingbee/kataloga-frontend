@@ -7,9 +7,9 @@
         'menu-item-card--inactive': !menuItem.isActive
       }
     ]"
-    @click="handleClick"
     role="button"
     :tabindex="0"
+    @click="handleClick"
     @keydown.enter="handleClick"
     @keydown.space.prevent="handleClick"
   >
@@ -80,12 +80,12 @@
           <BaseButton
             variant="ghost"
             size="sm"
-            @click.stop="toggleFavorite"
             :aria-label="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
             :class="[
               'menu-item-card__favorite-btn',
               { 'menu-item-card__favorite-btn--active': isFavorite }
             ]"
+            @click.stop="toggleFavorite"
           >
             <BaseIcon 
               :name="isFavorite ? 'heart-filled' : 'heart'" 
@@ -96,8 +96,8 @@
           <!-- Add to Cart Button -->
           <AddToCartButton
             :disabled="!menuItem.isActive"
-            @click.stop="addToCart"
             size="sm"
+            @click.stop="addToCart"
           />
         </div>
       </div>

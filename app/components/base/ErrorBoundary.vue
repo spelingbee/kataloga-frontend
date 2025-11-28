@@ -62,7 +62,7 @@ onErrorCaptured((err, instance, info) => {
 })
 
 // Global error handler for unhandled promises
-if (process.client) {
+if (import.meta.client) {
   window.addEventListener('unhandledrejection', (event) => {
     captureError(new Error(event.reason), { type: 'unhandledrejection' })
   })

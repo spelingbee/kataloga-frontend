@@ -29,7 +29,7 @@
             <div
               class="w-3 h-3 rounded-full"
               :class="getStatusColor()"
-            ></div>
+            />
             <span class="text-sm font-medium" :class="getStatusTextColor()">
               {{ getStatusText() }}
             </span>
@@ -40,12 +40,12 @@
         <div class="flex space-x-3">
           <button
             v-if="permission === 'default' || !isSubscribed"
-            @click="enableNotifications"
             :disabled="loading"
             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="enableNotifications"
           >
             <span v-if="loading" class="flex items-center">
-              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"/>
               Enabling...
             </span>
             <span v-else>Enable Notifications</span>
@@ -53,12 +53,12 @@
 
           <button
             v-if="isSubscribed"
-            @click="disableNotifications"
             :disabled="loading"
             class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="disableNotifications"
           >
             <span v-if="loading" class="flex items-center">
-              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"/>
               Disabling...
             </span>
             <span v-else>Disable Notifications</span>
@@ -66,9 +66,9 @@
 
           <button
             v-if="isSubscribed"
-            @click="testNotification"
             :disabled="loading"
             class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="testNotification"
           >
             Test Notification
           </button>
@@ -87,7 +87,7 @@
             </div>
             <BaseToggle
               v-model="preferences.orderUpdates"
-              @update:modelValue="updatePreferences"
+              @update:model-value="updatePreferences"
             />
           </div>
 
@@ -98,7 +98,7 @@
             </div>
             <BaseToggle
               v-model="preferences.promotions"
-              @update:modelValue="updatePreferences"
+              @update:model-value="updatePreferences"
             />
           </div>
 
@@ -109,7 +109,7 @@
             </div>
             <BaseToggle
               v-model="preferences.reminders"
-              @update:modelValue="updatePreferences"
+              @update:model-value="updatePreferences"
             />
           </div>
         </div>

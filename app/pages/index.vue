@@ -99,12 +99,12 @@
 
 <script setup lang="ts">
 // Page setup
+// Stores
+import { useMenuStore } from '~/stores/menu'
+
 definePageMeta({
   title: 'Home - Menu Ordering App'
 })
-
-// Stores
-import { useMenuStore } from '~/stores/menu'
 
 const menuStore = useMenuStore()
 

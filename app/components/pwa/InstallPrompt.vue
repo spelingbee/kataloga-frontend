@@ -37,8 +37,8 @@
                 <BaseButton
                   variant="primary"
                   size="sm"
-                  @click="handleInstall"
                   :loading="installing"
+                  @click="handleInstall"
                 >
                   Install
                 </BaseButton>
@@ -54,8 +54,8 @@
 
             <!-- Close button -->
             <button
-              @click="handleDismiss"
               class="flex-shrink-0 p-1 text-neutral-80/50 hover:text-neutral-80 transition-colors"
+              @click="handleDismiss"
             >
               <BaseIcon name="x" class="w-5 h-5" />
             </button>

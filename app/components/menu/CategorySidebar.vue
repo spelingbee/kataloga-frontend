@@ -15,9 +15,9 @@
         v-if="hasActiveFilters"
         variant="ghost"
         size="sm"
-        @click="clearAllFilters"
         class="category-sidebar__clear-btn"
         aria-label="Clear all filters"
+        @click="clearAllFilters"
       >
         <BaseIcon name="x" size="sm" />
       </BaseButton>
@@ -32,8 +32,8 @@
           'category-item',
           { 'category-item--active': isActiveCategory(category.id) }
         ]"
-        @click="selectCategory(category)"
         role="listitem"
+        @click="selectCategory(category)"
       >
         <CategoryIcon 
           :category="category.slug" 

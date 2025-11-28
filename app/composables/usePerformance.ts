@@ -35,7 +35,7 @@ export const usePerformance = () => {
   }
 
   const logMetrics = (context: string) => {
-    if (process.dev) {
+    if (import.meta.dev) {
       console.group(`Performance Metrics - ${context}`)
       console.log('Load Time:', metrics.value.loadTime, 'ms')
       console.log('Render Time:', metrics.value.renderTime, 'ms')
@@ -51,7 +51,7 @@ export const usePerformance = () => {
 
   const endTimer = (startTime: number, label: string) => {
     const duration = performance.now() - startTime
-    if (process.dev) {
+    if (import.meta.dev) {
       console.log(`${label}:`, duration.toFixed(2), 'ms')
     }
     return duration
@@ -66,7 +66,7 @@ export const usePerformance = () => {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         const lastEntry = entries[entries.length - 1]
-        if (process.dev) {
+        if (import.meta.dev) {
           console.log('LCP:', lastEntry.startTime.toFixed(2), 'ms')
         }
       })
@@ -78,7 +78,7 @@ export const usePerformance = () => {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         entries.forEach((entry) => {
-          if (process.dev) {
+          if (import.meta.dev) {
             console.log('FID:', entry.processingStart - entry.startTime, 'ms')
           }
         })
@@ -96,7 +96,7 @@ export const usePerformance = () => {
             clsValue += entry.value
           }
         })
-        if (process.dev) {
+        if (import.meta.dev) {
           console.log('CLS:', clsValue.toFixed(4))
         }
       })

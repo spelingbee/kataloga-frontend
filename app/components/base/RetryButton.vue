@@ -4,8 +4,8 @@
     :size="size"
     :loading="loading"
     :disabled="disabled || loading"
-    @click="handleRetry"
     class="retry-button"
+    @click="handleRetry"
   >
     <BaseIcon 
       v-if="!loading" 

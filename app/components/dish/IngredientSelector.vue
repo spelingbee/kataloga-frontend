@@ -46,8 +46,8 @@
     <BaseToggle
       :checked="getToggleState()"
       :state="getToggleVisualState()"
-      @toggle="handleToggle"
       :disabled="!ingredient.isOptional && ingredient.isDefault"
+      @toggle="handleToggle"
     />
   </div>
 </template>

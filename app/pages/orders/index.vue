@@ -184,7 +184,7 @@
 
       <!-- Loading State -->
       <div v-if="orderStore.loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading orders...</AppText>
       </div>
 
@@ -326,8 +326,8 @@
         <div v-if="hasMoreOrders" class="text-center mt-8">
           <BaseButton 
             variant="secondary"
-            @click="loadMoreOrders"
             :disabled="loadingMore"
+            @click="loadMoreOrders"
           >
             <BaseIcon 
               v-if="loadingMore"

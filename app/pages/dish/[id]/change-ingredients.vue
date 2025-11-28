@@ -23,7 +23,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-16">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading customization options...</AppText>
       </div>
     </div>
@@ -108,8 +108,8 @@
                 <div class="flex items-center gap-2">
                   <IngredientToggle
                     :model-value="getIngredientLevel(ingredient.id)"
-                    @update:model-value="setIngredientLevel(ingredient.id, $event)"
                     :options="ingredient.options"
+                    @update:model-value="setIngredientLevel(ingredient.id, $event)"
                   />
                 </div>
               </div>
@@ -190,7 +190,7 @@
                 :value="preference.id"
                 type="checkbox"
                 class="sr-only"
-              >
+              />
               <BaseIcon :name="preference.icon" size="md" :class="preference.iconColor" />
               <div class="flex-1">
                 <AppText size="body-sm" class="text-white font-medium">
@@ -236,8 +236,8 @@
                   :key="quickInstruction"
                   variant="ghost"
                   size="sm"
-                  @click="addQuickInstruction(quickInstruction)"
                   class="border border-neutral-80/30"
+                  @click="addQuickInstruction(quickInstruction)"
                 >
                   {{ quickInstruction }}
                 </BaseButton>

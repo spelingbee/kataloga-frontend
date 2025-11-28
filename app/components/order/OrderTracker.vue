@@ -15,10 +15,10 @@
       <BaseButton
         variant="ghost"
         size="sm"
-        @click="refreshTracking"
         :loading="refreshing"
         class="order-tracker__refresh-btn"
         aria-label="Refresh tracking"
+        @click="refreshTracking"
       >
         <BaseIcon name="refresh" size="sm" />
       </BaseButton>
@@ -203,8 +203,8 @@
         v-if="canCancelOrder"
         variant="ghost"
         class="order-tracker__action-btn order-tracker__action-btn--cancel"
-        @click="$emit('cancel-order', order.id)"
         :loading="loading"
+        @click="$emit('cancel-order', order.id)"
       >
         Cancel Order
       </BaseButton>

@@ -23,7 +23,7 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-16">
       <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading nutrition information...</AppText>
       </div>
     </div>
@@ -61,15 +61,15 @@
             <div 
               class="absolute top-0 left-0 h-full bg-primary-red"
               :style="{ width: `${proteinPercentage}%` }"
-            ></div>
+            />
             <div 
               class="absolute top-0 h-full bg-primary-orange"
               :style="{ left: `${proteinPercentage}%`, width: `${carbsPercentage}%` }"
-            ></div>
+            />
             <div 
               class="absolute top-0 h-full bg-primary-green"
               :style="{ left: `${proteinPercentage + carbsPercentage}%`, width: `${fatPercentage}%` }"
-            ></div>
+            />
           </div>
         </div>
         

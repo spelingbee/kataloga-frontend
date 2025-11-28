@@ -119,8 +119,8 @@
             </label>
             <select
               v-model="filters.status"
-              @change="loadOrders"
               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              @change="loadOrders"
             >
               <option value="">All Statuses</option>
               <option value="PENDING">Pending</option>
@@ -154,8 +154,8 @@
           </div>
           <div class="flex items-end">
             <button
-              @click="resetFilters"
               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              @click="resetFilters"
             >
               Reset
             </button>
@@ -235,11 +235,11 @@
                   <td class="px-6 py-4 whitespace-nowrap">
                     <select
                       :value="order.status"
-                      @change="updateOrderStatus(order, ($event.target as HTMLSelectElement).value)"
                       :class="[
                         'text-xs font-semibold rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-indigo-500',
                         getStatusColor(order.status)
                       ]"
+                      @change="updateOrderStatus(order, ($event.target as HTMLSelectElement).value)"
                     >
                       <option value="PENDING">Pending</option>
                       <option value="CONFIRMED">Confirmed</option>
@@ -256,15 +256,15 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex space-x-2">
                       <button
-                        @click="viewOrderDetails(order)"
                         class="text-indigo-600 hover:text-indigo-900"
+                        @click="viewOrderDetails(order)"
                       >
                         View
                       </button>
                       <button
                         v-if="order.status !== 'DELIVERED' && order.status !== 'CANCELLED'"
-                        @click="confirmCancelOrder(order)"
                         class="text-red-600 hover:text-red-900"
+                        @click="confirmCancelOrder(order)"
                       >
                         Cancel
                       </button>
@@ -284,29 +284,29 @@
             </div>
             <div class="flex space-x-2">
               <button
-                @click="changePage(pagination.currentPage - 1)"
                 :disabled="pagination.currentPage === 1"
                 class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="changePage(pagination.currentPage - 1)"
               >
                 Previous
               </button>
               <button
                 v-for="page in visiblePages"
                 :key="page"
-                @click="changePage(page)"
                 :class="[
                   'px-3 py-2 text-sm font-medium rounded-md',
                   page === pagination.currentPage
                     ? 'text-white bg-indigo-600'
                     : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
                 ]"
+                @click="changePage(page)"
               >
                 {{ page }}
               </button>
               <button
-                @click="changePage(pagination.currentPage + 1)"
                 :disabled="pagination.currentPage === pagination.totalPages"
                 class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                @click="changePage(pagination.currentPage + 1)"
               >
                 Next
               </button>
@@ -379,8 +379,8 @@
 
         <div class="mt-6 flex justify-end">
           <button
-            @click="selectedOrder = null"
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            @click="selectedOrder = null"
           >
             Close
           </button>
@@ -399,14 +399,14 @@
         </p>
         <div class="flex justify-end space-x-3">
           <button
-            @click="showCancelModal = false"
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            @click="showCancelModal = false"
           >
             Keep Order
           </button>
           <button
-            @click="cancelOrder"
             class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+            @click="cancelOrder"
           >
             Cancel Order
           </button>

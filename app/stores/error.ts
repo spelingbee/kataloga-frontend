@@ -213,7 +213,7 @@ export const useErrorStore = defineStore('error', {
 })
 
 // Auto-setup online/offline detection
-if (process.client) {
+if (import.meta.client) {
   const errorStore = useErrorStore()
   
   window.addEventListener('online', () => {

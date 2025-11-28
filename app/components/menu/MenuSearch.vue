@@ -24,8 +24,8 @@
         variant="ghost"
         size="sm"
         class="absolute right-2 top-1/2 transform -translate-y-1/2"
-        @click="clearSearch"
         aria-label="Clear search"
+        @click="clearSearch"
       >
         <BaseIcon name="x" size="sm" />
       </BaseButton>

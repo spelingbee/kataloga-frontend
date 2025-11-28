@@ -60,7 +60,7 @@
             class="flex items-start space-x-3 p-2 bg-background-dark/30 rounded text-sm"
           >
             <div class="flex-shrink-0 mt-1">
-              <div class="w-2 h-2 bg-primary-green rounded-full"></div>
+              <div class="w-2 h-2 bg-primary-green rounded-full"/>
             </div>
             <div class="flex-1">
               <AppText size="caption" class="text-white">
@@ -82,8 +82,8 @@
           variant="ghost"
           size="sm"
           class="text-primary-red hover:bg-primary-red/10"
-          @click="$emit('cancel-order', order.id)"
           :loading="loading"
+          @click="$emit('cancel-order', order.id)"
         >
           Cancel Order
         </BaseButton>

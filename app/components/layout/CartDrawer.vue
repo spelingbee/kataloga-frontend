@@ -20,8 +20,8 @@
         <BaseButton
           variant="ghost"
           size="sm"
-          @click="$emit('close')"
           aria-label="Close cart"
+          @click="$emit('close')"
         >
           <BaseIcon name="x" size="md" />
         </BaseButton>
@@ -68,8 +68,8 @@
             variant="primary"
             size="lg"
             class="w-full bg-primary-green hover:bg-green-600 text-white font-semibold"
-            @click="proceedToCheckout"
             :disabled="items.length === 0"
+            @click="proceedToCheckout"
           >
             Proceed to Checkout
           </BaseButton>

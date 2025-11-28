@@ -62,8 +62,8 @@
         <BaseButton 
           variant="ghost" 
           size="sm"
-          @click="markAllAsRead"
           :disabled="unreadCount === 0"
+          @click="markAllAsRead"
         >
           <BaseIcon name="check-circle" size="sm" class="mr-2" />
           Mark All Read
@@ -71,8 +71,8 @@
         <BaseButton 
           variant="ghost" 
           size="sm"
-          @click="clearAllNotifications"
           :disabled="notifications.length === 0"
+          @click="clearAllNotifications"
         >
           <BaseIcon name="trash" size="sm" class="mr-2" />
           Clear All
@@ -84,7 +84,7 @@
     <div class="px-6">
       <!-- Loading State -->
       <div v-if="notificationStore.loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading notifications...</AppText>
       </div>
 
@@ -159,7 +159,7 @@
                   <div 
                     v-if="!notification.isRead"
                     class="w-2 h-2 bg-primary-green rounded-full"
-                  ></div>
+                  />
                 </div>
               </div>
               
@@ -203,8 +203,8 @@
       <div v-if="hasMoreNotifications" class="text-center mt-8">
         <BaseButton 
           variant="secondary"
-          @click="loadMoreNotifications"
           :disabled="loadingMore"
+          @click="loadMoreNotifications"
         >
           <BaseIcon 
             v-if="loadingMore"
@@ -248,13 +248,13 @@
 import type { Notification } from '~/types'
 import { usePushNotifications } from '~/composables/usePushNotifications'
 
+// Stores
+import { useNotificationStore } from '~/stores/notification'
+
 // Page setup
 definePageMeta({
   title: 'Notifications - Menu Ordering App'
 })
-
-// Stores
-import { useNotificationStore } from '~/stores/notification'
 
 const notificationStore = useNotificationStore()
 const router = useRouter()

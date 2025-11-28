@@ -8,17 +8,17 @@
       
       <div class="flex gap-4">
         <button 
-          @click="loadMenu" 
           :disabled="menuLoading"
           class="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
+          @click="loadMenu"
         >
           {{ menuLoading ? 'Loading...' : 'Load Menu' }}
         </button>
         
         <button 
-          @click="loadPopularItems" 
           :disabled="menuLoading"
           class="px-4 py-2 bg-green-500 text-white rounded disabled:opacity-50"
+          @click="loadPopularItems"
         >
           Load Popular Items
         </button>
@@ -34,13 +34,13 @@
           <button
             v-for="category in categories"
             :key="category.id"
-            @click="selectCategory(category.id)"
             :class="[
               'p-2 rounded text-sm',
               currentCategory === category.id 
                 ? 'bg-blue-500 text-white' 
                 : 'bg-gray-200 hover:bg-gray-300'
             ]"
+            @click="selectCategory(category.id)"
           >
             {{ category.name }}
           </button>
@@ -61,19 +61,19 @@
               <span class="font-bold">${{ item.price }}</span>
               <div class="flex gap-2">
                 <button
-                  @click="toggleFavorite(item.id)"
                   :class="[
                     'px-2 py-1 rounded text-xs',
                     isFavourite(item.id) 
                       ? 'bg-red-500 text-white' 
                       : 'bg-gray-200 hover:bg-gray-300'
                   ]"
+                  @click="toggleFavorite(item.id)"
                 >
                   {{ isFavourite(item.id) ? '♥' : '♡' }}
                 </button>
                 <button
-                  @click="addToCart(item)"
                   class="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                  @click="addToCart(item)"
                 >
                   Add to Cart
                 </button>
@@ -93,9 +93,9 @@
           Cart: {{ itemCount }} items ({{ formattedTotal }})
         </span>
         <button 
-          @click="clearCart" 
           :disabled="isEmpty"
           class="px-4 py-2 bg-red-500 text-white rounded disabled:opacity-50"
+          @click="clearCart"
         >
           Clear Cart
         </button>
@@ -114,20 +114,20 @@
           <div class="flex gap-2 items-center">
             <span class="font-bold">${{ item.subtotal }}</span>
             <button
-              @click="updateQuantity(item.menuItem.id, item.quantity - 1, item.customizations)"
               class="px-2 py-1 bg-gray-200 rounded text-xs"
+              @click="updateQuantity(item.menuItem.id, item.quantity - 1, item.customizations)"
             >
               -
             </button>
             <button
-              @click="updateQuantity(item.menuItem.id, item.quantity + 1, item.customizations)"
               class="px-2 py-1 bg-gray-200 rounded text-xs"
+              @click="updateQuantity(item.menuItem.id, item.quantity + 1, item.customizations)"
             >
               +
             </button>
             <button
-              @click="removeItem(item.menuItem.id, item.customizations)"
               class="px-2 py-1 bg-red-500 text-white rounded text-xs"
+              @click="removeItem(item.menuItem.id, item.customizations)"
             >
               Remove
             </button>
@@ -142,17 +142,17 @@
       
       <div class="flex gap-4">
         <button 
-          @click="createTestOrder" 
           :disabled="isEmpty || orderLoading"
           class="px-4 py-2 bg-purple-500 text-white rounded disabled:opacity-50"
+          @click="createTestOrder"
         >
           {{ orderLoading ? 'Creating...' : 'Create Test Order' }}
         </button>
         
         <button 
-          @click="loadOrderHistory" 
           :disabled="orderLoading"
           class="px-4 py-2 bg-indigo-500 text-white rounded disabled:opacity-50"
+          @click="loadOrderHistory"
         >
           Load Order History
         </button>
@@ -170,14 +170,14 @@
         <div class="mt-2 flex gap-2">
           <button
             v-if="canCancelCurrentOrder"
-            @click="cancelCurrentOrder"
             class="px-3 py-1 bg-red-500 text-white rounded text-sm"
+            @click="cancelCurrentOrder"
           >
             Cancel Order
           </button>
           <button
-            @click="startTracking(currentOrder.id)"
             class="px-3 py-1 bg-blue-500 text-white rounded text-sm"
+            @click="startTracking(currentOrder.id)"
           >
             Track Order
           </button>
@@ -199,8 +199,8 @@
             <div class="flex gap-2 items-center">
               <span class="font-bold">${{ order.total }}</span>
               <button
-                @click="repeatOrder(order.id)"
                 class="px-2 py-1 bg-green-500 text-white rounded text-xs"
+                @click="repeatOrder(order.id)"
               >
                 Repeat
               </button>
@@ -218,8 +218,8 @@
         <div class="flex justify-between items-center mb-4">
           <h4 class="font-medium">Tracking Order</h4>
           <button
-            @click="stopTracking"
             class="px-3 py-1 bg-red-500 text-white rounded text-sm"
+            @click="stopTracking"
           >
             Stop Tracking
           </button>
@@ -242,7 +242,7 @@
             <div 
               :class="`bg-${statusColor}-500 h-2 rounded-full transition-all duration-300`"
               :style="`width: ${progressPercentage}%`"
-            ></div>
+            />
           </div>
         </div>
       </div>
@@ -254,17 +254,17 @@
       
       <div class="flex gap-4">
         <button 
-          @click="loadNotifications" 
           :disabled="userLoading"
           class="px-4 py-2 bg-yellow-500 text-white rounded disabled:opacity-50"
+          @click="loadNotifications"
         >
           Load Notifications
         </button>
         
         <button 
-          @click="loadPromotions" 
           :disabled="userLoading"
           class="px-4 py-2 bg-pink-500 text-white rounded disabled:opacity-50"
+          @click="loadPromotions"
         >
           Load Promotions
         </button>
@@ -273,8 +273,8 @@
       <div v-if="hasUnreadNotifications" class="p-3 bg-yellow-50 border rounded">
         <span class="font-medium">{{ unreadNotificationsCount }} unread notifications</span>
         <button
-          @click="markAllNotificationsRead"
           class="ml-2 px-2 py-1 bg-yellow-500 text-white rounded text-xs"
+          @click="markAllNotificationsRead"
         >
           Mark All Read
         </button>
@@ -295,8 +295,8 @@
                 {{ promotion.discountType === 'percentage' ? `${promotion.discountValue}% off` : `$${promotion.discountValue} off` }}
               </span>
               <button
-                @click="claimPromotion(promotion.id)"
                 class="px-2 py-1 bg-pink-500 text-white rounded text-xs"
+                @click="claimPromotion(promotion.id)"
               >
                 Claim
               </button>

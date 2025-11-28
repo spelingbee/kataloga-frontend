@@ -18,8 +18,8 @@
         <!-- Error Details (collapsible) -->
         <div v-if="showDetails && error?.details" class="error-details">
           <button 
-            @click="detailsExpanded = !detailsExpanded"
             class="details-toggle"
+            @click="detailsExpanded = !detailsExpanded"
           >
             <BaseIcon 
               :name="detailsExpanded ? 'chevron-up' : 'chevron-down'" 
@@ -38,9 +38,9 @@
       <div class="error-actions">
         <RetryButton 
           v-if="showRetry"
-          @click="$emit('retry')"
           :loading="retrying"
           :disabled="!canRetry"
+          @click="$emit('retry')"
         />
         
         <BaseButton

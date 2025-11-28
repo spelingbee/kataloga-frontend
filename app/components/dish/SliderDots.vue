@@ -9,8 +9,8 @@
           ? 'w-3 h-3 bg-primary-red'
           : 'w-2 h-2 bg-neutral-20/40 hover:bg-neutral-20/60'
       ]"
-      @click="$emit('select', index)"
       :aria-label="`Go to slide ${index + 1}`"
+      @click="$emit('select', index)"
     />
   </div>
 </template>

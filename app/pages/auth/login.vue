@@ -29,7 +29,7 @@
                 { 'auth-form__input--error': errors.email }
               ]"
               placeholder="Email адрес"
-            >
+            />
             <p v-if="errors.email" class="auth-form__error">{{ errors.email }}</p>
           </div>
           
@@ -47,7 +47,7 @@
                 { 'auth-form__input--error': errors.password }
               ]"
               placeholder="Пароль"
-            >
+            />
             <p v-if="errors.password" class="auth-form__error">{{ errors.password }}</p>
           </div>
         </div>
@@ -60,7 +60,7 @@
               name="remember-me"
               type="checkbox"
               class="auth-form__checkbox-input"
-            >
+            />
             <label for="remember-me" class="auth-form__checkbox-label">
               Запомнить меня
             </label>
@@ -96,8 +96,8 @@
           >
             <span v-if="isLoading" class="auth-form__submit-spinner">
               <svg class="auth-form__spinner-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="auth-form__spinner-track" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="auth-form__spinner-fill" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <circle class="auth-form__spinner-track" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="auth-form__spinner-fill" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
               </svg>
             </span>
             {{ isLoading ? 'Вход...' : 'Войти' }}

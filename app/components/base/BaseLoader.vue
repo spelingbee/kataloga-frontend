@@ -2,27 +2,27 @@
   <div class="base-loader" :class="loaderClasses">
     <!-- Spinner Variant -->
     <div v-if="variant === 'spinner'" class="spinner">
-      <div class="spinner-circle"></div>
+      <div class="spinner-circle"/>
     </div>
     
     <!-- Dots Variant -->
     <div v-else-if="variant === 'dots'" class="dots">
-      <div class="dot" v-for="i in 3" :key="i"></div>
+      <div v-for="i in 3" :key="i" class="dot"/>
     </div>
     
     <!-- Pulse Variant -->
     <div v-else-if="variant === 'pulse'" class="pulse">
-      <div class="pulse-circle"></div>
+      <div class="pulse-circle"/>
     </div>
     
     <!-- Bar Variant -->
     <div v-else-if="variant === 'bar'" class="bar">
-      <div class="bar-fill"></div>
+      <div class="bar-fill"/>
     </div>
     
     <!-- Skeleton Variant -->
     <div v-else-if="variant === 'skeleton'" class="skeleton">
-      <div class="skeleton-line" v-for="i in lines" :key="i" :style="getSkeletonLineStyle(i)"></div>
+      <div v-for="i in lines" :key="i" class="skeleton-line" :style="getSkeletonLineStyle(i)"/>
     </div>
     
     <!-- Text (if provided) -->

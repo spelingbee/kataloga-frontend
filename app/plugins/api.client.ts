@@ -1,10 +1,10 @@
 /**
  * API Client Plugin
- * 
+ *
  * Initializes the API client and integrates it with stores.
  * Connects tenant store for automatic tenant header management.
  * Must be initialized before tenant-resolver plugin.
- * 
+ *
  * Requirements: 1.5, 4.1, 4.5
  */
 export default defineNuxtPlugin({
@@ -13,7 +13,7 @@ export default defineNuxtPlugin({
   async setup() {
     const config = useRuntimeConfig()
     const { createApiClient } = await import('~/utils/api')
-    
+
     // Create API client with configuration
     const apiClient = createApiClient({
       baseURL: config.public.apiBaseUrl,
@@ -26,10 +26,10 @@ export default defineNuxtPlugin({
     // Initialize stores and connect them to API client
     const { useAuthStore } = await import('~/stores/auth')
     const { useErrorStore } = await import('~/stores/error')
-    
+
     const authStore = useAuthStore()
     const errorStore = useErrorStore()
-    
+
     apiClient.setTokenStore(authStore)
     apiClient.setErrorStore(errorStore)
 
@@ -41,14 +41,14 @@ export default defineNuxtPlugin({
     if (import.meta.client) {
       // Defer tenant store connection until after tenant-resolver plugin
       const nuxtApp = useNuxtApp()
-      
+
       nuxtApp.hook('app:mounted', async () => {
         const { useTenantStore } = await import('~/stores/tenant')
         const tenantStore = useTenantStore()
-        
+
         // Connect tenant store to API client
         apiClient.setTenantStore(tenantStore)
-        
+
         // Watch for tenant changes and update API client
         watch(
           () => tenantStore.tenantSlug,

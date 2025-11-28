@@ -68,7 +68,7 @@
               :value="category.id"
               type="checkbox"
               class="sr-only"
-            >
+            />
             <CategoryIcon :category="category.id" size="sm" />
             <div class="flex-1 min-w-0">
               <AppText size="body-sm" class="text-white">
@@ -106,7 +106,7 @@
                   left: `${(priceRange[0] / maxPrice) * 100}%`,
                   width: `${((priceRange[1] - priceRange[0]) / maxPrice) * 100}%`
                 }"
-              ></div>
+              />
             </div>
           </div>
 
@@ -142,7 +142,7 @@
               :value="diet.key"
               type="checkbox"
               class="sr-only"
-            >
+            />
             <BaseIcon :name="diet.icon" size="sm" :class="diet.color" />
             <div class="flex-1">
               <AppText size="body-sm" class="text-white">
@@ -230,7 +230,7 @@
               v-model="showOnlyAvailable"
               type="checkbox"
               class="w-4 h-4 text-primary-green bg-background-dark border-neutral-80 rounded focus:ring-primary-green"
-            >
+            />
             <div>
               <AppText size="body-sm" class="text-white">
                 Show only available items
@@ -246,7 +246,7 @@
               v-model="showNewItems"
               type="checkbox"
               class="w-4 h-4 text-primary-green bg-background-dark border-neutral-80 rounded focus:ring-primary-green"
-            >
+            />
             <div>
               <AppText size="body-sm" class="text-white">
                 Show new items first
@@ -266,8 +266,8 @@
         <BaseButton 
           variant="primary"
           size="lg"
-          @click="applyFilters"
           class="min-w-48"
+          @click="applyFilters"
         >
           Apply Filters ({{ filteredItemsCount }} items)
         </BaseButton>
@@ -285,12 +285,12 @@
 
 <script setup lang="ts">
 // Page setup
+// Stores
+import { useMenuStore } from '~/stores/menu'
+
 definePageMeta({
   title: 'Menu Filters - Menu Ordering App'
 })
-
-// Stores
-import { useMenuStore } from '~/stores/menu'
 
 const menuStore = useMenuStore()
 const router = useRouter()

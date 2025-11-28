@@ -32,15 +32,15 @@
             <!-- Actions -->
             <div class="flex gap-2">
               <button
-                @click="handleUpdate"
                 :disabled="updating"
                 class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-body-sm font-medium transition-colors disabled:opacity-50"
+                @click="handleUpdate"
               >
                 {{ updating ? 'Updating...' : 'Update' }}
               </button>
               <button
-                @click="handleDismiss"
                 class="p-1 hover:bg-white/20 rounded transition-colors"
+                @click="handleDismiss"
               >
                 <BaseIcon name="x" class="w-4 h-4" />
               </button>

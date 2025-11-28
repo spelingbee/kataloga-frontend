@@ -27,8 +27,8 @@
           <button
             v-if="isDismissible"
             class="dismiss-btn"
-            @click.stop="dismissStatus"
             aria-label="Dismiss notification"
+            @click.stop="dismissStatus"
           >
             <BaseIcon name="x" />
           </button>
@@ -39,7 +39,7 @@
           v-if="syncInProgress"
           class="sync-progress"
         >
-          <div class="progress-bar"></div>
+          <div class="progress-bar"/>
         </div>
       </div>
     </Transition>
@@ -52,8 +52,8 @@
           'floating-indicator',
           `indicator-${statusColor}`
         ]"
-        @click="showIndicator = true"
         :title="statusMessage"
+        @click="showIndicator = true"
       >
         <BaseIcon
           :name="statusIcon"

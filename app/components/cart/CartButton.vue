@@ -3,8 +3,8 @@
     variant="ghost"
     :size="size"
     class="relative text-white hover:text-primary-green transition-colors"
-    @click="$emit('click')"
     :aria-label="`Cart with ${itemCount} items`"
+    @click="$emit('click')"
   >
     <!-- Cart Icon -->
     <BaseIcon 

@@ -38,8 +38,8 @@
         :quantity="item.quantity"
         :min="0"
         :max="10"
-        @update="updateQuantity"
         size="sm"
+        @update="updateQuantity"
       />
     </div>
 
@@ -47,9 +47,9 @@
     <BaseButton
       variant="ghost"
       size="sm"
-      @click="removeItem"
       class="cart-item__remove-btn"
       aria-label="Remove item"
+      @click="removeItem"
     >
       <BaseIcon name="trash" size="sm" />
     </BaseButton>

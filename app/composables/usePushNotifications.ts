@@ -8,7 +8,7 @@ export function usePushNotifications() {
 
   // Check if push notifications are supported
   const checkSupport = () => {
-    if (process.client) {
+    if (import.meta.client) {
       isSupported.value = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
       permission.value = Notification.permission
     }
