@@ -1,18 +1,20 @@
 <template>
   <div class="notification-center">
     <!-- Notification Bell Icon -->
-    <div class="relative">
+    <div class="notification-center__trigger">
       <button
-        class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg"
-        :class="{ 'text-blue-600': hasUnread }"
+        :class="[
+          'notification-center__button',
+          { 'notification-center__button--active': hasUnread }
+        ]"
         @click="toggleNotifications"
       >
-        <BaseIcon name="bell" class="w-6 h-6" />
+        <BaseIcon name="bell" size="md" />
         
         <!-- Unread Badge -->
         <span
           v-if="unreadCount > 0"
-          class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"
+          class="notification-center__badge"
         >
           {{ unreadCount > 99 ? '99+' : unreadCount }}
         </span>
@@ -21,22 +23,22 @@
       <!-- Notifications Dropdown -->
       <div
         v-if="showNotifications"
-        class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+        class="notification-center__dropdown"
         @click.stop
       >
         <!-- Header -->
-        <div class="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
-          <div class="flex space-x-2">
+        <div class="notification-center__header">
+          <h3 class="notification-center__title">Notifications</h3>
+          <div class="notification-center__header-actions">
             <button
               v-if="unreadCount > 0"
-              class="text-sm text-blue-600 hover:text-blue-800"
+              class="notification-center__action notification-center__action--primary"
               @click="markAllAsRead"
             >
               Mark all read
             </button>
             <button
-              class="text-sm text-gray-600 hover:text-gray-800"
+              class="notification-center__action notification-center__action--secondary"
               @click="clearAll"
             >
               Clear all
@@ -45,55 +47,59 @@
         </div>
 
         <!-- Notifications List -->
-        <div class="max-h-96 overflow-y-auto">
-          <div v-if="notifications.length === 0" class="p-4 text-center text-gray-500">
+        <div class="notification-center__list">
+          <div v-if="notifications.length === 0" class="notification-center__empty">
             No notifications
           </div>
           
           <div
             v-for="notification in notifications"
             :key="notification.id"
-            class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-            :class="{ 'bg-blue-50': !notification.isRead }"
+            :class="[
+              'notification-center__item',
+              { 'notification-center__item--unread': !notification.isRead }
+            ]"
             @click="handleNotificationClick(notification)"
           >
-            <div class="flex items-start space-x-3">
+            <div class="notification-center__item-content">
               <!-- Icon -->
-              <div class="flex-shrink-0">
+              <div class="notification-center__item-icon-wrapper">
                 <div
-                  class="w-8 h-8 rounded-full flex items-center justify-center"
-                  :class="getNotificationIconClass(notification.type)"
+                  :class="[
+                    'notification-center__item-icon',
+                    `notification-center__item-icon--${notification.type}`
+                  ]"
                 >
-                  <BaseIcon :name="getNotificationIcon(notification.type)" class="w-4 h-4" />
+                  <BaseIcon :name="getNotificationIcon(notification.type)" size="sm" />
                 </div>
               </div>
 
               <!-- Content -->
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900">
+              <div class="notification-center__item-text">
+                <p class="notification-center__item-title">
                   {{ notification.title }}
                 </p>
-                <p class="text-sm text-gray-600 mt-1">
+                <p class="notification-center__item-message">
                   {{ notification.message }}
                 </p>
-                <p class="text-xs text-gray-400 mt-2">
+                <p class="notification-center__item-time">
                   {{ formatTime(notification.timestamp) }}
                 </p>
               </div>
 
               <!-- Unread Indicator -->
-              <div v-if="!notification.isRead" class="flex-shrink-0">
-                <div class="w-2 h-2 bg-blue-500 rounded-full"/>
+              <div v-if="!notification.isRead" class="notification-center__item-indicator">
+                <div class="notification-center__item-dot"/>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Footer -->
-        <div class="p-4 border-t border-gray-200">
+        <div class="notification-center__footer">
           <NuxtLink
             to="/notifications"
-            class="block text-center text-sm text-blue-600 hover:text-blue-800"
+            class="notification-center__view-all"
             @click="showNotifications = false"
           >
             View all notifications
@@ -105,7 +111,7 @@
     <!-- Click outside to close -->
     <div
       v-if="showNotifications"
-      class="fixed inset-0 z-40"
+      class="notification-center__overlay"
       @click="showNotifications = false"
     />
   </div>
@@ -134,10 +140,8 @@ const toggleNotifications = () => {
 }
 
 const handleNotificationClick = (notification: InAppNotification) => {
-  // Mark as read
   markAsRead(notification.id)
   
-  // Navigate based on notification type
   let route = '/notifications'
   
   switch (notification.type) {
@@ -172,19 +176,6 @@ const getNotificationIcon = (type: string): string => {
   }
 }
 
-const getNotificationIconClass = (type: string): string => {
-  switch (type) {
-    case 'order':
-      return 'bg-green-100 text-green-600'
-    case 'promotion':
-      return 'bg-yellow-100 text-yellow-600'
-    case 'system':
-      return 'bg-blue-100 text-blue-600'
-    default:
-      return 'bg-gray-100 text-gray-600'
-  }
-}
-
 const formatTime = (timestamp: string): string => {
   const date = new Date(timestamp)
   const now = new Date()
@@ -203,7 +194,6 @@ const formatTime = (timestamp: string): string => {
   }
 }
 
-// Close notifications when clicking outside
 onMounted(() => {
   const handleClickOutside = (event: Event) => {
     const target = event.target as Element
@@ -219,3 +209,227 @@ onMounted(() => {
   })
 })
 </script>
+
+<style lang="scss" scoped>
+@use '../../assets/scss/abstracts/variables' as *;
+
+.notification-center {
+  position: relative;
+}
+
+.notification-center__trigger {
+  position: relative;
+}
+
+.notification-center__button {
+  position: relative;
+  padding: $space-2;
+  color: #4b5563;
+  background: none;
+  border: none;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &:hover {
+    color: #111827;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #3b82f6;
+  }
+
+  &--active {
+    color: #2563eb;
+  }
+}
+
+.notification-center__badge {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  background: #ef4444;
+  color: white;
+  font-size: $text-xs;
+  border-radius: $radius-full;
+  height: 1.25rem;
+  width: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-center__dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: $space-2;
+  width: 20rem;
+  background: white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  border: 1px solid #e5e7eb;
+  z-index: 50;
+}
+
+.notification-center__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-6;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.notification-center__title {
+  font-size: $text-lg;
+  font-weight: $font-semibold;
+  color: #111827;
+}
+
+.notification-center__header-actions {
+  display: flex;
+  gap: $space-2;
+}
+
+.notification-center__action {
+  font-size: $text-sm;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color $transition-base;
+
+  &--primary {
+    color: #2563eb;
+
+    &:hover {
+      color: #1d4ed8;
+    }
+  }
+
+  &--secondary {
+    color: #4b5563;
+
+    &:hover {
+      color: #1f2937;
+    }
+  }
+}
+
+.notification-center__list {
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.notification-center__empty {
+  padding: $space-6;
+  text-align: center;
+  color: #6b7280;
+}
+
+.notification-center__item {
+  padding: $space-6;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background $transition-base;
+
+  &:hover {
+    background: #f9fafb;
+  }
+
+  &--unread {
+    background: #eff6ff;
+  }
+}
+
+.notification-center__item-content {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-4;
+}
+
+.notification-center__item-icon-wrapper {
+  flex-shrink: 0;
+}
+
+.notification-center__item-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &--order {
+    background: #d1fae5;
+    color: #059669;
+  }
+
+  &--promotion {
+    background: #fef3c7;
+    color: #d97706;
+  }
+
+  &--system {
+    background: #dbeafe;
+    color: #2563eb;
+  }
+}
+
+.notification-center__item-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-center__item-title {
+  font-size: $text-sm;
+  font-weight: $font-medium;
+  color: #111827;
+}
+
+.notification-center__item-message {
+  font-size: $text-sm;
+  color: #4b5563;
+  margin-top: $space-1;
+}
+
+.notification-center__item-time {
+  font-size: $text-xs;
+  color: #9ca3af;
+  margin-top: $space-2;
+}
+
+.notification-center__item-indicator {
+  flex-shrink: 0;
+}
+
+.notification-center__item-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: #3b82f6;
+  border-radius: $radius-full;
+}
+
+.notification-center__footer {
+  padding: $space-6;
+  border-top: 1px solid #e5e7eb;
+}
+
+.notification-center__view-all {
+  display: block;
+  text-align: center;
+  font-size: $text-sm;
+  color: #2563eb;
+  text-decoration: none;
+  transition: color $transition-base;
+
+  &:hover {
+    color: #1d4ed8;
+  }
+}
+
+.notification-center__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+</style>

@@ -1,40 +1,68 @@
 // =============================================================================
-// Dark Theme Variables
+// Dark Theme Overrides - New Minimalist Design System
 // =============================================================================
+// Additional dark theme customizations beyond the main color tokens
 
-// Dark theme is the default theme, but we can override specific variables here
-// if needed for theme switching functionality
+@use '../tokens' as *;
 
-// Dark Theme Color Overrides
+// Dark theme customizations are now handled in _colors.scss via CSS custom properties
+// This file can be used for additional dark theme specific styles if needed
+
+// Component-specific dark theme overrides
 // -----------------------------------------------------------------------------
-$dark-color-background-primary: $color-background-dark;
-$dark-color-background-secondary: $color-background-card;
-$dark-color-background-tertiary: $color-background-sidebar;
 
-$dark-color-text-primary: $color-neutral-20;
-$dark-color-text-secondary: rgba($color-neutral-20, 0.8);
-$dark-color-text-tertiary: rgba($color-neutral-20, 0.6);
+// Enhanced shadows for dark theme (more prominent)
+[data-theme="dark"] {
+  // Enhanced shadows for better depth in dark mode
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  
+  // Slightly adjusted primary color for better contrast in dark mode
+  --color-primary-light: #FF7A47;
+  --color-primary-dark: #D4491F;
+}
 
-$dark-color-border-primary: $color-border-subtle;
-$dark-color-border-secondary: rgba($color-border-subtle, 0.5);
-
-// Dark Theme Component Overrides
+// Dark theme specific component styles
 // -----------------------------------------------------------------------------
-$dark-card-background: $color-background-card;
-$dark-card-border: $color-border-subtle;
-$dark-card-shadow: $shadow-category;
 
-$dark-button-primary-bg: $color-primary-green;
-$dark-button-primary-text: white;
-$dark-button-secondary-bg: $color-background-card;
-$dark-button-secondary-text: $color-neutral-20;
+[data-theme="dark"] {
+  // Cards have more prominent shadows in dark mode
+  .base-card {
+    box-shadow: var(--shadow-lg);
+  }
+  
+  // Buttons have better contrast in dark mode
+  .base-button--primary {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  // Modals have stronger backdrop in dark mode
+  .base-modal__backdrop {
+    background: rgba(0, 0, 0, 0.8);
+  }
+}
 
-// Dark Theme Category Colors (same as main theme)
+// Dark theme accessibility enhancements
 // -----------------------------------------------------------------------------
-$dark-category-all: $color-category-all;
-$dark-category-salad: $color-category-salad;
-$dark-category-main: $color-category-main;
-$dark-category-meat: $color-category-meat;
-$dark-category-fastfood: $color-category-fastfood;
-$dark-category-dessert: $color-category-dessert;
-$dark-category-drinks: $color-category-drinks;
+
+[data-theme="dark"] {
+  // Ensure focus indicators are visible in dark mode
+  .focus-visible,
+  *:focus-visible {
+    outline-color: var(--color-primary-light);
+    box-shadow: 0 0 0 2px var(--color-primary-light);
+  }
+  
+  // Enhanced border visibility in dark mode
+  .base-input,
+  .base-select,
+  .base-textarea {
+    border-color: var(--border-secondary);
+    
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+    }
+  }
+}

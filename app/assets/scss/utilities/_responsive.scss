@@ -1,0 +1,474 @@
+// =============================================================================
+// Responsive Utilities
+// =============================================================================
+
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// Display Utilities
+// -----------------------------------------------------------------------------
+
+// Hide on mobile
+.hide-mobile {
+  @include mobile-only {
+    display: none !important;
+  }
+}
+
+// Show only on mobile
+.show-mobile {
+  display: none !important;
+  
+  @include mobile-only {
+    display: block !important;
+  }
+}
+
+// Hide on tablet and up
+.hide-tablet-up {
+  @include tablet-up {
+    display: none !important;
+  }
+}
+
+// Show only on tablet and up
+.show-tablet-up {
+  display: none !important;
+  
+  @include tablet-up {
+    display: block !important;
+  }
+}
+
+// Hide on desktop and up
+.hide-desktop-up {
+  @include desktop-up {
+    display: none !important;
+  }
+}
+
+// Show only on desktop and up
+.show-desktop-up {
+  display: none !important;
+  
+  @include desktop-up {
+    display: block !important;
+  }
+}
+
+// Responsive Container
+// -----------------------------------------------------------------------------
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+  
+  @include tablet-up {
+    padding: 0 $spacing-lg;
+  }
+  
+  @include desktop-up {
+    padding: 0 $spacing-xl;
+  }
+}
+
+.container-fluid {
+  width: 100%;
+  padding: 0 $spacing-md;
+  
+  @include tablet-up {
+    padding: 0 $spacing-lg;
+  }
+}
+
+// Responsive Grid
+// -----------------------------------------------------------------------------
+
+.grid {
+  display: grid;
+  gap: $spacing-md;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, 1fr);
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+// Responsive grid columns
+.grid-responsive {
+  grid-template-columns: repeat(1, 1fr);
+  
+  @include tablet-up {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @include desktop-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.grid-responsive-2-3-4 {
+  grid-template-columns: repeat(2, 1fr);
+  
+  @include tablet-up {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  @include desktop-up {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// Responsive Flex
+// -----------------------------------------------------------------------------
+
+.flex-mobile-column {
+  display: flex;
+  flex-direction: column;
+  
+  @include tablet-up {
+    flex-direction: row;
+  }
+}
+
+.flex-mobile-row {
+  display: flex;
+  flex-direction: row;
+  
+  @include mobile-only {
+    flex-direction: column;
+  }
+}
+
+// Responsive Spacing
+// -----------------------------------------------------------------------------
+
+// Responsive padding
+.p-responsive {
+  padding: $spacing-md;
+  
+  @include tablet-up {
+    padding: $spacing-lg;
+  }
+  
+  @include desktop-up {
+    padding: $spacing-xl;
+  }
+}
+
+.px-responsive {
+  padding-left: $spacing-md;
+  padding-right: $spacing-md;
+  
+  @include tablet-up {
+    padding-left: $spacing-lg;
+    padding-right: $spacing-lg;
+  }
+  
+  @include desktop-up {
+    padding-left: $spacing-xl;
+    padding-right: $spacing-xl;
+  }
+}
+
+.py-responsive {
+  padding-top: $spacing-md;
+  padding-bottom: $spacing-md;
+  
+  @include tablet-up {
+    padding-top: $spacing-lg;
+    padding-bottom: $spacing-lg;
+  }
+  
+  @include desktop-up {
+    padding-top: $spacing-xl;
+    padding-bottom: $spacing-xl;
+  }
+}
+
+// Responsive margin
+.m-responsive {
+  margin: $spacing-md;
+  
+  @include tablet-up {
+    margin: $spacing-lg;
+  }
+  
+  @include desktop-up {
+    margin: $spacing-xl;
+  }
+}
+
+.mx-responsive {
+  margin-left: $spacing-md;
+  margin-right: $spacing-md;
+  
+  @include tablet-up {
+    margin-left: $spacing-lg;
+    margin-right: $spacing-lg;
+  }
+  
+  @include desktop-up {
+    margin-left: $spacing-xl;
+    margin-right: $spacing-xl;
+  }
+}
+
+.my-responsive {
+  margin-top: $spacing-md;
+  margin-bottom: $spacing-md;
+  
+  @include tablet-up {
+    margin-top: $spacing-lg;
+    margin-bottom: $spacing-lg;
+  }
+  
+  @include desktop-up {
+    margin-top: $spacing-xl;
+    margin-bottom: $spacing-xl;
+  }
+}
+
+// Responsive Typography
+// -----------------------------------------------------------------------------
+
+.text-responsive {
+  font-size: $font-size-base;
+  
+  @include tablet-up {
+    font-size: $font-size-lg;
+  }
+  
+  @include desktop-up {
+    font-size: $font-size-xl;
+  }
+}
+
+.heading-responsive {
+  font-size: $font-size-xl;
+  
+  @include tablet-up {
+    font-size: $font-size-2xl;
+  }
+  
+  @include desktop-up {
+    font-size: $font-size-3xl;
+  }
+}
+
+.display-responsive {
+  font-size: $font-size-2xl;
+  
+  @include tablet-up {
+    font-size: $font-size-3xl;
+  }
+  
+  @include desktop-up {
+    font-size: $font-size-4xl;
+  }
+}
+
+// Text alignment
+.text-center-mobile {
+  text-align: center;
+  
+  @include tablet-up {
+    text-align: left;
+  }
+}
+
+.text-left-mobile {
+  text-align: left;
+  
+  @include tablet-up {
+    text-align: center;
+  }
+}
+
+// Responsive Width
+// -----------------------------------------------------------------------------
+
+.w-full-mobile {
+  width: 100%;
+  
+  @include tablet-up {
+    width: auto;
+  }
+}
+
+.w-auto-mobile {
+  width: auto;
+  
+  @include mobile-only {
+    width: 100%;
+  }
+}
+
+// Responsive Max Width
+// -----------------------------------------------------------------------------
+
+.max-w-mobile {
+  max-width: 100%;
+  
+  @include tablet-up {
+    max-width: 640px;
+  }
+  
+  @include desktop-up {
+    max-width: 768px;
+  }
+}
+
+// Touch-Friendly Utilities
+// -----------------------------------------------------------------------------
+
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.touch-target-lg {
+  min-width: 56px;
+  min-height: 56px;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 56px;
+    height: 56px;
+  }
+}
+
+.no-tap-highlight {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+// Mobile-Optimized Scrolling
+// -----------------------------------------------------------------------------
+
+.scroll-smooth {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  overflow-x: auto;
+  
+  > * {
+    scroll-snap-align: start;
+  }
+}
+
+.scroll-snap-y {
+  scroll-snap-type: y mandatory;
+  overflow-y: auto;
+  
+  > * {
+    scroll-snap-align: start;
+  }
+}
+
+// Hide scrollbar but keep functionality
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Responsive Aspect Ratios
+// -----------------------------------------------------------------------------
+
+.aspect-square {
+  aspect-ratio: 1 / 1;
+}
+
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+// Mobile-First Utilities
+// -----------------------------------------------------------------------------
+
+.stack-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  
+  @include tablet-up {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.reverse-mobile {
+  display: flex;
+  flex-direction: column-reverse;
+  
+  @include tablet-up {
+    flex-direction: row;
+  }
+}
+
+// Safe Area Insets (for notched devices)
+// -----------------------------------------------------------------------------
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: env(safe-area-inset-right);
+}
+
+.safe-area-all {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}

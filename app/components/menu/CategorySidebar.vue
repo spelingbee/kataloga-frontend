@@ -147,6 +147,8 @@ const clearAllFilters = () => {
 </script>
 
 <style lang="scss" scoped>
+@use '~/assets/scss/abstracts/variables' as *;
+
 // Component-specific animations and transitions
 .category-sidebar {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -260,7 +262,7 @@ const clearAllFilters = () => {
     left: 0;
     width: 0;
     height: 2px;
-    background: linear-gradient(90deg, $color-primary-green, $color-primary-orange);
+    background: linear-gradient(90deg, var(--color-success), var(--color-warning));
     transition: width 0.3s ease;
   }
   

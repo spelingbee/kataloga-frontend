@@ -1,40 +1,31 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="orders-page">
     <!-- Header Section -->
-    <div class="px-6 py-8">
-      <div class="flex items-center gap-3 mb-4">
-        <BaseIcon name="receipt" size="lg" class="text-primary-green" />
-        <AppHeading level="h1" size="display-md" class="text-white">
-          Order History
-        </AppHeading>
-      </div>
-      <AppText size="body-lg" class="text-neutral-20">
+    <div class="orders-page__header">
+      <h1 class="orders-page__title">Order History</h1>
+      <p class="orders-page__subtitle">
         Track your orders and reorder your favorites
-      </AppText>
+      </p>
     </div>
 
     <!-- Filter and Search -->
-    <div class="px-6 mb-8">
-      <div class="flex flex-col md:flex-row gap-4 mb-6">
+    <div class="orders-page__filters">
+      <div class="orders-page__search-row">
         <!-- Search -->
-        <div class="flex-1 max-w-md">
+        <div class="orders-page__search">
           <BaseInput
             v-model="searchQuery"
             placeholder="Search orders..."
-            class="w-full"
           >
             <template #prefix>
-              <BaseIcon name="search" size="sm" class="text-neutral-80" />
+              <BaseIcon name="search" size="sm" />
             </template>
           </BaseInput>
         </div>
 
         <!-- Filters -->
-        <div class="flex gap-2">
-          <select 
-            v-model="statusFilter"
-            class="bg-background-card border border-neutral-80/30 rounded-lg px-3 py-2 text-white text-sm"
-          >
+        <div class="orders-page__filter-controls">
+          <BaseSelect v-model="statusFilter">
             <option value="">All Orders</option>
             <option value="PENDING">Pending</option>
             <option value="CONFIRMED">Confirmed</option>
@@ -42,39 +33,36 @@
             <option value="READY">Ready</option>
             <option value="DELIVERED">Delivered</option>
             <option value="CANCELLED">Cancelled</option>
-          </select>
+          </BaseSelect>
           
-          <select 
-            v-model="timeFilter"
-            class="bg-background-card border border-neutral-80/30 rounded-lg px-3 py-2 text-white text-sm"
-          >
+          <BaseSelect v-model="timeFilter">
             <option value="">All Time</option>
             <option value="today">Today</option>
             <option value="week">This Week</option>
             <option value="month">This Month</option>
             <option value="year">This Year</option>
-          </select>
+          </BaseSelect>
         </div>
       </div>
 
       <!-- Quick Stats -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-background-card rounded-xl p-4 text-center">
-          <AppText size="body-lg" class="text-white font-semibold">{{ totalOrders }}</AppText>
-          <AppText size="caption" class="text-neutral-20">Total Orders</AppText>
-        </div>
-        <div class="bg-background-card rounded-xl p-4 text-center">
-          <AppPrice :price="totalSpent" size="md" />
-          <AppText size="caption" class="text-neutral-20">Total Spent</AppText>
-        </div>
-        <div class="bg-background-card rounded-xl p-4 text-center">
-          <AppText size="body-lg" class="text-white font-semibold">{{ favoriteRestaurant }}</AppText>
-          <AppText size="caption" class="text-neutral-20">Favorite</AppText>
-        </div>
-        <div class="bg-background-card rounded-xl p-4 text-center">
-          <AppText size="body-lg" class="text-white font-semibold">{{ averageOrderValue }}</AppText>
-          <AppText size="caption" class="text-neutral-20">Avg. Order</AppText>
-        </div>
+      <div class="orders-page__stats">
+        <BaseCard class="orders-page__stat-card">
+          <div class="orders-page__stat-value">{{ totalOrders }}</div>
+          <div class="orders-page__stat-label">Total Orders</div>
+        </BaseCard>
+        <BaseCard class="orders-page__stat-card">
+          <div class="orders-page__stat-value">${{ totalSpent }}</div>
+          <div class="orders-page__stat-label">Total Spent</div>
+        </BaseCard>
+        <BaseCard class="orders-page__stat-card">
+          <div class="orders-page__stat-value">{{ favoriteRestaurant }}</div>
+          <div class="orders-page__stat-label">Favorite</div>
+        </BaseCard>
+        <BaseCard class="orders-page__stat-card">
+          <div class="orders-page__stat-value">${{ averageOrderValue }}</div>
+          <div class="orders-page__stat-label">Avg. Order</div>
+        </BaseCard>
       </div>
     </div>
 
@@ -522,3 +510,105 @@ onMounted(() => {
   orderStore.fetchOrderHistory()
 })
 </script>
+
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/typography' as *;
+@use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/shadows' as *;
+@use '../../assets/scss/tokens/transitions' as *;
+
+.orders-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $space-8 $space-4;
+}
+
+.orders-page__header {
+  text-align: center;
+  margin-bottom: $space-12;
+}
+
+.orders-page__title {
+  font-family: $font-secondary;
+  font-size: $text-3xl;
+  font-weight: $font-bold;
+  color: var(--text-primary);
+  margin-bottom: $space-4;
+}
+
+.orders-page__subtitle {
+  font-size: $text-lg;
+  color: var(--text-secondary);
+  line-height: $leading-relaxed;
+}
+
+.orders-page__filters {
+  margin-bottom: $space-8;
+}
+
+.orders-page__search-row {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  margin-bottom: $space-6;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.orders-page__search {
+  flex: 1;
+  max-width: 400px;
+}
+
+.orders-page__filter-controls {
+  display: flex;
+  gap: $space-3;
+}
+
+.orders-page__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-4;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.orders-page__stat-card {
+  text-align: center;
+  padding: $space-6;
+}
+
+.orders-page__stat-value {
+  font-size: $text-2xl;
+  font-weight: $font-bold;
+  color: var(--text-primary);
+  margin-bottom: $space-2;
+}
+
+.orders-page__stat-label {
+  font-size: $text-sm;
+  color: var(--text-secondary);
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .orders-page {
+    padding: $space-4;
+  }
+
+  .orders-page__title {
+    font-size: $text-2xl;
+  }
+
+  .orders-page__filter-controls {
+    flex-direction: column;
+  }
+}
+</style>

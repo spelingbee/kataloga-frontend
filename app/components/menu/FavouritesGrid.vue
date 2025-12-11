@@ -156,6 +156,7 @@ import { computed, ref } from 'vue'
 import type { MenuItem } from '~/types'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
+import { useFavoritesStore } from '~/stores/favorites'
 
 interface Props {
   searchQuery?: string
@@ -188,13 +189,14 @@ const emit = defineEmits<{
 // Stores
 const menuStore = useMenuStore()
 const cartStore = useCartStore()
+const favoritesStore = useFavoritesStore()
 
 // Local state
 const currentPage = ref(1)
 const itemsPerPage = 12
 
 // Computed properties
-const favouriteItems = computed(() => menuStore.favourites)
+const favouriteItems = computed(() => favoritesStore.getFavoriteItems())
 
 const filteredFavorites = computed(() => {
   let items = favouriteItems.value
@@ -304,9 +306,7 @@ const clearAllFavorites = async () => {
   
   if (confirmed) {
     // Clear all favorites
-    favouriteItems.value.forEach(item => {
-      menuStore.toggleFavourite(item.id)
-    })
+    await favoritesStore.clearAllFavorites()
     
     // Add haptic feedback
     if ('vibrate' in navigator) {

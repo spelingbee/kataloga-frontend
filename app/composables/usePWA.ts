@@ -59,7 +59,9 @@ export const usePWAFeatures = () => {
 
   // Handle online/offline status
   const handleOnlineStatus = () => {
-    isOnline.value = navigator.onLine
+    if (typeof navigator !== 'undefined' && 'onLine' in navigator) {
+      isOnline.value = navigator.onLine
+    }
   }
 
   // Register for push notifications

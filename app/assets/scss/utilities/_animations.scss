@@ -1,0 +1,360 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/animations' as *;
+
+// =============================================================================
+// Animation Utility Classes
+// =============================================================================
+
+// Fade Animations
+// -----------------------------------------------------------------------------
+
+.fade-in {
+  @include fade-in;
+}
+
+.fade-out {
+  @include fade-out;
+}
+
+.fade-in-up {
+  @include fade-in-up;
+}
+
+.fade-in-down {
+  @include fade-in-down;
+}
+
+// Slide Animations
+// -----------------------------------------------------------------------------
+
+.slide-in-up {
+  @include slide-in-up;
+}
+
+.slide-in-down {
+  @include slide-in-down;
+}
+
+.slide-in-left {
+  @include slide-in-left;
+}
+
+.slide-in-right {
+  @include slide-in-right;
+}
+
+// Scale Animations
+// -----------------------------------------------------------------------------
+
+.scale-in {
+  @include scale-in;
+}
+
+.scale-out {
+  @include scale-out;
+}
+
+// Loading Animations
+// -----------------------------------------------------------------------------
+
+.shimmer {
+  @include shimmer;
+}
+
+.spin {
+  @include spin;
+}
+
+.pulse {
+  @include pulse;
+}
+
+.bounce {
+  @include bounce;
+}
+
+// Interactive Animations
+// -----------------------------------------------------------------------------
+
+.shake {
+  @include shake;
+}
+
+.wiggle {
+  @include wiggle;
+}
+
+.heartbeat {
+  @include heartbeat;
+}
+
+.button-press {
+  @include button-press;
+}
+
+// Hover Effects
+// -----------------------------------------------------------------------------
+
+.hover-lift {
+  @include hover-lift;
+}
+
+.hover-scale {
+  @include hover-scale;
+}
+
+.hover-scale-sm {
+  @include hover-scale(1.02);
+}
+
+.hover-scale-lg {
+  @include hover-scale(1.1);
+}
+
+.hover-glow {
+  @include hover-glow;
+}
+
+.hover-glow-red {
+  @include hover-glow($color-primary-red);
+}
+
+.hover-glow-orange {
+  @include hover-glow($color-primary-orange);
+}
+
+.hover-brightness {
+  @include hover-brightness;
+}
+
+// Active States
+// -----------------------------------------------------------------------------
+
+.active-scale {
+  @include active-state;
+}
+
+.active-scale-sm {
+  @include active-state(0.98);
+}
+
+.active-scale-lg {
+  @include active-state(0.9);
+}
+
+// Transition Utilities
+// -----------------------------------------------------------------------------
+
+.transition-all {
+  @include transition(all);
+}
+
+.transition-colors {
+  @include transition(color, background-color, border-color);
+}
+
+.transition-transform {
+  @include transition(transform);
+}
+
+.transition-opacity {
+  @include transition(opacity);
+}
+
+.transition-fast {
+  transition-duration: $transition-fast;
+}
+
+.transition-base {
+  transition-duration: $transition-base;
+}
+
+.transition-slow {
+  transition-duration: $transition-slow;
+}
+
+// Animation Delays
+// -----------------------------------------------------------------------------
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+.delay-500 {
+  animation-delay: 500ms;
+}
+
+// Animation Durations
+// -----------------------------------------------------------------------------
+
+.duration-fast {
+  animation-duration: $transition-fast;
+}
+
+.duration-base {
+  animation-duration: $transition-base;
+}
+
+.duration-slow {
+  animation-duration: $transition-slow;
+}
+
+// Stagger Animations (for lists)
+// -----------------------------------------------------------------------------
+
+.stagger-children {
+  > * {
+    @include fade-in-up;
+    
+    @for $i from 1 through 10 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 50}ms;
+      }
+    }
+  }
+}
+
+.stagger-children-fast {
+  > * {
+    @include fade-in-up($transition-fast);
+    
+    @for $i from 1 through 10 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * 30}ms;
+      }
+    }
+  }
+}
+
+// Loading States
+// -----------------------------------------------------------------------------
+
+.loading-overlay {
+  @include loading-overlay;
+}
+
+.skeleton {
+  @include skeleton-loading;
+}
+
+.skeleton-text {
+  @include skeleton-loading;
+  height: 1em;
+  width: 100%;
+}
+
+.skeleton-title {
+  @include skeleton-loading;
+  height: 1.5em;
+  width: 60%;
+}
+
+.skeleton-circle {
+  @include skeleton-loading;
+  border-radius: 50%;
+}
+
+.skeleton-button {
+  @include skeleton-loading;
+  height: 40px;
+  width: 120px;
+  border-radius: $radius-xl;
+}
+
+// Smooth Transitions
+// -----------------------------------------------------------------------------
+
+.smooth-all {
+  transition: all $transition-base $ease-in-out;
+}
+
+.smooth-transform {
+  transition: transform $transition-base $ease-out;
+}
+
+.smooth-opacity {
+  transition: opacity $transition-base $ease-in-out;
+}
+
+.smooth-colors {
+  transition: color $transition-base $ease-in-out,
+              background-color $transition-base $ease-in-out,
+              border-color $transition-base $ease-in-out;
+}
+
+// Disable Animations (for reduced motion preference)
+// -----------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Page Transitions
+// -----------------------------------------------------------------------------
+
+.page-enter-active {
+  @include fade-in-up;
+}
+
+.page-leave-active {
+  @include fade-out;
+}
+
+// Modal Transitions
+// -----------------------------------------------------------------------------
+
+.modal-enter-active {
+  @include scale-in;
+}
+
+.modal-leave-active {
+  @include scale-out;
+}
+
+// Drawer Transitions
+// -----------------------------------------------------------------------------
+
+.drawer-enter-active {
+  @include slide-in-right;
+}
+
+.drawer-leave-active {
+  animation: slideInRight $transition-base $ease-in reverse;
+}
+
+// Toast Transitions
+// -----------------------------------------------------------------------------
+
+.toast-enter-active {
+  @include slide-in-down;
+}
+
+.toast-leave-active {
+  @include fade-out($transition-fast);
+}
+
+// Dropdown Transitions
+// -----------------------------------------------------------------------------
+
+.dropdown-enter-active {
+  @include fade-in-down($transition-fast);
+}
+
+.dropdown-leave-active {
+  @include fade-out($transition-fast);
+}

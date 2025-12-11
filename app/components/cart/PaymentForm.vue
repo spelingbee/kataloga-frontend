@@ -1,42 +1,26 @@
 <template>
-  <div class="space-y-4">
+  <div class="payment-form">
     <!-- Payment Method Selection -->
-    <div>
-      <label class="block text-sm font-medium text-neutral-20 mb-3">
+    <div class="payment-form__section">
+      <label class="payment-form__label">
         Payment Method *
       </label>
-      <div class="space-y-3">
+      <div class="payment-form__methods">
         <!-- Cash Payment -->
         <div
-          class="p-4 border-2 rounded-lg cursor-pointer transition-all"
-          :class="[
-            localPaymentInfo.method === 'cash'
-              ? 'border-primary-green bg-primary-green/10'
-              : 'border-border-subtle hover:border-neutral-20'
-          ]"
+          class="payment-form__method"
+          :class="{ 'payment-form__method--selected': localPaymentInfo.method === 'cash' }"
           @click="setPaymentMethod('cash')"
         >
-          <div class="flex items-center space-x-3">
-            <BaseIcon 
-              name="cash" 
-              size="lg" 
-              :class="localPaymentInfo.method === 'cash' ? 'text-primary-green' : 'text-neutral-20'"
-            />
-            <div class="flex-1">
-              <div class="font-medium text-white">Cash on Delivery</div>
-              <div class="text-sm text-neutral-20">Pay with cash when your order arrives</div>
+          <div class="payment-form__method-content">
+            <div class="payment-form__method-info">
+              <div class="payment-form__method-title">Cash on Delivery</div>
+              <div class="payment-form__method-description">Pay with cash when your order arrives</div>
             </div>
-            <div
-              class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-              :class="[
-                localPaymentInfo.method === 'cash'
-                  ? 'border-primary-green bg-primary-green'
-                  : 'border-neutral-20'
-              ]"
-            >
+            <div class="payment-form__radio">
               <div
                 v-if="localPaymentInfo.method === 'cash'"
-                class="w-2 h-2 bg-white rounded-full"
+                class="payment-form__radio-dot"
               />
             </div>
           </div>
@@ -44,35 +28,19 @@
 
         <!-- Card Payment -->
         <div
-          class="p-4 border-2 rounded-lg cursor-pointer transition-all"
-          :class="[
-            localPaymentInfo.method === 'card'
-              ? 'border-primary-green bg-primary-green/10'
-              : 'border-border-subtle hover:border-neutral-20'
-          ]"
+          class="payment-form__method"
+          :class="{ 'payment-form__method--selected': localPaymentInfo.method === 'card' }"
           @click="setPaymentMethod('card')"
         >
-          <div class="flex items-center space-x-3">
-            <BaseIcon 
-              name="credit-card" 
-              size="lg" 
-              :class="localPaymentInfo.method === 'card' ? 'text-primary-green' : 'text-neutral-20'"
-            />
-            <div class="flex-1">
-              <div class="font-medium text-white">Credit/Debit Card</div>
-              <div class="text-sm text-neutral-20">Pay securely with your card</div>
+          <div class="payment-form__method-content">
+            <div class="payment-form__method-info">
+              <div class="payment-form__method-title">Credit/Debit Card</div>
+              <div class="payment-form__method-description">Pay securely with your card</div>
             </div>
-            <div
-              class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-              :class="[
-                localPaymentInfo.method === 'card'
-                  ? 'border-primary-green bg-primary-green'
-                  : 'border-neutral-20'
-              ]"
-            >
+            <div class="payment-form__radio">
               <div
                 v-if="localPaymentInfo.method === 'card'"
-                class="w-2 h-2 bg-white rounded-full"
+                class="payment-form__radio-dot"
               />
             </div>
           </div>
@@ -80,35 +48,19 @@
 
         <!-- Online Payment -->
         <div
-          class="p-4 border-2 rounded-lg cursor-pointer transition-all"
-          :class="[
-            localPaymentInfo.method === 'online'
-              ? 'border-primary-green bg-primary-green/10'
-              : 'border-border-subtle hover:border-neutral-20'
-          ]"
+          class="payment-form__method"
+          :class="{ 'payment-form__method--selected': localPaymentInfo.method === 'online' }"
           @click="setPaymentMethod('online')"
         >
-          <div class="flex items-center space-x-3">
-            <BaseIcon 
-              name="smartphone" 
-              size="lg" 
-              :class="localPaymentInfo.method === 'online' ? 'text-primary-green' : 'text-neutral-20'"
-            />
-            <div class="flex-1">
-              <div class="font-medium text-white">Online Payment</div>
-              <div class="text-sm text-neutral-20">Pay now with SberPay, YooMoney, or other services</div>
+          <div class="payment-form__method-content">
+            <div class="payment-form__method-info">
+              <div class="payment-form__method-title">Online Payment</div>
+              <div class="payment-form__method-description">Pay now with digital wallet</div>
             </div>
-            <div
-              class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-              :class="[
-                localPaymentInfo.method === 'online'
-                  ? 'border-primary-green bg-primary-green'
-                  : 'border-neutral-20'
-              ]"
-            >
+            <div class="payment-form__radio">
               <div
                 v-if="localPaymentInfo.method === 'online'"
-                class="w-2 h-2 bg-white rounded-full"
+                class="payment-form__radio-dot"
               />
             </div>
           </div>
@@ -117,40 +69,36 @@
     </div>
 
     <!-- Cash Payment Details -->
-    <div v-if="localPaymentInfo.method === 'cash'" class="p-4 bg-background-dark/50 rounded-lg border border-border-subtle">
-      <div class="space-y-3">
-        <div class="flex items-center space-x-2">
-          <BaseIcon name="info" size="sm" class="text-primary-orange" />
-          <AppText size="body-sm" class="text-white font-medium">
-            Cash Payment Information
-          </AppText>
-        </div>
-        
-        <div>
-          <label for="cash-amount" class="block text-sm font-medium text-neutral-20 mb-2">
-            Do you need change? (Optional)
-          </label>
-          <BaseInput
-            id="cash-amount"
-            v-model="localPaymentInfo.cashAmount"
-            type="number"
-            placeholder="Enter amount you'll pay with"
-            min="0"
-            step="1"
-            @input="updatePaymentInfo"
-          />
-          <AppText size="caption" class="text-neutral-20 mt-1">
-            Leave empty if you have exact change
-          </AppText>
+    <div v-if="localPaymentInfo.method === 'cash'" class="payment-form__section">
+      <div class="payment-form__notice">
+        <div class="payment-form__notice-content">
+          <h4 class="payment-form__notice-title">Cash Payment Information</h4>
+          <div class="payment-form__field">
+            <label for="cash-amount" class="payment-form__field-label">
+              Do you need change? (Optional)
+            </label>
+            <BaseInput
+              id="cash-amount"
+              v-model="localPaymentInfo.cashAmount"
+              type="number"
+              placeholder="Enter amount you'll pay with"
+              min="0"
+              step="1"
+              @input="updatePaymentInfo"
+            />
+            <span class="payment-form__field-help">
+              Leave empty if you have exact change
+            </span>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Card Payment Details -->
-    <div v-if="localPaymentInfo.method === 'card'" class="space-y-4">
+    <div v-if="localPaymentInfo.method === 'card'" class="payment-form__section">
       <!-- Card Number -->
-      <div>
-        <label for="card-number" class="block text-sm font-medium text-neutral-20 mb-2">
+      <div class="payment-form__field">
+        <label for="card-number" class="payment-form__field-label">
           Card Number *
         </label>
         <BaseInput
@@ -158,17 +106,16 @@
           v-model="localPaymentInfo.cardNumber"
           type="text"
           placeholder="1234 5678 9012 3456"
-          :error="errors.cardNumber"
           maxlength="19"
           @input="formatCardNumber"
           @blur="validateField('cardNumber')"
         />
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="payment-form__field-group">
         <!-- Expiry Date -->
-        <div>
-          <label for="expiry-date" class="block text-sm font-medium text-neutral-20 mb-2">
+        <div class="payment-form__field">
+          <label for="expiry-date" class="payment-form__field-label">
             Expiry Date *
           </label>
           <BaseInput
@@ -176,7 +123,6 @@
             v-model="localPaymentInfo.expiryDate"
             type="text"
             placeholder="MM/YY"
-            :error="errors.expiryDate"
             maxlength="5"
             @input="formatExpiryDate"
             @blur="validateField('expiryDate')"
@@ -184,8 +130,8 @@
         </div>
 
         <!-- CVV -->
-        <div>
-          <label for="cvv" class="block text-sm font-medium text-neutral-20 mb-2">
+        <div class="payment-form__field">
+          <label for="cvv" class="payment-form__field-label">
             CVV *
           </label>
           <BaseInput
@@ -193,7 +139,6 @@
             v-model="localPaymentInfo.cvv"
             type="text"
             placeholder="123"
-            :error="errors.cvv"
             maxlength="4"
             @input="formatCVV"
             @blur="validateField('cvv')"
@@ -202,8 +147,8 @@
       </div>
 
       <!-- Cardholder Name -->
-      <div>
-        <label for="cardholder-name" class="block text-sm font-medium text-neutral-20 mb-2">
+      <div class="payment-form__field">
+        <label for="cardholder-name" class="payment-form__field-label">
           Cardholder Name *
         </label>
         <BaseInput
@@ -211,82 +156,61 @@
           v-model="localPaymentInfo.cardholderName"
           type="text"
           placeholder="Name as it appears on card"
-          :error="errors.cardholderName"
           @blur="validateField('cardholderName')"
           @input="clearError('cardholderName')"
         />
       </div>
 
       <!-- Security Notice -->
-      <div class="p-3 bg-background-dark/50 rounded-lg border border-border-subtle">
-        <div class="flex items-start space-x-2">
-          <BaseIcon name="shield" size="sm" class="text-primary-green mt-0.5" />
-          <div>
-            <AppText size="body-sm" class="text-white font-medium">
-              Secure Payment
-            </AppText>
-            <AppText size="caption" class="text-neutral-20">
-              Your payment information is encrypted and secure. We don't store your card details.
-            </AppText>
-          </div>
+      <div class="payment-form__notice">
+        <div class="payment-form__notice-content">
+          <h4 class="payment-form__notice-title">Secure Payment</h4>
+          <p class="payment-form__notice-text">
+            Your payment information is encrypted and secure. We don't store your card details.
+          </p>
         </div>
       </div>
     </div>
 
     <!-- Online Payment Details -->
-    <div v-if="localPaymentInfo.method === 'online'" class="space-y-4">
+    <div v-if="localPaymentInfo.method === 'online'" class="payment-form__section">
       <!-- Payment Service Selection -->
-      <div>
-        <label class="block text-sm font-medium text-neutral-20 mb-3">
+      <div class="payment-form__field">
+        <label class="payment-form__field-label">
           Choose Payment Service
         </label>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="payment-form__services">
           <BaseButton
-            variant="ghost"
+            variant="outline"
             :class="[
-              'p-3 border-2 transition-all',
-              localPaymentInfo.onlineService === 'sberpay'
-                ? 'border-primary-green bg-primary-green/10'
-                : 'border-border-subtle hover:border-neutral-20'
+              'payment-form__service',
+              { 'payment-form__service--selected': localPaymentInfo.onlineService === 'apple' }
             ]"
-            @click="setOnlineService('sberpay')"
+            @click="setOnlineService('apple')"
           >
-            <div class="text-center">
-              <div class="font-medium text-white">SberPay</div>
-              <div class="text-xs text-neutral-20">Sberbank</div>
-            </div>
+            Apple Pay
           </BaseButton>
 
           <BaseButton
-            variant="ghost"
+            variant="outline"
             :class="[
-              'p-3 border-2 transition-all',
-              localPaymentInfo.onlineService === 'yoomoney'
-                ? 'border-primary-green bg-primary-green/10'
-                : 'border-border-subtle hover:border-neutral-20'
+              'payment-form__service',
+              { 'payment-form__service--selected': localPaymentInfo.onlineService === 'google' }
             ]"
-            @click="setOnlineService('yoomoney')"
+            @click="setOnlineService('google')"
           >
-            <div class="text-center">
-              <div class="font-medium text-white">YooMoney</div>
-              <div class="text-xs text-neutral-20">Yandex</div>
-            </div>
+            Google Pay
           </BaseButton>
         </div>
       </div>
 
       <!-- Online Payment Notice -->
-      <div class="p-3 bg-background-dark/50 rounded-lg border border-border-subtle">
-        <div class="flex items-start space-x-2">
-          <BaseIcon name="info" size="sm" class="text-primary-orange mt-0.5" />
-          <div>
-            <AppText size="body-sm" class="text-white font-medium">
-              Online Payment Process
-            </AppText>
-            <AppText size="caption" class="text-neutral-20">
-              You'll be redirected to the payment service to complete your transaction securely.
-            </AppText>
-          </div>
+      <div class="payment-form__notice">
+        <div class="payment-form__notice-content">
+          <h4 class="payment-form__notice-title">Online Payment Process</h4>
+          <p class="payment-form__notice-text">
+            You'll be redirected to the payment service to complete your transaction securely.
+          </p>
         </div>
       </div>
     </div>
@@ -304,7 +228,7 @@ interface PaymentInfo {
   expiryDate?: string
   cvv?: string
   cardholderName?: string
-  onlineService?: 'sberpay' | 'yoomoney'
+  onlineService?: 'apple' | 'google'
 }
 
 interface Props {
@@ -345,7 +269,7 @@ const setPaymentMethod = (method: 'cash' | 'card' | 'online') => {
   emit('validate', { ...errors })
 }
 
-const setOnlineService = (service: 'sberpay' | 'yoomoney') => {
+const setOnlineService = (service: 'apple' | 'google') => {
   localPaymentInfo.value.onlineService = service
   updatePaymentInfo()
 }
@@ -508,63 +432,174 @@ watch(() => localPaymentInfo.value.method, (newMethod) => {
 })
 </script>
 
-<style scoped>
-/* Form field spacing */
-.space-y-4 > * + * {
-  margin-top: 1rem;
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/typography' as *;
+@use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/transitions' as *;
+
+.payment-form {
+  max-width: 500px;
 }
 
-.space-y-3 > * + * {
-  margin-top: 0.75rem;
+.payment-form__section {
+  margin-bottom: $space-6;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
-/* Grid styling */
-.grid {
-  display: grid;
+.payment-form__label {
+  display: block;
+  font-family: $font-primary;
+  font-size: $text-sm;
+  font-weight: $font-medium;
+  color: var(--text-primary);
+  margin-bottom: $space-3;
 }
 
-.grid-cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.payment-form__methods {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
 }
 
-.gap-3 {
-  gap: 0.75rem;
-}
-
-/* Payment method selection styling */
-.cursor-pointer {
+.payment-form__method {
+  border: 2px solid var(--border-primary);
+  border-radius: $radius-md;
+  padding: $space-4;
   cursor: pointer;
+  transition: $transition-base;
+  
+  &:hover {
+    border-color: var(--border-secondary);
+  }
+  
+  &--selected {
+    border-color: var(--color-primary);
+    background-color: rgba(255, 107, 53, 0.05);
+  }
 }
 
-.transition-all {
-  transition: all 0.2s ease-in-out;
+.payment-form__method-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* Radio button styling */
-.w-5 {
-  width: 1.25rem;
+.payment-form__method-info {
+  flex: 1;
 }
 
-.h-5 {
-  height: 1.25rem;
+.payment-form__method-title {
+  font-family: $font-primary;
+  font-size: $text-base;
+  font-weight: $font-medium;
+  color: var(--text-primary);
+  margin-bottom: $space-1;
 }
 
-.w-2 {
-  width: 0.5rem;
+.payment-form__method-description {
+  font-family: $font-primary;
+  font-size: $text-sm;
+  color: var(--text-secondary);
 }
 
-.h-2 {
-  height: 0.5rem;
+.payment-form__radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: $transition-fast;
 }
 
-.rounded-full {
-  border-radius: 9999px;
+.payment-form__method--selected .payment-form__radio {
+  border-color: var(--color-primary);
 }
 
-/* Input focus styles */
-input:focus {
-  outline: none;
-  ring: 2px;
-  ring-color: theme('colors.primary.green');
+.payment-form__radio-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-primary);
+  border-radius: 50%;
+}
+
+.payment-form__field {
+  margin-bottom: $space-4;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.payment-form__field-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-3;
+}
+
+.payment-form__field-label {
+  display: block;
+  font-family: $font-primary;
+  font-size: $text-sm;
+  font-weight: $font-medium;
+  color: var(--text-primary);
+  margin-bottom: $space-2;
+}
+
+.payment-form__field-help {
+  display: block;
+  font-family: $font-primary;
+  font-size: $text-xs;
+  color: var(--text-tertiary);
+  margin-top: $space-1;
+}
+
+.payment-form__services {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-3;
+}
+
+.payment-form__service {
+  padding: $space-3;
+  
+  &--selected {
+    border-color: var(--color-primary);
+    background-color: rgba(255, 107, 53, 0.05);
+    color: var(--color-primary);
+  }
+}
+
+.payment-form__notice {
+  background-color: var(--bg-secondary);
+  border-radius: $radius-md;
+  padding: $space-4;
+  border: 1px solid var(--border-primary);
+}
+
+.payment-form__notice-content {
+  // Content styles
+}
+
+.payment-form__notice-title {
+  font-family: $font-primary;
+  font-size: $text-sm;
+  font-weight: $font-semibold;
+  color: var(--text-primary);
+  margin-bottom: $space-2;
+}
+
+.payment-form__notice-text {
+  font-family: $font-primary;
+  font-size: $text-sm;
+  color: var(--text-secondary);
+  line-height: $leading-relaxed;
+  margin: 0;
 }
 </style>

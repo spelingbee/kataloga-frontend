@@ -171,6 +171,8 @@ import type { MenuItem } from '~/types'
 // Stores
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
+import { useFavoritesStore } from '~/stores/favorites'
+import { useAuthStore } from '~/stores/auth'
 
 // Page setup
 definePageMeta({
@@ -179,13 +181,15 @@ definePageMeta({
 
 const menuStore = useMenuStore()
 const cartStore = useCartStore()
+const favoritesStore = useFavoritesStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 // Reactive state
 const showGridView = ref(true)
 
 // Computed
-const favourites = computed(() => menuStore.favourites)
+const favourites = computed(() => favoritesStore.getFavoriteItems())
 
 // Methods
 const onItemSelected = (item: MenuItem) => {
@@ -193,15 +197,13 @@ const onItemSelected = (item: MenuItem) => {
   router.push(`/dish/${item.id}`)
 }
 
-const onToggleFavourite = (itemId: string) => {
-  menuStore.toggleFavourite(itemId)
+const onToggleFavourite = async (itemId: string) => {
+  await favoritesStore.toggleFavorite(itemId)
 }
 
-const clearAllFavourites = () => {
+const clearAllFavourites = async () => {
   if (confirm('Are you sure you want to remove all favourites?')) {
-    favourites.value.forEach(item => {
-      menuStore.toggleFavourite(item.id)
-    })
+    await favoritesStore.clearAllFavorites()
   }
 }
 
@@ -215,27 +217,36 @@ const addAllToCart = () => {
 }
 
 // Initialize
-onMounted(() => {
-  menuStore.fetchMenu()
-  menuStore.initializeFavourites()
+onMounted(async () => {
+  // Load menu items first
+  await menuStore.fetchMenu()
+  
+  // Initialize favorites from localStorage
+  favoritesStore.initializeFavorites()
+  
+  // If user is authenticated, sync with server
+  if (authStore.isAuthenticated) {
+    await favoritesStore.fetchFavoritesFromServer()
+  }
 })
 </script>
 
 <style lang="scss" scoped>
-@import '~/assets/scss/abstracts/variables';
+@use '~/assets/scss/tokens' as *;
+@use '~/assets/scss/abstracts/variables' as *;
 
 .favourites-header {
-  margin-bottom: $spacing-2xl;
+  margin-bottom: $space-12;
 
   &__title-row {
     display: flex;
     align-items: center;
-    gap: $spacing-md;
-    margin-bottom: $spacing-md;
+    gap: $space-4;
+    margin-bottom: $space-4;
   }
 
   &__icon {
-    color: $color-primary-red;
+    color: var(--color-error);
     width: 32px;
     height: 32px;
   }
@@ -245,7 +256,7 @@ onMounted(() => {
   }
 
   &__subtitle {
-    color: $color-text-secondary;
+    color: var(--text-secondary);
   }
 }
 

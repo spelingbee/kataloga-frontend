@@ -1,46 +1,56 @@
 <template>
   <div class="cart-item">
     <!-- Item Image -->
-    <BaseImage
-      :src="item.menuItem.imageUrl"
+    <img
+      :src="item.menuItem.imageUrl || '/images/placeholder-dish.webp'"
       :alt="item.menuItem.name"
       class="cart-item__image"
+      loading="lazy"
     />
 
     <!-- Item Info -->
     <div class="cart-item__content">
-      <AppText size="body-md" class="cart-item__name">
+      <h4 class="cart-item__name">
         {{ item.menuItem.name }}
-      </AppText>
+      </h4>
       <div class="cart-item__price-info">
-        <AppPrice :price="item.menuItem.price" size="sm" />
+        <span class="cart-item__price">${{ item.menuItem.price.toFixed(2) }}</span>
         <span class="cart-item__quantity">×{{ item.quantity }}</span>
       </div>
       
-      <!-- Customizations -->
-      <div v-if="item.customizations && Object.keys(item.customizations).length > 0" class="cart-item__customizations">
-        <AppText size="caption" class="cart-item__customizations-text">
-          {{ formatCustomizations(item.customizations) }}
-        </AppText>
+      <!-- Modifiers -->
+      <div v-if="item.selectedModifiers && item.selectedModifiers.length > 0" class="cart-item__modifiers">
+        <span class="cart-item__modifiers-text">
+          {{ formatModifiers(item.selectedModifiers) }}
+        </span>
       </div>
       
       <!-- Notes -->
       <div v-if="item.notes" class="cart-item__notes">
-        <AppText size="caption" class="cart-item__notes-text">
+        <span class="cart-item__notes-text">
           {{ item.notes }}
-        </AppText>
+        </span>
       </div>
     </div>
 
     <!-- Quantity Controls -->
     <div class="cart-item__controls">
-      <QuantitySelector
-        :quantity="item.quantity"
-        :min="0"
-        :max="10"
+      <BaseButton
+        variant="outline"
         size="sm"
-        @update="updateQuantity"
-      />
+        :disabled="item.quantity <= 1"
+        @click="decreaseQuantity"
+      >
+        -
+      </BaseButton>
+      <span class="cart-item__quantity-display">{{ item.quantity }}</span>
+      <BaseButton
+        variant="outline"
+        size="sm"
+        @click="increaseQuantity"
+      >
+        +
+      </BaseButton>
     </div>
 
     <!-- Remove Button -->
@@ -51,17 +61,26 @@
       aria-label="Remove item"
       @click="removeItem"
     >
-      <BaseIcon name="trash" size="sm" />
+      ×
     </BaseButton>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { CartItem } from '~/types'
-import { useTenant } from '~/composables/useTenant'
+interface MenuItem {
+  id: string
+  name: string
+  price: number
+  imageUrl?: string
+}
 
-// Props & Emits
+interface CartItem {
+  menuItem: MenuItem
+  quantity: number
+  selectedModifiers?: any[]
+  notes?: string
+}
+
 interface Props {
   item: CartItem
 }
@@ -73,48 +92,14 @@ const emit = defineEmits<{
   remove: [itemId: string]
 }>()
 
-// Tenant context
-const { tenantSettings } = useTenant()
-
-// Computed
-const formattedPrice = computed(() => {
-  const currency = tenantSettings.value?.currency || 'USD'
-  const price = props.item.menuItem.price
-  
-  // Simple currency formatting
-  const currencySymbols: Record<string, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    RUB: '₽'
-  }
-  
-  const symbol = currencySymbols[currency] || currency
-  return `${symbol}${price.toFixed(2)}`
-})
-
-const formattedSubtotal = computed(() => {
-  const currency = tenantSettings.value?.currency || 'USD'
-  const subtotal = props.item.subtotal
-  
-  // Simple currency formatting
-  const currencySymbols: Record<string, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    RUB: '₽'
-  }
-  
-  const symbol = currencySymbols[currency] || currency
-  return `${symbol}${subtotal.toFixed(2)}`
-})
-
 // Methods
-const updateQuantity = (quantity: number) => {
-  if (quantity === 0) {
-    removeItem()
-  } else {
-    emit('update-quantity', props.item.menuItem.id, quantity)
+const increaseQuantity = () => {
+  emit('update-quantity', props.item.menuItem.id, props.item.quantity + 1)
+}
+
+const decreaseQuantity = () => {
+  if (props.item.quantity > 1) {
+    emit('update-quantity', props.item.menuItem.id, props.item.quantity - 1)
   }
 }
 
@@ -122,83 +107,123 @@ const removeItem = () => {
   emit('remove', props.item.menuItem.id)
 }
 
-const formatCustomizations = (customizations: Record<string, any>) => {
-  return Object.entries(customizations)
-    .map(([key, value]) => `${key}: ${value}`)
+const formatModifiers = (modifiers: any[]) => {
+  return modifiers
+    .map(mod => {
+      if (mod.priceAdjustment > 0) {
+        return `${mod.name} (+$${mod.priceAdjustment.toFixed(2)})`
+      }
+      return mod.name
+    })
     .join(', ')
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/typography' as *;
+@use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/transitions' as *;
+
 .cart-item {
   display: flex;
   align-items: center;
-  padding: $spacing-md;
-  background-color: rgba($color-background-card, 0.5);
-  border-radius: 0.5rem;
-  border: 1px solid $color-border-subtle;
-  gap: $spacing-md;
+  padding: $space-4;
+  background-color: var(--bg-primary);
+  border-radius: $radius-md;
+  border: 1px solid var(--border-primary);
+  gap: $space-4;
+  transition: $transition-base;
 
-  &__image {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
-    flex-shrink: 0;
-    border: 2px solid white;
+  &:hover {
+    border-color: var(--border-secondary);
   }
+}
 
-  &__content {
-    flex: 1;
-    min-width: 0;
-  }
+.cart-item__image {
+  width: 60px;
+  height: 60px;
+  border-radius: $radius-md;
+  object-fit: cover;
+  flex-shrink: 0;
+}
 
-  &__name {
-    font-weight: $font-weight-medium;
-    color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.cart-item__content {
+  flex: 1;
+  min-width: 0;
+}
 
-  &__price-info {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-    margin-top: $spacing-xs;
-  }
+.cart-item__name {
+  font-family: $font-primary;
+  font-size: $text-base;
+  font-weight: $font-medium;
+  color: var(--text-primary);
+  margin: 0 0 $space-1 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-  &__quantity {
-    color: $color-neutral-20;
-    font-size: $font-size-caption;
-  }
+.cart-item__price-info {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  margin-bottom: $space-1;
+}
 
-  &__customizations,
-  &__notes {
-    margin-top: $spacing-xs;
-  }
+.cart-item__price {
+  font-family: $font-primary;
+  font-size: $text-sm;
+  font-weight: $font-semibold;
+  color: var(--text-primary);
+}
 
-  &__customizations-text,
-  &__notes-text {
-    color: $color-neutral-20;
-  }
+.cart-item__quantity {
+  font-family: $font-primary;
+  font-size: $text-sm;
+  color: var(--text-secondary);
+}
 
-  &__notes-text {
-    font-style: italic;
-  }
+.cart-item__modifiers,
+.cart-item__notes {
+  margin-top: $space-1;
+}
 
-  &__controls {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-  }
+.cart-item__modifiers-text,
+.cart-item__notes-text {
+  font-family: $font-primary;
+  font-size: $text-xs;
+  color: var(--text-tertiary);
+}
 
-  &__remove-btn {
-    color: $color-neutral-20;
-    transition: color 0.2s ease;
+.cart-item__notes-text {
+  font-style: italic;
+}
 
-    &:hover {
-      color: $color-primary-red;
-    }
+.cart-item__controls {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.cart-item__quantity-display {
+  font-family: $font-primary;
+  font-size: $text-sm;
+  font-weight: $font-medium;
+  color: var(--text-primary);
+  min-width: 24px;
+  text-align: center;
+}
+
+.cart-item__remove-btn {
+  color: var(--text-tertiary);
+  font-size: $text-lg;
+  font-weight: $font-bold;
+  transition: $transition-fast;
+
+  &:hover {
+    color: var(--color-error);
   }
 }
 </style>

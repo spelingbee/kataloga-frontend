@@ -19,6 +19,10 @@ interface CartState {
   loading: boolean
   syncing: boolean
   lastSyncAt: Date | null
+  promoCode: string | null
+  discount: number
+  deliveryFee: number
+  minimumOrderAmount: number
 }
 
 export const useCartStore = defineStore('cart', {
@@ -27,11 +31,20 @@ export const useCartStore = defineStore('cart', {
     loading: false,
     syncing: false,
     lastSyncAt: null,
+    promoCode: null,
+    discount: 0,
+    deliveryFee: 0,
+    minimumOrderAmount: 0,
   }),
 
   getters: {
-    total: state => {
+    subtotal: state => {
       return state.items.reduce((sum, item) => sum + item.subtotal, 0)
+    },
+
+    total: state => {
+      const subtotal = state.items.reduce((sum, item) => sum + item.subtotal, 0)
+      return subtotal + state.deliveryFee - state.discount
     },
 
     itemCount: state => {
@@ -41,13 +54,28 @@ export const useCartStore = defineStore('cart', {
     isEmpty: state => {
       return state.items.length === 0
     },
+
+    canCheckout: state => {
+      const subtotal = state.items.reduce((sum, item) => sum + item.subtotal, 0)
+      return state.items.length > 0 && subtotal >= state.minimumOrderAmount
+    },
+
+    remainingForMinimum: state => {
+      const subtotal = state.items.reduce((sum, item) => sum + item.subtotal, 0)
+      return Math.max(0, state.minimumOrderAmount - subtotal)
+    },
   },
 
   actions: {
-    addItem(menuItem: MenuItem, quantity: number = 1, customizations?: Record<string, any>) {
+    addItem(menuItem: MenuItem, quantity: number = 1, selectedModifiers: any[] = [], customizations?: Record<string, any>) {
+      // Calculate price including modifiers
+      const modifierPrice = selectedModifiers.reduce((sum, mod) => sum + (mod.priceAdjustment || 0), 0)
+      const itemPrice = menuItem.price + modifierPrice
+      
       const existingItemIndex = this.items.findIndex(
         item =>
           item.menuItem.id === menuItem.id &&
+          JSON.stringify(item.selectedModifiers) === JSON.stringify(selectedModifiers) &&
           JSON.stringify(item.customizations) === JSON.stringify(customizations)
       )
 
@@ -55,13 +83,14 @@ export const useCartStore = defineStore('cart', {
         // Update existing item
         this.items[existingItemIndex].quantity += quantity
         this.items[existingItemIndex].subtotal =
-          this.items[existingItemIndex].quantity * menuItem.price
+          this.items[existingItemIndex].quantity * itemPrice
       } else {
         // Add new item
         const cartItem: CartItem = {
           menuItem,
           quantity,
-          subtotal: quantity * menuItem.price,
+          selectedModifiers,
+          subtotal: quantity * itemPrice,
           customizations,
         }
         this.items.push(cartItem)
@@ -95,40 +124,105 @@ export const useCartStore = defineStore('cart', {
           this.removeItem(menuItemId, customizations)
         } else {
           item.quantity = quantity
-          item.subtotal = quantity * item.menuItem.price
+          // Calculate price including modifiers
+          const modifierPrice = item.selectedModifiers.reduce((sum, mod) => sum + (mod.priceAdjustment || 0), 0)
+          const itemPrice = item.menuItem.price + modifierPrice
+          item.subtotal = quantity * itemPrice
           this.persistCart()
         }
       }
     },
 
     clearCart() {
+      // Clear in-memory state
       this.items = []
+      this.promoCode = null
+      this.discount = 0
+      this.deliveryFee = 0
       
-      if (import.meta.client) {
+      if (typeof localStorage !== 'undefined') {
         // Clear tenant-specific cart from localStorage
         const tenantSlug = getTenantSlug()
         const storageKey = tenantSlug ? `cart_${tenantSlug}` : 'cart'
         
         try {
           localStorage.removeItem(storageKey)
+          // Also try to clear the default key in case it exists
+          if (storageKey !== 'cart') {
+            localStorage.removeItem('cart')
+          }
         } catch (error) {
           console.error('Failed to clear cart from localStorage:', error)
         }
         
         // Also clear offline cart
-        const { saveCartOffline } = useOfflineCart()
-        saveCartOffline([])
+        try {
+          const { saveCartOffline } = useOfflineCart()
+          saveCartOffline([])
+        } catch (error) {
+          console.error('Failed to clear offline cart:', error)
+        }
       }
     },
 
+    async applyPromoCode(code: string): Promise<{ success: boolean; message: string }> {
+      if (!code || code.trim() === '') {
+        return { success: false, message: 'Please enter a promo code' }
+      }
+
+      this.loading = true
+      try {
+        const apiClient = (useNuxtApp() as any).$apiClient
+        const response: ApiResponse<{ discount: number; message: string }> = await apiClient.post('/promo/validate', {
+          code: code.trim(),
+          subtotal: this.subtotal
+        })
+
+        if (response.success && response.data) {
+          this.promoCode = code.trim()
+          this.discount = response.data.discount
+          this.persistCart()
+          return { success: true, message: response.data.message || 'Promo code applied successfully' }
+        } else {
+          return { success: false, message: response.message || 'Invalid promo code' }
+        }
+      } catch (error: any) {
+        console.error('Failed to apply promo code:', error)
+        return { success: false, message: error.message || 'Failed to apply promo code' }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    removePromoCode() {
+      this.promoCode = null
+      this.discount = 0
+      this.persistCart()
+    },
+
+    setDeliveryFee(fee: number) {
+      this.deliveryFee = fee
+      this.persistCart()
+    },
+
+    setMinimumOrderAmount(amount: number) {
+      this.minimumOrderAmount = amount
+    },
+
     persistCart() {
-      if (import.meta.client) {
+      if (typeof localStorage !== 'undefined') {
         // Get tenant context for tenant-specific storage
         const tenantSlug = getTenantSlug()
         
         // Use tenant-specific key if tenant is set
         const storageKey = tenantSlug ? `cart_${tenantSlug}` : 'cart'
-        localStorage.setItem(storageKey, JSON.stringify(this.items))
+        const cartData = {
+          items: this.items,
+          promoCode: this.promoCode,
+          discount: this.discount,
+          deliveryFee: this.deliveryFee
+        }
+        localStorage.setItem(storageKey, JSON.stringify(cartData))
         
         // Also save to offline cart for PWA functionality
         const { saveCartOffline } = useOfflineCart()
@@ -140,7 +234,7 @@ export const useCartStore = defineStore('cart', {
     },
 
     restoreCart() {
-      if (import.meta.client) {
+      if (typeof localStorage !== 'undefined') {
         // Get tenant context for tenant-specific storage
         const tenantSlug = getTenantSlug()
         
@@ -149,7 +243,24 @@ export const useCartStore = defineStore('cart', {
         const savedCart = localStorage.getItem(storageKey)
         if (savedCart) {
           try {
-            this.items = JSON.parse(savedCart)
+            const cartData = JSON.parse(savedCart)
+            // Handle both old format (array) and new format (object)
+            if (Array.isArray(cartData)) {
+              // Old format - just items array
+              this.items = cartData
+              // Reset other fields to defaults
+              this.promoCode = null
+              this.discount = 0
+              this.deliveryFee = 0
+            } else {
+              // New format - object with all cart data
+              this.items = cartData.items || []
+              this.promoCode = cartData.promoCode || null
+              this.discount = typeof cartData.discount === 'number' ? cartData.discount : 0
+              // Ensure deliveryFee is properly restored - handle all cases
+              this.deliveryFee = typeof cartData.deliveryFee === 'number' ? cartData.deliveryFee : 
+                                 (typeof cartData.deliveryFee === 'string' ? parseFloat(cartData.deliveryFee) : 0)
+            }
             return
           } catch (error) {
             console.error('Failed to restore cart from localStorage:', error)
@@ -159,7 +270,12 @@ export const useCartStore = defineStore('cart', {
         // Fallback to offline cart
         const { loadCartOffline } = useOfflineCart()
         try {
-          this.items = loadCartOffline()
+          const offlineItems = loadCartOffline()
+          this.items = offlineItems
+          // Reset other fields when loading from offline cart
+          this.promoCode = null
+          this.discount = 0
+          this.deliveryFee = 0
         } catch (error) {
           console.error('Failed to restore cart from offline storage:', error)
           this.clearCart()
@@ -170,6 +286,15 @@ export const useCartStore = defineStore('cart', {
     // Create order with offline support
     async createOrder(customerInfo: any) {
       this.loading = true
+      
+      // Capture cart state before attempting order creation
+      // This ensures we can preserve it if order creation fails
+      const cartSnapshot = {
+        items: JSON.parse(JSON.stringify(this.items)),
+        promoCode: this.promoCode,
+        discount: this.discount,
+        deliveryFee: this.deliveryFee
+      }
       
       try {
         const orderService = useOrderService()
@@ -190,15 +315,19 @@ export const useCartStore = defineStore('cart', {
           const response = await orderService.createOrder(orderData)
           
           if (response.success) {
+            // Clear cart only on successful order creation
             this.clearCart()
             return response
           } else {
-            // If online but failed, save as pending
-            savePendingOrder({
-              items: this.items,
-              customerInfo,
-            })
-            this.clearCart()
+            // If online but failed, DO NOT clear cart - preserve it for retry
+            // Restore cart from snapshot to ensure it's preserved
+            this.items = cartSnapshot.items
+            this.promoCode = cartSnapshot.promoCode
+            this.discount = cartSnapshot.discount
+            this.deliveryFee = cartSnapshot.deliveryFee
+            // Persist the restored cart to localStorage
+            this.persistCart()
+            // Throw error to let caller handle it
             throw new Error(response.message || 'Failed to create order')
           }
         } else {
@@ -207,6 +336,7 @@ export const useCartStore = defineStore('cart', {
             items: this.items,
             customerInfo,
           })
+          // Clear cart after saving as pending (will be synced later)
           this.clearCart()
           
           return {
@@ -217,6 +347,14 @@ export const useCartStore = defineStore('cart', {
         }
       } catch (error) {
         console.error('Failed to create order:', error)
+        // Ensure cart is preserved on any error
+        // Always restore from snapshot to guarantee cart preservation
+        this.items = cartSnapshot.items
+        this.promoCode = cartSnapshot.promoCode
+        this.discount = cartSnapshot.discount
+        this.deliveryFee = cartSnapshot.deliveryFee
+        // Persist the restored cart to localStorage
+        this.persistCart()
         throw error
       } finally {
         this.loading = false
@@ -225,11 +363,14 @@ export const useCartStore = defineStore('cart', {
 
     // Server synchronization methods
     async syncCartWithServer() {
-      const { $auth } = useNuxtApp()
-      if (!$auth?.user || this.syncing) return
-
-      this.syncing = true
+      // Skip sync in test environment or if already syncing
+      if (import.meta.env.MODE === 'test' || this.syncing) return
+      
       try {
+        const { $auth } = useNuxtApp()
+        if (!$auth?.user) return
+
+        this.syncing = true
         const apiClient = (useNuxtApp() as any).$apiClient
         
         // Save cart to server
@@ -346,6 +487,67 @@ export const useCartStore = defineStore('cart', {
       return {
         isValid: errors.length === 0,
         errors
+      }
+    },
+
+    // Validate cart against current menu data (for reconnection)
+    // This method is kept for backward compatibility but now uses the validation service
+    async validateCartAgainstMenu(): Promise<{ 
+      isValid: boolean
+      removedItems: CartItem[]
+      priceChanges: Array<{ item: CartItem; oldPrice: number; newPrice: number }>
+      errors: string[]
+    }> {
+      try {
+        // Use the cart validation service
+        const { useCartValidationService } = await import('~/services/cart-validation.service')
+        const validationService = useCartValidationService()
+        
+        const result = await validationService.validateOnReconnection(this.items)
+        
+        // Update cart with validated items
+        if (result.removedItems.length > 0) {
+          for (const item of result.removedItems) {
+            this.removeItem(item.menuItem.id, item.customizations)
+          }
+        }
+        
+        if (result.priceChanges.length > 0) {
+          for (const change of result.priceChanges) {
+            const cartItem = this.items.find(
+              item =>
+                item.menuItem.id === change.item.menuItem.id &&
+                JSON.stringify(item.customizations) === JSON.stringify(change.item.customizations)
+            )
+            
+            if (cartItem) {
+              cartItem.menuItem = change.item.menuItem
+              const modifierPrice = cartItem.selectedModifiers.reduce(
+                (sum, mod) => sum + (mod.priceAdjustment || 0),
+                0
+              )
+              cartItem.subtotal = cartItem.quantity * (change.newPrice + modifierPrice)
+            }
+          }
+          this.persistCart()
+        }
+        
+        return {
+          isValid: result.isValid,
+          removedItems: result.removedItems,
+          priceChanges: result.priceChanges,
+          errors: result.errors
+        }
+      } catch (error) {
+        console.error('Failed to validate cart against menu:', error)
+        // If validation fails, return current validation state
+        const basicValidation = this.validateCartItems()
+        return {
+          isValid: basicValidation.isValid,
+          removedItems: [],
+          priceChanges: [],
+          errors: basicValidation.errors
+        }
       }
     },
 

@@ -1,3 +1,6 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
 // Mobile Navigation Styles
 .app-navigation {
   background-color: $color-background-card;
@@ -65,7 +68,7 @@
   right: 0;
   z-index: 50;
 
-  @include breakpoint(lg) {
+  @include breakpoint($breakpoint-lg) {
     display: none;
   }
 }

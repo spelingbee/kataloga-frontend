@@ -1,6 +1,9 @@
 // Export tenant types
 export * from './tenant'
 
+// Export payment types
+export * from './payment'
+
 // User types
 export interface User {
   id: string
@@ -123,6 +126,8 @@ export interface MenuItem {
   categoryId?: string
   category?: Category
   isActive: boolean
+  isAvailable?: boolean  // Stop list check - false if item is temporarily unavailable
+  stockQuantity?: number  // Available quantity (null/undefined = unlimited)
   calories?: number
   preparationTime?: number
   cookingTime?: number
@@ -130,6 +135,31 @@ export interface MenuItem {
   allergens?: string[]
   nutritionInfo?: NutritionInfo
   dietary?: string[]
+  badges?: MenuItemBadge[]
+  modifierGroups?: ModifierGroup[]
+  isNew?: boolean
+  isPopular?: boolean
+}
+
+export interface ModifierGroup {
+  id: string
+  name: string
+  required: boolean
+  minSelection: number
+  maxSelection: number
+  modifiers: Modifier[]
+}
+
+export interface Modifier {
+  id: string
+  name: string
+  priceAdjustment: number
+  isDefault: boolean
+}
+
+export interface MenuItemBadge {
+  type: 'new' | 'popular' | 'spicy' | 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free'
+  label?: string
 }
 
 export interface NutritionInfo {
@@ -153,6 +183,7 @@ export interface MenuFilters {
 export interface CartItem {
   menuItem: MenuItem
   quantity: number
+  selectedModifiers: Modifier[]
   subtotal: number
   notes?: string
   customizations?: Record<string, any>
@@ -161,6 +192,7 @@ export interface CartItem {
 // Order types
 export interface Order {
   id: string
+  orderNumber: string
   status: OrderStatus
   total: number
   items: OrderItem[]

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System Documentation</title>
+    <style>
+        :root {
+            --color-primary: #B8571A;
+            --color-primary-light: #D2691E;
+            --color-success: #047857;
+            --color-warning: #B45309;
+            --color-error: #DC2626;
+            --color-info: #2563EB;
+            
+            --color-neutral-50: #F9FAFB;
+            --color-neutral-100: #F3F4F6;
+            --color-neutral-200: #E5E7EB;
+            --color-neutral-300: #D1D5DB;
+            --color-neutral-400: #9CA3AF;
+            --color-neutral-500: #6B7280;
+            --color-neutral-600: #4B5563;
+            --color-neutral-700: #374151;
+            --color-neutral-800: #1F2937;
+            --color-neutral-900: #111827;
+            
+            --bg-primary: white;
+            --bg-secondary: var(--color-neutral-50);
+            --bg-tertiary: var(--color-neutral-100);
+            --text-primary: var(--color-neutral-900);
+            --text-secondary: var(--color-neutral-600);
+            --text-tertiary: var(--color-neutral-400);
+            --border-primary: var(--color-neutral-200);
+            --border-secondary: var(--color-neutral-300);
+            
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            
+            --font-primary: 'Inter', system-ui, sans-serif;
+            --font-secondary: 'Poppins', system-ui, sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-primary);
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-6);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-12);
+            padding: var(--space-8) 0;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+            color: white;
+            border-radius: var(--radius-lg);
+        }
+        
+        .header h1 {
+            font-family: var(--font-secondary);
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+        }
+        
+        .header p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+        
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-12);
+        }
+        
+        .nav-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .nav-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: var(--color-primary);
+        }
+        
+        .nav-card h3 {
+            font-family: var(--font-secondary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: var(--space-3);
+        }
+        
+        .nav-card p {
+            color: var(--text-secondary);
+            margin-bottom: var(--space-4);
+        }
+        
+        .nav-card ul {
+            list-style: none;
+        }
+        
+        .nav-card li {
+            padding: var(--space-1) 0;
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+        }
+        
+        .nav-card li:before {
+            content: "→";
+            color: var(--color-primary);
+            margin-right: var(--space-2);
+        }
+        
+        .quick-start {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+            margin-bottom: var(--space-12);
+        }
+        
+        .quick-start h2 {
+            font-family: var(--font-secondary);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: var(--space-4);
+            color: var(--text-primary);
+        }
+        
+        .code-example {
+            background: var(--color-neutral-900);
+            color: var(--color-neutral-100);
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: var(--space-4) 0;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-4);
+            margin-bottom: var(--space-12);
+        }
+        
+        .feature {
+            text-align: center;
+            padding: var(--space-4);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-3);
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .feature h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+        
+        .feature p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: var(--space-8) 0;
+            border-top: 1px solid var(--border-primary);
+            color: var(--text-secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-4);
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .nav-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🎨 Design System</h1>
+            <p>Minimalist design system for food ordering experiences</p>
+        </header>
+        
+        <section class="quick-start">
+            <h2>🚀 Quick Start</h2>
+            <p>Get started with our design system in minutes:</p>
+            
+            <div class="code-example">
+&lt;template&gt;
+  &lt;div&gt;
+    &lt;BaseButton variant="primary" @click="handleOrder"&gt;
+      Order Now
+    &lt;/BaseButton&gt;
+    
+    &lt;BaseCard hoverable&gt;
+      &lt;h3&gt;Grilled Salmon&lt;/h3&gt;
+      &lt;p&gt;Fresh Atlantic salmon with seasonal vegetables&lt;/p&gt;
+    &lt;/BaseCard&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;style scoped lang="scss"&gt;
+@use '@/assets/scss/tokens/colors' as *;
+@use '@/assets/scss/tokens/spacing' as *;
+
+.custom-component {
+  padding: $space-6;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+&lt;/style&gt;
+            </div>
+        </section>
+        
+        <nav class="nav-grid">
+            <a href="./guides/getting-started.md" class="nav-card">
+                <h3>📖 Getting Started</h3>
+                <p>Learn the basics and start building with our design system</p>
+                <ul>
+                    <li>Quick start guide</li>
+                    <li>Basic component usage</li>
+                    <li>Design principles</li>
+                    <li>Common patterns</li>
+                </ul>
+            </a>
+            
+            <a href="./tokens/README.md" class="nav-card">
+                <h3>🎨 Design Tokens</h3>
+                <p>Colors, spacing, typography, and other foundational design values</p>
+                <ul>
+                    <li>Color palette</li>
+                    <li>Spacing scale</li>
+                    <li>Typography system</li>
+                    <li>Theme support</li>
+                </ul>
+            </a>
+            
+            <a href="./components/README.md" class="nav-card">
+                <h3>🧱 Components</h3>
+                <p>Comprehensive documentation for all base components</p>
+                <ul>
+                    <li>BaseButton</li>
+                    <li>BaseInput, BaseSelect</li>
+                    <li>BaseCard, BaseModal</li>
+                    <li>BaseBadge</li>
+                </ul>
+            </a>
+            
+            <a href="./stories/README.md" class="nav-card">
+                <h3>📚 Component Stories</h3>
+                <p>Interactive examples and usage patterns for all components</p>
+                <ul>
+                    <li>Live component playground</li>
+                    <li>All variants and states</li>
+                    <li>Accessibility examples</li>
+                    <li>Code generation</li>
+                </ul>
+            </a>
+            
+            <a href="./guides/accessibility.md" class="nav-card">
+                <h3>♿ Accessibility</h3>
+                <p>Guidelines for creating inclusive, accessible experiences</p>
+                <ul>
+                    <li>WCAG AA compliance</li>
+                    <li>Keyboard navigation</li>
+                    <li>Screen reader support</li>
+                    <li>Testing guidelines</li>
+                </ul>
+            </a>
+            
+            <a href="./guides/performance.md" class="nav-card">
+                <h3>⚡ Performance</h3>
+                <p>Best practices for optimizing design system performance</p>
+                <ul>
+                    <li>CSS optimization</li>
+                    <li>Bundle size management</li>
+                    <li>Core Web Vitals</li>
+                    <li>Monitoring tools</li>
+                </ul>
+            </a>
+            
+            <a href="./guides/migration-guide.md" class="nav-card">
+                <h3>🔄 Migration Guide</h3>
+                <p>Step-by-step guide for migrating from the old design system</p>
+                <ul>
+                    <li>Component mapping</li>
+                    <li>Token migration</li>
+                    <li>SCSS updates</li>
+                    <li>Testing strategies</li>
+                </ul>
+            </a>
+        </nav>
+        
+        <section class="features">
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h3>Food-First Design</h3>
+                <p>Optimized for food ordering with warm colors and appetizing layouts</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">♿</div>
+                <h3>Accessibility Built-in</h3>
+                <p>WCAG AA compliant with keyboard navigation and screen reader support</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🌙</div>
+                <h3>Theme Support</h3>
+                <p>Automatic light/dark theme switching with system preference detection</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">📱</div>
+                <h3>Mobile-First</h3>
+                <p>Responsive design with touch-optimized interactions and 44px targets</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>Performance Optimized</h3>
+                <p>Minimal bundle size with CSS tree-shaking and efficient animations</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🧪</div>
+                <h3>Testing Ready</h3>
+                <p>Comprehensive testing utilities and accessibility validation tools</p>
+            </div>
+        </section>
+        
+        <footer class="footer">
+            <p>Design System Documentation • Built with ❤️ for food ordering experiences</p>
+        </footer>
+    </div>
+</body>
+</html>

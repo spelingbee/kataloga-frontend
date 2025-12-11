@@ -26,9 +26,9 @@
 
       <!-- Logo/Brand -->
       <NuxtLink to="/" class="app-header__logo">
-        <img 
-          v-if="tenantBranding?.logo" 
-          :src="tenantBranding.logo" 
+        <img
+          v-if="tenantBranding?.logo"
+          :src="tenantBranding.logo"
           :alt="tenantBranding.appName || appName"
           class="app-header__logo-image"
         />
@@ -37,7 +37,7 @@
           {{ tenantBranding?.appName || appName }}
         </AppHeading>
       </NuxtLink>
-      
+
       <!-- Tenant Indicator (multi-tenant mode only) -->
       <div v-if="isMultiTenant && currentTenant" class="app-header__tenant-indicator">
         <BaseBadge variant="secondary" size="sm">
@@ -81,6 +81,9 @@
         />
       </BaseButton>
 
+      <!-- Language Switcher -->
+      <LanguageSwitcher class="app-header__language-switcher" />
+
       <!-- Cart button -->
       <BaseButton
         variant="ghost"
@@ -90,11 +93,7 @@
         @click="$emit('toggle-cart')"
       >
         <BaseIcon name="cart" size="md" />
-        <BaseBadge
-          v-if="cartItemCount > 0"
-          :count="cartItemCount"
-          class="app-header__cart-badge"
-        />
+        <BaseBadge v-if="cartItemCount > 0" :count="cartItemCount" class="app-header__cart-badge" />
       </BaseButton>
 
       <!-- User menu (web only) -->
@@ -111,53 +110,25 @@
         </BaseButton>
 
         <!-- User dropdown menu -->
-        <div
-          v-if="showUserMenu"
-          class="app-header__dropdown"
-        >
-          <NuxtLink
-            to="/profile"
-            class="app-header__dropdown-item"
-            @click="closeUserMenu"
-          >
+        <div v-if="showUserMenu" class="app-header__dropdown">
+          <NuxtLink to="/profile" class="app-header__dropdown-item" @click="closeUserMenu">
             Profile
           </NuxtLink>
-          <NuxtLink
-            to="/orders"
-            class="app-header__dropdown-item"
-            @click="closeUserMenu"
-          >
+          <NuxtLink to="/orders" class="app-header__dropdown-item" @click="closeUserMenu">
             Order History
           </NuxtLink>
-          <NuxtLink
-            to="/favourites"
-            class="app-header__dropdown-item"
-            @click="closeUserMenu"
-          >
+          <NuxtLink to="/favourites" class="app-header__dropdown-item" @click="closeUserMenu">
             Favourites
           </NuxtLink>
-          <hr class="app-header__dropdown-divider"/>
-          <button
-            class="app-header__dropdown-item"
-            @click="logout"
-          >
-            Logout
-          </button>
+          <hr class="app-header__dropdown-divider" />
+          <button class="app-header__dropdown-item" @click="logout">Logout</button>
         </div>
       </div>
     </div>
 
     <!-- Mobile search overlay -->
-    <div
-      v-if="showMobileSearch"
-      class="app-header__mobile-search"
-    >
-      <BaseButton
-        variant="ghost"
-        size="sm"
-        aria-label="Close search"
-        @click="closeMobileSearch"
-      >
+    <div v-if="showMobileSearch" class="app-header__mobile-search">
+      <BaseButton variant="ghost" size="sm" aria-label="Close search" @click="closeMobileSearch">
         <BaseIcon name="arrow-left" size="md" />
       </BaseButton>
       <div class="app-header__mobile-search-content">
@@ -171,8 +142,9 @@
 import { ref, computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
-import { useTenantStore } from '~/stores/tenant'
+import { useTenantStore, useNotificationStore  } from '~/stores/tenant'
 import { useTenant } from '~/composables/useTenant'
+import LanguageSwitcher from '../base/LanguageSwitcher.vue'
 
 // Emits
 defineEmits<{

@@ -47,30 +47,72 @@
       <label for="delivery-address" class="block text-sm font-medium text-neutral-20 mb-2">
         Delivery Address *
       </label>
-      <BaseInput
-        id="delivery-address"
-        v-model="localDeliveryInfo.address"
-        type="textarea"
-        placeholder="Enter full delivery address including apartment/office number"
-        :rows="3"
-        :error="errors.address"
-        required
-        @blur="validateField('address')"
-        @input="clearError('address')"
-      />
       
-      <!-- Address suggestions or map integration could go here -->
-      <div class="mt-2 flex items-center space-x-2">
+      <!-- Address input mode toggle -->
+      <div class="mb-3 flex gap-2">
         <BaseButton
           variant="ghost"
           size="sm"
-          class="text-primary-green hover:text-green-400"
-          :loading="gettingLocation"
-          @click="getCurrentLocation"
+          :class="[
+            'flex-1',
+            !showMap ? 'bg-primary-green/10 text-primary-green' : 'text-neutral-20'
+          ]"
+          @click="showMap = false"
         >
-          <BaseIcon name="location" size="sm" class="mr-1" />
-          Use Current Location
+          <BaseIcon name="edit" size="sm" class="mr-1" />
+          Type Address
         </BaseButton>
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          :class="[
+            'flex-1',
+            showMap ? 'bg-primary-green/10 text-primary-green' : 'text-neutral-20'
+          ]"
+          @click="showMap = true"
+        >
+          <BaseIcon name="map" size="sm" class="mr-1" />
+          Pick on Map
+        </BaseButton>
+      </div>
+
+      <!-- Text input mode -->
+      <div v-if="!showMap">
+        <BaseInput
+          id="delivery-address"
+          v-model="localDeliveryInfo.address"
+          type="textarea"
+          placeholder="Enter full delivery address including apartment/office number"
+          :rows="3"
+          :error="errors.address"
+          required
+          @blur="validateField('address')"
+          @input="clearError('address')"
+        />
+        
+        <div class="mt-2 flex items-center space-x-2">
+          <BaseButton
+            variant="ghost"
+            size="sm"
+            class="text-primary-green hover:text-green-400"
+            :loading="gettingLocation"
+            @click="getCurrentLocation"
+          >
+            <BaseIcon name="location" size="sm" class="mr-1" />
+            Use Current Location
+          </BaseButton>
+        </div>
+      </div>
+
+      <!-- Map picker mode -->
+      <div v-else>
+        <MapPicker
+          :initial-coordinates="deliveryCoordinates"
+          @location-selected="handleLocationSelected"
+        />
+        <AppText v-if="errors.address" size="caption" class="text-primary-red mt-2">
+          {{ errors.address }}
+        </AppText>
       </div>
     </div>
 
@@ -115,27 +157,20 @@
       </select>
     </div>
 
-    <!-- Custom Time Picker -->
-    <div v-if="localDeliveryInfo.deliveryTime === 'custom'" class="grid grid-cols-2 gap-3">
-      <div>
-        <label for="delivery-date" class="block text-sm font-medium text-neutral-20 mb-2">
-          Date
-        </label>
+    <!-- Custom Time Picker (Combined to stay under 5 field limit) -->
+    <div v-if="localDeliveryInfo.deliveryTime === 'custom'">
+      <label class="block text-sm font-medium text-neutral-20 mb-2">
+        Custom Date & Time
+      </label>
+      <div class="grid grid-cols-2 gap-3">
         <BaseInput
-          id="delivery-date"
           v-model="localDeliveryInfo.customDate"
           type="date"
           :min="today"
           :max="maxDate"
           @change="updateDeliveryInfo"
         />
-      </div>
-      <div>
-        <label for="delivery-time-custom" class="block text-sm font-medium text-neutral-20 mb-2">
-          Time
-        </label>
         <BaseInput
-          id="delivery-time-custom"
           v-model="localDeliveryInfo.customTime"
           type="time"
           :min="minTime"
@@ -179,6 +214,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
+import MapPicker from '../checkout/MapPicker.vue'
+import type { Coordinates } from '../../types/delivery'
 
 // Props & Emits
 interface DeliveryInfo {
@@ -189,6 +226,9 @@ interface DeliveryInfo {
   customDate: string
   customTime: string
   instructions: string
+  coordinates?: Coordinates
+  deliveryZone?: string
+  deliveryFeeAmount?: number
 }
 
 interface Props {
@@ -202,6 +242,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: DeliveryInfo]
+  'delivery-fee-calculated': [fee: number, zoneId: string]
   validate: [errors: Record<string, string>]
 }>()
 
@@ -219,6 +260,8 @@ const localDeliveryInfo = ref<DeliveryInfo>({
 
 const errors = reactive<Record<string, string>>({ ...props.errors })
 const gettingLocation = ref(false)
+const showMap = ref(false)
+const deliveryCoordinates = ref<Coordinates | undefined>(props.modelValue.coordinates)
 
 // Computed properties
 const today = computed(() => {
@@ -323,18 +366,34 @@ const getCurrentLocation = async () => {
       })
     })
 
-    // Here you would typically use a geocoding service to convert coordinates to address
-    // For now, we'll just show the coordinates
+    // Set coordinates and switch to map view
     const { latitude, longitude } = position.coords
-    localDeliveryInfo.value.address = `Coordinates: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}\n(Please add your full address)`
+    deliveryCoordinates.value = { lat: latitude, lng: longitude }
+    showMap.value = true
     
-    updateDeliveryInfo()
   } catch (error) {
     console.error('Error getting location:', error)
     alert('Unable to get your location. Please enter your address manually.')
   } finally {
     gettingLocation.value = false
   }
+}
+
+const handleLocationSelected = (coords: Coordinates, address: string, zoneId: string) => {
+  localDeliveryInfo.value.address = address
+  localDeliveryInfo.value.coordinates = coords
+  localDeliveryInfo.value.deliveryZone = zoneId
+  deliveryCoordinates.value = coords
+  
+  // Clear address error if it exists
+  delete errors.address
+  
+  // Emit delivery fee calculation event
+  // The parent component or cart store should handle the actual fee calculation
+  emit('delivery-fee-calculated', 0, zoneId) // Fee will be calculated by parent
+  
+  updateDeliveryInfo()
+  emit('validate', { ...errors })
 }
 
 const formatPrice = (price: number) => {

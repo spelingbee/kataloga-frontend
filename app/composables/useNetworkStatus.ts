@@ -11,7 +11,7 @@ export interface NetworkStatus {
 }
 
 export const useNetworkStatus = () => {
-  const isOnline = ref(navigator.onLine)
+  const isOnline = ref(typeof navigator !== 'undefined' && 'onLine' in navigator ? navigator.onLine : true)
   const connectionType = ref('unknown')
   const effectiveType = ref('4g')
   const downlink = ref(10)

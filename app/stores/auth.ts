@@ -126,6 +126,17 @@ export const useAuthStore = defineStore('auth', {
         if (response.success && response.data) {
           this.setTokens(response.data.accessToken, response.data.refreshToken)
           this.setUser(response.data.user)
+          
+          // Sync favorites after successful login
+          try {
+            const { useFavoritesStore } = require('./favorites')
+            const favoritesStore = useFavoritesStore()
+            await favoritesStore.syncFavoritesToServer()
+            await favoritesStore.fetchFavoritesFromServer()
+          } catch (error) {
+            console.error('Failed to sync favorites after login:', error)
+          }
+          
           return response.data
         }
         
@@ -163,6 +174,16 @@ export const useAuthStore = defineStore('auth', {
         if (response.success && response.data) {
           this.setTokens(response.data.accessToken, response.data.refreshToken)
           this.setUser(response.data.user)
+          
+          // Sync favorites after successful registration
+          try {
+            const { useFavoritesStore } = require('./favorites')
+            const favoritesStore = useFavoritesStore()
+            await favoritesStore.syncFavoritesToServer()
+          } catch (error) {
+            console.error('Failed to sync favorites after registration:', error)
+          }
+          
           return response.data
         }
         

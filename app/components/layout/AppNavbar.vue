@@ -54,7 +54,7 @@ const isActive = (path: string) => {
 </script>
 
 <style lang="scss" scoped>
-@import '~/assets/scss/abstracts/variables';
+@use '~/assets/scss/abstracts/variables' as *;
 
 .app-navbar {
   display: flex;
@@ -70,43 +70,43 @@ const isActive = (path: string) => {
   overflow-y: auto;
 
   &__header {
-    padding: $spacing-xl $spacing-lg;
+    padding: $space-8 $space-6;
     border-bottom: 1px solid $color-border-subtle;
   }
 
   &__logo {
     display: flex;
     align-items: center;
-    gap: $spacing-md;
+    gap: $space-4;
     text-decoration: none;
     color: $color-neutral-20;
     transition: color $transition-normal;
 
     &:hover {
-      color: $color-primary-green;
+      color: var(--color-success);
     }
   }
 
   &__logo-icon {
-    color: $color-primary-green;
+    color: var(--color-success);
   }
 
   &__logo-text {
     font-size: $font-size-heading-lg;
-    font-weight: $font-weight-bold;
+    font-weight: $font-bold;
   }
 
   &__menu {
     flex: 1;
-    padding: $spacing-lg 0;
+    padding: $space-6 0;
   }
 
   &__item {
     display: flex;
     align-items: center;
-    gap: $spacing-md;
-    padding: $spacing-md $spacing-lg;
-    color: $color-text-secondary;
+    gap: $space-4;
+    padding: $space-4 $space-6;
+    color: var(--text-secondary);
     text-decoration: none;
     transition: all $transition-normal;
     border-left: 3px solid transparent;
@@ -118,8 +118,8 @@ const isActive = (path: string) => {
 
     &--active {
       background-color: rgba(32, 171, 71, 0.1);
-      color: $color-primary-green;
-      border-left-color: $color-primary-green;
+      color: var(--color-success);
+      border-left-color: var(--color-success);
     }
   }
 
@@ -129,17 +129,17 @@ const isActive = (path: string) => {
 
   &__item-text {
     font-size: $font-size-body-md;
-    font-weight: $font-weight-medium;
+    font-weight: $font-medium;
   }
 
   &__footer {
-    padding: $spacing-lg 0;
+    padding: $space-6 0;
     border-top: 1px solid $color-border-subtle;
   }
 }
 
 // Hide on mobile, show on desktop
-@media (max-width: $breakpoint-lg) {
+@media (max-width: 1024px) {
   .app-navbar {
     display: none;
   }

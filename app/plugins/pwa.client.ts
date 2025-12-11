@@ -55,7 +55,7 @@ export default defineNuxtPlugin(() => {
 
   const handleNetworkStatus = () => {
     const updateNetworkStatus = () => {
-      const isOnline = navigator.onLine
+      const isOnline = typeof navigator !== 'undefined' && 'onLine' in navigator ? navigator.onLine : true
       document.documentElement.classList.toggle('offline', !isOnline)
       
       if (!isOnline) {

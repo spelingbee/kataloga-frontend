@@ -218,6 +218,8 @@ const handleToggleFavorite = (item: MenuItem) => {
 </script>
 
 <style lang="scss" scoped>
+@use '~/assets/scss/abstracts/variables' as *;
+
 // Component-specific animations for grid items
 .menu-item-grid__items {
   // Staggered fade-in animation for grid items

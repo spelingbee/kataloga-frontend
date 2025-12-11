@@ -1,9 +1,12 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
 // Home Page Styles
 .home-page {
   min-height: calc(100vh - 60px);
   background-color: $color-background-dark;
 
-  @include breakpoint(lg) {
+  @include breakpoint($breakpoint-lg) {
     min-height: 100vh;
   }
 }
@@ -61,11 +64,11 @@
   grid-template-columns: repeat(2, 1fr);
   gap: $spacing-md;
 
-  @include breakpoint(md) {
+  @include breakpoint($breakpoint-md) {
     grid-template-columns: repeat(4, 1fr);
   }
 
-  @include breakpoint(lg) {
+  @include breakpoint($breakpoint-lg) {
     grid-template-columns: repeat(7, 1fr);
   }
 }
@@ -111,7 +114,7 @@
   grid-template-columns: 1fr;
   gap: $spacing-lg;
 
-  @include breakpoint(md) {
+  @include breakpoint($breakpoint-md) {
     grid-template-columns: repeat(3, 1fr);
   }
 }

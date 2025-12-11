@@ -32,8 +32,8 @@
 <script setup lang="ts">
 interface Props {
   name: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'category-icon'
-  color?: 'current' | 'primary' | 'secondary' | 'muted' | 'white' | 'red' | 'green' | 'orange'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'category-icon' | number
+  color?: 'current' | 'primary' | 'secondary' | 'muted' | 'white' | 'red' | 'green' | 'orange' | 'primary-red'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -106,6 +106,112 @@ const actionIcons: Record<string, string> = {
   inbox: 'M22 12h-6l-2-3h-4l-2 3H2M22 12v6a2 2 0 01-2 2H4a2 2 0 01-2-2v-6M22 12l-2-9H4l-2 9',
   utensils: 'M3 2v7c0 1.1.9 2 2 2h2V2H3zM7 10.5V21h2V10.5M19 2v1.5c0 1.38-1.12 2.5-2.5 2.5S14 4.88 14 3.5V2h-2v1.5C12 5.43 13.57 7 15.5 7H16v14h2V7h.5C20.43 7 22 5.43 22 3.5V2h-3z',
   'shopping-cart': 'M9 22a1 1 0 100-2 1 1 0 000 2zM20 22a1 1 0 100-2 1 1 0 000 2zM1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6',
-  'clipboard-list': 'M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2m8 0a2 2 0 00-2-2h-4a2 2 0 00-2 2m8 0a2 2 0 01-2 2H8a2 2 0 01-2-2m0 0V4a2 2 0 012-2h4a2 2 0 012 2v2M9 12h6M9 16h6'
+  'clipboard-list': 'M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2m8 0a2 2 0 00-2-2h-4a2 2 0 00-2 2m8 0a2 2 0 01-2 2H8a2 2 0 01-2-2m0 0V4a2 2 0 012-2h4a2 2 0 012 2v2M9 12h6M9 16h6',
+  'map-pin': 'M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z M12 13a3 3 0 100-6 3 3 0 000 6z',
+  location: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z',
+  edit: 'M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z',
+  truck: 'M16 3h4a2 2 0 012 2v13a2 2 0 01-2 2h-2M16 3v18M16 3H1v18h15M1 7h15M1 11h15M1 15h15',
+  store: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z M9 22V12h6v10'
 }
 </script>
+
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/typography' as *;
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  // Size modifiers
+  &--xs {
+    width: 1rem;
+    height: 1rem;
+    font-size: 1rem;
+  }
+  
+  &--sm {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 1.25rem;
+  }
+  
+  &--md {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 1.5rem;
+  }
+  
+  &--lg {
+    width: 2rem;
+    height: 2rem;
+    font-size: 2rem;
+  }
+  
+  &--xl {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 2.5rem;
+  }
+  
+  &--category-icon {
+    width: 3rem;
+    height: 3rem;
+    font-size: 3rem;
+  }
+  
+  // Color modifiers
+  &--current {
+    color: currentColor;
+  }
+  
+  &--primary {
+    color: var(--color-primary);
+  }
+  
+  &--secondary {
+    color: var(--text-secondary);
+  }
+  
+  &--muted {
+    color: var(--text-tertiary);
+  }
+  
+  &--white {
+    color: white;
+  }
+  
+  &--red {
+    color: var(--color-error);
+  }
+  
+  &--green {
+    color: var(--color-success);
+  }
+  
+  &--orange {
+    color: var(--color-warning);
+  }
+  
+  &--primary-red {
+    color: var(--color-error);
+  }
+}
+
+.icon__emoji {
+  display: inline-block;
+  line-height: 1;
+}
+
+.icon__svg {
+  width: 100%;
+  height: 100%;
+}
+
+.icon__fallback {
+  font-size: 0.875em;
+  opacity: 0.5;
+}
+</style>

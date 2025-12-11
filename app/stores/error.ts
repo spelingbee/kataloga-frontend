@@ -225,5 +225,5 @@ if (import.meta.client) {
   })
   
   // Set initial status
-  errorStore.setOfflineStatus(!navigator.onLine)
+  errorStore.setOfflineStatus(typeof navigator !== 'undefined' && 'onLine' in navigator ? !navigator.onLine : false)
 }

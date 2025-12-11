@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typography System Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Import the new typography tokens */
+        :root {
+            /* Font Families */
+            --font-primary: 'Inter', system-ui, sans-serif;
+            --font-secondary: 'Poppins', system-ui, sans-serif;
+            
+            /* Font Sizes */
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+            --text-4xl: 2.25rem;
+            
+            /* Font Weights */
+            --font-light: 300;
+            --font-regular: 400;
+            --font-medium: 500;
+            --font-semibold: 600;
+            --font-bold: 700;
+            
+            /* Line Heights */
+            --leading-tight: 1.25;
+            --leading-normal: 1.5;
+            --leading-relaxed: 1.75;
+            
+            /* Colors */
+            --color-primary: #FF6B35;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --text-tertiary: #9CA3AF;
+            --bg-primary: #ffffff;
+            --bg-secondary: #F9FAFB;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            font-size: var(--text-base);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            margin: 0;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Typography Classes */
+        .heading-display {
+            font-family: var(--font-secondary);
+            font-size: var(--text-4xl);
+            font-weight: var(--font-bold);
+            line-height: var(--leading-tight);
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .heading-primary {
+            font-family: var(--font-secondary);
+            font-size: var(--text-3xl);
+            font-weight: var(--font-semibold);
+            line-height: var(--leading-tight);
+            color: var(--text-primary);
+        }
+
+        .heading-secondary {
+            font-family: var(--font-secondary);
+            font-size: var(--text-2xl);
+            font-weight: var(--font-semibold);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+        }
+
+        .body-regular {
+            font-family: var(--font-primary);
+            font-size: var(--text-base);
+            font-weight: var(--font-regular);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+        }
+
+        .body-small {
+            font-family: var(--font-primary);
+            font-size: var(--text-sm);
+            font-weight: var(--font-regular);
+            line-height: var(--leading-normal);
+            color: var(--text-secondary);
+        }
+
+        .price-primary {
+            font-family: var(--font-primary);
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .menu-item-name {
+            font-family: var(--font-secondary);
+            font-size: var(--text-lg);
+            font-weight: var(--font-medium);
+            line-height: var(--leading-normal);
+            color: var(--text-primary);
+        }
+
+        .section {
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .font-showcase {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .font-weight-demo {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .weight-item {
+            text-align: center;
+        }
+
+        .responsive-demo {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 640px) {
+            .heading-display {
+                font-size: var(--text-3xl);
+            }
+            
+            .heading-primary {
+                font-size: var(--text-2xl);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="heading-display">Typography System Test</div>
+    <p class="body-regular">Testing the new minimalist typography system with Inter and Poppins fonts.</p>
+
+    <div class="section">
+        <h2 class="heading-primary">Font Families</h2>
+        <div class="font-showcase">
+            <div>
+                <h3 class="heading-secondary">Primary Font (Inter)</h3>
+                <p class="body-regular" style="font-family: var(--font-primary);">
+                    This is Inter font - used for body text, buttons, and UI elements. 
+                    It's optimized for readability across all devices and screen sizes.
+                </p>
+            </div>
+            <div>
+                <h3 class="heading-secondary">Secondary Font (Poppins)</h3>
+                <p class="body-regular" style="font-family: var(--font-secondary);">
+                    This is Poppins font - used for headings and emphasis. 
+                    It provides a modern, friendly appearance perfect for food applications.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="heading-primary">Typography Hierarchy</h2>
+        <div class="font-showcase">
+            <h1 class="heading-display">Display Heading (36px)</h1>
+            <h2 class="heading-primary">Primary Heading (30px)</h2>
+            <h3 class="heading-secondary">Secondary Heading (24px)</h3>
+            <p class="body-regular">Regular Body Text (16px)</p>
+            <p class="body-small">Small Body Text (14px)</p>
+            <p style="font-size: var(--text-xs); color: var(--text-tertiary);">Caption Text (12px)</p>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="heading-primary">Font Weights</h2>
+        <div class="font-weight-demo">
+            <div class="weight-item">
+                <div style="font-weight: var(--font-light);">Light (300)</div>
+                <small>--font-light</small>
+            </div>
+            <div class="weight-item">
+                <div style="font-weight: var(--font-regular);">Regular (400)</div>
+                <small>--font-regular</small>
+            </div>
+            <div class="weight-item">
+                <div style="font-weight: var(--font-medium);">Medium (500)</div>
+                <small>--font-medium</small>
+            </div>
+            <div class="weight-item">
+                <div style="font-weight: var(--font-semibold);">Semibold (600)</div>
+                <small>--font-semibold</small>
+            </div>
+            <div class="weight-item">
+                <div style="font-weight: var(--font-bold);">Bold (700)</div>
+                <small>--font-bold</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="heading-primary">Line Heights</h2>
+        <div class="font-showcase">
+            <div>
+                <h4>Tight (1.25)</h4>
+                <p style="line-height: var(--leading-tight); background: rgba(255, 107, 53, 0.1); padding: 0.5rem;">
+                    This paragraph uses tight line height, typically used for headings and display text where space efficiency is important.
+                </p>
+            </div>
+            <div>
+                <h4>Normal (1.5)</h4>
+                <p style="line-height: var(--leading-normal); background: rgba(255, 107, 53, 0.1); padding: 0.5rem;">
+                    This paragraph uses normal line height, the standard for most body text and UI elements.
+                </p>
+            </div>
+            <div>
+                <h4>Relaxed (1.75)</h4>
+                <p style="line-height: var(--leading-relaxed); background: rgba(255, 107, 53, 0.1); padding: 0.5rem;">
+                    This paragraph uses relaxed line height, ideal for longer text content where readability is paramount.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="heading-primary">Food-Specific Typography</h2>
+        <div class="font-showcase">
+            <div style="border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px;">
+                <h3 class="menu-item-name">Margherita Pizza</h3>
+                <p class="body-small">Fresh tomatoes, mozzarella cheese, basil leaves, and olive oil on a crispy thin crust.</p>
+                <div class="price-primary">$12.99</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="heading-primary">Responsive Typography</h2>
+        <p class="body-regular">
+            Resize your browser window to see how headings adapt on mobile devices. 
+            The display and primary headings will scale down appropriately.
+        </p>
+        <div class="responsive-demo">
+            <div class="heading-display">Responsive Display</div>
+            <div class="heading-primary">Responsive Primary</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="heading-primary">Accessibility Features</h2>
+        <ul class="body-regular">
+            <li>Fonts are loaded with font-display: swap for better performance</li>
+            <li>Text rendering is optimized with antialiasing</li>
+            <li>Color contrast meets WCAG AA standards</li>
+            <li>Font sizes scale appropriately on mobile devices</li>
+            <li>Line heights provide optimal readability</li>
+        </ul>
+    </div>
+</body>
+</html>

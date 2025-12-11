@@ -1,78 +1,93 @@
 <template>
-  <div class="w-full">
+  <div class="progress-bar">
     <!-- Progress Steps -->
-    <div class="flex items-center justify-between mb-2">
+    <div class="progress-bar__steps">
       <div
         v-for="(step, index) in progressSteps"
         :key="step.status"
-        class="flex flex-col items-center flex-1"
-        :class="{ 'last:flex-1-0': index === progressSteps.length - 1 }"
+        class="progress-bar__step"
       >
         <!-- Step Circle -->
-        <div class="relative flex items-center justify-center">
+        <div class="progress-bar__step-wrapper">
           <!-- Connection Line (before) -->
           <div
             v-if="index > 0"
-            class="absolute right-full w-full h-0.5 -translate-x-2"
-            :class="getLineClass(index - 1)"
+            :class="[
+              'progress-bar__line',
+              'progress-bar__line--before',
+              { 'progress-bar__line--completed': isStepCompleted(index - 1) }
+            ]"
           />
           
           <!-- Step Circle -->
           <div
-            class="relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all duration-300"
-            :class="getStepClass(step.status)"
+            :class="[
+              'progress-bar__circle',
+              {
+                'progress-bar__circle--completed': isStepCompleted(index),
+                'progress-bar__circle--current': isCurrentStep(index),
+                'progress-bar__circle--cancelled': isCancelled
+              }
+            ]"
           >
             <BaseIcon
               :name="step.icon"
               size="sm"
-              :class="getIconClass(step.status)"
+              class="progress-bar__icon"
             />
           </div>
           
           <!-- Connection Line (after) -->
           <div
             v-if="index < progressSteps.length - 1"
-            class="absolute left-full w-full h-0.5 translate-x-2"
-            :class="getLineClass(index)"
+            :class="[
+              'progress-bar__line',
+              'progress-bar__line--after',
+              { 'progress-bar__line--completed': isStepCompleted(index) }
+            ]"
           />
         </div>
         
         <!-- Step Label -->
-        <div class="mt-2 text-center">
-          <AppText
-            size="caption"
-            :class="getTextClass(step.status)"
-            class="font-medium"
+        <div class="progress-bar__label">
+          <span
+            :class="[
+              'progress-bar__label-text',
+              {
+                'progress-bar__label-text--completed': isStepCompleted(index),
+                'progress-bar__label-text--current': isCurrentStep(index),
+                'progress-bar__label-text--cancelled': isCancelled
+              }
+            ]"
           >
             {{ step.label }}
-          </AppText>
-          <AppText
+          </span>
+          <span
             v-if="step.time"
-            size="caption"
-            class="text-neutral-20 mt-0.5"
+            class="progress-bar__label-time"
           >
             {{ step.time }}
-          </AppText>
+          </span>
         </div>
       </div>
     </div>
     
     <!-- Overall Progress Bar -->
-    <div class="w-full bg-background-dark/50 rounded-full h-2 mt-4">
+    <div class="progress-bar__track">
       <div
-        class="bg-gradient-to-r from-primary-green to-green-400 h-2 rounded-full transition-all duration-500 ease-out"
+        class="progress-bar__fill"
         :style="{ width: `${progressPercentage}%` }"
       />
     </div>
     
     <!-- Progress Text -->
-    <div class="flex justify-between items-center mt-2">
-      <AppText size="caption" class="text-neutral-20">
+    <div class="progress-bar__info">
+      <span class="progress-bar__info-text">
         {{ currentStepText }}
-      </AppText>
-      <AppText size="caption" class="text-primary-green font-medium">
+      </span>
+      <span class="progress-bar__info-percentage">
         {{ progressPercentage }}% Complete
-      </AppText>
+      </span>
     </div>
   </div>
 </template>
@@ -134,7 +149,7 @@ const progressSteps = computed(() => [
 // Get current step index
 const currentStepIndex = computed(() => {
   if (props.currentStatus === OrderStatus.CANCELLED) {
-    return -1 // Special case for cancelled orders
+    return -1
   }
   
   return progressSteps.value.findIndex(step => step.status === props.currentStatus)
@@ -150,7 +165,7 @@ const progressPercentage = computed(() => {
     return 100
   }
   
-  const totalSteps = progressSteps.value.length - 1 // Exclude delivered step from calculation
+  const totalSteps = progressSteps.value.length - 1
   const currentIndex = currentStepIndex.value
   
   if (currentIndex < 0) return 0
@@ -168,153 +183,183 @@ const currentStepText = computed(() => {
   return currentStep ? `Currently: ${currentStep.label}` : 'Processing...'
 })
 
-// Helper methods for styling
-const getStepClass = (stepStatus: OrderStatus): string => {
-  const currentIndex = currentStepIndex.value
-  const stepIndex = progressSteps.value.findIndex(step => step.status === stepStatus)
-  
-  if (props.currentStatus === OrderStatus.CANCELLED) {
-    return 'border-neutral-20 bg-background-dark text-neutral-20'
-  }
-  
-  if (stepIndex <= currentIndex) {
-    // Completed or current step
-    if (stepIndex === currentIndex) {
-      return 'border-primary-green bg-primary-green text-white animate-pulse'
-    } else {
-      return 'border-primary-green bg-primary-green text-white'
-    }
-  } else {
-    // Future step
-    return 'border-neutral-20 bg-background-dark text-neutral-20'
-  }
+// Helper methods
+const isCancelled = computed(() => props.currentStatus === OrderStatus.CANCELLED)
+
+const isStepCompleted = (stepIndex: number): boolean => {
+  if (isCancelled.value) return false
+  return stepIndex < currentStepIndex.value
 }
 
-const getIconClass = (stepStatus: OrderStatus): string => {
-  const currentIndex = currentStepIndex.value
-  const stepIndex = progressSteps.value.findIndex(step => step.status === stepStatus)
-  
-  if (props.currentStatus === OrderStatus.CANCELLED) {
-    return 'text-neutral-20'
-  }
-  
-  if (stepIndex <= currentIndex) {
-    return 'text-white'
-  } else {
-    return 'text-neutral-20'
-  }
-}
-
-const getTextClass = (stepStatus: OrderStatus): string => {
-  const currentIndex = currentStepIndex.value
-  const stepIndex = progressSteps.value.findIndex(step => step.status === stepStatus)
-  
-  if (props.currentStatus === OrderStatus.CANCELLED) {
-    return 'text-neutral-20'
-  }
-  
-  if (stepIndex <= currentIndex) {
-    if (stepIndex === currentIndex) {
-      return 'text-primary-green'
-    } else {
-      return 'text-white'
-    }
-  } else {
-    return 'text-neutral-20'
-  }
-}
-
-const getLineClass = (stepIndex: number): string => {
-  const currentIndex = currentStepIndex.value
-  
-  if (props.currentStatus === OrderStatus.CANCELLED) {
-    return 'bg-neutral-20/30'
-  }
-  
-  if (stepIndex < currentIndex) {
-    return 'bg-primary-green'
-  } else {
-    return 'bg-neutral-20/30'
-  }
+const isCurrentStep = (stepIndex: number): boolean => {
+  if (isCancelled.value) return false
+  return stepIndex === currentStepIndex.value
 }
 </script>
 
-<style scoped>
-/* Flex utilities */
-.flex-1 {
-  flex: 1 1 0%;
+<style lang="scss" scoped>
+@use '../../assets/scss/abstracts/variables' as *;
+
+.progress-bar {
+  width: 100%;
 }
 
-.flex-1-0 {
-  flex: 1 1 0%;
+.progress-bar__steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-2;
 }
 
-/* Position utilities */
-.relative {
+.progress-bar__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.progress-bar__step-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.absolute {
+.progress-bar__line {
   position: absolute;
+  width: 100%;
+  height: 2px;
+  background: rgba($color-neutral-20, 0.3);
+  transition: background $transition-base;
+
+  &--before {
+    right: 100%;
+    transform: translateX(-0.5rem);
+  }
+
+  &--after {
+    left: 100%;
+    transform: translateX(0.5rem);
+  }
+
+  &--completed {
+    background: var(--color-success);
+  }
 }
 
-.z-10 {
+.progress-bar__circle {
+  position: relative;
   z-index: 10;
-}
-
-/* Transform utilities */
-.-translate-x-2 {
-  transform: translateX(-0.5rem);
-}
-
-.translate-x-2 {
-  transform: translateX(0.5rem);
-}
-
-/* Width and height utilities */
-.w-8 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 2rem;
-}
-
-.h-8 {
   height: 2rem;
+  border-radius: $radius-full;
+  border: 2px solid $color-neutral-20;
+  background: var(--bg-tertiary);
+  transition: all $transition-base;
+
+  &--completed {
+    border-color: var(--color-success);
+    background: var(--color-success);
+    
+    .progress-bar__icon {
+      color: white;
+    }
+  }
+
+  &--current {
+    border-color: var(--color-success);
+    background: var(--color-success);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    
+    .progress-bar__icon {
+      color: white;
+    }
+  }
+
+  &--cancelled {
+    border-color: $color-neutral-20;
+    background: var(--bg-tertiary);
+    
+    .progress-bar__icon {
+      color: $color-neutral-20;
+    }
+  }
 }
 
-.h-0\.5 {
-  height: 0.125rem;
+.progress-bar__icon {
+  color: $color-neutral-20;
+  transition: color $transition-base;
 }
 
-.h-2 {
-  height: 0.5rem;
+.progress-bar__label {
+  margin-top: $space-2;
+  text-align: center;
 }
 
-/* Spacing utilities */
-.mt-0\.5 {
+.progress-bar__label-text {
+  display: block;
+  font-size: $text-xs;
+  font-weight: $font-medium;
+  color: $color-neutral-20;
+  transition: color $transition-base;
+
+  &--completed {
+    color: white;
+  }
+
+  &--current {
+    color: var(--color-success);
+  }
+
+  &--cancelled {
+    color: $color-neutral-20;
+  }
+}
+
+.progress-bar__label-time {
+  display: block;
+  font-size: $text-xs;
+  color: $color-neutral-20;
   margin-top: 0.125rem;
 }
 
-.mt-2 {
-  margin-top: 0.5rem;
+.progress-bar__track {
+  width: 100%;
+  height: 0.5rem;
+  background: rgba(var(--bg-tertiary), 0.5);
+  border-radius: $radius-full;
+  margin-top: $space-6;
+  overflow: hidden;
 }
 
-.mt-4 {
-  margin-top: 1rem;
+.progress-bar__fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--color-success), #4ade80);
+  border-radius: $radius-full;
+  transition: width 500ms ease-out;
 }
 
-.mb-2 {
-  margin-bottom: 0.5rem;
+.progress-bar__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $space-2;
 }
 
-/* Border utilities */
-.border-2 {
-  border-width: 2px;
+.progress-bar__info-text {
+  font-size: $text-xs;
+  color: $color-neutral-20;
 }
 
-.rounded-full {
-  border-radius: 9999px;
+.progress-bar__info-percentage {
+  font-size: $text-xs;
+  color: var(--color-success);
+  font-weight: $font-medium;
 }
 
-/* Animation */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -322,40 +367,5 @@ const getLineClass = (stepIndex: number): string => {
   50% {
     opacity: 0.7;
   }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Transitions */
-.transition-all {
-  transition: all 0.3s ease-in-out;
-}
-
-.duration-300 {
-  transition-duration: 300ms;
-}
-
-.duration-500 {
-  transition-duration: 500ms;
-}
-
-.ease-out {
-  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
-}
-
-/* Gradient */
-.bg-gradient-to-r {
-  background-image: linear-gradient(to right, var(--tw-gradient-stops));
-}
-
-.from-primary-green {
-  --tw-gradient-from: theme('colors.primary.green');
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(32, 171, 71, 0));
-}
-
-.to-green-400 {
-  --tw-gradient-to: #4ade80;
 }
 </style>

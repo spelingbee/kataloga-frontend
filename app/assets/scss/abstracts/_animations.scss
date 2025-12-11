@@ -1,0 +1,634 @@
+@use "sass:list";
+@use 'variables' as *;
+
+// =============================================================================
+// SCSS Animations
+// =============================================================================
+
+// Keyframe Animations
+// -----------------------------------------------------------------------------
+
+// Fade animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Slide animations
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+// Scale animations
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+// Bounce animation
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+// Pulse animation
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// Shimmer animation (for skeleton loaders)
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+// Spin animation (for loading spinners)
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Shake animation (for errors)
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+// Ripple animation (for button clicks)
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+// Micro-animations for enhanced interactions
+@keyframes buttonPress {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes cardHover {
+  0% {
+    transform: translateY(0) scale(1);
+    box-shadow: var(--shadow-md);
+  }
+  100% {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+@keyframes modalEnter {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalExit {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+}
+
+// Loading state animations
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+@keyframes loadingDots {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+// Attention-grabbing animations
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.1);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.1);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+
+@keyframes wiggle {
+  0%, 7% {
+    transform: rotateZ(0);
+  }
+  15% {
+    transform: rotateZ(-15deg);
+  }
+  20% {
+    transform: rotateZ(10deg);
+  }
+  25% {
+    transform: rotateZ(-10deg);
+  }
+  30% {
+    transform: rotateZ(6deg);
+  }
+  35% {
+    transform: rotateZ(-4deg);
+  }
+  40%, 100% {
+    transform: rotateZ(0);
+  }
+}
+
+// Ripple effect
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+// Animation Utility Mixins
+// -----------------------------------------------------------------------------
+
+@mixin animate($name, $duration: $transition-base, $timing: $ease-in-out, $delay: 0s, $iteration: 1, $direction: normal, $fill-mode: both) {
+  animation-name: $name;
+  animation-duration: $duration;
+  animation-timing-function: $timing;
+  animation-delay: $delay;
+  animation-iteration-count: $iteration;
+  animation-direction: $direction;
+  animation-fill-mode: $fill-mode;
+}
+
+// Fade animations
+@mixin fade-in($duration: $transition-base, $delay: 0s) {
+  @include animate(fadeIn, $duration, $ease-in-out, $delay);
+}
+
+@mixin fade-out($duration: $transition-base, $delay: 0s) {
+  @include animate(fadeOut, $duration, $ease-in-out, $delay);
+}
+
+@mixin fade-in-up($duration: $transition-base, $delay: 0s) {
+  @include animate(fadeInUp, $duration, $ease-out, $delay);
+}
+
+@mixin fade-in-down($duration: $transition-base, $delay: 0s) {
+  @include animate(fadeInDown, $duration, $ease-out, $delay);
+}
+
+// Slide animations
+@mixin slide-in-up($duration: $transition-base, $delay: 0s) {
+  @include animate(slideInUp, $duration, $ease-out, $delay);
+}
+
+@mixin slide-in-down($duration: $transition-base, $delay: 0s) {
+  @include animate(slideInDown, $duration, $ease-out, $delay);
+}
+
+@mixin slide-in-left($duration: $transition-base, $delay: 0s) {
+  @include animate(slideInLeft, $duration, $ease-out, $delay);
+}
+
+@mixin slide-in-right($duration: $transition-base, $delay: 0s) {
+  @include animate(slideInRight, $duration, $ease-out, $delay);
+}
+
+// Scale animations
+@mixin scale-in($duration: $transition-base, $delay: 0s) {
+  @include animate(scaleIn, $duration, $ease-out, $delay);
+}
+
+@mixin scale-out($duration: $transition-base, $delay: 0s) {
+  @include animate(scaleOut, $duration, $ease-in, $delay);
+}
+
+// Loading animations
+@mixin shimmer($duration: 2s) {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 1000px 100%;
+  @include animate(shimmer, $duration, linear, 0s, infinite);
+}
+
+@mixin spin($duration: 1s) {
+  @include animate(spin, $duration, linear, 0s, infinite);
+}
+
+@mixin pulse($duration: 2s) {
+  @include animate(pulse, $duration, $ease-in-out, 0s, infinite);
+}
+
+// Interactive animations
+@mixin bounce($duration: 1s) {
+  @include animate(bounce, $duration, $ease-in-out, 0s, infinite);
+}
+
+@mixin shake($duration: 0.5s) {
+  @include animate(shake, $duration, $ease-in-out);
+}
+
+// Transition Mixins
+// -----------------------------------------------------------------------------
+
+@mixin transition($properties...) {
+  $transitions: ();
+  @each $property in $properties {
+    $transitions: $transitions, ($property $transition-base $ease-in-out);
+  }
+  transition: $transitions;
+}
+
+@mixin transition-fast($properties...) {
+  $transitions: ();
+  @each $property in $properties {
+    $transitions: $transitions, ($property $transition-fast $ease-in-out);
+  }
+  transition: $transitions;
+}
+
+@mixin transition-slow($properties...) {
+  $transitions: ();
+  @each $property in $properties {
+    $transitions: $transitions, ($property $transition-slow $ease-in-out);
+  }
+  transition: $transitions;
+}
+
+// Hover Effects
+// -----------------------------------------------------------------------------
+
+@mixin hover-lift {
+  @include transition(transform, box-shadow);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+  
+  &:active {
+    transform: translateY(-2px);
+  }
+}
+
+@mixin hover-scale($scale: 1.05) {
+  @include transition(transform);
+  
+  &:hover {
+    transform: scale($scale);
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+@mixin hover-glow($color: $color-primary-green) {
+  @include transition(box-shadow);
+  
+  &:hover {
+    box-shadow: 0 0 20px rgba($color, 0.4);
+  }
+}
+
+@mixin hover-brightness($amount: 1.1) {
+  @include transition(filter);
+  
+  &:hover {
+    filter: brightness($amount);
+  }
+}
+
+// Touch-Friendly Interactions
+// -----------------------------------------------------------------------------
+
+@mixin touch-target($size: 44px) {
+  min-width: $size;
+  min-height: $size;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: $size;
+    height: $size;
+  }
+}
+
+@mixin tap-highlight($color: transparent) {
+  -webkit-tap-highlight-color: $color;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+@mixin active-state($scale: 0.95) {
+  @include transition(transform);
+  
+  &:active {
+    transform: scale($scale);
+  }
+}
+
+// Loading States
+// -----------------------------------------------------------------------------
+
+@mixin loading-overlay {
+  position: relative;
+  pointer-events: none;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include fade-in($transition-fast);
+  }
+}
+
+@mixin skeleton-loading {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: $radius-md;
+}
+
+// Enhanced skeleton loading with shimmer effect
+@mixin skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 0%,
+    var(--bg-tertiary) 50%,
+    var(--bg-secondary) 100%
+  );
+  background-size: 200px 100%;
+  animation: skeletonShimmer 1.2s ease-in-out infinite;
+  border-radius: $radius-md;
+}
+
+// Micro-animation mixins
+@mixin button-press {
+  @include animate(buttonPress, $transition-fast, $ease-in-out);
+}
+
+@mixin card-hover-animation {
+  @include transition(transform, box-shadow);
+  
+  &:hover {
+    animation: cardHover $transition-base $ease-out forwards;
+  }
+}
+
+@mixin modal-enter-animation {
+  @include animate(modalEnter, $transition-base, $ease-out);
+}
+
+@mixin modal-exit-animation {
+  @include animate(modalExit, $transition-base, $ease-in);
+}
+
+// Loading state mixins
+@mixin loading-dots($size: 8px, $color: var(--color-primary)) {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  
+  div {
+    position: absolute;
+    top: 33px;
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    background: $color;
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+    
+    &:nth-child(1) {
+      left: 8px;
+      animation: loadingDots 0.6s infinite;
+    }
+    
+    &:nth-child(2) {
+      left: 8px;
+      animation: loadingDots 0.6s infinite;
+      animation-delay: -0.2s;
+    }
+    
+    &:nth-child(3) {
+      left: 32px;
+      animation: loadingDots 0.6s infinite;
+      animation-delay: -0.1s;
+    }
+    
+    &:nth-child(4) {
+      left: 56px;
+      animation: loadingDots 0.6s infinite;
+    }
+  }
+}
+
+// Attention animations
+@mixin heartbeat($duration: 1.5s) {
+  @include animate(heartbeat, $duration, $ease-in-out, 0s, infinite);
+}
+
+@mixin wiggle($duration: 0.8s) {
+  @include animate(wiggle, $duration, $ease-in-out);
+}
+
+// Enhanced interactive states
+@mixin interactive-element {
+  @include transition(all);
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+  
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Stagger animation for lists
+@mixin stagger-children($delay: 50ms, $animation: fadeInUp) {
+  > * {
+    opacity: 0;
+    animation: $animation $transition-base $ease-out forwards;
+    
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        animation-delay: #{$i * $delay};
+      }
+    }
+  }
+}

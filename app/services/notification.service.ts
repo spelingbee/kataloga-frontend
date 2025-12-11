@@ -1,595 +1,435 @@
-interface PushSubscriptionData {
-  endpoint: string
-  keys: {
-    p256dh: string
-    auth: string
-  }
-}
+/**
+ * Notification Service
+ * Handles push notification subscriptions, WebSocket notifications, and in-app notifications
+ */
 
-interface NotificationPayload {
-  title: string
-  body: string
-  icon?: string
-  badge?: string
-  image?: string
-  data?: any
-  actions?: Array<{
-    action: string
-    title: string
-    icon?: string
-  }>
-  tag?: string
-  requireInteraction?: boolean
-}
+import type { Notification } from '~/types'
 
 interface InAppNotification {
   id: string
   type: 'order' | 'promotion' | 'system'
   title: string
   message: string
-  data?: any
-  timestamp: string
   isRead: boolean
+  timestamp: string
+  data?: any
 }
 
-export class NotificationService {
-  private wsService: any = null
+interface NotificationPreferences {
+  orderUpdates: boolean
+  promotions: boolean
+  reminders: boolean
+}
+
+class NotificationService {
+  private ws: WebSocket | null = null
+  private reconnectAttempts = 0
+  private maxReconnectAttempts = 5
+  private reconnectDelay = 1000
+  private listeners: Array<(notification: InAppNotification) => void> = []
   private inAppNotifications: InAppNotification[] = []
-  private notificationListeners: Set<(notification: InAppNotification) => void> = new Set()
-  private tenantStore: any = null
-  private currentTenantId: string | null = null
+  private unreadCount = 0
 
   constructor() {
-    this.initializeWebSocketIntegration()
-    this.initializeTenantContext()
-  }
-
-  private getApiClient(): any {
-    const nuxtApp = useNuxtApp()
-    return (nuxtApp as any).$apiClient
-  }
-
-  private async initializeTenantContext() {
     if (import.meta.client) {
-      try {
-        const { useTenantStore } = await import('~/stores/tenant')
-        this.tenantStore = useTenantStore()
-        this.currentTenantId = this.tenantStore?.tenantId || null
-        
-        // Watch for tenant changes
-        watch(
-          () => this.tenantStore?.tenantId,
-          (newTenantId) => {
-            const previousTenantId = this.currentTenantId
-            this.currentTenantId = newTenantId
-            
-            // Clear notifications when tenant changes
-            if (previousTenantId && previousTenantId !== newTenantId) {
-              console.log('Tenant changed, clearing notifications...')
-              this.clearNotifications()
-            }
-          }
-        )
-      } catch (error) {
-        console.debug('Tenant store not available for notification service')
-      }
+      this.loadNotificationsFromStorage()
     }
   }
 
-  private async initializeWebSocketIntegration() {
-    // Import WebSocket service dynamically to avoid circular dependencies
-    const { useWebSocketService } = await import('./websocket.service')
-    this.wsService = useWebSocketService()
-    
-    // Subscribe to WebSocket notifications
-    this.wsService.subscribeToNotifications((data: any) => {
-      this.handleWebSocketNotification(data)
-    })
+  /**
+   * Connect to WebSocket for real-time notifications
+   */
+  connect(orderId?: string): void {
+    if (!import.meta.client) return
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) return
 
-    this.wsService.subscribeToOrderUpdates((data: any) => {
-      this.handleOrderUpdateNotification(data)
-    })
+    const config = useRuntimeConfig()
+    const wsUrl = config.public.wsUrl || 'ws://localhost:3000'
+    const url = orderId ? `${wsUrl}/notifications?orderId=${orderId}` : `${wsUrl}/notifications`
 
-    this.wsService.subscribeToPromotions((data: any) => {
-      this.handlePromotionNotification(data)
-    })
-
-    this.wsService.subscribeToSystemMessages((data: any) => {
-      this.handleSystemNotification(data)
-    })
-  }
-
-  // Register push subscription with backend
-  async registerPushSubscription(subscription: PushSubscription): Promise<boolean> {
     try {
-      const subscriptionData: PushSubscriptionData = {
-        endpoint: subscription.endpoint,
-        keys: {
-          p256dh: this.arrayBufferToBase64(subscription.getKey('p256dh')!),
-          auth: this.arrayBufferToBase64(subscription.getKey('auth')!),
-        },
+      this.ws = new WebSocket(url)
+
+      this.ws.onopen = () => {
+        console.log('WebSocket connected for notifications')
+        this.reconnectAttempts = 0
       }
 
-      // Include tenant context in subscription
-      const payload = {
-        ...subscriptionData,
-        tenantId: this.currentTenantId,
-        tenantSlug: this.tenantStore?.tenantSlug,
+      this.ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          this.handleNotification(data)
+        } catch (error) {
+          console.error('Failed to parse notification:', error)
+        }
       }
 
-      const response = await this.getApiClient().post('/notifications/subscribe', payload)
-      return response.success
+      this.ws.onerror = (error) => {
+        console.error('WebSocket error:', error)
+      }
+
+      this.ws.onclose = () => {
+        console.log('WebSocket disconnected')
+        this.attemptReconnect(orderId)
+      }
     } catch (error) {
-      console.error('Failed to register push subscription:', error)
-      return false
+      console.error('Failed to connect WebSocket:', error)
     }
   }
 
-  // Unregister push subscription
-  async unregisterPushSubscription(subscription: PushSubscription): Promise<boolean> {
+  /**
+   * Disconnect from WebSocket
+   */
+  disconnect(): void {
+    if (this.ws) {
+      this.ws.close()
+      this.ws = null
+    }
+  }
+
+  /**
+   * Attempt to reconnect WebSocket
+   */
+  private attemptReconnect(orderId?: string): void {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('Max reconnection attempts reached')
+      return
+    }
+
+    this.reconnectAttempts++
+    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1)
+
+    setTimeout(() => {
+      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`)
+      this.connect(orderId)
+    }, delay)
+  }
+
+  /**
+   * Handle incoming notification
+   */
+  private handleNotification(data: any): void {
+    const notification: InAppNotification = {
+      id: data.id || Date.now().toString(),
+      type: data.type || 'system',
+      title: data.title || 'Notification',
+      message: data.message || '',
+      isRead: false,
+      timestamp: data.timestamp || new Date().toISOString(),
+      data: data.data
+    }
+
+    // Add to in-app notifications
+    this.inAppNotifications.unshift(notification)
+    this.unreadCount++
+
+    // Save to storage
+    this.saveNotificationsToStorage()
+
+    // Notify listeners
+    this.listeners.forEach(listener => listener(notification))
+
+    // Show browser notification if permitted
+    this.showBrowserNotification(notification)
+  }
+
+  /**
+   * Show browser notification
+   */
+  private showBrowserNotification(notification: InAppNotification): void {
+    if (!import.meta.client) return
+    if (!('Notification' in window)) return
+    if (Notification.permission !== 'granted') return
+
     try {
-      const response = await this.getApiClient().post('/notifications/unsubscribe', {
-        endpoint: subscription.endpoint,
+      const browserNotification = new Notification(notification.title, {
+        body: notification.message,
+        icon: '/icon-192x192.png',
+        badge: '/icon-72x72.png',
+        tag: notification.id,
+        data: notification.data,
+        requireInteraction: notification.type === 'order'
       })
-      return response.success
+
+      browserNotification.onclick = () => {
+        window.focus()
+        browserNotification.close()
+        
+        // Navigate based on notification type
+        if (notification.type === 'order' && notification.data?.orderId) {
+          window.location.href = `/orders/track/${notification.data.orderId}`
+        }
+      }
     } catch (error) {
-      console.error('Failed to unregister push subscription:', error)
-      return false
+      console.error('Failed to show browser notification:', error)
     }
   }
 
-  // Subscribe to push notifications
-  async subscribeToPush(): Promise<PushSubscription | null> {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.warn('Push messaging is not supported')
-      return null
+  /**
+   * Subscribe to notifications
+   */
+  onNotification(callback: (notification: InAppNotification) => void): void {
+    this.listeners.push(callback)
+  }
+
+  /**
+   * Get all in-app notifications
+   */
+  getInAppNotifications(): InAppNotification[] {
+    return this.inAppNotifications
+  }
+
+  /**
+   * Get unread count
+   */
+  getUnreadCount(): number {
+    return this.unreadCount
+  }
+
+  /**
+   * Mark notification as read
+   */
+  markAsRead(notificationId: string): void {
+    const notification = this.inAppNotifications.find(n => n.id === notificationId)
+    if (notification && !notification.isRead) {
+      notification.isRead = true
+      this.unreadCount = Math.max(0, this.unreadCount - 1)
+      this.saveNotificationsToStorage()
     }
+  }
+
+  /**
+   * Mark all notifications as read
+   */
+  markAllAsRead(): void {
+    this.inAppNotifications.forEach(n => {
+      n.isRead = true
+    })
+    this.unreadCount = 0
+    this.saveNotificationsToStorage()
+  }
+
+  /**
+   * Clear all notifications
+   */
+  clearNotifications(): void {
+    this.inAppNotifications = []
+    this.unreadCount = 0
+    this.saveNotificationsToStorage()
+  }
+
+  /**
+   * Save notifications to local storage
+   */
+  private saveNotificationsToStorage(): void {
+    if (!import.meta.client) return
+    
+    try {
+      localStorage.setItem('notifications', JSON.stringify(this.inAppNotifications))
+      localStorage.setItem('unreadCount', this.unreadCount.toString())
+    } catch (error) {
+      console.error('Failed to save notifications to storage:', error)
+    }
+  }
+
+  /**
+   * Load notifications from local storage
+   */
+  private loadNotificationsFromStorage(): void {
+    if (!import.meta.client) return
 
     try {
-      const registration = await navigator.serviceWorker.getRegistration()
-      if (!registration) {
-        console.error('Service worker not registered')
-        return null
+      const stored = localStorage.getItem('notifications')
+      if (stored) {
+        this.inAppNotifications = JSON.parse(stored)
       }
 
-      // Check if already subscribed
-      let subscription = await registration.pushManager.getSubscription()
-      
-      if (!subscription) {
-        // Subscribe to push notifications
-        const vapidPublicKey = await this.getVapidPublicKey()
-        if (!vapidPublicKey) return null
-
-        subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
-        })
+      const unreadCount = localStorage.getItem('unreadCount')
+      if (unreadCount) {
+        this.unreadCount = parseInt(unreadCount, 10)
       }
-
-      // Register with backend
-      const registered = await this.registerPushSubscription(subscription)
-      if (!registered) {
-        await subscription.unsubscribe()
-        return null
-      }
-
-      return subscription
     } catch (error) {
-      console.error('Failed to subscribe to push notifications:', error)
-      return null
+      console.error('Failed to load notifications from storage:', error)
     }
   }
 
-  // Unsubscribe from push notifications
-  async unsubscribeFromPush(): Promise<boolean> {
-    try {
-      const registration = await navigator.serviceWorker.getRegistration()
-      if (!registration) return false
-
-      const subscription = await registration.pushManager.getSubscription()
-      if (!subscription) return true
-
-      await this.unregisterPushSubscription(subscription)
-      return await subscription.unsubscribe()
-    } catch (error) {
-      console.error('Failed to unsubscribe from push notifications:', error)
-      return false
-    }
-  }
-
-  // Get VAPID public key from backend
+  /**
+   * Get VAPID public key for push notifications
+   */
   async getVapidPublicKey(): Promise<string | null> {
     try {
-      const response = await this.getApiClient().get('/notifications/vapid-key')
-      return response.success ? response.data.publicKey : null
+      const config = useRuntimeConfig()
+      const response = await fetch(`${config.public.apiUrl}/notifications/vapid-public-key`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to get VAPID public key')
+      }
+
+      const data = await response.json()
+      return data.publicKey
     } catch (error) {
       console.error('Failed to get VAPID public key:', error)
       return null
     }
   }
 
-  // Send test notification
+  /**
+   * Register push subscription with backend
+   */
+  async registerPushSubscription(subscription: PushSubscription): Promise<boolean> {
+    try {
+      const config = useRuntimeConfig()
+      const { useTenantStore } = await import('~/stores/tenant')
+      const tenantStore = useTenantStore()
+      
+      const response = await fetch(`${config.public.apiUrl}/notifications/subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantStore.tenantId || ''
+        },
+        body: JSON.stringify({
+          subscription: subscription.toJSON()
+        })
+      })
+
+      return response.ok
+    } catch (error) {
+      console.error('Failed to register push subscription:', error)
+      return false
+    }
+  }
+
+  /**
+   * Unregister push subscription from backend
+   */
+  async unregisterPushSubscription(subscription: PushSubscription): Promise<void> {
+    try {
+      const config = useRuntimeConfig()
+      const { useTenantStore } = await import('~/stores/tenant')
+      const tenantStore = useTenantStore()
+      
+      await fetch(`${config.public.apiUrl}/notifications/unsubscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantStore.tenantId || ''
+        },
+        body: JSON.stringify({
+          subscription: subscription.toJSON()
+        })
+      })
+    } catch (error) {
+      console.error('Failed to unregister push subscription:', error)
+    }
+  }
+
+  /**
+   * Send test notification
+   */
   async sendTestNotification(): Promise<boolean> {
     try {
-      const response = await this.getApiClient().post('/notifications/test')
-      return response.success
+      const config = useRuntimeConfig()
+      const { useTenantStore } = await import('~/stores/tenant')
+      const tenantStore = useTenantStore()
+      
+      const response = await fetch(`${config.public.apiUrl}/notifications/test`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantStore.tenantId || ''
+        }
+      })
+
+      return response.ok
     } catch (error) {
       console.error('Failed to send test notification:', error)
       return false
     }
   }
 
-  // Update notification preferences
-  async updateNotificationPreferences(preferences: {
-    orderUpdates: boolean
-    promotions: boolean
-    reminders: boolean
-  }): Promise<boolean> {
+  /**
+   * Update notification preferences
+   */
+  async updateNotificationPreferences(preferences: NotificationPreferences): Promise<boolean> {
     try {
-      // Include tenant context in preferences
-      const payload = {
-        ...preferences,
-        tenantId: this.currentTenantId,
-        tenantSlug: this.tenantStore?.tenantSlug,
-      }
+      const config = useRuntimeConfig()
+      const { useTenantStore } = await import('~/stores/tenant')
+      const tenantStore = useTenantStore()
+      
+      const response = await fetch(`${config.public.apiUrl}/notifications/preferences`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantStore.tenantId || ''
+        },
+        body: JSON.stringify(preferences)
+      })
 
-      const response = await this.getApiClient().put('/notifications/preferences', payload)
-      return response.success
+      return response.ok
     } catch (error) {
       console.error('Failed to update notification preferences:', error)
       return false
     }
   }
 
-  // Get notification preferences
-  async getNotificationPreferences(): Promise<{
-    orderUpdates: boolean
-    promotions: boolean
-    reminders: boolean
-  } | null> {
+  /**
+   * Get notification preferences
+   */
+  async getNotificationPreferences(): Promise<NotificationPreferences | null> {
     try {
-      // Tenant context is automatically added by API client via headers
-      const response = await this.getApiClient().get('/notifications/preferences')
-      return response.success ? response.data : null
+      const config = useRuntimeConfig()
+      const { useTenantStore } = await import('~/stores/tenant')
+      const tenantStore = useTenantStore()
+      
+      const response = await fetch(`${config.public.apiUrl}/notifications/preferences`, {
+        headers: {
+          'X-Tenant-ID': tenantStore.tenantId || ''
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get notification preferences')
+      }
+
+      return await response.json()
     } catch (error) {
       console.error('Failed to get notification preferences:', error)
       return null
     }
   }
 
-  // Update push subscription for current tenant
+  /**
+   * Update push subscription for tenant
+   */
   async updatePushSubscriptionForTenant(): Promise<boolean> {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      return false
-    }
-
     try {
-      const registration = await navigator.serviceWorker.getRegistration()
-      if (!registration) return false
+      const config = useRuntimeConfig()
+      const { useTenantStore } = await import('~/stores/tenant')
+      const tenantStore = useTenantStore()
+      
+      const response = await fetch(`${config.public.apiUrl}/notifications/update-tenant`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Tenant-ID': tenantStore.tenantId || ''
+        }
+      })
 
-      const subscription = await registration.pushManager.getSubscription()
-      if (!subscription) return false
-
-      // Re-register subscription with new tenant context
-      return await this.registerPushSubscription(subscription)
+      return response.ok
     } catch (error) {
       console.error('Failed to update push subscription for tenant:', error)
       return false
     }
   }
-
-  // Get current tenant context
-  getCurrentTenantId(): string | null {
-    return this.currentTenantId
-  }
-
-  // Utility functions
-  private arrayBufferToBase64(buffer: ArrayBuffer): string {
-    const bytes = new Uint8Array(buffer)
-    let binary = ''
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i])
-    }
-    return btoa(binary)
-  }
-
-  private urlBase64ToUint8Array(base64String: string): Uint8Array {
-    const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
-    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
-    const rawData = atob(base64)
-    const outputArray = new Uint8Array(rawData.length)
-    for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCodeAt(i)
-    }
-    return outputArray
-  }
-
-  // WebSocket notification handlers
-  private handleWebSocketNotification(data: any) {
-    // Filter by tenant if tenant context is available
-    if (!this.shouldProcessNotification(data)) {
-      console.debug('Notification filtered out due to tenant mismatch:', data)
-      return
-    }
-
-    const notification: InAppNotification = {
-      id: data.id || this.generateNotificationId(),
-      type: data.type || 'system',
-      title: data.title,
-      message: data.message || data.body,
-      data: data.data,
-      timestamp: data.timestamp || new Date().toISOString(),
-      isRead: false
-    }
-
-    this.addInAppNotification(notification)
-    this.showBrowserNotification(notification)
-  }
-
-  private handleOrderUpdateNotification(data: any) {
-    // Filter by tenant if tenant context is available
-    if (!this.shouldProcessNotification(data)) {
-      console.debug('Order notification filtered out due to tenant mismatch:', data)
-      return
-    }
-
-    const notification: InAppNotification = {
-      id: this.generateNotificationId(),
-      type: 'order',
-      title: 'Order Update',
-      message: data.message || `Your order status has been updated to ${data.status}`,
-      data: { orderId: data.orderId, status: data.status },
-      timestamp: new Date().toISOString(),
-      isRead: false
-    }
-
-    this.addInAppNotification(notification)
-    this.showBrowserNotification(notification)
-  }
-
-  private handlePromotionNotification(data: any) {
-    // Filter by tenant if tenant context is available
-    if (!this.shouldProcessNotification(data)) {
-      console.debug('Promotion notification filtered out due to tenant mismatch:', data)
-      return
-    }
-
-    const notification: InAppNotification = {
-      id: this.generateNotificationId(),
-      type: 'promotion',
-      title: data.title || 'New Promotion',
-      message: data.message || data.description,
-      data: data,
-      timestamp: new Date().toISOString(),
-      isRead: false
-    }
-
-    this.addInAppNotification(notification)
-    this.showBrowserNotification(notification)
-  }
-
-  private handleSystemNotification(data: any) {
-    // Filter by tenant if tenant context is available
-    if (!this.shouldProcessNotification(data)) {
-      console.debug('System notification filtered out due to tenant mismatch:', data)
-      return
-    }
-
-    const notification: InAppNotification = {
-      id: this.generateNotificationId(),
-      type: 'system',
-      title: data.title || 'System Notification',
-      message: data.message,
-      data: data,
-      timestamp: new Date().toISOString(),
-      isRead: false
-    }
-
-    this.addInAppNotification(notification)
-    this.showBrowserNotification(notification)
-  }
-
-  private shouldProcessNotification(data: any): boolean {
-    // If no tenant context, process all notifications
-    if (!this.currentTenantId) {
-      return true
-    }
-
-    // If notification has tenantId, verify it matches current tenant
-    if (data.tenantId) {
-      return data.tenantId === this.currentTenantId
-    }
-
-    // If notification doesn't have tenantId, allow it (might be system-wide)
-    return true
-  }
-
-  // In-app notification management
-  private addInAppNotification(notification: InAppNotification) {
-    this.inAppNotifications.unshift(notification)
-    
-    // Keep only last 50 notifications
-    if (this.inAppNotifications.length > 50) {
-      this.inAppNotifications = this.inAppNotifications.slice(0, 50)
-    }
-
-    // Notify listeners
-    this.notificationListeners.forEach(listener => {
-      try {
-        listener(notification)
-      } catch (error) {
-        console.error('Error in notification listener:', error)
-      }
-    })
-  }
-
-  private async showBrowserNotification(notification: InAppNotification) {
-    // Check if browser notifications are supported and permitted
-    if (!('Notification' in window)) return
-
-    if (Notification.permission === 'granted') {
-      const browserNotification = new Notification(notification.title, {
-        body: notification.message,
-        icon: '/icon-192x192.png',
-        badge: '/icon-72x72.png',
-        tag: notification.type,
-        data: notification.data,
-        requireInteraction: notification.type === 'order'
-      })
-
-      browserNotification.onclick = () => {
-        this.handleNotificationClick(notification)
-        browserNotification.close()
-      }
-
-      // Auto close after 5 seconds for non-order notifications
-      if (notification.type !== 'order') {
-        setTimeout(() => browserNotification.close(), 5000)
-      }
-    }
-  }
-
-  private handleNotificationClick(notification: InAppNotification) {
-    // Mark as read
-    notification.isRead = true
-
-    // Navigate based on notification type
-    if (import.meta.client) {
-      const router = useRouter()
-      
-      switch (notification.type) {
-        case 'order':
-          if (notification.data?.orderId) {
-            router.push(`/orders/${notification.data.orderId}`)
-          } else {
-            router.push('/orders')
-          }
-          break
-        case 'promotion':
-          router.push('/promotions')
-          break
-        default:
-          router.push('/notifications')
-      }
-    }
-  }
-
-  private generateNotificationId(): string {
-    return `notification_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  }
-
-  // Public API for in-app notifications
-  getInAppNotifications(): InAppNotification[] {
-    return [...this.inAppNotifications]
-  }
-
-  getUnreadCount(): number {
-    return this.inAppNotifications.filter(n => !n.isRead).length
-  }
-
-  markAsRead(notificationId: string): void {
-    const notification = this.inAppNotifications.find(n => n.id === notificationId)
-    if (notification) {
-      notification.isRead = true
-    }
-  }
-
-  markAllAsRead(): void {
-    this.inAppNotifications.forEach(n => n.isRead = true)
-  }
-
-  clearNotifications(): void {
-    this.inAppNotifications = []
-  }
-
-  onNotification(callback: (notification: InAppNotification) => void): () => void {
-    this.notificationListeners.add(callback)
-    
-    // Return unsubscribe function
-    return () => {
-      this.notificationListeners.delete(callback)
-    }
-  }
-
-  // Request browser notification permission
-  async requestNotificationPermission(): Promise<boolean> {
-    if (!('Notification' in window)) {
-      console.warn('Browser notifications not supported')
-      return false
-    }
-
-    if (Notification.permission === 'granted') {
-      return true
-    }
-
-    if (Notification.permission === 'denied') {
-      return false
-    }
-
-    const permission = await Notification.requestPermission()
-    return permission === 'granted'
-  }
 }
 
-// Create singleton instance
-let notificationService: NotificationService | null = null
+// Singleton instance
+let notificationServiceInstance: NotificationService | null = null
 
-export function useNotificationService(): NotificationService {
-  if (!notificationService) {
-    notificationService = new NotificationService()
+export const useNotificationService = (): NotificationService => {
+  if (!notificationServiceInstance) {
+    notificationServiceInstance = new NotificationService()
   }
-  return notificationService
-}
-
-// Composable for easier usage in components
-export function useNotifications() {
-  const notificationService = useNotificationService()
-  const notifications = ref<InAppNotification[]>([])
-  const unreadCount = ref(0)
-
-  const updateNotifications = () => {
-    notifications.value = notificationService.getInAppNotifications()
-    unreadCount.value = notificationService.getUnreadCount()
-  }
-
-  onMounted(() => {
-    updateNotifications()
-    
-    // Subscribe to new notifications
-    const unsubscribe = notificationService.onNotification(() => {
-      updateNotifications()
-    })
-
-    onUnmounted(() => {
-      unsubscribe()
-    })
-  })
-
-  const markAsRead = (notificationId: string) => {
-    notificationService.markAsRead(notificationId)
-    updateNotifications()
-  }
-
-  const markAllAsRead = () => {
-    notificationService.markAllAsRead()
-    updateNotifications()
-  }
-
-  const clearAll = () => {
-    notificationService.clearNotifications()
-    updateNotifications()
-  }
-
-  const requestPermission = () => {
-    return notificationService.requestNotificationPermission()
-  }
-
-  return {
-    notifications: readonly(notifications),
-    unreadCount: readonly(unreadCount),
-    markAsRead,
-    markAllAsRead,
-    clearAll,
-    requestPermission
-  }
+  return notificationServiceInstance
 }

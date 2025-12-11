@@ -119,13 +119,15 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@use '~/assets/scss/abstracts/variables' as *;
+
 .tenant-selector {
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
 
   &__search {
-    margin-bottom: $spacing-lg;
+    margin-bottom: $space-6;
   }
 
   &__search-input {
@@ -139,15 +141,15 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: $spacing-xl;
+    padding: $space-8;
     min-height: 300px;
   }
 
   &__list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: $spacing-lg;
-    padding: $spacing-md 0;
+    gap: $space-6;
+    padding: $space-4 0;
   }
 }
 </style>

@@ -1,39 +1,39 @@
 <template>
   <Teleport to="body">
     <Transition
-      enter-active-class="transition-all duration-300 ease-out"
-      enter-from-class="opacity-0 translate-y-full"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition-all duration-200 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 translate-y-full"
+      enter-active-class="install-prompt--enter-active"
+      enter-from-class="install-prompt--enter-from"
+      enter-to-class="install-prompt--enter-to"
+      leave-active-class="install-prompt--leave-active"
+      leave-from-class="install-prompt--leave-from"
+      leave-to-class="install-prompt--leave-to"
     >
       <div
         v-if="showPrompt"
-        class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-neutral-20 shadow-lg"
+        class="install-prompt"
       >
-        <div class="p-4 max-w-md mx-auto">
-          <div class="flex items-start gap-3">
+        <div class="install-prompt__container">
+          <div class="install-prompt__content">
             <!-- App Icon -->
-            <div class="flex-shrink-0">
+            <div class="install-prompt__icon">
               <img
                 src="/icon-72x72.png"
                 alt="App Icon"
-                class="w-12 h-12 rounded-lg"
+                class="install-prompt__icon-image"
               />
             </div>
 
             <!-- Content -->
-            <div class="flex-1 min-w-0">
-              <h3 class="text-heading-sm font-semibold text-neutral-80 mb-1">
+            <div class="install-prompt__text">
+              <h3 class="install-prompt__title">
                 Install Menu App
               </h3>
-              <p class="text-body-sm text-neutral-80/70 mb-3">
+              <p class="install-prompt__description">
                 Get quick access to your favorite restaurant menu. Install our app for a better experience!
               </p>
 
               <!-- Actions -->
-              <div class="flex gap-2">
+              <div class="install-prompt__actions">
                 <BaseButton
                   variant="primary"
                   size="sm"
@@ -54,10 +54,10 @@
 
             <!-- Close button -->
             <button
-              class="flex-shrink-0 p-1 text-neutral-80/50 hover:text-neutral-80 transition-colors"
+              class="install-prompt__close"
               @click="handleDismiss"
             >
-              <BaseIcon name="x" class="w-5 h-5" />
+              <BaseIcon name="x" size="sm" />
             </button>
           </div>
         </div>
@@ -191,3 +191,107 @@ defineExpose({
   },
 })
 </script>
+
+
+<style lang="scss" scoped>
+@use '../../assets/scss/abstracts/variables' as *;
+
+.install-prompt {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: white;
+  border-top: 1px solid $color-neutral-20;
+  box-shadow: $shadow-lg;
+}
+
+.install-prompt__container {
+  padding: $space-6;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.install-prompt__content {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-4;
+}
+
+.install-prompt__icon {
+  flex-shrink: 0;
+}
+
+.install-prompt__icon-image {
+  width: 3rem;
+  height: 3rem;
+  border-radius: $radius-lg;
+}
+
+.install-prompt__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.install-prompt__title {
+  font-size: $text-lg;
+  font-weight: $font-semibold;
+  color: var(--text-primary);
+  margin-bottom: $space-1;
+}
+
+.install-prompt__description {
+  font-size: $text-sm;
+  color: rgba(var(--text-primary), 0.7);
+  margin-bottom: $space-4;
+}
+
+.install-prompt__actions {
+  display: flex;
+  gap: $space-2;
+}
+
+.install-prompt__close {
+  flex-shrink: 0;
+  padding: $space-1;
+  background: none;
+  border: none;
+  color: rgba(var(--text-primary), 0.5);
+  cursor: pointer;
+  transition: color $transition-base;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+// Transition classes
+.install-prompt--enter-active {
+  transition: all 300ms ease-out;
+}
+
+.install-prompt--enter-from {
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.install-prompt--enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.install-prompt--leave-active {
+  transition: all 200ms ease-in;
+}
+
+.install-prompt--leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.install-prompt--leave-to {
+  opacity: 0;
+  transform: translateY(100%);
+}
+</style>

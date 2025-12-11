@@ -57,6 +57,14 @@ export class ApiClient {
   }
 
   /**
+   * Alias for setTenant - for backward compatibility
+   * Requirements: 1.1, 4.1
+   */
+  setTenantSlug(tenantSlug: string): void {
+    this.setTenant(tenantSlug)
+  }
+
+  /**
    * Get current tenant slug
    * Requirements: 1.1, 4.1
    */

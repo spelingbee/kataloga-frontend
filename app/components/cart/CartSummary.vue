@@ -1,23 +1,26 @@
 <template>
   <div class="cart-summary">
-    <!-- Item Count -->
+    <!-- Subtotal -->
     <div class="cart-summary__row">
       <AppText class="cart-summary__label">
-        Items ({{ itemCount }})
+        Subtotal ({{ itemCount }} {{ itemCount === 1 ? 'item' : 'items' }})
       </AppText>
-      <AppPrice :price="calculatedSubtotal" class="cart-summary__value" />
+      <AppPrice :price="subtotal" class="cart-summary__value" />
     </div>
 
     <!-- Delivery Fee -->
-    <div class="cart-summary__row">
+    <div v-if="showDeliveryFee" class="cart-summary__row">
       <AppText class="cart-summary__label">
         Delivery Fee
       </AppText>
       <AppPrice 
+        v-if="deliveryFee > 0"
         :price="deliveryFee" 
         class="cart-summary__value"
-        :free-text="deliveryFee === 0 ? 'Free' : undefined"
       />
+      <AppText v-else class="cart-summary__value cart-summary__value--free">
+        Free
+      </AppText>
     </div>
 
     <!-- Service Fee -->
@@ -48,9 +51,10 @@
     </div>
 
     <!-- Minimum Order Notice -->
-    <div v-if="minOrderAmount && total < minOrderAmount" class="cart-summary__notice">
+    <div v-if="showMinimumNotice" class="cart-summary__notice">
+      <BaseIcon name="alert-circle" size="sm" class="cart-summary__notice-icon" />
       <AppText size="caption" class="cart-summary__notice-text">
-        Minimum order: {{ formatPrice(minOrderAmount) }}. Add {{ formatPrice(minOrderAmount - total) }} more.
+        Minimum order: {{ formatPrice(minOrderAmount) }}. Add {{ formatPrice(remainingAmount) }} more.
       </AppText>
     </div>
   </div>
@@ -62,29 +66,34 @@ import { useTenant } from '~/composables/useTenant'
 
 // Props
 interface Props {
+  subtotal: number
   total: number
   itemCount: number
-  subtotal?: number
   deliveryFee?: number
   serviceFee?: number
   discount?: number
   minOrderAmount?: number
+  showDeliveryFee?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  subtotal: 0,
   deliveryFee: 0,
   serviceFee: 0,
   discount: 0,
-  minOrderAmount: 0
+  minOrderAmount: 0,
+  showDeliveryFee: false
 })
 
 // Tenant context
 const { tenantSettings } = useTenant()
 
 // Computed properties
-const calculatedSubtotal = computed(() => {
-  return props.subtotal || (props.total - props.deliveryFee - props.serviceFee + props.discount)
+const showMinimumNotice = computed(() => {
+  return props.minOrderAmount > 0 && props.subtotal < props.minOrderAmount
+})
+
+const remainingAmount = computed(() => {
+  return Math.max(0, props.minOrderAmount - props.subtotal)
 })
 
 const currency = computed(() => tenantSettings.value?.currency || 'USD')
@@ -111,12 +120,15 @@ const formatPrice = (price: number) => {
 </script>
 
 <style lang="scss" scoped>
+@use '~/assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/functions' as *;
+
 .cart-summary {
   display: flex;
   flex-direction: column;
-  gap: $spacing-md;
-  padding: $spacing-lg;
-  background-color: rgba($color-background-card, 0.3);
+  gap: $space-4;
+  padding: $space-6;
+  background-color: rgba(var(--bg-primary), 0.3);
   border-radius: 0.5rem;
   border: 1px solid $color-border-subtle;
 
@@ -131,51 +143,66 @@ const formatPrice = (price: number) => {
     color: $color-neutral-20;
 
     &--discount {
-      color: $color-primary-green;
+      color: var(--color-success);
     }
   }
 
   &__value {
     color: white;
 
+    &--free {
+      color: var(--color-success);
+      font-weight: $font-medium;
+    }
+
     &--discount {
-      color: $color-primary-green;
+      color: var(--color-success);
     }
   }
 
   &__divider {
     border: none;
     border-top: 1px solid $color-border-subtle;
-    margin: $spacing-md 0;
+    margin: $space-4 0;
   }
 
   &__total {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: $spacing-sm;
+    padding-top: $space-2;
   }
 
   &__total-label {
-    font-weight: $font-weight-semibold;
+    font-weight: $font-semibold;
     color: white;
   }
 
   &__total-value {
-    font-weight: $font-weight-semibold;
+    font-weight: $font-semibold;
     color: white;
   }
 
   &__notice {
-    margin-top: $spacing-md;
-    padding: $spacing-sm;
-    background-color: rgba($color-primary-orange, 0.2);
+    display: flex;
+    align-items: flex-start;
+    gap: $space-2;
+    margin-top: $space-4;
+    padding: $space-2;
+    background-color: rgba(var(--color-warning), 0.2);
     border-radius: 0.25rem;
-    border: 1px solid rgba($color-primary-orange, 0.3);
+    border: 1px solid rgba(var(--color-warning), 0.3);
+  }
+
+  &__notice-icon {
+    color: var(--color-warning);
+    flex-shrink: 0;
+    margin-top: 2px;
   }
 
   &__notice-text {
-    color: $color-primary-orange;
+    color: var(--color-warning);
+    flex: 1;
   }
 }
 </style>

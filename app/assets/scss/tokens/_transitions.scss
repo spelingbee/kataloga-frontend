@@ -1,0 +1,122 @@
+// =============================================================================
+// Design Tokens - Transitions
+// =============================================================================
+// Transition system for smooth animations in the minimalist design
+
+// Transition Durations
+// -----------------------------------------------------------------------------
+$transition-fast: 150ms;
+$transition-base: 200ms;
+$transition-slow: 300ms;
+
+// Transition Timing Functions
+// -----------------------------------------------------------------------------
+$ease-in-out: ease-in-out;
+$ease-out: cubic-bezier(0, 0, 0.2, 1);
+$ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+// Complete Transition Definitions
+// -----------------------------------------------------------------------------
+$transition-fast-ease: $transition-fast $ease-in-out;
+$transition-base-ease: $transition-base $ease-in-out;
+$transition-slow-ease: $transition-slow $ease-in-out;
+
+// Component-Specific Transitions
+// -----------------------------------------------------------------------------
+$transition-button: all $transition-fast $ease-in-out;
+$transition-card: all $transition-base $ease-in-out;
+$transition-modal: all $transition-base $ease-out;
+$transition-color: color $transition-fast $ease-in-out;
+$transition-transform: transform $transition-base $ease-in-out;
+$transition-opacity: opacity $transition-fast $ease-in-out;
+
+// CSS Custom Properties for Runtime Access
+// -----------------------------------------------------------------------------
+:root {
+  // Durations
+  --transition-fast: #{$transition-fast};
+  --transition-base: #{$transition-base};
+  --transition-slow: #{$transition-slow};
+  
+  // Timing Functions
+  --ease-in-out: #{$ease-in-out};
+  --ease-out: #{$ease-out};
+  --ease-in: #{$ease-in};
+  
+  // Complete Transitions
+  --transition-fast-ease: #{$transition-fast-ease};
+  --transition-base-ease: #{$transition-base-ease};
+  --transition-slow-ease: #{$transition-slow-ease};
+  
+  // Component Transitions
+  --transition-button: #{$transition-button};
+  --transition-card: #{$transition-card};
+  --transition-modal: #{$transition-modal};
+  --transition-color: #{$transition-color};
+  --transition-transform: #{$transition-transform};
+  --transition-opacity: #{$transition-opacity};
+}
+
+// Transition Utility Classes
+// -----------------------------------------------------------------------------
+.transition-fast { transition: all var(--transition-fast) var(--ease-in-out); }
+.transition-base { transition: all var(--transition-base) var(--ease-in-out); }
+.transition-slow { transition: all var(--transition-slow) var(--ease-in-out); }
+
+.transition-colors { transition: var(--transition-color); }
+.transition-transform { transition: var(--transition-transform); }
+.transition-opacity { transition: var(--transition-opacity); }
+
+.transition-none { transition: none; }
+
+// Reduced Motion Support (Accessibility)
+// -----------------------------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0.01ms;
+    --transition-base: 0.01ms;
+    --transition-slow: 0.01ms;
+    --transition-button: none;
+    --transition-card: none;
+    --transition-modal: none;
+    --transition-color: none;
+    --transition-transform: none;
+    --transition-opacity: none;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Hover and Focus Transitions
+// -----------------------------------------------------------------------------
+.hover-lift {
+  transition: var(--transition-transform);
+  
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.hover-scale {
+  transition: var(--transition-transform);
+  
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+.focus-ring {
+  transition: box-shadow var(--transition-fast) var(--ease-in-out);
+  
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-shadow);
+  }
+}

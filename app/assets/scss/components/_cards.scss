@@ -1,3 +1,7 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+@use '../abstracts/functions' as *;
+
 // Card BEM blocks
 // Base card class with common styles
 .card {

@@ -1,3 +1,6 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/functions' as *;
+
 // Button BEM blocks
 // Base button class with common styles
 .btn {
@@ -88,6 +91,21 @@
   
   &:focus {
     outline-color: $color-neutral-80;
+  }
+}
+
+.btn--danger {
+  background-color: $color-error;
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  
+  &:hover:not(:disabled) {
+    background-color: darken-color($color-error, 10%);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:focus {
+    outline-color: $color-error;
   }
 }
 

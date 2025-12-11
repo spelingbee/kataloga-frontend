@@ -95,10 +95,13 @@ useHead({
 </script>
 
 <style lang="scss" scoped>
+@use '~/assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/functions' as *;
+
 .select-restaurant-page {
   min-height: 100vh;
-  padding: $spacing-xl $spacing-lg;
-  background: linear-gradient(135deg, $color-background-dark 0%, darken($color-background-dark, 5%) 100%);
+  padding: $space-8 $space-6;
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--color-neutral-400) 100%);
 
   &__container {
     max-width: 1200px;
@@ -107,28 +110,28 @@ useHead({
 
   &__header {
     text-align: center;
-    margin-bottom: $spacing-2xl;
+    margin-bottom: $space-12;
   }
 
   &__title {
-    color: $color-neutral-80;
-    margin-bottom: $spacing-md;
+    color: var(--text-primary);
+    margin-bottom: $space-4;
   }
 
   &__subtitle {
-    color: $color-text-secondary;
+    color: var(--text-secondary);
   }
 
   &__actions {
     display: flex;
     justify-content: center;
-    margin-top: $spacing-2xl;
+    margin-top: $space-12;
   }
 
   &__back-btn {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
+    gap: $space-2;
   }
 }
 </style>

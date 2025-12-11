@@ -1,295 +1,154 @@
 <template>
   <BaseCard
-    :class="[
-      'menu-item-card',
-      {
-        'menu-item-card--selected': isSelected,
-        'menu-item-card--inactive': !menuItem.isActive
-      }
-    ]"
-    role="button"
-    :tabindex="0"
+    class="menu-item-card"
+    variant="default"
+    padding="md"
+    hoverable
     @click="handleClick"
-    @keydown.enter="handleClick"
-    @keydown.space.prevent="handleClick"
   >
-    <!-- Card Content -->
-    <div class="menu-item-card__content">
-      <!-- Image and Basic Info -->
-      <div class="menu-item-card__header">
-        <!-- Menu Item Image -->
-        <div class="menu-item-card__image-container">
-          <LazyImage
-            :src="menuItem.imageUrl || '/images/placeholder-dish.webp'"
-            :alt="menuItem.name"
-            :width="80"
-            :height="80"
-            aspect-ratio="1/1"
-            container-class="w-full h-full"
-            image-class="menu-item-card__image"
-            :show-skeleton="true"
-            :threshold="0.1"
-            root-margin="100px"
-          />
-        </div>
-        
-        <!-- Item Details -->
-        <div class="menu-item-card__details">
-          <!-- Name and Popular Indicator -->
-          <div class="menu-item-card__title-row">
-            <h3 class="menu-item-card__title">
-              {{ menuItem.name }}
-            </h3>
-            
-            <FireIcon 
-              v-if="isPopular" 
-              size="sm" 
-              :animated="true"
-              class="menu-item-card__popular-indicator"
-            />
-          </div>
-          
-          <!-- Description -->
-          <p class="menu-item-card__description">
-            {{ menuItem.description }}
-          </p>
-          
-          <!-- Calories (if available) -->
-          <div 
-            v-if="menuItem.calories" 
-            class="menu-item-card__calories"
-          >
-            <BaseIcon name="fire" size="xs" class="u-text-primary-orange" />
-            <span class="menu-item-card__calories-text">
-              {{ menuItem.calories }} cal
-            </span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Price and Actions -->
-      <div class="menu-item-card__footer">
-        <!-- Price -->
-        <div class="menu-item-card__price">
-          {{ formattedPrice }}
-        </div>
-        
-        <!-- Action Buttons -->
-        <div class="menu-item-card__actions">
-          <!-- Favorite Button -->
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            :aria-label="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
-            :class="[
-              'menu-item-card__favorite-btn',
-              { 'menu-item-card__favorite-btn--active': isFavorite }
-            ]"
-            @click.stop="toggleFavorite"
-          >
-            <BaseIcon 
-              :name="isFavorite ? 'heart-filled' : 'heart'" 
-              size="sm"
-            />
-          </BaseButton>
-          
-          <!-- Add to Cart Button -->
-          <AddToCartButton
-            :disabled="!menuItem.isActive"
-            size="sm"
-            @click.stop="addToCart"
-          />
-        </div>
-      </div>
-    </div>
-    
-    <!-- Hover Overlay -->
-    <div class="menu-item-card__overlay" />
-    
-    <!-- Unavailable Overlay -->
-    <div
-      v-if="!menuItem.isActive"
-      class="menu-item-card__unavailable-overlay"
-    >
-      <BaseBadge variant="secondary" size="sm">
-        Unavailable
+    <template #image>
+      <img 
+        :src="menuItem.imageUrl || '/images/placeholder-dish.webp'"
+        :alt="menuItem.name"
+        class="menu-item-card__image"
+        loading="lazy"
+      />
+      <BaseBadge 
+        v-if="isPopular" 
+        class="menu-item-card__badge"
+        variant="primary"
+        size="sm"
+      >
+        Popular
       </BaseBadge>
+    </template>
+    
+    <div class="menu-item-card__info">
+      <h3 class="menu-item-card__name">{{ menuItem.name }}</h3>
+      <p class="menu-item-card__description">{{ menuItem.description }}</p>
+      <div class="menu-item-card__footer">
+        <span class="menu-item-card__price">${{ menuItem.price.toFixed(2) }}</span>
+        <BaseButton 
+          variant="primary" 
+          size="sm"
+          :disabled="!menuItem.isActive"
+          @click.stop="addToCart"
+        >
+          Add to Cart
+        </BaseButton>
+      </div>
     </div>
   </BaseCard>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { MenuItem } from '~/types'
-import { useMenuStore } from '~/stores/menu'
-import { useCartStore } from '~/stores/cart'
-import { useTenant } from '~/composables/useTenant'
+interface MenuItem {
+  id: string
+  name: string
+  description: string
+  price: number
+  imageUrl?: string
+  isActive: boolean
+  isPopular?: boolean
+}
 
 interface Props {
   menuItem: MenuItem
-  isSelected?: boolean
-  showPopularIndicator?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  isSelected: false,
-  showPopularIndicator: true
-})
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   click: [menuItem: MenuItem]
   addToCart: [menuItem: MenuItem]
-  toggleFavorite: [menuItem: MenuItem]
 }>()
-
-// Stores
-const menuStore = useMenuStore()
-const cartStore = useCartStore()
-
-// Tenant context
-const { currentTenant, tenantSettings } = useTenant()
 
 // Computed properties
 const isPopular = computed(() => {
-  if (!props.showPopularIndicator) return false
-  // This would typically be determined by backend analytics
-  // For now, we'll use a simple heuristic
-  return menuStore.popularItems.some(item => item.id === props.menuItem.id)
-})
-
-const isFavorite = computed(() => {
-  return menuStore.favourites.some(item => item.id === props.menuItem.id)
-})
-
-// Format price with tenant currency
-const formattedPrice = computed(() => {
-  const currency = tenantSettings.value?.currency || 'USD'
-  const price = props.menuItem.price
-  
-  // Simple currency formatting
-  const currencySymbols: Record<string, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    RUB: '₽'
-  }
-  
-  const symbol = currencySymbols[currency] || currency
-  return `${symbol}${price.toFixed(2)}`
+  return props.menuItem.isPopular || false
 })
 
 // Methods
 const handleClick = () => {
   emit('click', props.menuItem)
-  
-  // Set as selected dish in store
-  menuStore.setSelectedDish(props.menuItem)
-  
-  // Add haptic feedback
-  if ('vibrate' in navigator) {
-    navigator.vibrate(30)
-  }
 }
 
 const addToCart = () => {
   if (!props.menuItem.isActive) return
-  
   emit('addToCart', props.menuItem)
-  
-  // Add to cart store
-  cartStore.addItem(props.menuItem, 1)
-  
-  // Add haptic feedback
-  if ('vibrate' in navigator) {
-    navigator.vibrate(50)
-  }
-}
-
-const toggleFavorite = () => {
-  emit('toggleFavorite', props.menuItem)
-  
-  // Toggle in store
-  menuStore.toggleFavourite(props.menuItem.id)
-  
-  // Add haptic feedback
-  if ('vibrate' in navigator) {
-    navigator.vibrate(30)
-  }
 }
 </script>
 
-<style lang="scss" scoped>
-// Component-specific animations and transitions
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/typography' as *;
+@use '../../assets/scss/tokens/transitions' as *;
+
 .menu-item-card {
-  // Enhanced hover animation with spring effect
-  &:hover {
-    animation: cardHoverBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  }
-  
-  // Staggered animation for card elements on hover
-  &:hover .menu-item-card__image {
-    animation-delay: 0.1s;
-  }
-  
-  &:hover .menu-item-card__title {
-    animation: titleGlow 0.3s ease-out;
-  }
+  position: relative;
+  max-width: 320px;
 }
 
-// Custom keyframe animations
-@keyframes cardHoverBounce {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-4px) scale(1.02);
-  }
-  100% {
-    transform: translateY(-2px) scale(1);
-  }
+.menu-item-card__image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
 }
 
-@keyframes titleGlow {
-  0% {
-    text-shadow: none;
-  }
-  50% {
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-  }
-  100% {
-    text-shadow: none;
-  }
+.menu-item-card__badge {
+  position: absolute;
+  top: $space-3;
+  left: $space-3;
+  z-index: 2;
 }
 
-// Pulse animation for favorite button when active
-.menu-item-card__favorite-btn--active {
-  animation: heartPulse 0.6s ease-in-out;
+.menu-item-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
 }
 
-@keyframes heartPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
+.menu-item-card__name {
+  font-family: $font-primary;
+  font-size: $text-lg;
+  font-weight: $font-semibold;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: $leading-tight;
 }
 
-// Loading state animation for images
-.menu-item-card__image-container {
-  &:has(.lazy-image--loading) {
-    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
+.menu-item-card__description {
+  font-family: $font-primary;
+  font-size: $text-sm;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: $leading-normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
+.menu-item-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $space-2;
+}
+
+.menu-item-card__price {
+  font-family: $font-primary;
+  font-size: $text-xl;
+  font-weight: $font-semibold;
+  color: var(--text-primary);
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .menu-item-card {
+    transition: none;
   }
 }
 </style>

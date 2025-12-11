@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useMenuService } from '~/services/menu.service'
+import { useOfflineCart } from '~/composables/useOfflineCart'
 import type { Category, MenuItem, MenuFilters } from '~/types'
 
 // Helper function to get tenant store (to avoid circular dependency)
@@ -16,7 +17,6 @@ function getTenantSlug(): string {
 interface MenuState {
   categories: Category[]
   menuItems: MenuItem[]
-  favourites: MenuItem[]
   currentCategory: string | null
   searchQuery: string
   filters: MenuFilters
@@ -29,7 +29,6 @@ export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
     categories: [],
     menuItems: [],
-    favourites: [],
     currentCategory: null,
     searchQuery: '',
     filters: {},
@@ -47,9 +46,9 @@ export const useMenuStore = defineStore('menu', {
         items = items.filter(item => item.categoryId === state.currentCategory)
       }
 
-      // Filter by search query
+      // Filter by search query (case-insensitive, searches name and description)
       if (state.searchQuery) {
-        const query = state.searchQuery.toLowerCase()
+        const query = state.searchQuery.toLowerCase().trim()
         items = items.filter(
           item =>
             item.name.toLowerCase().includes(query) ||
@@ -57,19 +56,36 @@ export const useMenuStore = defineStore('menu', {
         )
       }
 
-      // Apply filters
+      // Apply price range filter
       if (state.filters.priceRange) {
         const [min, max] = state.filters.priceRange
         items = items.filter(item => item.price >= min && item.price <= max)
       }
 
+      // Apply calorie range filter
       if (state.filters.calories) {
         const [min, max] = state.filters.calories
         items = items.filter(item => item.calories && item.calories >= min && item.calories <= max)
       }
 
+      // Apply dietary filters (vegetarian, vegan, gluten-free, etc.)
+      if (state.filters.dietary && state.filters.dietary.length > 0) {
+        items = items.filter(item => {
+          if (!item.dietary) return false
+          return state.filters.dietary!.some(diet => item.dietary!.includes(diet))
+        })
+      }
+
+      // Apply availability filter
       if (state.filters.availability) {
         items = items.filter(item => item.isActive)
+      }
+
+      // Apply cooking time filter
+      if (state.filters.cookingTime) {
+        items = items.filter(item => 
+          item.cookingTime && item.cookingTime <= state.filters.cookingTime!
+        )
       }
 
       return items
@@ -93,6 +109,17 @@ export const useMenuStore = defineStore('menu', {
     filteredItems() {
       return this.filteredMenuItems
     },
+
+    // Favorites getter - delegates to favorites store
+    favourites(): MenuItem[] {
+      try {
+        const { useFavoritesStore } = require('./favorites')
+        const favoritesStore = useFavoritesStore()
+        return favoritesStore.getFavoriteItems()
+      } catch {
+        return []
+      }
+    },
   },
 
   actions: {
@@ -102,8 +129,19 @@ export const useMenuStore = defineStore('menu', {
 
       try {
         const menuService = useMenuService()
+        const { saveOfflineData, loadOfflineData } = useOfflineCart()
         
-        // Fetch categories and menu items
+        // Try to load from cache first for faster initial render
+        const cachedCategories = await loadOfflineData('categories')
+        const cachedMenuItems = await loadOfflineData('menuItems')
+        
+        if (cachedCategories && cachedMenuItems) {
+          this.categories = cachedCategories
+          this.menuItems = cachedMenuItems
+          console.log('Menu loaded from cache:', this.menuItems.length, 'items')
+        }
+        
+        // Fetch fresh data from API
         const [categoriesResponse, menuItemsResponse] = await Promise.all([
           menuService.getCategories(),
           menuService.getMenuItems()
@@ -111,23 +149,39 @@ export const useMenuStore = defineStore('menu', {
 
         if (categoriesResponse.success && categoriesResponse.data) {
           this.categories = categoriesResponse.data
+          // Cache categories for offline use
+          await saveOfflineData('categories', this.categories)
           console.log('Categories loaded from API:', this.categories)
         } else {
           console.error('Failed to load categories:', categoriesResponse.message)
+          // If API fails and we have no cache, throw error
+          if (!cachedCategories) {
+            throw new Error('No categories available')
+          }
         }
 
         if (menuItemsResponse.success && menuItemsResponse.data) {
           this.menuItems = menuItemsResponse.data.items
+          // Cache menu items for offline use
+          await saveOfflineData('menuItems', this.menuItems)
           console.log('Menu items loaded from API:', this.menuItems.length, 'items')
         } else {
           console.error('Failed to load menu items:', menuItemsResponse.message)
+          // If API fails and we have no cache, throw error
+          if (!cachedMenuItems) {
+            throw new Error('No menu items available')
+          }
         }
 
-        // Initialize favourites after menu items are loaded
-        this.initializeFavourites()
       } catch (error) {
-        this.error = 'Failed to fetch menu data'
-        console.error('Menu fetch error:', error)
+        // If we have cached data, use it and don't show error
+        if (this.categories.length > 0 && this.menuItems.length > 0) {
+          console.log('Using cached menu data due to network error')
+          this.error = null
+        } else {
+          this.error = 'Failed to fetch menu data'
+          console.error('Menu fetch error:', error)
+        }
       } finally {
         this.loading = false
       }
@@ -189,33 +243,12 @@ export const useMenuStore = defineStore('menu', {
     },
 
     async toggleFavourite(itemId: string) {
-      const item = this.menuItems.find(item => item.id === itemId)
-      if (!item) return
-
-      const favouriteIndex = this.favourites.findIndex(fav => fav.id === itemId)
-      const isCurrentlyFavourite = favouriteIndex >= 0
-
       try {
-        const menuService = useMenuService()
-        
-        if (isCurrentlyFavourite) {
-          await menuService.removeFromFavorites(itemId)
-          this.favourites.splice(favouriteIndex, 1)
-        } else {
-          await menuService.addToFavorites(itemId)
-          this.favourites.push(item)
-        }
-
-        // Persist to localStorage with tenant context
-        if (import.meta.client) {
-          const tenantSlug = getTenantSlug()
-          const storageKey = tenantSlug ? `favourites_${tenantSlug}` : 'favourites'
-          localStorage.setItem(storageKey, JSON.stringify(this.favourites.map(item => item.id)))
-        }
+        const { useFavoritesStore } = require('./favorites')
+        const favoritesStore = useFavoritesStore()
+        await favoritesStore.toggleFavorite(itemId)
       } catch (error) {
         console.error('Failed to toggle favourite:', error)
-        // Revert the change if API call failed
-        // The UI should handle this gracefully
       }
     },
 
@@ -232,19 +265,14 @@ export const useMenuStore = defineStore('menu', {
       this.currentCategory = categoryId
     },
 
-    // Initialize favourites from localStorage
+    // Initialize favourites from localStorage - delegates to favorites store
     initializeFavourites() {
-      if (import.meta.client) {
-        // Get tenant context for tenant-specific storage
-        const tenantSlug = getTenantSlug()
-        
-        // Use tenant-specific key if tenant is set
-        const storageKey = tenantSlug ? `favourites_${tenantSlug}` : 'favourites'
-        const savedFavourites = localStorage.getItem(storageKey)
-        if (savedFavourites) {
-          const favouriteIds = JSON.parse(savedFavourites)
-          this.favourites = this.menuItems.filter(item => favouriteIds.includes(item.id))
-        }
+      try {
+        const { useFavoritesStore } = require('./favorites')
+        const favoritesStore = useFavoritesStore()
+        favoritesStore.initializeFavorites()
+      } catch (error) {
+        console.error('Failed to initialize favourites:', error)
       }
     },
 
@@ -285,30 +313,12 @@ export const useMenuStore = defineStore('menu', {
     },
 
     async fetchFavourites() {
-      this.loading = true
-      this.error = null
-
       try {
-        const menuService = useMenuService()
-        const response = await menuService.getFavoriteItems()
-
-        if (response.success && response.data) {
-          this.favourites = response.data
-          
-          // Persist to localStorage with tenant context
-          if (import.meta.client) {
-            const tenantSlug = getTenantSlug()
-            const storageKey = tenantSlug ? `favourites_${tenantSlug}` : 'favourites'
-            localStorage.setItem(storageKey, JSON.stringify(this.favourites.map(item => item.id)))
-          }
-        }
+        const { useFavoritesStore } = require('./favorites')
+        const favoritesStore = useFavoritesStore()
+        await favoritesStore.fetchFavoritesFromServer()
       } catch (error) {
-        this.error = 'Failed to fetch favourite items'
-        console.error('Favourites fetch error:', error)
-        // Fall back to localStorage
-        this.initializeFavourites()
-      } finally {
-        this.loading = false
+        console.error('Failed to fetch favourite items:', error)
       }
     },
 

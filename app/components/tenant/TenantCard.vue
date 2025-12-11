@@ -96,12 +96,14 @@ const handleSelect = () => {
 </script>
 
 <style lang="scss" scoped>
+@use '~/assets/scss/abstracts/variables' as *;
+
 .tenant-card {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: $spacing-lg;
+  padding: $space-6;
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
@@ -112,7 +114,7 @@ const handleSelect = () => {
   }
 
   &--selected {
-    border-color: var(--tenant-primary-color, $color-primary-red);
+    border-color: var(--tenant-primary-color, var(--color-error));
     background-color: rgba(var(--tenant-primary-color-rgb, 239, 68, 68), 0.1);
   }
 
@@ -121,8 +123,8 @@ const handleSelect = () => {
     height: 80px;
     border-radius: 50%;
     overflow: hidden;
-    margin-bottom: $spacing-md;
-    background-color: $color-background-card;
+    margin-bottom: $space-4;
+    background-color: var(--bg-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -135,7 +137,7 @@ const handleSelect = () => {
   }
 
   &__logo-placeholder {
-    color: $color-text-muted;
+    color: var(--text-tertiary);
   }
 
   &__content {
@@ -145,44 +147,44 @@ const handleSelect = () => {
 
   &__name {
     font-size: $font-size-heading-sm;
-    font-weight: $font-weight-semibold;
-    color: $color-neutral-80;
-    margin-bottom: $spacing-sm;
+    font-weight: $font-semibold;
+    color: var(--text-primary);
+    margin-bottom: $space-2;
   }
 
   &__status {
-    margin-bottom: $spacing-md;
+    margin-bottom: $space-4;
   }
 
   &__features {
     display: flex;
-    gap: $spacing-md;
+    gap: $space-4;
     justify-content: center;
-    margin-bottom: $spacing-sm;
+    margin-bottom: $space-2;
   }
 
   &__feature {
     display: flex;
     align-items: center;
-    gap: $spacing-xs;
+    gap: $space-1;
     font-size: $font-size-caption;
-    color: $color-text-secondary;
+    color: var(--text-secondary);
   }
 
   &__domain {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: $spacing-xs;
+    gap: $space-1;
     font-size: $font-size-caption;
-    color: $color-text-muted;
-    margin-top: $spacing-sm;
+    color: var(--text-tertiary);
+    margin-top: $space-2;
   }
 
   &__selected-indicator {
     position: absolute;
-    top: $spacing-md;
-    right: $spacing-md;
+    top: $space-4;
+    right: $space-4;
   }
 
   &__overlay {

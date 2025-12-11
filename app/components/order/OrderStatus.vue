@@ -1,12 +1,12 @@
 <template>
-  <div class="bg-background-card/50 rounded-lg p-4 border border-border-subtle">
+  <div class="order-status">
     <!-- Order Header -->
-    <div class="flex items-center justify-between mb-4">
-      <div>
-        <AppHeading level="h3" size="heading-md" class="text-white">
+    <div class="order-status__header">
+      <div class="order-status__header-info">
+        <AppHeading level="h3" size="heading-md" class="order-status__title">
           Order #{{ order.id }}
         </AppHeading>
-        <AppText size="body-sm" class="text-neutral-20">
+        <AppText size="body-sm" class="order-status__date">
           {{ formatDate(order.createdAt) }}
         </AppText>
       </div>
@@ -15,33 +15,33 @@
     </div>
 
     <!-- Status Progress -->
-    <div class="mb-4">
+    <div class="order-status__progress">
       <ProgressBar :current-status="order.status" />
     </div>
 
     <!-- Status Details -->
-    <div class="space-y-3">
+    <div class="order-status__details">
       <!-- Current Status Info -->
-      <div class="flex items-start space-x-3 p-3 bg-background-dark/50 rounded-lg">
-        <div class="flex-shrink-0 mt-1">
+      <div class="order-status__current">
+        <div class="order-status__current-icon">
           <BaseIcon 
             :name="getStatusIcon(order.status)" 
             size="md" 
             :class="getStatusIconColor(order.status)"
           />
         </div>
-        <div class="flex-1">
-          <AppText size="body-md" class="text-white font-medium">
+        <div class="order-status__current-content">
+          <AppText size="body-md" class="order-status__current-title">
             {{ getStatusTitle(order.status) }}
           </AppText>
-          <AppText size="body-sm" class="text-neutral-20">
+          <AppText size="body-sm" class="order-status__current-description">
             {{ getStatusDescription(order.status) }}
           </AppText>
           
           <!-- Estimated Time -->
-          <div v-if="order.estimatedTime && isActiveOrder" class="mt-2 flex items-center space-x-2">
-            <BaseIcon name="clock" size="sm" class="text-primary-orange" />
-            <AppText size="body-sm" class="text-primary-orange font-medium">
+          <div v-if="order.estimatedTime && isActiveOrder" class="order-status__estimated">
+            <BaseIcon name="clock" size="sm" class="order-status__estimated-icon" />
+            <AppText size="body-sm" class="order-status__estimated-text">
               {{ formatEstimatedTime(order.estimatedTime) }}
             </AppText>
           </div>
@@ -49,24 +49,24 @@
       </div>
 
       <!-- Tracking Updates -->
-      <div v-if="order.trackingInfo?.updates?.length" class="space-y-2">
-        <AppText size="body-sm" class="text-neutral-20 font-medium">
+      <div v-if="order.trackingInfo?.updates?.length" class="order-status__updates">
+        <AppText size="body-sm" class="order-status__updates-title">
           Order Updates
         </AppText>
-        <div class="space-y-2 max-h-32 overflow-y-auto">
+        <div class="order-status__updates-list">
           <div
             v-for="update in order.trackingInfo.updates"
             :key="update.timestamp"
-            class="flex items-start space-x-3 p-2 bg-background-dark/30 rounded text-sm"
+            class="order-status__update"
           >
-            <div class="flex-shrink-0 mt-1">
-              <div class="w-2 h-2 bg-primary-green rounded-full"/>
+            <div class="order-status__update-indicator">
+              <div class="order-status__update-dot"/>
             </div>
-            <div class="flex-1">
-              <AppText size="caption" class="text-white">
+            <div class="order-status__update-content">
+              <AppText size="caption" class="order-status__update-message">
                 {{ update.message }}
               </AppText>
-              <AppText size="caption" class="text-neutral-20">
+              <AppText size="caption" class="order-status__update-time">
                 {{ formatTime(update.timestamp) }}
               </AppText>
             </div>
@@ -75,13 +75,13 @@
       </div>
 
       <!-- Order Actions -->
-      <div v-if="showActions" class="flex space-x-3 pt-2">
+      <div v-if="showActions" class="order-status__actions">
         <!-- Cancel Order -->
         <BaseButton
           v-if="canCancelOrder"
           variant="ghost"
           size="sm"
-          class="text-primary-red hover:bg-primary-red/10"
+          class="order-status__action order-status__action--cancel"
           :loading="loading"
           @click="$emit('cancel-order', order.id)"
         >
@@ -93,7 +93,7 @@
           v-if="canRepeatOrder"
           variant="ghost"
           size="sm"
-          class="text-primary-green hover:bg-primary-green/10"
+          class="order-status__action order-status__action--repeat"
           @click="$emit('repeat-order', order.id)"
         >
           Order Again
@@ -104,7 +104,7 @@
           v-if="needsSupport"
           variant="ghost"
           size="sm"
-          class="text-primary-orange hover:bg-primary-orange/10"
+          class="order-status__action order-status__action--support"
           @click="$emit('contact-support', order.id)"
         >
           Contact Support
@@ -115,7 +115,7 @@
           v-if="canTrackDelivery"
           variant="primary"
           size="sm"
-          class="bg-primary-green hover:bg-green-600"
+          class="order-status__action order-status__action--track"
           @click="$emit('track-delivery', order.id)"
         >
           Track Delivery
@@ -287,40 +287,191 @@ const formatEstimatedTime = (minutes: number): string => {
 }
 </script>
 
-<style scoped>
-/* Spacing utilities */
-.space-y-3 > * + * {
-  margin-top: 0.75rem;
+<style lang="scss" scoped>
+@use '../../assets/scss/abstracts/variables' as *;
+
+.order-status {
+  background: rgba(var(--bg-primary), 0.5);
+  border-radius: $radius-lg;
+  padding: $space-6;
+  border: 1px solid $color-border-subtle;
 }
 
-.space-y-2 > * + * {
-  margin-top: 0.5rem;
+.order-status__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-6;
 }
 
-.space-x-3 > * + * {
-  margin-left: 0.75rem;
+.order-status__header-info {
+  // Container for title and date
 }
 
-.space-x-2 > * + * {
-  margin-left: 0.5rem;
+.order-status__title {
+  color: white;
 }
 
-/* Scrollbar styling */
-.overflow-y-auto::-webkit-scrollbar {
-  width: 4px;
+.order-status__date {
+  color: $color-neutral-20;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: transparent;
+.order-status__progress {
+  margin-bottom: $space-6;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+.order-status__details {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
 }
 
-/* Smooth transitions */
-.transition-colors {
-  transition: color 0.2s ease-in-out;
+.order-status__current {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-4;
+  padding: $space-4;
+  background: rgba(var(--bg-tertiary), 0.5);
+  border-radius: $radius-lg;
+}
+
+.order-status__current-icon {
+  flex-shrink: 0;
+  margin-top: $space-1;
+}
+
+.order-status__current-content {
+  flex: 1;
+}
+
+.order-status__current-title {
+  color: white;
+  font-weight: $font-medium;
+}
+
+.order-status__current-description {
+  color: $color-neutral-20;
+}
+
+.order-status__estimated {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  margin-top: $space-2;
+}
+
+.order-status__estimated-icon {
+  color: var(--color-warning);
+}
+
+.order-status__estimated-text {
+  color: var(--color-warning);
+  font-weight: $font-medium;
+}
+
+.order-status__updates {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.order-status__updates-title {
+  color: $color-neutral-20;
+  font-weight: $font-medium;
+}
+
+.order-status__updates-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  max-height: 8rem;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+}
+
+.order-status__update {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-4;
+  padding: $space-2;
+  background: rgba(var(--bg-tertiary), 0.3);
+  border-radius: $radius-sm;
+  font-size: $text-sm;
+}
+
+.order-status__update-indicator {
+  flex-shrink: 0;
+  margin-top: $space-1;
+}
+
+.order-status__update-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--color-success);
+  border-radius: $radius-full;
+}
+
+.order-status__update-content {
+  flex: 1;
+}
+
+.order-status__update-message {
+  color: white;
+}
+
+.order-status__update-time {
+  color: $color-neutral-20;
+}
+
+.order-status__actions {
+  display: flex;
+  gap: $space-4;
+  padding-top: $space-2;
+}
+
+.order-status__action {
+  &--cancel {
+    color: var(--color-error);
+    
+    &:hover {
+      background: rgba(var(--color-error), 0.1);
+    }
+  }
+
+  &--repeat {
+    color: var(--color-success);
+    
+    &:hover {
+      background: rgba(var(--color-success), 0.1);
+    }
+  }
+
+  &--support {
+    color: var(--color-warning);
+    
+    &:hover {
+      background: rgba(var(--color-warning), 0.1);
+    }
+  }
+
+  &--track {
+    background: var(--color-success);
+    
+    &:hover {
+      background: #16a34a;
+    }
+  }
 }
 </style>

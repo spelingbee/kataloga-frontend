@@ -1,0 +1,142 @@
+// =============================================================================
+// Design Tokens - Colors
+// =============================================================================
+// New minimalist design system with warm orange primary color
+
+// Primary Palette - Warm Orange for Food Industry (WCAG AA Compliant)
+// -----------------------------------------------------------------------------
+$color-primary: #B8571A;        // Darker orange for better contrast (4.5:1 on white)
+$color-primary-light: #D2691E;  // Hover состояния (lighter but still accessible)
+$color-primary-dark: #A04D17;   // Active состояния
+
+// Semantic Colors (WCAG AA Compliant)
+// -----------------------------------------------------------------------------
+$color-success: #047857;        // Darker green for better contrast (4.5:1 on white)
+$color-warning: #B45309;        // Darker amber for better contrast (4.5:1 on white)
+$color-error: #DC2626;          // Red with good contrast (4.83:1 on white)
+$color-info: #2563EB;           // Blue with good contrast (5.17:1 on white)
+
+// Neutral Palette - Complete grayscale
+// -----------------------------------------------------------------------------
+$color-neutral-50: #F9FAFB;     // Самый светлый
+$color-neutral-100: #F3F4F6;
+$color-neutral-200: #E5E7EB;
+$color-neutral-300: #D1D5DB;
+$color-neutral-400: #9CA3AF;
+$color-neutral-500: #6B7280;
+$color-neutral-600: #4B5563;
+$color-neutral-700: #374151;
+$color-neutral-800: #1F2937;
+$color-neutral-900: #111827;    // Самый темный
+
+// Semantic Background Colors
+// -----------------------------------------------------------------------------
+$bg-primary: white;
+$bg-secondary: $color-neutral-50;
+$bg-tertiary: $color-neutral-100;
+
+// Semantic Text Colors
+// -----------------------------------------------------------------------------
+$text-primary: $color-neutral-900;
+$text-secondary: $color-neutral-600;
+$text-tertiary: $color-neutral-400;
+
+// Semantic Border Colors
+// -----------------------------------------------------------------------------
+$border-primary: $color-neutral-200;
+$border-secondary: $color-neutral-300;
+
+// CSS Custom Properties for Runtime Theme Switching
+// -----------------------------------------------------------------------------
+:root {
+  // Primary Colors
+  --color-primary: #{$color-primary};
+  --color-primary-light: #{$color-primary-light};
+  --color-primary-dark: #{$color-primary-dark};
+  
+  // Semantic Colors
+  --color-success: #{$color-success};
+  --color-warning: #{$color-warning};
+  --color-error: #{$color-error};
+  --color-info: #{$color-info};
+  
+  // Neutral Colors
+  --color-neutral-50: #{$color-neutral-50};
+  --color-neutral-100: #{$color-neutral-100};
+  --color-neutral-200: #{$color-neutral-200};
+  --color-neutral-300: #{$color-neutral-300};
+  --color-neutral-400: #{$color-neutral-400};
+  --color-neutral-500: #{$color-neutral-500};
+  --color-neutral-600: #{$color-neutral-600};
+  --color-neutral-700: #{$color-neutral-700};
+  --color-neutral-800: #{$color-neutral-800};
+  --color-neutral-900: #{$color-neutral-900};
+  
+  // Semantic Backgrounds
+  --bg-primary: #{$bg-primary};
+  --bg-secondary: #{$bg-secondary};
+  --bg-tertiary: #{$bg-tertiary};
+  
+  // Semantic Text
+  --text-primary: #{$text-primary};
+  --text-secondary: #{$text-secondary};
+  --text-tertiary: #{$text-tertiary};
+  
+  // Semantic Borders
+  --border-primary: #{$border-primary};
+  --border-secondary: #{$border-secondary};
+}
+
+// Dark Theme CSS Custom Properties
+// -----------------------------------------------------------------------------
+[data-theme="dark"] {
+  // Backgrounds (inverted)
+  --bg-primary: #{$color-neutral-900};
+  --bg-secondary: #{$color-neutral-800};
+  --bg-tertiary: #{$color-neutral-700};
+  
+  // Text (inverted)
+  --text-primary: #{$color-neutral-50};
+  --text-secondary: #{$color-neutral-300};
+  --text-tertiary: #{$color-neutral-500};
+  
+  // Borders (adjusted for dark theme)
+  --border-primary: #{$color-neutral-700};
+  --border-secondary: #{$color-neutral-600};
+}
+
+// System Theme Detection
+// -----------------------------------------------------------------------------
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    // Auto dark theme when no explicit theme is set
+    --bg-primary: #{$color-neutral-900};
+    --bg-secondary: #{$color-neutral-800};
+    --bg-tertiary: #{$color-neutral-700};
+    --text-primary: #{$color-neutral-50};
+    --text-secondary: #{$color-neutral-300};
+    --text-tertiary: #{$color-neutral-500};
+    --border-primary: #{$color-neutral-700};
+    --border-secondary: #{$color-neutral-600};
+  }
+}
+
+// Forced Colors Mode Support (High Contrast)
+// -----------------------------------------------------------------------------
+@media (forced-colors: active) {
+  :root {
+    --color-primary: ButtonText;
+    --color-success: ButtonText;
+    --color-warning: ButtonText;
+    --color-error: ButtonText;
+    --color-info: ButtonText;
+    --bg-primary: ButtonFace;
+    --bg-secondary: ButtonFace;
+    --bg-tertiary: ButtonFace;
+    --text-primary: ButtonText;
+    --text-secondary: ButtonText;
+    --text-tertiary: ButtonText;
+    --border-primary: ButtonText;
+    --border-secondary: ButtonText;
+  }
+}

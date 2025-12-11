@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   // Modules
-  modules: ['@pinia/nuxt', '@nuxtjs/google-fonts', '@nuxt/eslint', '@vite-pwa/nuxt', '@nuxt/image'],
+  modules: ['@pinia/nuxt', '@nuxtjs/google-fonts', '@nuxt/eslint', '@vite-pwa/nuxt', '@nuxt/image', '@nuxtjs/i18n'],
 
   // TypeScript configuration
   typescript: {
@@ -18,10 +18,47 @@ export default defineNuxtConfig({
   // Google Fonts configuration
   googleFonts: {
     families: {
-      'Work Sans': [300, 400, 500, 600, 700],
+      'Inter': [300, 400, 500, 600, 700],
+      'Poppins': [300, 400, 500, 600, 700],
     },
     display: 'swap',
     preload: true,
+  },
+
+  // i18n configuration
+  i18n: {
+    locales: [
+      {
+        code: 'en',
+        iso: 'en-US',
+        name: 'English',
+        file: 'en.json',
+      },
+      {
+        code: 'ru',
+        iso: 'ru-RU',
+        name: 'Русский',
+        file: 'ru.json',
+      },
+      {
+        code: 'ky',
+        iso: 'ky-KG',
+        name: 'Кыргызча',
+        file: 'ky.json',
+      },
+    ],
+    lazy: true,
+    langDir: 'locales',
+    defaultLocale: 'en',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root',
+      alwaysRedirect: false,
+      fallbackLocale: 'en',
+    },
+    vueI18n: './i18n.config.ts',
   },
 
 
@@ -64,6 +101,37 @@ export default defineNuxtConfig({
       requireTenantValidation: process.env.NUXT_PUBLIC_REQUIRE_TENANT_VALIDATION !== 'false',
       tenantCacheTimeout: parseInt(process.env.NUXT_PUBLIC_TENANT_CACHE_TIMEOUT || '300000'), // 5 minutes
       allowTenantSwitching: process.env.NUXT_PUBLIC_ALLOW_TENANT_SWITCHING !== 'false',
+      
+      // Payment gateway configuration
+      payment: {
+        elsom: {
+          enabled: process.env.NUXT_PUBLIC_PAYMENT_ELSOM_ENABLED !== 'false',
+          testMode: process.env.NUXT_PUBLIC_PAYMENT_ELSOM_TEST_MODE !== 'false',
+          publicKey: process.env.NUXT_PUBLIC_PAYMENT_ELSOM_PUBLIC_KEY || '',
+          merchantId: process.env.NUXT_PUBLIC_PAYMENT_ELSOM_MERCHANT_ID || '',
+        },
+        o: {
+          enabled: process.env.NUXT_PUBLIC_PAYMENT_O_ENABLED !== 'false',
+          testMode: process.env.NUXT_PUBLIC_PAYMENT_O_TEST_MODE !== 'false',
+          publicKey: process.env.NUXT_PUBLIC_PAYMENT_O_PUBLIC_KEY || '',
+          merchantId: process.env.NUXT_PUBLIC_PAYMENT_O_MERCHANT_ID || '',
+        },
+        mega: {
+          enabled: process.env.NUXT_PUBLIC_PAYMENT_MEGA_ENABLED !== 'false',
+          testMode: process.env.NUXT_PUBLIC_PAYMENT_MEGA_TEST_MODE !== 'false',
+          publicKey: process.env.NUXT_PUBLIC_PAYMENT_MEGA_PUBLIC_KEY || '',
+          merchantId: process.env.NUXT_PUBLIC_PAYMENT_MEGA_MERCHANT_ID || '',
+        },
+        stripe: {
+          enabled: process.env.NUXT_PUBLIC_PAYMENT_STRIPE_ENABLED !== 'false',
+          testMode: process.env.NUXT_PUBLIC_PAYMENT_STRIPE_TEST_MODE !== 'false',
+          publicKey: process.env.NUXT_PUBLIC_PAYMENT_STRIPE_PUBLIC_KEY || '',
+        },
+        telegram: {
+          enabled: process.env.NUXT_PUBLIC_PAYMENT_TELEGRAM_ENABLED !== 'false',
+          testMode: process.env.NUXT_PUBLIC_PAYMENT_TELEGRAM_TEST_MODE !== 'false',
+        },
+      },
     },
   },
 
@@ -188,6 +256,8 @@ export default defineNuxtConfig({
   experimental: {
     payloadExtraction: false,
     viewTransition: true,
+    inlineSSRStyles: false, // Prevent FOUC with critical CSS
+    treeshakeClientOnly: true,
   },
 
   // Optimization features
@@ -202,8 +272,13 @@ export default defineNuxtConfig({
 
   // Features for better performance
   features: {
-    inlineStyles: false,
+    inlineStyles: false, // We handle critical CSS manually
   },
+
+  // CSS optimization
+  css: [
+    '@/assets/scss/main.scss'
+  ],
 
   // Route rules for performance
   routeRules: {
@@ -399,13 +474,11 @@ export default defineNuxtConfig({
     css: {
       preprocessorOptions: {
         scss: {
-          additionalData: `
-            @import "@/assets/scss/abstracts/variables";
-            @import "@/assets/scss/abstracts/mixins";
-            @import "@/assets/scss/abstracts/functions";
-          `
+          // Removed additionalData to avoid conflicts with @use in main.scss
+          // Each SCSS file should import what it needs
         }
-      }
+      },
+      devSourcemap: false, // Disable CSS sourcemaps in production
     },
     build: {
       rollupOptions: {
@@ -447,6 +520,16 @@ export default defineNuxtConfig({
             if (id.includes('/pages/orders/') || id.includes('/components/order/') || id.includes('/stores/order')) {
               return 'orders'
             }
+            
+            // Checkout chunks
+            if (id.includes('/pages/checkout') || id.includes('/components/checkout/') || id.includes('/stores/cart')) {
+              return 'checkout'
+            }
+            
+            // Payment chunks
+            if (id.includes('/services/payment/') || id.includes('/components/payment/')) {
+              return 'payment'
+            }
           },
         },
       },
@@ -454,10 +537,17 @@ export default defineNuxtConfig({
       minify: 'terser',
       terserOptions: {
         compress: {
-          drop_console: true,
+          drop_console: process.env.NODE_ENV === 'production',
           drop_debugger: true,
+          pure_funcs: process.env.NODE_ENV === 'production' ? ['console.log', 'console.info'] : [],
+        },
+        mangle: {
+          safari10: true,
         },
       },
+      cssMinify: 'lightningcss', // Faster CSS minification
+      sourcemap: false, // Disable sourcemaps in production
+      reportCompressedSize: false, // Faster builds
     },
     optimizeDeps: {
       include: ['vue', 'pinia', '@telegram-apps/sdk', 'leaflet'],
@@ -465,6 +555,10 @@ export default defineNuxtConfig({
     },
     define: {
       __VUE_PROD_DEVTOOLS__: false,
+      __VUE_OPTIONS_API__: false, // Disable Options API for smaller bundle
+    },
+    esbuild: {
+      drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
     },
   },
 })

@@ -1,0 +1,868 @@
+<template>
+  <div class="checkout-flow">
+    <!-- Progress Indicator -->
+    <div class="checkout-flow__progress">
+      <div
+        v-for="(step, index) in steps"
+        :key="step.id"
+        class="checkout-flow__progress-step"
+        :class="{
+          'checkout-flow__progress-step--active': currentStep === index,
+          'checkout-flow__progress-step--completed': currentStep > index
+        }"
+      >
+        <div class="checkout-flow__progress-circle">
+          <BaseIcon
+            v-if="currentStep > index"
+            name="check"
+            size="sm"
+          />
+          <span v-else>{{ index + 1 }}</span>
+        </div>
+        <span class="checkout-flow__progress-label">{{ step.label }}</span>
+      </div>
+    </div>
+
+    <!-- Step Content -->
+    <div class="checkout-flow__content">
+      <!-- Step 1: Order Type Selection -->
+      <div v-if="currentStep === 0" class="checkout-flow__step">
+        <OrderTypeSelector
+          v-model="orderData.orderType"
+          @update:model-value="handleOrderTypeChange"
+        />
+      </div>
+
+      <!-- Step 2: Order Details -->
+      <div v-if="currentStep === 1" class="checkout-flow__step">
+        <!-- Delivery Form -->
+        <div v-if="orderData.orderType === 'delivery'">
+          <h3 class="checkout-flow__step-title">Delivery Details</h3>
+          <DeliveryForm
+            v-model="orderData.deliveryDetails"
+            :errors="validationErrors"
+            @delivery-fee-calculated="handleDeliveryFeeCalculated"
+            @validate="handleValidation"
+          />
+        </div>
+
+        <!-- Pickup Form -->
+        <div v-if="orderData.orderType === 'pickup'">
+          <h3 class="checkout-flow__step-title">Pickup Details</h3>
+          <PickupForm
+            v-model="orderData.pickupDetails"
+            :errors="validationErrors"
+            :locations="pickupLocations"
+          />
+        </div>
+
+        <!-- Dine-in Form -->
+        <div v-if="orderData.orderType === 'dine-in'">
+          <h3 class="checkout-flow__step-title">Dine-in Details</h3>
+          <DineInForm
+            v-model="orderData.dineInDetails"
+            :errors="validationErrors"
+            :locations="dineInLocations"
+            :show-qr-scanner="true"
+            @scan-qr="handleQrScan"
+          />
+        </div>
+      </div>
+
+      <!-- Step 3: Payment Method -->
+      <div v-if="currentStep === 2" class="checkout-flow__step">
+        <h3 class="checkout-flow__step-title">Payment Method</h3>
+        
+        <!-- Validation Warning -->
+        <div v-if="showValidationWarning" class="checkout-flow__validation-warning">
+          <div class="checkout-flow__validation-icon">
+            <BaseIcon name="alert" size="md" />
+          </div>
+          <div class="checkout-flow__validation-content">
+            <h4 class="checkout-flow__validation-title">Cart Changes Detected</h4>
+            <p class="checkout-flow__validation-message">
+              {{ validationMessage }}
+            </p>
+            <div class="checkout-flow__validation-actions">
+              <BaseButton
+                variant="secondary"
+                size="sm"
+                @click="handleReviewCart"
+              >
+                Review Cart
+              </BaseButton>
+              <BaseButton
+                variant="primary"
+                size="sm"
+                @click="handleAcknowledgeValidation"
+              >
+                Continue Anyway
+              </BaseButton>
+            </div>
+          </div>
+        </div>
+        
+        <PaymentMethodSelector
+          v-model="orderData.paymentMethod"
+          :order-total="cartTotal"
+        />
+      </div>
+
+      <!-- Step 4: Order Confirmation -->
+      <div v-if="currentStep === 3" class="checkout-flow__step">
+        <OrderConfirmation
+          :order-number="orderNumber"
+          :order-type="orderData.orderType"
+          :order-items="cart"
+          :total-amount="cartTotal"
+          :estimated-time="estimatedDeliveryTime"
+          :delivery-info="getDeliveryInfo()"
+          @track-order="handleTrackOrder"
+          @continue-shopping="handleContinueShopping"
+          @view-orders="handleViewOrders"
+        />
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="checkout-flow__actions">
+      <BaseButton
+        v-if="currentStep > 0"
+        variant="secondary"
+        @click="previousStep"
+      >
+        <BaseIcon name="arrow-left" size="sm" />
+        Back
+      </BaseButton>
+
+      <BaseButton
+        v-if="currentStep < steps.length - 1"
+        variant="primary"
+        :disabled="!canProceed"
+        @click="nextStep"
+      >
+        Continue
+        <BaseIcon name="arrow-right" size="sm" />
+      </BaseButton>
+
+      <BaseButton
+        v-if="currentStep === steps.length - 2"
+        variant="primary"
+        :loading="submitting"
+        :disabled="!canProceed"
+        @click="handleSubmit"
+      >
+        Place Order
+      </BaseButton>
+    </div>
+
+    <!-- Error Message -->
+    <div v-if="errorMessage" class="checkout-flow__error">
+      <BaseIcon name="alert" size="sm" />
+      {{ errorMessage }}
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+import OrderTypeSelector from './OrderTypeSelector.vue'
+import PickupForm from './PickupForm.vue'
+import DineInForm from './DineInForm.vue'
+import DeliveryForm from '../cart/DeliveryForm.vue'
+import PaymentMethodSelector from './PaymentMethodSelector.vue'
+import OrderConfirmation from './OrderConfirmation.vue'
+import { useCartValidation } from '~/composables/useCartValidation'
+import type { CartItem } from '~/types'
+import type { PaymentMethod } from '~/types/payment'
+
+type OrderType = 'delivery' | 'pickup' | 'dine-in'
+
+interface DeliveryDetails {
+  type: 'delivery' | 'pickup'
+  address: string
+  pickupLocation: string
+  deliveryTime: string
+  customDate: string
+  customTime: string
+  instructions: string
+  coordinates?: { lat: number; lng: number }
+  deliveryZone?: string
+  deliveryFeeAmount?: number
+}
+
+interface PickupDetails {
+  locationId: string
+  pickupTime: string
+  customDate: string
+  customTime: string
+  phone: string
+  instructions: string
+}
+
+interface DineInDetails {
+  tableNumber: string
+  locationId: string
+  guestCount: number | null
+  instructions: string
+}
+
+interface OrderData {
+  orderType: OrderType
+  deliveryDetails: DeliveryDetails
+  pickupDetails: PickupDetails
+  dineInDetails: DineInDetails
+  paymentMethod: PaymentMethod
+}
+
+interface Props {
+  cart: CartItem[]
+  cartTotal?: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  cartTotal: 0
+})
+
+const emit = defineEmits<{
+  'complete': [order: any]
+  'cancel': []
+  'track-order': []
+  'continue-shopping': []
+  'view-orders': []
+}>()
+
+// Telegram integration
+const telegram = useTelegram()
+
+// Cart validation
+const {
+  validating,
+  requiresAcknowledgment,
+  acknowledged,
+  canProceedToPayment,
+  validateBeforeCheckout,
+  acknowledgeValidation,
+  resetValidation
+} = useCartValidation()
+
+// State
+const currentStep = ref(0)
+const submitting = ref(false)
+const errorMessage = ref('')
+const validationErrors = ref<Record<string, string>>({})
+const showValidationWarning = ref(false)
+const validationMessage = ref('')
+
+// Telegram MainButton cleanup function
+let cleanupMainButton: (() => void) | null = null
+
+const orderData = ref<OrderData>({
+  orderType: 'delivery',
+  deliveryDetails: {
+    type: 'delivery',
+    address: '',
+    pickupLocation: '',
+    deliveryTime: 'asap',
+    customDate: '',
+    customTime: '',
+    instructions: ''
+  },
+  pickupDetails: {
+    locationId: '',
+    pickupTime: 'asap',
+    customDate: '',
+    customTime: '',
+    phone: '',
+    instructions: ''
+  },
+  dineInDetails: {
+    tableNumber: '',
+    locationId: '',
+    guestCount: null,
+    instructions: ''
+  },
+  paymentMethod: {
+    type: 'cash'
+  }
+})
+
+// Additional state for order confirmation
+const orderNumber = ref('')
+const estimatedDeliveryTime = ref('25-35 min')
+
+// Steps configuration
+const steps = computed(() => [
+  { id: 'type', label: 'Order Type' },
+  { id: 'details', label: 'Details' },
+  { id: 'payment', label: 'Payment' },
+  { id: 'confirmation', label: 'Confirmation' }
+])
+
+// Mock locations (in real app, these would come from API)
+const pickupLocations = ref([
+  {
+    id: 'main',
+    name: 'Main Restaurant',
+    address: 'Nevsky Prospect 123, St. Petersburg',
+    phone: '+7 (812) 123-45-67'
+  },
+  {
+    id: 'mall',
+    name: 'Mall Location',
+    address: 'Galeria Shopping Center, St. Petersburg',
+    phone: '+7 (812) 234-56-78'
+  }
+])
+
+const dineInLocations = ref([
+  { id: 'main', name: 'Main Restaurant' },
+  { id: 'mall', name: 'Mall Location' }
+])
+
+// Computed
+const canProceed = computed(() => {
+  if (currentStep.value === 0) {
+    return !!orderData.value.orderType
+  }
+
+  if (currentStep.value === 1) {
+    return validateCurrentStep()
+  }
+
+  if (currentStep.value === 2) {
+    return !!orderData.value.paymentMethod.type
+  }
+
+  return true
+})
+
+// Methods
+const handleOrderTypeChange = (type: OrderType) => {
+  orderData.value.orderType = type
+  
+  // Update delivery form type if needed
+  if (type === 'delivery' || type === 'pickup') {
+    orderData.value.deliveryDetails.type = type === 'delivery' ? 'delivery' : 'pickup'
+  }
+  
+  // Clear validation errors when changing type
+  validationErrors.value = {}
+  errorMessage.value = ''
+}
+
+const handleDeliveryFeeCalculated = (fee: number, zoneId: string) => {
+  orderData.value.deliveryDetails.deliveryFeeAmount = fee
+  orderData.value.deliveryDetails.deliveryZone = zoneId
+}
+
+const handleValidation = (errors: Record<string, string>) => {
+  validationErrors.value = errors
+}
+
+const validateCurrentStep = (): boolean => {
+  validationErrors.value = {}
+  errorMessage.value = ''
+
+  if (currentStep.value === 1) {
+    if (orderData.value.orderType === 'delivery') {
+      if (!orderData.value.deliveryDetails.address?.trim()) {
+        validationErrors.value.address = 'Delivery address is required'
+        return false
+      }
+      if (orderData.value.deliveryDetails.address.trim().length < 10) {
+        validationErrors.value.address = 'Please provide a more detailed address'
+        return false
+      }
+    }
+
+    if (orderData.value.orderType === 'pickup') {
+      if (!orderData.value.pickupDetails.locationId) {
+        validationErrors.value.locationId = 'Please select a pickup location'
+        return false
+      }
+      if (!orderData.value.pickupDetails.phone?.trim()) {
+        validationErrors.value.phone = 'Phone number is required'
+        return false
+      }
+      // Basic phone validation
+      const phoneRegex = /^\+?[\d\s\-()]+$/
+      if (!phoneRegex.test(orderData.value.pickupDetails.phone)) {
+        validationErrors.value.phone = 'Please enter a valid phone number'
+        return false
+      }
+    }
+
+    if (orderData.value.orderType === 'dine-in') {
+      if (!orderData.value.dineInDetails.tableNumber?.trim()) {
+        validationErrors.value.tableNumber = 'Table number is required'
+        return false
+      }
+    }
+  }
+
+  return Object.keys(validationErrors.value).length === 0
+}
+
+const nextStep = async () => {
+  if (!validateCurrentStep()) {
+    errorMessage.value = 'Please fill in all required fields'
+    return
+  }
+
+  // If moving to payment step (step 2), validate cart first
+  if (currentStep.value === 1) {
+    await validateCartBeforePayment()
+  }
+
+  if (currentStep.value < steps.value.length - 1) {
+    currentStep.value++
+    errorMessage.value = ''
+  }
+}
+
+const validateCartBeforePayment = async () => {
+  try {
+    const result = await validateBeforeCheckout()
+    
+    if (!result.isValid) {
+      // Cart validation failed - items were removed
+      errorMessage.value = 'Some items in your cart are no longer available. Please review your cart.'
+      showValidationWarning.value = true
+      validationMessage.value = 'Some items were removed from your cart because they are no longer available.'
+      return
+    }
+    
+    if (result.requiresAcknowledgment) {
+      // Show warning about changes
+      showValidationWarning.value = true
+      
+      if (result.result.priceChanges.length > 0) {
+        validationMessage.value = `Prices have changed for ${result.result.priceChanges.length} item(s) in your cart.`
+      } else {
+        validationMessage.value = 'Your cart has been updated. Please review the changes.'
+      }
+    }
+  } catch (error) {
+    console.error('Cart validation failed:', error)
+    errorMessage.value = 'Unable to validate cart. Please try again.'
+  }
+}
+
+const handleAcknowledgeValidation = () => {
+  acknowledgeValidation()
+  showValidationWarning.value = false
+  validationMessage.value = ''
+}
+
+const handleReviewCart = () => {
+  // Go back to cart page
+  emit('cancel')
+}
+
+const previousStep = () => {
+  if (currentStep.value > 0) {
+    currentStep.value--
+    errorMessage.value = ''
+    validationErrors.value = {}
+  }
+}
+
+const handleQrScan = () => {
+  // Placeholder for QR code scanning functionality
+  console.log('QR scan requested')
+}
+
+const handleSubmit = async () => {
+  if (!validateCurrentStep()) {
+    errorMessage.value = 'Please fill in all required fields'
+    return
+  }
+
+  // Check if validation requires acknowledgment and hasn't been acknowledged
+  if (requiresAcknowledgment.value && !acknowledged.value) {
+    errorMessage.value = 'Please acknowledge the cart changes before proceeding'
+    showValidationWarning.value = true
+    return
+  }
+
+  // Final validation check before submitting
+  if (!canProceedToPayment.value) {
+    errorMessage.value = 'Unable to proceed with payment. Please review your cart.'
+    return
+  }
+
+  submitting.value = true
+  errorMessage.value = ''
+
+  try {
+    // Generate order number
+    orderNumber.value = `ORD${Date.now().toString().slice(-6)}`
+    
+    // Prepare order data based on order type
+    const order = {
+      orderNumber: orderNumber.value,
+      orderType: orderData.value.orderType,
+      items: props.cart,
+      paymentMethod: orderData.value.paymentMethod,
+      totalAmount: props.cartTotal,
+      ...(orderData.value.orderType === 'delivery' && {
+        deliveryDetails: orderData.value.deliveryDetails
+      }),
+      ...(orderData.value.orderType === 'pickup' && {
+        pickupDetails: orderData.value.pickupDetails
+      }),
+      ...(orderData.value.orderType === 'dine-in' && {
+        dineInDetails: orderData.value.dineInDetails
+      })
+    }
+
+    // Move to confirmation step instead of completing
+    currentStep.value++
+    
+    // Emit complete event for parent to handle
+    emit('complete', order)
+  } catch (error: any) {
+    errorMessage.value = error.message || 'Failed to place order. Please try again.'
+  } finally {
+    submitting.value = false
+  }
+}
+
+// Order confirmation handlers
+const handleTrackOrder = () => {
+  emit('track-order')
+}
+
+const handleContinueShopping = () => {
+  emit('continue-shopping')
+}
+
+const handleViewOrders = () => {
+  emit('view-orders')
+}
+
+const getDeliveryInfo = () => {
+  switch (orderData.value.orderType) {
+    case 'delivery':
+      return {
+        address: orderData.value.deliveryDetails.address,
+        instructions: orderData.value.deliveryDetails.instructions
+      }
+    case 'pickup':
+      const location = pickupLocations.value.find(loc => loc.id === orderData.value.pickupDetails.locationId)
+      return {
+        location: location?.name,
+        phone: orderData.value.pickupDetails.phone,
+        instructions: orderData.value.pickupDetails.instructions
+      }
+    case 'dine-in':
+      return {
+        tableNumber: orderData.value.dineInDetails.tableNumber,
+        instructions: orderData.value.dineInDetails.instructions
+      }
+    default:
+      return undefined
+  }
+}
+
+// Watch for cart changes
+watch(() => props.cart, (newCart) => {
+  if (newCart.length === 0) {
+    errorMessage.value = 'Your cart is empty'
+  }
+}, { immediate: true })
+
+// Setup Telegram MainButton based on current step
+const setupTelegramMainButton = () => {
+  if (!telegram.isTelegram.value) return
+
+  // Cleanup previous button
+  if (cleanupMainButton) {
+    cleanupMainButton()
+    cleanupMainButton = null
+  }
+
+  let buttonText = ''
+  let buttonAction: (() => void) | null = null
+
+  if (currentStep.value < steps.value.length - 1) {
+    buttonText = 'Continue'
+    buttonAction = nextStep
+  } else if (currentStep.value === steps.value.length - 1) {
+    buttonText = 'Place Order'
+    buttonAction = handleSubmit
+  }
+
+  if (buttonText && buttonAction) {
+    cleanupMainButton = telegram.showMainButton(buttonText, buttonAction)
+    
+    // Disable button if can't proceed
+    if (!canProceed.value) {
+      telegram.setMainButtonLoading(false)
+    }
+  }
+}
+
+// Watch for step changes to update MainButton
+watch(currentStep, () => {
+  setupTelegramMainButton()
+})
+
+// Watch for canProceed changes to enable/disable button
+watch(canProceed, (can) => {
+  if (telegram.isTelegram.value) {
+    telegram.setMainButtonLoading(!can)
+  }
+})
+
+// Watch for submitting state to show loading
+watch(submitting, (isSubmitting) => {
+  if (telegram.isTelegram.value) {
+    telegram.setMainButtonLoading(isSubmitting)
+  }
+})
+
+// Setup Telegram BackButton
+onMounted(() => {
+  if (telegram.isTelegram.value) {
+    setupTelegramMainButton()
+    
+    // Setup back button
+    const cleanupBackButton = telegram.showBackButton(() => {
+      if (currentStep.value > 0) {
+        previousStep()
+      } else {
+        emit('cancel')
+      }
+    })
+
+    // Cleanup on unmount
+    onUnmounted(() => {
+      if (cleanupMainButton) {
+        cleanupMainButton()
+      }
+      cleanupBackButton()
+      telegram.hideMainButton()
+      telegram.hideBackButton()
+    })
+  }
+})
+</script>
+
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/shadows' as *;
+@use '../../assets/scss/tokens/transitions' as *;
+@use '../../assets/scss/tokens/typography' as *;
+
+.checkout-flow {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.checkout-flow__progress {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $space-12;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: var(--color-neutral-300);
+    z-index: 0;
+  }
+}
+
+.checkout-flow__progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-2;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.checkout-flow__progress-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-full;
+  background: var(--bg-primary);
+  border: 2px solid var(--color-neutral-300);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: $font-semibold;
+  color: var(--color-neutral-600);
+  transition: $transition-base-ease;
+}
+
+.checkout-flow__progress-step--active .checkout-flow__progress-circle {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+}
+
+.checkout-flow__progress-step--completed .checkout-flow__progress-circle {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+}
+
+.checkout-flow__progress-label {
+  font-size: $text-sm;
+  color: var(--text-secondary);
+  text-align: center;
+  transition: $transition-base-ease;
+}
+
+.checkout-flow__progress-step--active .checkout-flow__progress-label {
+  color: var(--color-primary);
+  font-weight: $font-semibold;
+}
+
+.checkout-flow__content {
+  min-height: 400px;
+  margin-bottom: $space-8;
+}
+
+.checkout-flow__step {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.checkout-flow__step-title {
+  font-size: $text-xl;
+  font-weight: $font-semibold;
+  color: var(--text-primary);
+  margin-bottom: $space-6;
+}
+
+.checkout-flow__review {
+  padding: $space-8;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-card;
+  text-align: center;
+}
+
+.checkout-flow__review-text {
+  font-size: $text-base;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.checkout-flow__actions {
+  display: flex;
+  gap: $space-4;
+  justify-content: space-between;
+  padding-top: $space-6;
+  border-top: 1px solid var(--border-primary);
+}
+
+.checkout-flow__validation-warning {
+  display: flex;
+  gap: $space-4;
+  padding: $space-6;
+  margin-bottom: $space-8;
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  border-radius: $radius-card;
+}
+
+.checkout-flow__validation-icon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.checkout-flow__validation-content {
+  flex: 1;
+}
+
+.checkout-flow__validation-title {
+  font-size: $text-lg;
+  font-weight: $font-semibold;
+  color: var(--text-primary);
+  margin: 0 0 $space-2 0;
+}
+
+.checkout-flow__validation-message {
+  font-size: $text-sm;
+  color: var(--text-secondary);
+  margin: 0 0 $space-4 0;
+  line-height: $leading-relaxed;
+}
+
+.checkout-flow__validation-actions {
+  display: flex;
+  gap: $space-2;
+}
+
+.checkout-flow__error {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-4;
+  margin-top: $space-4;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: $radius-md;
+  color: var(--color-error);
+  font-size: $text-sm;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .checkout-flow__progress {
+    margin-bottom: $space-8;
+  }
+
+  .checkout-flow__progress-label {
+    font-size: $text-xs;
+  }
+
+  .checkout-flow__progress-circle {
+    width: 32px;
+    height: 32px;
+    font-size: $text-sm;
+  }
+
+  .checkout-flow__actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .checkout-flow__step {
+    animation: none;
+  }
+  
+  .checkout-flow__progress-circle,
+  .checkout-flow__progress-label {
+    transition: none;
+  }
+}
+</style>

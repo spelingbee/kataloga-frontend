@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 // =============================================================================
 // SCSS Mixins
 // =============================================================================
@@ -118,13 +120,8 @@
 
 // Animation Mixins
 // -----------------------------------------------------------------------------
-@mixin fade-in($duration: $transition-normal) {
-  animation: fadeIn $duration $ease-in-out;
-}
-
-@mixin slide-in-up($duration: $transition-normal) {
-  animation: slideInUp $duration $ease-in-out;
-}
+// NOTE: Animation mixins moved to abstracts/_animations.scss
+// Import animations with: @use '../abstracts/animations' as *;
 
 @mixin hover-scale($scale: 1.05) {
   transition: transform $transition-normal $ease-in-out;

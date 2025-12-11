@@ -1,48 +1,52 @@
 <template>
   <Teleport to="body">
     <Transition
-      enter-active-class="transition-all duration-300 ease-out"
-      enter-from-class="opacity-0 -translate-y-full"
-      enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition-all duration-200 ease-in"
-      leave-from-class="opacity-100 translate-y-0"
-      leave-to-class="opacity-0 -translate-y-full"
+      enter-active-class="update-notification--enter-active"
+      enter-from-class="update-notification--enter-from"
+      enter-to-class="update-notification--enter-to"
+      leave-active-class="update-notification--leave-active"
+      leave-from-class="update-notification--leave-from"
+      leave-to-class="update-notification--leave-to"
     >
       <div
         v-if="showUpdate"
-        class="fixed top-0 left-0 right-0 z-50 bg-primary-green text-white shadow-lg"
+        class="update-notification"
       >
-        <div class="p-3 max-w-md mx-auto">
-          <div class="flex items-center gap-3">
+        <div class="update-notification__container">
+          <div class="update-notification__content">
             <!-- Update Icon -->
-            <div class="flex-shrink-0">
-              <BaseIcon name="refresh" class="w-5 h-5" />
+            <div class="update-notification__icon">
+              <BaseIcon name="refresh" size="sm" />
             </div>
 
             <!-- Content -->
-            <div class="flex-1 min-w-0">
-              <p class="text-body-sm font-medium">
+            <div class="update-notification__text">
+              <p class="update-notification__title">
                 New version available!
               </p>
-              <p class="text-body-sm opacity-90">
+              <p class="update-notification__description">
                 Tap to update and get the latest features.
               </p>
             </div>
 
             <!-- Actions -->
-            <div class="flex gap-2">
+            <div class="update-notification__actions">
               <button
                 :disabled="updating"
-                class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-body-sm font-medium transition-colors disabled:opacity-50"
+                :class="[
+                  'update-notification__button',
+                  'update-notification__button--update',
+                  { 'update-notification__button--disabled': updating }
+                ]"
                 @click="handleUpdate"
               >
                 {{ updating ? 'Updating...' : 'Update' }}
               </button>
               <button
-                class="p-1 hover:bg-white/20 rounded transition-colors"
+                class="update-notification__button update-notification__button--dismiss"
                 @click="handleDismiss"
               >
-                <BaseIcon name="x" class="w-4 h-4" />
+                <BaseIcon name="x" size="xs" />
               </button>
             </div>
           </div>
@@ -118,3 +122,119 @@ defineExpose({
   },
 })
 </script>
+
+<st
+yle lang="scss" scoped>
+@use '../../assets/scss/abstracts/variables' as *;
+
+.update-notification {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: var(--color-success);
+  color: white;
+  box-shadow: $shadow-lg;
+}
+
+.update-notification__container {
+  padding: $space-4;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.update-notification__content {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+}
+
+.update-notification__icon {
+  flex-shrink: 0;
+  color: white;
+}
+
+.update-notification__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.update-notification__title {
+  font-size: $text-sm;
+  font-weight: $font-medium;
+  margin-bottom: $space-1;
+}
+
+.update-notification__description {
+  font-size: $text-sm;
+  opacity: 0.9;
+}
+
+.update-notification__actions {
+  display: flex;
+  gap: $space-2;
+}
+
+.update-notification__button {
+  padding: $space-1 $space-4;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: $radius-sm;
+  color: white;
+  font-size: $text-sm;
+  font-weight: $font-medium;
+  cursor: pointer;
+  transition: background $transition-base;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  &--update {
+    // Specific styles for update button
+  }
+
+  &--dismiss {
+    padding: $space-1;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Transition classes
+.update-notification--enter-active {
+  transition: all 300ms ease-out;
+}
+
+.update-notification--enter-from {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.update-notification--enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.update-notification--leave-active {
+  transition: all 200ms ease-in;
+}
+
+.update-notification--leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.update-notification--leave-to {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+</style>

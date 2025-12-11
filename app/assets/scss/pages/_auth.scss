@@ -1,3 +1,6 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
 // Auth Pages Styles
 .auth-page {
   min-height: 100vh;
@@ -7,11 +10,11 @@
   background-color: #f9fafb;
   padding: $spacing-2xl $spacing-md;
 
-  @include breakpoint(sm) {
+  @include breakpoint($breakpoint-sm) {
     padding: $spacing-2xl $spacing-lg;
   }
 
-  @include breakpoint(lg) {
+  @include breakpoint($breakpoint-lg) {
     padding: $spacing-2xl $spacing-xl;
   }
 }

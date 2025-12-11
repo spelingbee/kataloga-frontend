@@ -358,6 +358,84 @@ export const useTelegram = () => {
     }
   }
 
+  // Request contact (phone number)
+  const requestContact = async (): Promise<{ phone: string; firstName: string; lastName?: string } | null> => {
+    if (!isTelegram.value) {
+      throw new Error('Contact request only available in Telegram')
+    }
+    
+    try {
+      const tg = window.Telegram?.WebApp
+      if (tg?.requestContact) {
+        return await new Promise<{ phone: string; firstName: string; lastName?: string } | null>((resolve) => {
+          tg.requestContact((granted: boolean, contact: any) => {
+            if (granted && contact) {
+              resolve({
+                phone: contact.phone_number,
+                firstName: contact.first_name,
+                lastName: contact.last_name
+              })
+            } else {
+              resolve(null)
+            }
+          })
+        })
+      } else {
+        throw new Error('Contact request not supported')
+      }
+    } catch (error) {
+      console.error('Failed to request contact:', error)
+      return null
+    }
+  }
+
+  // Request write access (for sending messages)
+  const requestWriteAccess = async (): Promise<boolean> => {
+    if (!isTelegram.value) {
+      return false
+    }
+    
+    try {
+      const tg = window.Telegram?.WebApp
+      if (tg?.requestWriteAccess) {
+        return await new Promise<boolean>((resolve) => {
+          tg.requestWriteAccess((granted: boolean) => {
+            resolve(granted)
+          })
+        })
+      } else {
+        return false
+      }
+    } catch (error) {
+      console.error('Failed to request write access:', error)
+      return false
+    }
+  }
+
+  // Get init data for authentication
+  const getInitData = (): string | null => {
+    if (!isTelegram.value) return null
+    
+    try {
+      const tg = window.Telegram?.WebApp
+      return tg?.initData || null
+    } catch {
+      return null
+    }
+  }
+
+  // Get init data unsafe (parsed)
+  const getInitDataUnsafe = (): any => {
+    if (!isTelegram.value) return null
+    
+    try {
+      const tg = window.Telegram?.WebApp
+      return tg?.initDataUnsafe || null
+    } catch {
+      return null
+    }
+  }
+
   // Biometric authentication (not available in basic WebApp API)
   const requestBiometricAuth = async (reason?: string): Promise<boolean> => {
     console.warn('Biometric authentication not available in basic Telegram WebApp API')
@@ -440,6 +518,12 @@ export const useTelegram = () => {
     showPopup,
     scanQRCode,
     requestBiometricAuth,
+    requestContact,
+    requestWriteAccess,
+    
+    // Authentication
+    getInitData,
+    getInitDataUnsafe,
     
     // App controls
     expandViewport,
@@ -511,6 +595,9 @@ declare global {
         }
         showPopup?(params: any, callback: (buttonId: string) => void): void
         showScanQrPopup?(params: any, callback: (qr: string) => void): void
+        requestContact?(callback: (granted: boolean, contact: any) => void): void
+        requestWriteAccess?(callback: (granted: boolean) => void): void
+        initData?: string
       }
     }
   }

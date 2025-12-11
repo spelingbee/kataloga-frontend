@@ -1,0 +1,76 @@
+// =============================================================================
+// Design Tokens - Spacing
+// =============================================================================
+// Consistent spacing scale for the minimalist design system
+
+// Spacing Scale - Based on 0.25rem (4px) increments
+// -----------------------------------------------------------------------------
+$space-1: 0.25rem;    // 4px
+$space-2: 0.5rem;     // 8px
+$space-3: 0.75rem;    // 12px
+$space-4: 1rem;       // 16px
+$space-5: 1.25rem;    // 20px
+$space-6: 1.5rem;     // 24px
+$space-8: 2rem;       // 32px
+$space-10: 2.5rem;    // 40px
+$space-12: 3rem;      // 48px
+$space-16: 4rem;      // 64px
+$space-20: 5rem;      // 80px
+
+// CSS Custom Properties for Runtime Access
+// -----------------------------------------------------------------------------
+:root {
+  --space-1: #{$space-1};
+  --space-2: #{$space-2};
+  --space-3: #{$space-3};
+  --space-4: #{$space-4};
+  --space-5: #{$space-5};
+  --space-6: #{$space-6};
+  --space-8: #{$space-8};
+  --space-10: #{$space-10};
+  --space-12: #{$space-12};
+  --space-16: #{$space-16};
+  --space-20: #{$space-20};
+}
+
+// Semantic Spacing Aliases
+// -----------------------------------------------------------------------------
+$spacing-xs: $space-1;    // 4px
+$spacing-sm: $space-2;    // 8px
+$spacing-md: $space-4;    // 16px
+$spacing-lg: $space-6;    // 24px
+$spacing-xl: $space-8;    // 32px
+$spacing-2xl: $space-12;  // 48px
+
+// Component-Specific Spacing
+// -----------------------------------------------------------------------------
+$card-padding: $space-6;           // 24px - generous padding for cards
+$button-padding-x: $space-4;       // 16px - horizontal button padding
+$button-padding-y: $space-3;       // 12px - vertical button padding
+$input-padding: $space-3;          // 12px - form input padding
+$modal-padding: $space-8;          // 32px - modal content padding
+$section-spacing: $space-16;       // 64px - spacing between sections
+
+// Touch Target Minimum Size (Accessibility)
+// -----------------------------------------------------------------------------
+$touch-target-min: 44px;  // WCAG AA minimum touch target size
+
+// CSS Custom Properties for Semantic Spacing
+// -----------------------------------------------------------------------------
+:root {
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+  --spacing-xl: #{$spacing-xl};
+  --spacing-2xl: #{$spacing-2xl};
+  
+  --card-padding: #{$card-padding};
+  --button-padding-x: #{$button-padding-x};
+  --button-padding-y: #{$button-padding-y};
+  --input-padding: #{$input-padding};
+  --modal-padding: #{$modal-padding};
+  --section-spacing: #{$section-spacing};
+  
+  --touch-target-min: #{$touch-target-min};
+}

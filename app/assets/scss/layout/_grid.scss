@@ -1,4 +1,8 @@
-// Grid System and Layout Utilities
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+@use '../tokens' as *;
+
+// Enhanced Grid System and Layout Utilities
 .layout-grid {
   display: grid;
   min-height: 100vh;
@@ -11,7 +15,7 @@
       "sidebar main detail"
       "sidebar main detail";
 
-    @include breakpoint-down(lg) {
+    @include breakpoint-down($breakpoint-lg) {
       grid-template-columns: 1fr;
       grid-template-areas: 
         "header"
@@ -20,6 +24,84 @@
     }
   }
 }
+
+// Enhanced Responsive Grid System
+.responsive-grid-system {
+  display: grid;
+  width: 100%;
+  gap: var(--space-4);
+  
+  // Auto-fit grid for dynamic layouts
+  &--auto-fit {
+    grid-template-columns: repeat(auto-fit, minmax(var(--min-item-width, 250px), 1fr));
+  }
+  
+  // Auto-fill grid for consistent sizing
+  &--auto-fill {
+    grid-template-columns: repeat(auto-fill, minmax(var(--min-item-width, 250px), 1fr));
+  }
+  
+  // Responsive columns
+  &--responsive {
+    grid-template-columns: 1fr;
+    
+    @media (min-width: 480px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    @include tablet-up {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    @include desktop-up {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    
+    @include xl-desktop-up {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+  
+  // Menu grid specific
+  &--menu {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-6);
+    
+    @media (max-width: 320px) {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+  }
+  
+  // Card grid specific
+  &--cards {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
+    
+    @media (max-width: 375px) {
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+    }
+  }
+}
+
+// Grid gap utilities
+.grid-gap-xs { gap: var(--space-1); }
+.grid-gap-sm { gap: var(--space-2); }
+.grid-gap-md { gap: var(--space-4); }
+.grid-gap-lg { gap: var(--space-6); }
+.grid-gap-xl { gap: var(--space-8); }
+
+// Grid alignment utilities
+.grid-items-start { align-items: start; }
+.grid-items-center { align-items: center; }
+.grid-items-end { align-items: end; }
+.grid-items-stretch { align-items: stretch; }
+
+.grid-content-start { justify-items: start; }
+.grid-content-center { justify-items: center; }
+.grid-content-end { justify-items: end; }
+.grid-content-stretch { justify-items: stretch; }
 
 .layout-main {
   display: flex;
@@ -51,16 +133,16 @@
   border-left: 1px solid $color-border-subtle;
   grid-area: detail;
 
-  @include breakpoint(xl) {
+  @include breakpoint($breakpoint-xl) {
     display: flex;
   }
 
-  @include breakpoint(2xl) {
+  @include breakpoint($breakpoint-2xl) {
     width: 24rem;
   }
 
   &--hidden {
-    @include breakpoint(xl) {
+    @include breakpoint($breakpoint-xl) {
       display: none;
     }
   }
@@ -75,18 +157,77 @@
   }
 }
 
-// Responsive container
+// Enhanced Responsive Container System
 .layout-container {
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
-  padding: 0 $spacing-md;
-
-  @include breakpoint(sm) {
-    padding: 0 $spacing-lg;
+  padding: 0 var(--space-4);
+  min-width: 320px; // Minimum supported width
+  
+  // Enhanced breakpoint system
+  @media (min-width: 480px) {
+    padding: 0 var(--space-6);
   }
 
-  @include breakpoint(lg) {
-    padding: 0 $spacing-xl;
+  @include tablet-up {
+    padding: 0 var(--space-8);
+    max-width: 768px;
+  }
+
+  @include desktop-up {
+    padding: 0 var(--space-12);
+    max-width: 1024px;
+  }
+  
+  @include xl-desktop-up {
+    padding: 0 var(--space-16);
+    max-width: 1280px;
+  }
+  
+  // Ultra-wide support
+  @media (min-width: 1920px) {
+    max-width: 1920px;
+    padding: 0 var(--space-20);
+  }
+  
+  // Container size variants
+  &--sm {
+    max-width: 640px;
+  }
+  
+  &--md {
+    max-width: 768px;
+  }
+  
+  &--lg {
+    max-width: 1024px;
+  }
+  
+  &--xl {
+    max-width: 1280px;
+  }
+  
+  &--2xl {
+    max-width: 1536px;
+  }
+  
+  &--3xl {
+    max-width: 1920px;
+  }
+  
+  &--fluid {
+    max-width: 100%;
+  }
+  
+  // Safe area support
+  &--safe-area {
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
+    
+    @include tablet-up {
+      padding-left: max(var(--space-8), env(safe-area-inset-left));
+      padding-right: max(var(--space-8), env(safe-area-inset-right));
+    }
   }
 }
 
@@ -131,8 +272,94 @@
   &--content {
     min-height: calc(100vh - 60px); // Account for mobile navigation
     
-    @include breakpoint(lg) {
+    @include breakpoint($breakpoint-lg) {
       min-height: 100vh;
     }
+  }
+  
+  // Safe area support
+  &--safe {
+    min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+}
+
+// Touch-Optimized Layout Utilities
+.touch-layout {
+  // Minimum touch target sizes
+  &__target {
+    min-width: 44px;
+    min-height: 44px;
+    position: relative;
+    
+    &--large {
+      min-width: 56px;
+      min-height: 56px;
+    }
+  }
+  
+  // Touch-friendly spacing
+  &__spacing {
+    padding: var(--space-4);
+    gap: var(--space-4);
+    
+    @include mobile-only {
+      padding: var(--space-6);
+      gap: var(--space-6);
+    }
+  }
+  
+  // Swipe-enabled containers
+  &__swipe {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+  }
+}
+
+// Navigation Layout Utilities
+.nav-layout {
+  // Bottom navigation spacing
+  &--with-bottom-nav {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    
+    @include tablet-up {
+      padding-bottom: 0;
+    }
+  }
+  
+  // Sidebar navigation spacing
+  &--with-sidebar {
+    @include desktop-up {
+      margin-left: 240px;
+    }
+  }
+  
+  // Header spacing
+  &--with-header {
+    padding-top: 64px;
+    
+    @include mobile-only {
+      padding-top: 56px;
+    }
+  }
+}
+
+// Responsive Behavior Utilities (320px to 1920px)
+@media (max-width: 320px) {
+  .responsive-grid-system {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-2);
+  }
+  
+  .layout-container {
+    padding: 0 var(--space-2);
+  }
+}
+
+@media (min-width: 1920px) {
+  .layout-container,
+  .responsive-grid-system {
+    max-width: 1920px;
+    margin: 0 auto;
   }
 }

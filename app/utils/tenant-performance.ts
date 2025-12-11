@@ -449,45 +449,8 @@ export class TenantPrefetchManager {
   }
 }
 
-/**
- * Debounce function for tenant operations
- */
-export function debounce<T extends (...args: any[]) => any>(
-  fn: T,
-  delay: number
-): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout | null = null
-
-  return function (this: any, ...args: Parameters<T>) {
-    if (timeoutId) {
-      clearTimeout(timeoutId)
-    }
-
-    timeoutId = setTimeout(() => {
-      fn.apply(this, args)
-    }, delay)
-  }
-}
-
-/**
- * Throttle function for tenant operations
- */
-export function throttle<T extends (...args: any[]) => any>(
-  fn: T,
-  limit: number
-): (...args: Parameters<T>) => void {
-  let inThrottle = false
-
-  return function (this: any, ...args: Parameters<T>) {
-    if (!inThrottle) {
-      fn.apply(this, args)
-      inThrottle = true
-      setTimeout(() => {
-        inThrottle = false
-      }, limit)
-    }
-  }
-}
+// Note: debounce and throttle functions are imported from utils/debounce.ts
+// to avoid duplication and maintain consistency across the application
 
 /**
  * Memoize function results

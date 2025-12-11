@@ -1,174 +1,50 @@
 // =============================================================================
-// Main SCSS Entry Point
+// Main SCSS Entry Point - New Minimalist Design System
 // =============================================================================
 
-// 1. Abstracts - Variables, functions, mixins
-@import 'abstracts/variables';
-@import 'abstracts/functions';
-@import 'abstracts/mixins';
+// 1. Design Tokens - New token-first approach (DART SASS syntax)
+@use 'tokens' as *;
 
-// 2. Base - Reset, typography, base element styles
-@import 'base/reset';
-@import 'base/typography';
-@import 'base/base';
+// 2. Abstracts - Functions, mixins, animations (keeping existing utilities)
+@use 'abstracts/functions' as *;
+@use 'abstracts/mixins' as *;
+@use 'abstracts/animations' as *;
 
-// 3. Layout - Grid system, header, footer, sidebar
-@import 'layout/grid';
-@import 'layout/header';
-@import 'layout/sidebar';
-@import 'layout/navigation';
-@import 'layout/admin';
+// 3. Base - Reset, typography, base element styles
+@use 'base/reset';
+@use 'base/new-typography';
+@use 'base/base';
 
-// 4. Components - Buttons, cards, forms, etc.
-@import 'components/buttons';
-@import 'components/cards';
-@import 'components/icons';
-@import 'components/lists';
-@import 'components/order-tracker';
+// 4. Layout - Grid system, header, footer, sidebar
+@use 'layout/grid';
+@use 'layout/header';
+@use 'layout/sidebar';
+@use 'layout/navigation';
+@use 'layout/admin';
 
-// 5. Pages - Page-specific styles
-@import 'pages/home';
-@import 'pages/menu';
-@import 'pages/auth';
+// 5. Components - Buttons, cards, forms, etc.
+@use 'components/buttons';
+@use 'components/cards';
+@use 'components/icons';
+@use 'components/lists';
+@use 'components/order-tracker';
 
-// 6. Utilities - Helper classes
-@import 'utilities/spacing';
-@import 'utilities/layout';
-@import 'utilities/typography';
-@import 'utilities/colors';
+// 6. Pages - Page-specific styles
+@use 'pages/home';
+@use 'pages/menu';
+@use 'pages/auth';
 
-// 7. Themes - Theme-specific overrides
-@import 'themes/dark';
+// 7. Utilities - Helper classes
+@use 'utilities/spacing';
+@use 'utilities/layout';
+@use 'utilities/typography' as util-typography;
+@use 'utilities/colors';
+@use 'utilities/responsive';
+@use 'utilities/animations';
+@use 'utilities/accessibility';
 
-// 8. Animations and Keyframes
-// -----------------------------------------------------------------------------
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+// 8. Themes - Theme-specific overrides
+@use 'themes/dark';
 
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes ping {
-  75%, 100% {
-    transform: scale(2);
-    opacity: 0;
-  }
-}
-
-// 9. Animation Utility Classes
-// -----------------------------------------------------------------------------
-.fade-in {
-  @include fade-in;
-}
-
-.slide-in-up {
-  @include slide-in-up;
-}
-
-.slide-in-right {
-  animation: slideInRight $transition-normal $ease-in-out;
-}
-
-.slide-in-left {
-  animation: slideInLeft $transition-normal $ease-in-out;
-}
-
-.hover-scale {
-  @include hover-scale;
-}
-
-// 10. Custom Scrollbar Styles
-// -----------------------------------------------------------------------------
-.scrollbar-thin {
-  @include custom-scrollbar;
-}
-
-// 11. Safe Area Support
-// -----------------------------------------------------------------------------
-.safe-area-top {
-  padding-top: env(safe-area-inset-top);
-}
-
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.safe-area-left {
-  padding-left: env(safe-area-inset-left);
-}
-
-.safe-area-right {
-  padding-right: env(safe-area-inset-right);
-}
-
-// 12. Touch Device Optimizations
-// -----------------------------------------------------------------------------
-@media (hover: none) and (pointer: coarse) {
-  .hover-scale:hover {
-    transform: none;
-  }
-  
-  .hover\:scale-105:hover {
-    transform: none;
-  }
-}
-
-// 13. High DPI Display Optimizations
-// -----------------------------------------------------------------------------
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  // High DPI specific styles can be added here
-}
+// 9. Utilities - Global utility styles
+@use 'utilities/global';

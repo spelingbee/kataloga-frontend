@@ -1,0 +1,56 @@
+// =============================================================================
+// Global Utility Styles
+// =============================================================================
+
+@use '../abstracts/mixins' as *;
+
+// Custom Scrollbar Styles
+// -----------------------------------------------------------------------------
+.scrollbar-thin {
+  @include custom-scrollbar;
+}
+
+// Touch Device Optimizations
+// -----------------------------------------------------------------------------
+@media (hover: none) and (pointer: coarse) {
+  // Disable hover effects on touch devices
+  .hover-scale:hover,
+  .hover-lift:hover,
+  .hover-glow:hover,
+  .hover-brightness:hover {
+    transform: none;
+    box-shadow: none;
+    filter: none;
+  }
+  
+  // Enable active states for touch feedback
+  .hover-scale:active {
+    transform: scale(0.95);
+  }
+  
+  .hover-lift:active {
+    transform: translateY(0);
+  }
+}
+
+// High DPI Display Optimizations
+// -----------------------------------------------------------------------------
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  // Optimize images and borders for retina displays
+  img {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+// Reduced Motion Support
+// -----------------------------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

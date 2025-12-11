@@ -57,21 +57,30 @@
 
         <!-- Cart Summary & Checkout -->
         <div v-if="items.length > 0" class="border-t border-border-subtle p-4 space-y-4">
+          <!-- Promo Code Input -->
+          <PromoCodeInput />
+          
+          <!-- Cart Summary -->
           <CartSummary 
+            :subtotal="subtotal"
             :total="total" 
             :item-count="itemCount"
-            :subtotal="total"
-            :delivery-fee="0"
+            :delivery-fee="deliveryFee"
+            :discount="discount"
+            :min-order-amount="minimumOrderAmount"
+            :show-delivery-fee="false"
           />
           
+          <!-- Checkout Button -->
           <BaseButton
             variant="primary"
             size="lg"
             class="w-full bg-primary-green hover:bg-green-600 text-white font-semibold"
-            :disabled="items.length === 0"
+            :disabled="!canCheckout"
             @click="proceedToCheckout"
           >
-            Proceed to Checkout
+            <span v-if="canCheckout">Proceed to Checkout</span>
+            <span v-else>Add {{ formatPrice(remainingForMinimum) }} more</span>
           </BaseButton>
         </div>
       </div>
@@ -82,6 +91,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useCartStore } from '~/stores/cart'
+import { useTenant } from '~/composables/useTenant'
 
 // Props & Emits
 defineEmits<{
@@ -104,11 +114,31 @@ const emit = defineEmits<{
 // Stores
 const cartStore = useCartStore()
 const router = useRouter()
+const { tenantSettings } = useTenant()
 
 // Computed properties
 const items = computed(() => cartStore.items)
+const subtotal = computed(() => cartStore.subtotal)
 const total = computed(() => cartStore.total)
 const itemCount = computed(() => cartStore.itemCount)
+const deliveryFee = computed(() => cartStore.deliveryFee)
+const discount = computed(() => cartStore.discount)
+const minimumOrderAmount = computed(() => cartStore.minimumOrderAmount)
+const canCheckout = computed(() => cartStore.canCheckout)
+const remainingForMinimum = computed(() => cartStore.remainingForMinimum)
+
+// Helper methods
+const formatPrice = (price: number) => {
+  const currency = tenantSettings.value?.currency || 'USD'
+  const locale = currency === 'USD' ? 'en-US' : currency === 'RUB' ? 'ru-RU' : 'en-US'
+  
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(price)
+}
 
 // Methods
 const updateQuantity = (itemId: string, quantity: number) => {

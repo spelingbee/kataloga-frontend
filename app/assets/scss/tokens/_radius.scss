@@ -1,0 +1,53 @@
+// =============================================================================
+// Design Tokens - Border Radius
+// =============================================================================
+// Border radius system for the minimalist design
+
+// Radius Scale
+// -----------------------------------------------------------------------------
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-full: 9999px;
+
+// Component-Specific Radius
+// -----------------------------------------------------------------------------
+$radius-button: $radius-md;        // Buttons
+$radius-card: $radius-lg;          // Cards and menu items
+$radius-input: $radius-sm;         // Form inputs
+$radius-modal: $radius-lg;         // Modals
+$radius-badge: $radius-full;       // Badges and pills
+
+// CSS Custom Properties for Runtime Access
+// -----------------------------------------------------------------------------
+:root {
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-full: #{$radius-full};
+  
+  --radius-button: #{$radius-button};
+  --radius-card: #{$radius-card};
+  --radius-input: #{$radius-input};
+  --radius-modal: #{$radius-modal};
+  --radius-badge: #{$radius-badge};
+}
+
+// Radius Utility Classes
+// -----------------------------------------------------------------------------
+.rounded-sm { border-radius: var(--radius-sm); }
+.rounded-md { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-full { border-radius: var(--radius-full); }
+
+.rounded-none { border-radius: 0; }
+
+// Directional Radius Utilities
+// -----------------------------------------------------------------------------
+.rounded-t-sm { border-top-left-radius: var(--radius-sm); border-top-right-radius: var(--radius-sm); }
+.rounded-t-md { border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md); }
+.rounded-t-lg { border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg); }
+
+.rounded-b-sm { border-bottom-left-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
+.rounded-b-md { border-bottom-left-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
+.rounded-b-lg { border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg); }

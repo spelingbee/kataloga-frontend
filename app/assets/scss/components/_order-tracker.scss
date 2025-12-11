@@ -1,3 +1,5 @@
+@use '../abstracts/variables' as *;
+
 // Order Tracker Component Styles
 .order-tracker {
   background-color: rgba($color-background-card, 0.5);

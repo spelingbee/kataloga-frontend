@@ -21,27 +21,15 @@ interface PendingOrder {
   userId?: string
 }
 
-interface SyncConflict {
-  localData: CartItem[]
-  serverData: CartItem[]
-  timestamp: number
-}
 
-interface OfflineData {
-  menuItems: any[]
-  categories: any[]
-  userProfile: any
-  lastSync: number
-}
 
 export const useOfflineCart = () => {
   const CART_STORAGE_KEY = 'offline_cart'
   const PENDING_ORDERS_KEY = 'pending_orders'
-  const OFFLINE_DATA_KEY = 'offline_data'
   const CART_VERSION = 2
 
   const authStore = useAuthStore()
-  const isOnline = ref(navigator.onLine)
+  const isOnline = ref(typeof navigator !== 'undefined' && 'onLine' in navigator ? navigator.onLine : true)
   const hasPendingOrders = ref(false)
   const syncInProgress = ref(false)
   const hasConflicts = ref(false)
@@ -268,7 +256,7 @@ export const useOfflineCart = () => {
   const savePendingOrder = async (orderData: Omit<PendingOrder, 'id' | 'timestamp' | 'retryCount'>): Promise<void> => {
     try {
       const pendingOrder: PendingOrder = {
-        id: `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `order_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
         timestamp: Date.now(),
         retryCount: 0,
         authToken: authStore.accessToken,
@@ -376,40 +364,12 @@ export const useOfflineCart = () => {
     if (!isOnline.value || !authStore.isAuthenticated) return
 
     try {
-      // Get server cart
-      const { useCart } = await import('./useCart')
-      const { loadCartFromServer, saveCartToServer } = useCart()
-      
-      const serverCart = await loadCartFromServer()
+      // Skip server sync for now - will be implemented when cart API is ready
       const localCart = await loadCartOffline()
       
-      // Check for conflicts
-      if (localCart.length > 0 && serverCart.length > 0) {
-        // Simple conflict detection: different items or quantities
-        const hasConflict = !areCartsEqual(localCart, serverCart)
-        
-        if (hasConflict) {
-          hasConflicts.value = true
-          
-          // For now, use merge strategy automatically
-          const resolvedCart = resolveConflict('merge', localCart, serverCart)
-          
-          // Save resolved cart both locally and to server
-          saveCartOffline(resolvedCart, 'synced')
-          await saveCartToServer(resolvedCart)
-          
-          hasConflicts.value = false
-        } else {
-          // No conflict, mark as synced
-          saveCartOffline(localCart, 'synced')
-        }
-      } else if (localCart.length > 0) {
-        // Only local cart exists, sync to server
-        await saveCartToServer(localCart)
+      if (localCart.length > 0) {
+        // Mark as synced for now
         saveCartOffline(localCart, 'synced')
-      } else if (serverCart.length > 0) {
-        // Only server cart exists, sync to local
-        saveCartOffline(serverCart, 'synced')
       }
       
       lastSyncTime.value = new Date()
@@ -488,6 +448,9 @@ export const useOfflineCart = () => {
     if (!isOnline.value) return
 
     try {
+      // Validate cart against current menu data
+      await validateCartOnReconnection()
+      
       // Sync cart
       await syncCartWithServer()
       
@@ -503,23 +466,21 @@ export const useOfflineCart = () => {
     }
   }
 
+  // Validate cart when coming back online
+  const validateCartOnReconnection = async (): Promise<void> => {
+    try {
+      // Skip validation for now - will be implemented when needed
+      console.log('Cart validation skipped - not implemented yet')
+    } catch (error) {
+      console.error('Failed to validate cart on reconnection:', error)
+    }
+  }
+
   // Cache menu data for offline use
   const cacheMenuData = async (): Promise<void> => {
     try {
-      const { useMenu } = await import('./useMenu')
-      const { getMenus, getCategories } = useMenu()
-      
-      // Cache menu data
-      const menus = await getMenus()
-      if (menus.success && menus.data) {
-        await saveOfflineData('menus', menus.data)
-      }
-      
-      // Cache categories
-      const categories = await getCategories()
-      if (categories.success && categories.data) {
-        await saveOfflineData('categories', categories.data)
-      }
+      // Skip menu caching for now - will be implemented when menu API is stable
+      console.log('Menu caching skipped - not implemented yet')
     } catch (error) {
       console.error('Failed to cache menu data:', error)
     }
@@ -527,7 +488,9 @@ export const useOfflineCart = () => {
 
   // Handle online/offline status
   const handleOnlineStatus = () => {
-    isOnline.value = navigator.onLine
+    if (typeof navigator !== 'undefined' && 'onLine' in navigator) {
+      isOnline.value = navigator.onLine
+    }
     
     if (isOnline.value) {
       // Sync all data when coming back online

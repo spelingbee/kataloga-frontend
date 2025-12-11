@@ -293,9 +293,9 @@ function getAdditionalContext(error: any, errorType: ErrorContext['type']): Reco
   // Add browser and environment context
   additionalContext.browserInfo = {
     language: navigator.language,
-    platform: navigator.platform,
-    cookieEnabled: navigator.cookieEnabled,
-    onLine: navigator.onLine,
+    platform: typeof navigator !== 'undefined' ? navigator.platform : 'unknown',
+    cookieEnabled: typeof navigator !== 'undefined' ? navigator.cookieEnabled : false,
+    onLine: typeof navigator !== 'undefined' && 'onLine' in navigator ? navigator.onLine : true,
   }
   
   additionalContext.pageInfo = {

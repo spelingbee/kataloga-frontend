@@ -1,3 +1,7 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+@use '../abstracts/functions' as *;
+
 // Sidebar Layout Styles
 .app-sidebar {
   display: flex;
@@ -103,16 +107,16 @@
   width: 16rem;
   flex-shrink: 0;
 
-  @include breakpoint(lg) {
+  @include breakpoint($breakpoint-lg) {
     display: flex;
   }
 
-  @include breakpoint(xl) {
+  @include breakpoint($breakpoint-xl) {
     width: 18rem;
   }
 
   &--hidden {
-    @include breakpoint(lg) {
+    @include breakpoint($breakpoint-lg) {
       display: none;
     }
   }
