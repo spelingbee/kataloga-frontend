@@ -466,7 +466,8 @@ const trackOrder = (orderId: string) => {
 
 const reorderItems = (order: Order) => {
   // Add all items from the order to cart
-  order.items.forEach(item => {
+  const orderCopy = JSON.parse(JSON.stringify(order))
+  orderCopy.items.forEach((item: any) => {
     cartStore.addItem(item.menuItem, item.quantity)
   })
   
@@ -474,15 +475,16 @@ const reorderItems = (order: Order) => {
 }
 
 const shareOrder = (order: Order) => {
+  const orderCopy = JSON.parse(JSON.stringify(order))
   if (navigator.share) {
     navigator.share({
-      title: `Order #${order.id}`,
+      title: `Order #${orderCopy.id}`,
       text: `Check out my order from Menu Ordering App`,
-      url: `${window.location.origin}/orders/${order.id}`
+      url: `${window.location.origin}/orders/${orderCopy.id}`
     })
   } else {
     // Fallback: copy to clipboard
-    navigator.clipboard.writeText(`${window.location.origin}/orders/${order.id}`)
+    navigator.clipboard.writeText(`${window.location.origin}/orders/${orderCopy.id}`)
   }
 }
 

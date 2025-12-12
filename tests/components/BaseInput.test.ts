@@ -4,7 +4,12 @@ import BaseInput from '~/components/base/BaseInput.vue'
 
 describe('BaseInput', () => {
   it('renders with default props', () => {
-    const wrapper = mount(BaseInput)
+    const wrapper = mount(BaseInput, {
+      slots: {
+        prefix: '<div class="prefix"></div>',
+        suffix: '<div class="suffix"></div>',
+      },
+    })
     
     const input = wrapper.find('input')
     expect(input.exists()).toBe(true)

@@ -1,4 +1,11 @@
-import * as Sentry from '@sentry/vue'
+import {
+  init as sentryInit,
+  browserTracingIntegration,
+  replayIntegration,
+  setContext,
+  setUser,
+  captureException,
+} from '@sentry/vue'
 import { useCartStore } from '~/stores/cart'
 import { useAuthStore } from '~/stores/auth'
 import { useTenantStore } from '~/stores/tenant'
@@ -14,17 +21,15 @@ export default defineNuxtPlugin((nuxtApp) => {
   }
 
   // Initialize Sentry
-  Sentry.init({
+  sentryInit({
     app: nuxtApp.vueApp,
     dsn: config.public.sentryDsn,
     environment: process.env.NODE_ENV || 'development',
     
     // Performance monitoring
     integrations: [
-      new Sentry.BrowserTracing({
-        routingInstrumentation: Sentry.vueRouterInstrumentation(router),
-      }),
-      new Sentry.Replay({
+      browserTracingIntegration(),
+      replayIntegration({
         maskAllText: true,
         blockAllMedia: true,
       }),
@@ -69,7 +74,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         // Add user context if available
         const authStore = useAuthStore()
         if (authStore.user) {
-          Sentry.setUser({
+          setUser({
             id: authStore.user.id,
             email: authStore.user.email,
           })
@@ -78,13 +83,10 @@ export default defineNuxtPlugin((nuxtApp) => {
         // Add cart context for order-related errors
         if (error.message?.includes('order') || error.message?.includes('cart')) {
           const cartStore = useCartStore()
-          event.contexts = {
-            ...event.contexts,
-            cart: {
-              itemCount: cartStore.itemCount,
-              total: cartStore.total,
-            },
-          }
+          setContext('cart', {
+            itemCount: cartStore.itemCount,
+            total: cartStore.total,
+          })
         }
       }
       
@@ -125,11 +127,9 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
 
   // Provide Sentry instance for manual error reporting
-  nuxtApp.provide('sentry', Sentry)
-  
-  return {
-    provide: {
-      sentry: Sentry,
-    },
-  }
+  nuxtApp.provide('sentry', {
+    captureException,
+    setContext,
+    setUser,
+  })
 })

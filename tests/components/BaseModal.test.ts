@@ -1,6 +1,13 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import BaseModal from '~/components/base/BaseModal.vue'
+
+vi.mock('@vueuse/integrations/useFocusTrap', () => ({
+  useFocusTrap: () => ({
+    activate: vi.fn(),
+    deactivate: vi.fn(),
+  }),
+}))
 
 describe('BaseModal', () => {
   it('does not render when modelValue is false', () => {
@@ -18,7 +25,14 @@ describe('BaseModal', () => {
       props: {
         modelValue: true
       },
-      attachTo: document.body
+      slots: {
+        default: '<p>Modal content</p>',
+      },
+      global: {
+        stubs: {
+          teleport: true,
+        },
+      },
     })
     
     expect(wrapper.find('.modal').exists()).toBe(true)

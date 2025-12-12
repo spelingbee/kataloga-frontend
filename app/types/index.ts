@@ -9,6 +9,7 @@ export interface User {
   id: string
   firstName: string
   lastName: string
+  name: string
   email: string
   phone?: string
   telegramId?: string
@@ -197,9 +198,14 @@ export interface Order {
   total: number
   items: OrderItem[]
   customerInfo: CustomerInfo
+  customerId: string
   createdAt: string
   estimatedTime?: number
   deliveryAddress?: string
+  orderType: 'delivery' | 'pickup' | 'dine-in'
+  deliveryDetails?: any
+  pickupDetails?: any
+  dineInDetails?: any
 }
 
 export interface OrderItem {
@@ -210,6 +216,7 @@ export interface OrderItem {
   price: number
   subtotal: number
   customizations?: Record<string, any>
+  selectedModifiers?: Modifier[]
 }
 
 export interface CustomerInfo {

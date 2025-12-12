@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCartStore } from '~/stores/cart'
+import { ref, computed } from 'vue'
 import * as fc from 'fast-check'
 import type { MenuItem, Modifier } from '~/types'
 
@@ -12,6 +13,17 @@ vi.mock('#app', () => ({
   })
 }))
 
+vi.mock('vue', () => ({
+  ref: (val: any) => ({ value: val }),
+  computed: (fn: any) => ({
+    get value() {
+      return fn()
+    },
+  }),
+  watch: () => {},
+  onMounted: () => {},
+}))
+
 // Mock useOfflineCart to avoid IndexedDB errors
 vi.mock('~/composables/useOfflineCart', () => ({
   useOfflineCart: () => ({
@@ -20,6 +32,32 @@ vi.mock('~/composables/useOfflineCart', () => ({
     isOnline: { value: true },
     savePendingOrder: vi.fn()
   })
+}))
+
+const mockCartStore = {
+  items: [],
+  promoCode: null,
+  discount: 0,
+  deliveryFee: 0,
+  subtotal: 0,
+  total: 0,
+  itemCount: 0,
+  isEmpty: true,
+  canCheckout: false,
+  remainingForMinimum: 0,
+  setMinimumOrderAmount: vi.fn(),
+  setDeliveryFee: vi.fn(),
+  addItem: vi.fn(),
+  removeItem: vi.fn(),
+  updateQuantity: vi.fn(),
+  clearCart: vi.fn(),
+  persistCart: vi.fn(),
+  restoreCart: vi.fn(),
+  createOrder: vi.fn(),
+}
+
+vi.mock('~/stores/cart', () => ({
+  useCartStore: () => mockCartStore,
 }))
 
 // Mock order service for testing order creation failures

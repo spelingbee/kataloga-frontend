@@ -1,12 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useTenant, useTenantBranding, useTenantSettings } from '~/composables/useTenant'
 import type { TenantInfo } from '~/types/tenant'
+import { ref, computed } from 'vue'
 
 // Mock tenant store
 vi.mock('~/stores/tenant', () => ({
-  useTenantStore: vi.fn(() => ({
-    currentTenant: ref<TenantInfo | null>(null),
-    isLoading: ref(false),
+  useTenantStore: vi.fn(),
+}))
+
+vi.mock('vue', () => ({
+  ref: (val: any) => ({ value: val }),
+  computed: (fn: any) => ({
+    get value() {
+      return fn()
+    },
+  }),
+}))
+
+const mockTenantStore = {
+  currentTenant: ref<TenantInfo | null>(null),
+  isLoading: ref(false),
     error: ref<string | null>(null),
     isMultiTenant: true,
     tenantSlug: '',

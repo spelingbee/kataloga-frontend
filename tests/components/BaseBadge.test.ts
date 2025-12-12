@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import BaseBadge from '~/components/base/BaseBadge.vue'
+
+vi.mock('vue', () => ({
+  useCssModule: () => ({}),
+}))
 
 describe('BaseBadge', () => {
   it('renders with default props', () => {
@@ -52,12 +57,14 @@ describe('BaseBadge', () => {
     })
   })
   
-  it('applies pulse animation when pulse is true', () => {
+  it('applies pulse animation when pulse is true', async () => {
     const wrapper = mount(BaseBadge, {
       props: { pulse: true },
       slots: { default: 'Badge' }
     })
     
+    await nextTick()
+
     expect(wrapper.classes()).toContain('animate-pulse')
   })
   

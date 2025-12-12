@@ -318,6 +318,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import { ref } from 'vue'
 import type { Order, MenuItem, OrderItem } from '~/types'
 
 // Stores
