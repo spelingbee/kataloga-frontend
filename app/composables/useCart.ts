@@ -1,5 +1,6 @@
+import { computed, readonly } from 'vue'
+import { storeToRefs } from 'pinia'
 import type { CartItem, MenuItem, CreateOrderDto, CustomerInfo } from '~/types'
-
 import { useCartStore } from '~/stores/cart'
 import { useOrderStore } from '~/stores/order'
 

@@ -3,6 +3,9 @@ import { useErrorHandler } from '~/composables/useErrorHandler'
 
 // Mock getCurrentInstance
 vi.mock('vue', () => ({
+  hasInjectionContext: () => true,
+  getCurrentScope: () => undefined,
+  onScopeDispose: () => {},
   getCurrentInstance: vi.fn(() => ({
     type: { name: 'TestComponent' }
   }))

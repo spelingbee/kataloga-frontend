@@ -1,22 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useAuth } from '~/composables/useAuth'
+import { ref, computed } from 'vue'
 
 // Mock stores and dependencies
 vi.mock('~/stores/auth', () => ({
-  useAuthStore: () => ({
-    isAuthenticated: false,
-    user: null,
-    accessToken: null,
-    refreshToken: null,
-    login: vi.fn(),
-    register: vi.fn(),
-    logout: vi.fn(),
-    fetchUserProfile: vi.fn(),
-    initializeAuth: vi.fn(),
-    updateProfile: vi.fn(),
-    changePassword: vi.fn(),
-    requestPasswordReset: vi.fn(),
-    resetPassword: vi.fn(),
+  useAuthStore: vi.fn(),
+}))
+
+vi.mock('vue', () => ({
+  ref: (val: any) => ({ value: val }),
+  computed: (fn: any) => ({
+    get value() {
+      return fn()
+    },
   }),
 }))
 

@@ -33,14 +33,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { TenantInfo } from '~/types/tenant'
 import { useTenant } from '~/composables/useTenant'
+import { useNuxtApp } from '#app'
+import { useNuxtApp } from '#app'
 
 // Composables
 const { currentTenant, setTenant } = useTenant()
 const route = useRoute()
 const router = useRouter()
+const error = ref<string | null>(null)
+const error = ref<string | null>(null)
 
 // Computed
 const canGoBack = computed(() => {

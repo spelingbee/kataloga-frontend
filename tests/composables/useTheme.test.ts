@@ -1,5 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useTheme } from '~/composables/useTheme'
+import { ref, computed } from 'vue'
+
+vi.mock('vue', () => ({
+  ref: (val: any) => ({ value: val }),
+  computed: (fn: any) => ({
+    get value() {
+      return fn()
+    },
+  }),
+  watch: () => {},
+  onMounted: () => {},
+}))
 
 // Mock localStorage
 const mockLocalStorage = {

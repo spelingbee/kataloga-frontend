@@ -75,7 +75,16 @@ export const useUserStore = defineStore('user', {
           const telegramUser = tg.initDataUnsafe.user
           this.user = {
             id: telegramUser.id.toString(),
+            firstName: telegramUser.first_name,
+            lastName: telegramUser.last_name || '',
             name: `${telegramUser.first_name} ${telegramUser.last_name || ''}`.trim(),
+            email: '',
+            role: 'CUSTOMER' as any,
+            tenantId: '',
+            isActive: true,
+            emailVerified: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
             telegramId: telegramUser.id.toString(),
           }
           this.isAuthenticated = true
@@ -86,7 +95,16 @@ export const useUserStore = defineStore('user', {
     initializeFromTelegram(telegramUser: any) {
       this.user = {
         id: telegramUser.id.toString(),
+        firstName: telegramUser.firstName,
+        lastName: telegramUser.lastName || '',
         name: telegramUser.firstName + (telegramUser.lastName ? ` ${telegramUser.lastName}` : ''),
+        email: '',
+        role: 'CUSTOMER' as any,
+        tenantId: '',
+        isActive: true,
+        emailVerified: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         telegramId: telegramUser.id.toString(),
         preferences: {
           favoriteItems: [],

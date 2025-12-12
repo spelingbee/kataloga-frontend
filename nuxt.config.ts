@@ -10,6 +10,11 @@ export default defineNuxtConfig({
   typescript: {
     strict: false,
     typeCheck: false,
+    tsConfig: {
+      compilerOptions: {
+        types: ["node"],
+      },
+    },
   },
 
   // CSS configuration
@@ -47,7 +52,6 @@ export default defineNuxtConfig({
         file: 'ky.json',
       },
     ],
-    lazy: true,
     langDir: 'locales',
     defaultLocale: 'en',
     strategy: 'no_prefix',
@@ -256,8 +260,6 @@ export default defineNuxtConfig({
   experimental: {
     payloadExtraction: false,
     viewTransition: true,
-    inlineSSRStyles: false, // Prevent FOUC with critical CSS
-    treeshakeClientOnly: true,
   },
 
   // Optimization features
@@ -274,11 +276,6 @@ export default defineNuxtConfig({
   features: {
     inlineStyles: false, // We handle critical CSS manually
   },
-
-  // CSS optimization
-  css: [
-    '@/assets/scss/main.scss'
-  ],
 
   // Route rules for performance
   routeRules: {
