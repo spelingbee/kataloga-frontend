@@ -28,6 +28,8 @@
 </template>
 
 <script setup lang="ts">
+import { useTelegramHaptic } from '~/composables/useTelegramHaptic'
+
 interface Props {
   price?: number
   currency?: string
@@ -66,6 +68,14 @@ const formattedPrice = computed(() => {
 })
 
 const handleClick = (event: Event) => {
+  // Trigger haptic feedback on button click
+  try {
+    const { cartActions } = useTelegramHaptic()
+    cartActions.addToCart()
+  } catch (error) {
+    // Silently fail if haptic feedback is not available
+  }
+  
   emit('click', event)
 }
 </script>

@@ -106,6 +106,21 @@
           v-model="orderData.paymentMethod"
           :order-total="cartTotal"
         />
+        
+        <!-- Payment Method Specific Information -->
+        <div v-if="orderData.paymentMethod === 'CASH'" class="checkout-flow__payment-info">
+          <div class="checkout-flow__payment-notice">
+            <BaseIcon name="info" size="sm" />
+            <span>You will pay with cash when your order is delivered.</span>
+          </div>
+        </div>
+        
+        <div v-if="orderData.paymentMethod === 'TRANSFER'" class="checkout-flow__payment-info">
+          <div class="checkout-flow__payment-notice">
+            <BaseIcon name="info" size="sm" />
+            <span>You will be asked to send payment receipt via WhatsApp after placing the order.</span>
+          </div>
+        </div>
       </div>
 
       <!-- Step 4: Order Confirmation -->
@@ -161,6 +176,15 @@
       <BaseIcon name="alert" size="sm" />
       {{ errorMessage }}
     </div>
+
+    <!-- Transfer Payment Modal -->
+    <TransferPaymentModal
+      :show="showTransferModal"
+      :whatsapp-phone="tenantWhatsappPhone"
+      :order-total="cartTotal"
+      @confirm="handleTransferConfirm"
+      @close="handleTransferCancel"
+    />
   </div>
 </template>
 
@@ -171,12 +195,14 @@ import PickupForm from './PickupForm.vue'
 import DineInForm from './DineInForm.vue'
 import DeliveryForm from '../cart/DeliveryForm.vue'
 import PaymentMethodSelector from './PaymentMethodSelector.vue'
+import TransferPaymentModal from './TransferPaymentModal.vue'
 import OrderConfirmation from './OrderConfirmation.vue'
 import { useCartValidation } from '~/composables/useCartValidation'
-import type { CartItem } from '~/types'
-import type { PaymentMethod } from '~/types/payment'
+import { useOrders } from '~/composables/useOrders'
+import type { CartItem, CreateOrderDto } from '~/types'
 
 type OrderType = 'delivery' | 'pickup' | 'dine-in'
+type PaymentMethodType = 'STRIPE' | 'CASH' | 'TRANSFER'
 
 interface DeliveryDetails {
   type: 'delivery' | 'pickup'
@@ -212,7 +238,7 @@ interface OrderData {
   deliveryDetails: DeliveryDetails
   pickupDetails: PickupDetails
   dineInDetails: DineInDetails
-  paymentMethod: PaymentMethod
+  paymentMethod: PaymentMethodType
 }
 
 interface Props {
@@ -282,10 +308,12 @@ const orderData = ref<OrderData>({
     guestCount: null,
     instructions: ''
   },
-  paymentMethod: {
-    type: 'cash'
-  }
+  paymentMethod: 'STRIPE'
 })
+
+// Transfer payment modal state
+const showTransferModal = ref(false)
+const tenantWhatsappPhone = ref('+996 555 123 456') // This should come from tenant settings
 
 // Additional state for order confirmation
 const orderNumber = ref('')
@@ -331,7 +359,7 @@ const canProceed = computed(() => {
   }
 
   if (currentStep.value === 2) {
-    return !!orderData.value.paymentMethod.type
+    return !!orderData.value.paymentMethod
   }
 
   return true
@@ -492,6 +520,18 @@ const handleSubmit = async () => {
     return
   }
 
+  // Handle different payment methods
+  if (orderData.value.paymentMethod === 'TRANSFER') {
+    // Show transfer modal instead of submitting immediately
+    showTransferModal.value = true
+    return
+  }
+
+  // For STRIPE and CASH, proceed with order submission
+  await submitOrder()
+}
+
+const submitOrder = async () => {
   submitting.value = true
   errorMessage.value = ''
 
@@ -499,34 +539,54 @@ const handleSubmit = async () => {
     // Generate order number
     orderNumber.value = `ORD${Date.now().toString().slice(-6)}`
     
-    // Prepare order data based on order type
-    const order = {
-      orderNumber: orderNumber.value,
-      orderType: orderData.value.orderType,
-      items: props.cart,
+    // Prepare order data according to CreateOrderDto interface
+    const createOrderDto: CreateOrderDto = {
+      items: props.cart.map(cartItem => ({
+        productId: cartItem.menuItem.id,
+        quantity: cartItem.quantity,
+        price: cartItem.menuItem.price,
+        customizations: cartItem.customizations
+      })),
+      customerInfo: {
+        name: 'Customer', // This should come from user input or auth
+        phone: '+996 555 000 000', // This should come from user input
+        email: 'customer@example.com' // This should come from user input or auth
+      },
       paymentMethod: orderData.value.paymentMethod,
-      totalAmount: props.cartTotal,
-      ...(orderData.value.orderType === 'delivery' && {
-        deliveryDetails: orderData.value.deliveryDetails
-      }),
-      ...(orderData.value.orderType === 'pickup' && {
-        pickupDetails: orderData.value.pickupDetails
-      }),
-      ...(orderData.value.orderType === 'dine-in' && {
-        dineInDetails: orderData.value.dineInDetails
-      })
+      notes: orderData.value.deliveryDetails?.instructions || 
+             orderData.value.pickupDetails?.instructions || 
+             orderData.value.dineInDetails?.instructions,
+      deliveryAddress: orderData.value.orderType === 'delivery' ? 
+                      orderData.value.deliveryDetails.address : undefined
     }
 
-    // Move to confirmation step instead of completing
-    currentStep.value++
+    // Create the order using the order service
+    const { createOrder } = useOrders()
+    const createdOrder = await createOrder(createOrderDto)
     
-    // Emit complete event for parent to handle
-    emit('complete', order)
+    if (createdOrder) {
+      // Move to confirmation step
+      currentStep.value++
+      
+      // Emit complete event with the created order
+      emit('complete', createdOrder)
+    } else {
+      throw new Error('Failed to create order')
+    }
   } catch (error: any) {
     errorMessage.value = error.message || 'Failed to place order. Please try again.'
   } finally {
     submitting.value = false
   }
+}
+
+const handleTransferConfirm = () => {
+  showTransferModal.value = false
+  submitOrder()
+}
+
+const handleTransferCancel = () => {
+  showTransferModal.value = false
 }
 
 // Order confirmation handlers
@@ -804,6 +864,22 @@ onMounted(() => {
 .checkout-flow__validation-actions {
   display: flex;
   gap: $space-2;
+}
+
+.checkout-flow__payment-info {
+  margin-top: $space-6;
+}
+
+.checkout-flow__payment-notice {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-4;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: $radius-md;
+  color: var(--color-info);
+  font-size: $text-sm;
 }
 
 .checkout-flow__error {

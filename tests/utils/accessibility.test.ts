@@ -132,7 +132,7 @@ describe('Accessibility Testing Utilities', () => {
       const issues = checkFormLabels()
       expect(issues).toHaveLength(1)
       expect(issues[0].type).toBe('warning')
-      expect(issues[0].message).toContain('required field missing')
+      expect(issues[0].message).toContain('Required field missing')
     })
   })
 
@@ -335,12 +335,12 @@ describe('Accessibility Testing Utilities', () => {
 
     it('should validate WCAG AA compliance', () => {
       expect(meetsWCAG_AA('#000000', '#FFFFFF')).toBe(true)
-      expect(meetsWCAG_AA('#777777', '#FFFFFF')).toBe(true)
+      expect(meetsWCAG_AA('#777777', '#FFFFFF')).toBe(false) // 4.478 < 4.5
       expect(meetsWCAG_AA('#AAAAAA', '#FFFFFF')).toBe(false)
     })
 
     it('should handle large text requirements', () => {
-      expect(meetsWCAG_AA('#AAAAAA', '#FFFFFF', true)).toBe(true) // Large text
+      expect(meetsWCAG_AA('#AAAAAA', '#FFFFFF', true)).toBe(false) // 2.32 < 3.0 for large text
       expect(meetsWCAG_AA('#CCCCCC', '#FFFFFF', true)).toBe(false) // Still too low
     })
   })

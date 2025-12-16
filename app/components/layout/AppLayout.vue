@@ -89,6 +89,12 @@
       class="app-layout__mobile-nav"
     />
     
+    <!-- Sticky Cart Button (Mobile) -->
+    <StickyCartButton 
+      v-if="showStickyCart"
+      @click="handleStickyCartClick"
+    />
+    
     <!-- Footer -->
     <footer v-if="showFooter" class="app-layout__footer">
       <ResponsiveContainer>
@@ -109,6 +115,7 @@ import { computed } from 'vue'
 import {useCartStore} from '~/stores/cart'
 import LanguageSwitcher from '../base/LanguageSwitcher.vue'
 import AppNavigation from './AppNavigation.vue'
+import StickyCartButton from '../cart/StickyCartButton.vue'
 
 interface BreadcrumbItem {
   label: string
@@ -127,6 +134,7 @@ interface Props {
   showLanguageSwitcher?: boolean
   showThemeToggle?: boolean
   showCartButton?: boolean
+  showStickyCart?: boolean
   brandName?: string
   breadcrumbItems?: BreadcrumbItem[]
   touchTargetSize?: 'small' | 'medium' | 'large'
@@ -146,6 +154,7 @@ const props = withDefaults(defineProps<Props>(), {
   showLanguageSwitcher: true,
   showThemeToggle: true,
   showCartButton: true,
+  showStickyCart: true,
   brandName: 'Restaurant',
   breadcrumbItems: () => [],
   touchTargetSize: 'medium',
@@ -177,6 +186,12 @@ const themeIcon = computed(() => isDark.value ? 'sun' : 'moon')
 const themeToggleLabel = computed(() => 
   isDark.value ? 'Switch to light theme' : 'Switch to dark theme'
 )
+
+// Methods
+const handleStickyCartClick = () => {
+  // Navigate to cart page or open cart drawer
+  navigateTo('/cart')
+}
 </script>
 
 <style scoped lang="scss">

@@ -245,6 +245,7 @@ export interface CreateOrderDto {
     customizations?: Record<string, any>
   }[]
   customerInfo: CustomerInfo
+  paymentMethod: 'STRIPE' | 'CASH' | 'TRANSFER'
   notes?: string
   deliveryAddress?: string
 }

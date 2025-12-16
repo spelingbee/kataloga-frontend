@@ -134,17 +134,21 @@ export default defineNuxtPlugin(() => {
     const focusNext = () => {
       if (currentIndex < focusableElements.length) {
         const element = focusableElements[currentIndex]
-        element.focus()
-        element.style.outline = '3px solid #10B981'
-        element.style.outlineOffset = '2px'
-        
-        console.log(`${currentIndex + 1}/${focusableElements.length}: ${element.tagName} - ${element.textContent?.trim() || element.getAttribute('aria-label') || '[No accessible name]'}`)
+        if (element) {
+          element.focus()
+          element.style.outline = '3px solid #10B981'
+          element.style.outlineOffset = '2px'
+          
+          console.log(`${currentIndex + 1}/${focusableElements.length}: ${element.tagName} - ${element.textContent?.trim() || element.getAttribute('aria-label') || '[No accessible name]'}`)
+        }
         
         // Remove previous highlight
         if (currentIndex > 0) {
           const prevElement = focusableElements[currentIndex - 1]
-          prevElement.style.outline = ''
-          prevElement.style.outlineOffset = ''
+          if (prevElement) {
+            prevElement.style.outline = ''
+            prevElement.style.outlineOffset = ''
+          }
         }
         
         currentIndex++
@@ -155,8 +159,10 @@ export default defineNuxtPlugin(() => {
           console.log('✅ Keyboard navigation test complete')
           console.groupEnd()
           // Remove last highlight
-          element.style.outline = ''
-          element.style.outlineOffset = ''
+          if (element) {
+            element.style.outline = ''
+            element.style.outlineOffset = ''
+          }
         }
       }
     }

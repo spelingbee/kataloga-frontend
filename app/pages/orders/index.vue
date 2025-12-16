@@ -25,23 +25,29 @@
 
         <!-- Filters -->
         <div class="orders-page__filter-controls">
-          <BaseSelect v-model="statusFilter">
-            <option value="">All Orders</option>
-            <option value="PENDING">Pending</option>
-            <option value="CONFIRMED">Confirmed</option>
-            <option value="PREPARING">Preparing</option>
-            <option value="READY">Ready</option>
-            <option value="DELIVERED">Delivered</option>
-            <option value="CANCELLED">Cancelled</option>
-          </BaseSelect>
+          <BaseSelect 
+            v-model="statusFilter"
+            :options="[
+              { value: '', label: 'All Orders' },
+              { value: 'PENDING', label: 'Pending' },
+              { value: 'CONFIRMED', label: 'Confirmed' },
+              { value: 'PREPARING', label: 'Preparing' },
+              { value: 'READY', label: 'Ready' },
+              { value: 'DELIVERED', label: 'Delivered' },
+              { value: 'CANCELLED', label: 'Cancelled' }
+            ]"
+          />
           
-          <BaseSelect v-model="timeFilter">
-            <option value="">All Time</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-          </BaseSelect>
+          <BaseSelect 
+            v-model="timeFilter"
+            :options="[
+              { value: '', label: 'All Time' },
+              { value: 'today', label: 'Today' },
+              { value: 'week', label: 'This Week' },
+              { value: 'month', label: 'This Month' },
+              { value: 'year', label: 'This Year' }
+            ]"
+          />
         </div>
       </div>
 

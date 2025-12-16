@@ -95,7 +95,7 @@
 <script setup lang="ts">
 interface Props {
   modelValue?: string | number
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'textarea'
   label?: string
   placeholder?: string
   size?: 'sm' | 'md' | 'lg'

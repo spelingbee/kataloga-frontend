@@ -21,8 +21,8 @@
       <div v-if="canGoBack" class="select-restaurant-page__actions">
         <BaseButton
           variant="ghost"
-          @click="goBack"
           class="select-restaurant-page__back-btn"
+          @click="goBack"
         >
           <BaseIcon name="arrow-left" size="sm" />
           Go Back
@@ -37,13 +37,11 @@ import { computed, ref } from 'vue'
 import type { TenantInfo } from '~/types/tenant'
 import { useTenant } from '~/composables/useTenant'
 import { useNuxtApp } from '#app'
-import { useNuxtApp } from '#app'
 
 // Composables
 const { currentTenant, setTenant } = useTenant()
 const route = useRoute()
 const router = useRouter()
-const error = ref<string | null>(null)
 const error = ref<string | null>(null)
 
 // Computed
@@ -62,13 +60,13 @@ const handleTenantSelect = async (tenant: TenantInfo) => {
       await router.push(redirectTo)
     } else {
       // Show error notification
-      const { $toast } = useNuxtApp()
-      $toast?.error('Failed to select restaurant. Please try again.')
+      const { showNotification } = useNotification()
+      showNotification('Failed to select restaurant. Please try again.', 'error')
     }
   } catch (error) {
     console.error('Error selecting tenant:', error)
-    const { $toast } = useNuxtApp()
-    $toast?.error('An error occurred while selecting the restaurant.')
+    const { showNotification } = useNotification()
+    showNotification('An error occurred while selecting the restaurant.', 'error')
   }
 }
 

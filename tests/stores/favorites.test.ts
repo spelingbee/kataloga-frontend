@@ -2,6 +2,51 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useFavoritesStore } from '~/stores/favorites'
 
+// Mock import.meta.client to be true in tests
+Object.defineProperty(import.meta, 'client', {
+  value: true,
+  writable: true
+})
+
+// Mock the require function used in getTenantSlug
+const mockRequire = vi.fn()
+mockRequire.mockImplementation((path) => {
+  if (path === './tenant') {
+    return {
+      useTenantStore: () => ({
+        tenantSlug: null
+      })
+    }
+  }
+  if (path === './auth') {
+    return {
+      useAuthStore: () => ({
+        isAuthenticated: false
+      })
+    }
+  }
+  return {}
+})
+
+// Mock the global require function
+global.require = mockRequire
+
+// Mock auth store
+vi.mock('~/stores/auth', () => ({
+  useAuthStore: () => ({
+    isAuthenticated: false
+  })
+}))
+
+// Mock menu service
+vi.mock('~/services/menu.service', () => ({
+  useMenuService: () => ({
+    addToFavorites: vi.fn(),
+    removeFromFavorites: vi.fn(),
+    getFavoriteItems: vi.fn()
+  })
+}))
+
 // Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {}

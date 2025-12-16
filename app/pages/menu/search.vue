@@ -321,10 +321,17 @@ const popularCategories = [
   { id: 'desserts', name: 'Desserts' }
 ]
 
-// Computed
-const searchResults = computed(() => {
-  return menuStore.searchItems(searchQuery.value)
-})
+// Reactive search results
+const searchResults = ref([])
+
+// Watch for search query changes
+watch(searchQuery, async (newQuery) => {
+  if (newQuery.trim()) {
+    searchResults.value = await menuStore.searchItems(newQuery)
+  } else {
+    searchResults.value = []
+  }
+}, { immediate: true })
 
 const sortedResults = computed(() => {
   const results = [...searchResults.value]

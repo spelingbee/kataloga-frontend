@@ -34,13 +34,14 @@
 
 <script setup lang="ts">
 interface Props {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'circular'
   size?: 'sm' | 'md' | 'lg'
   type?: 'button' | 'submit' | 'reset'
   tag?: 'button' | 'a' | 'router-link' | 'nuxt-link'
   disabled?: boolean
   loading?: boolean
   fullWidth?: boolean
+  circular?: boolean
   icon?: string
   iconPosition?: 'left' | 'right'
 }
@@ -53,6 +54,7 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   loading: false,
   fullWidth: false,
+  circular: false,
   iconPosition: 'left',
 })
 
@@ -71,6 +73,7 @@ const buttonClasses = computed(() => {
   
   // Add state modifiers
   if (props.fullWidth) classes.push('base-button--full-width')
+  if (props.circular) classes.push('base-button--circular')
   if (props.loading) classes.push('base-button--loading')
   if (props.disabled) classes.push('base-button--disabled')
   
@@ -120,6 +123,7 @@ const handleClick = (event: Event) => {
   &--sm {
     padding: $space-2 $space-3;
     font-size: $text-sm;
+    min-height: 36px; // Smaller buttons can be slightly smaller but still accessible
   }
   
   &--md {
@@ -130,6 +134,7 @@ const handleClick = (event: Event) => {
   &--lg {
     padding: $space-4 $space-6;
     font-size: $text-lg;
+    min-height: 52px; // Larger buttons for better accessibility
   }
   
   // Variant styles
@@ -242,6 +247,33 @@ const handleClick = (event: Event) => {
   // State modifiers
   &--full-width {
     width: 100%;
+  }
+  
+  &--circular {
+    border-radius: 50%;
+    padding: 0;
+    
+    // Ensure circular buttons maintain proper touch targets
+    &.base-button--sm {
+      width: $touch-target-min;
+      height: $touch-target-min;
+      min-width: $touch-target-min;
+      min-height: $touch-target-min;
+    }
+    
+    &.base-button--md {
+      width: $touch-target-min;
+      height: $touch-target-min;
+      min-width: $touch-target-min;
+      min-height: $touch-target-min;
+    }
+    
+    &.base-button--lg {
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
+      min-height: 52px;
+    }
   }
   
   &--disabled {

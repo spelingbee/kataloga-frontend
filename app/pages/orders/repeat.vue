@@ -319,13 +319,16 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ref } from 'vue'
 import type { Order, MenuItem, OrderItem } from '~/types'
 
 // Stores
 import { useOrderStore } from '~/stores/order'
 import { useCartStore } from '~/stores/cart'
 import { OrderStatus } from '~/types'
+import AppHeading from '../../components/base/AppHeading.vue'
+import AppText from '../../components/base/AppText.vue'
+import StatusBadge from '../../components/order/StatusBadge.vue'
+import AppPrice from '../../components/base/AppPrice.vue'
 
 // Page setup
 definePageMeta({
@@ -344,8 +347,11 @@ const customizableItems = ref<OrderItem[]>([])
 const recentOrders = ref<Order[]>([
   {
     id: '12345',
+    orderNumber: 'ORD-12345',
     status: OrderStatus.DELIVERED,
     total: 23.47,
+    customerId: 'customer-123',
+    orderType: 'delivery' as const,
     createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
     customerInfo: { name: 'John Doe', phone: '+1234567890' },
     items: [
@@ -369,8 +375,11 @@ const recentOrders = ref<Order[]>([
   },
   {
     id: '12344',
+    orderNumber: 'ORD-12344',
     status: OrderStatus.DELIVERED,
     total: 18.99,
+    customerId: 'customer-123',
+    orderType: 'delivery' as const,
     createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
     customerInfo: { name: 'John Doe', phone: '+1234567890' },
     items: [
@@ -500,14 +509,18 @@ const reorderCombo = (combo: any) => {
 }
 
 const increaseQuantity = (index: number) => {
-  customizableItems.value[index].quantity++
-  customizableItems.value[index].subtotal = customizableItems.value[index].price * customizableItems.value[index].quantity
+  const item = customizableItems.value[index]
+  if (item) {
+    item.quantity++
+    item.subtotal = item.price * item.quantity
+  }
 }
 
 const decreaseQuantity = (index: number) => {
-  if (customizableItems.value[index].quantity > 0) {
-    customizableItems.value[index].quantity--
-    customizableItems.value[index].subtotal = customizableItems.value[index].price * customizableItems.value[index].quantity
+  const item = customizableItems.value[index]
+  if (item && item.quantity > 0) {
+    item.quantity--
+    item.subtotal = item.price * item.quantity
   }
 }
 

@@ -13,11 +13,9 @@
       type="button"
       :disabled="disabled"
       :class="[
-        'relative inline-flex items-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-green',
-        sizeClasses[size],
+        'relative inline-flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-green',
+        'min-w-[44px] min-h-[44px] p-2', // Ensure proper touch target
         {
-          'bg-primary-green': modelValue,
-          'bg-gray-600': !modelValue,
           'opacity-50 cursor-not-allowed': disabled,
           'cursor-pointer': !disabled,
         }
@@ -26,16 +24,27 @@
     >
       <span
         :class="[
-          'bg-white rounded-full shadow-md transform transition-transform duration-200',
-          thumbSizeClasses[size],
+          'relative inline-flex items-center transition-all duration-200',
+          sizeClasses[size],
           {
-            'translate-x-5': modelValue && size === 'sm',
-            'translate-x-6': modelValue && size === 'md',
-            'translate-x-7': modelValue && size === 'lg',
-            'translate-x-0': !modelValue,
+            'bg-primary-green': modelValue,
+            'bg-gray-600': !modelValue,
           }
         ]"
-      />
+      >
+        <span
+          :class="[
+            'bg-white rounded-full shadow-md transform transition-transform duration-200',
+            thumbSizeClasses[size],
+            {
+              'translate-x-5': modelValue && size === 'sm',
+              'translate-x-6': modelValue && size === 'md',
+              'translate-x-7': modelValue && size === 'lg',
+              'translate-x-0': !modelValue,
+            }
+          ]"
+        />
+      </span>
     </button>
     
     <label

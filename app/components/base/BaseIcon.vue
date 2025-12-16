@@ -32,7 +32,7 @@
 <script setup lang="ts">
 interface Props {
   name: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'category-icon' | number
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '4xl' | 'category-icon' | number
   color?: 'current' | 'primary' | 'secondary' | 'muted' | 'white' | 'red' | 'green' | 'orange' | 'primary-red'
 }
 
@@ -154,6 +154,12 @@ const actionIcons: Record<string, string> = {
     width: 2.5rem;
     height: 2.5rem;
     font-size: 2.5rem;
+  }
+  
+  &--4xl {
+    width: 4rem;
+    height: 4rem;
+    font-size: 4rem;
   }
   
   &--category-icon {

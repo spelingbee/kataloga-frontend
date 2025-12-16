@@ -8,8 +8,8 @@ export default defineNuxtConfig({
 
   // TypeScript configuration
   typescript: {
-    strict: false,
-    typeCheck: false,
+    strict: true,
+    typeCheck: true,
     tsConfig: {
       compilerOptions: {
         types: ["node"],

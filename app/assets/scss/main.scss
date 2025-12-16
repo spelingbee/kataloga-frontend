@@ -5,36 +5,39 @@
 // 1. Design Tokens - New token-first approach (DART SASS syntax)
 @use 'tokens' as *;
 
-// 2. Abstracts - Functions, mixins, animations (keeping existing utilities)
+// 2. Legacy Variables - Minimal backward compatibility
+@use 'abstracts/variables' as *;
+
+// 3. Abstracts - Functions, mixins, animations (keeping existing utilities)
 @use 'abstracts/functions' as *;
 @use 'abstracts/mixins' as *;
 @use 'abstracts/animations' as *;
 
-// 3. Base - Reset, typography, base element styles
+// 4. Base - Reset, typography, base element styles
 @use 'base/reset';
 @use 'base/new-typography';
 @use 'base/base';
 
-// 4. Layout - Grid system, header, footer, sidebar
+// 5. Layout - Grid system, header, footer, sidebar
 @use 'layout/grid';
 @use 'layout/header';
 @use 'layout/sidebar';
 @use 'layout/navigation';
 @use 'layout/admin';
 
-// 5. Components - Buttons, cards, forms, etc.
+// 6. Components - Buttons, cards, forms, etc.
 @use 'components/buttons';
 @use 'components/cards';
 @use 'components/icons';
 @use 'components/lists';
 @use 'components/order-tracker';
 
-// 6. Pages - Page-specific styles
+// 7. Pages - Page-specific styles
 @use 'pages/home';
 @use 'pages/menu';
 @use 'pages/auth';
 
-// 7. Utilities - Helper classes
+// 8. Utilities - Helper classes
 @use 'utilities/spacing';
 @use 'utilities/layout';
 @use 'utilities/typography' as util-typography;
@@ -42,9 +45,10 @@
 @use 'utilities/responsive';
 @use 'utilities/animations';
 @use 'utilities/accessibility';
+@use 'utilities/touch-targets';
 
-// 8. Themes - Theme-specific overrides
+// 9. Themes - Theme-specific overrides
 @use 'themes/dark';
 
-// 9. Utilities - Global utility styles
+// 10. Utilities - Global utility styles
 @use 'utilities/global';

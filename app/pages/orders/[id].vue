@@ -509,8 +509,11 @@ const loadOrder = async () => {
     // Create mock order data
     order.value = {
       id: orderId.value,
+      orderNumber: `ORD-${orderId.value.slice(-6).toUpperCase()}`,
       status: OrderStatus.DELIVERED,
       total: 23.47,
+      customerId: 'customer-123',
+      orderType: 'delivery' as const,
       createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
       estimatedTime: 25,
       deliveryAddress: '123 Main St, Apt 4B, New York, NY 10001',

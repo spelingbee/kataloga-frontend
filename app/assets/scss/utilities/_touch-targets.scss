@@ -1,0 +1,162 @@
+// =============================================================================
+// Touch Target Utilities
+// =============================================================================
+// Utilities for ensuring WCAG AA compliant touch targets (minimum 44px)
+
+@use '../tokens' as *;
+
+// Touch target size utilities
+.touch-target-min {
+  min-width: $touch-target-min;
+  min-height: $touch-target-min;
+}
+
+.touch-target-lg {
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.touch-target-xl {
+  min-width: 52px;
+  min-height: 52px;
+}
+
+// Interactive element utilities
+.interactive-element {
+  min-width: $touch-target-min;
+  min-height: $touch-target-min;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+// Button-like elements that need proper touch targets
+.touch-button {
+  @extend .interactive-element;
+  border: none;
+  background: transparent;
+  padding: $space-2;
+  border-radius: $space-2;
+  transition: background-color $transition-base;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--bg-secondary);
+  }
+  
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Form control wrapper that ensures proper touch targets
+.form-control-wrapper {
+  position: relative;
+  
+  input,
+  select,
+  textarea,
+  button {
+    min-height: $touch-target-min;
+  }
+  
+  // For small form controls, add padding to increase touch area
+  .form-control--small {
+    padding: $space-3;
+    min-height: $touch-target-min;
+  }
+}
+
+// Checkbox and radio button wrappers
+.checkbox-wrapper,
+.radio-wrapper {
+  display: inline-flex;
+  align-items: center;
+  min-height: $touch-target-min;
+  cursor: pointer;
+  
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin-right: $space-2;
+  }
+  
+  // Increase touch area with padding
+  padding: $space-2;
+  margin: -#{$space-2};
+  border-radius: $space-1;
+  
+  &:hover {
+    background-color: var(--bg-secondary);
+  }
+}
+
+// Link elements that need proper touch targets
+.touch-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: $touch-target-min;
+  padding: $space-2 $space-3;
+  margin: -#{$space-2} -#{$space-3};
+  border-radius: $space-1;
+  text-decoration: none;
+  transition: background-color $transition-base;
+  
+  &:hover {
+    background-color: var(--bg-secondary);
+  }
+  
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Mobile-specific touch target adjustments
+@media (max-width: 768px) {
+  // Increase touch targets on mobile for better usability
+  .mobile-touch-lg {
+    min-width: 48px;
+    min-height: 48px;
+  }
+  
+  // Ensure adequate spacing between touch targets
+  .touch-spacing {
+    margin: $space-2;
+  }
+  
+  // Stack touch elements with proper spacing on mobile
+  .touch-stack {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    
+    > * {
+      min-height: $touch-target-min;
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: more) {
+  .interactive-element,
+  .touch-button,
+  .touch-link {
+    border: 1px solid ButtonText;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .interactive-element,
+  .touch-button,
+  .touch-link {
+    transition: none;
+  }
+}
