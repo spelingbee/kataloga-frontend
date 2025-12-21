@@ -91,6 +91,7 @@
 import { computed } from 'vue'
 import type { Category } from '~/types'
 import { useMenuStore } from '~/stores/menu'
+import CategoryIcon from './CategoryIcon.vue'
 
 // Stores
 const menuStore = useMenuStore()

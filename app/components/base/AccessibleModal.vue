@@ -11,8 +11,8 @@
         :aria-describedby="descriptionId"
         @click.self="handleBackdropClick"
       >
-        <div class="accessible-modal__overlay" aria-hidden="true"/>
-        
+        <div class="accessible-modal__overlay" aria-hidden="true" />
+
         <div class="accessible-modal__container">
           <div class="accessible-modal__content">
             <!-- Header -->
@@ -20,7 +20,7 @@
               <h2 :id="titleId" class="accessible-modal__title">
                 <slot name="header">{{ title }}</slot>
               </h2>
-              
+
               <button
                 type="button"
                 class="accessible-modal__close"
@@ -30,12 +30,12 @@
                 <BaseIcon name="x" size="md" />
               </button>
             </div>
-            
+
             <!-- Body -->
             <div :id="descriptionId" class="accessible-modal__body">
               <slot />
             </div>
-            
+
             <!-- Footer -->
             <div v-if="$slots.footer" class="accessible-modal__footer">
               <slot name="footer" />
@@ -67,7 +67,7 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const modalRef = ref<HTMLElement | null>(null)
+const modalRef: Ref<HTMLElement | null> = ref(null)
 const titleId = computed(() => `modal-title-${Math.random().toString(36).substr(2, 9)}`)
 const descriptionId = computed(() => `modal-description-${Math.random().toString(36).substr(2, 9)}`)
 
@@ -96,19 +96,22 @@ const handleBackdropClick = () => {
 }
 
 // Manage focus trap and body scroll
-watch(() => props.isOpen, (isOpen) => {
-  if (isOpen) {
-    activate()
-    document.body.style.overflow = 'hidden'
-  } else {
-    deactivate()
-    document.body.style.overflow = ''
+watch(
+  () => props.isOpen,
+  isOpen => {
+    if (isOpen) {
+      activate()
+      document.body.style.overflow = 'hidden'
+    } else {
+      deactivate()
+      document.body.style.overflow = ''
+    }
   }
-})
+)
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/variables' as *;
+@use '../../assets/scss/abstracts' as *;
 
 .accessible-modal {
   position: fixed;
@@ -168,12 +171,12 @@ watch(() => props.isOpen, (isOpen) => {
   color: $text-secondary;
   cursor: pointer;
   transition: $transition-base;
-  
+
   &:hover {
     background: var(--bg-secondary);
     color: $text-primary;
   }
-  
+
   &:focus {
     outline: 2px solid var(--color-success);
     outline-offset: 2px;
@@ -197,7 +200,7 @@ watch(() => props.isOpen, (isOpen) => {
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity $transition-base;
-  
+
   .accessible-modal__container {
     transition: transform $transition-base;
   }
@@ -206,7 +209,7 @@ watch(() => props.isOpen, (isOpen) => {
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
-  
+
   .accessible-modal__container {
     transform: scale(0.95);
   }

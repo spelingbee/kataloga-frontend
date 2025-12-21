@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { useMenuService } from '~/services/menu.service'
-import type { MenuItem } from '~/types'
+import type { MenuItem, ApiError } from '~/types'
 
 // Helper function to get tenant store (to avoid circular dependency)
 function getTenantSlug(): string {
@@ -26,7 +26,7 @@ function getAuthStore() {
 interface FavoritesState {
   favoriteIds: string[]
   loading: boolean
-  error: string | null
+  error: ApiError | null
   lastSyncedAt: Date | null
 }
 
@@ -172,17 +172,16 @@ export const useFavoritesStore = defineStore('favorites', {
 
       try {
         const menuService = useMenuService()
-        const response = await menuService.getFavoriteItems()
+        // API client now returns unwrapped data directly
+        const favoriteItems = await menuService.getFavoriteItems()
 
-        if (response.success && response.data) {
-          // Extract IDs from favorite items
-          this.favoriteIds = response.data.map((item: MenuItem) => item.id)
-          this.persistToLocalStorage()
-          this.lastSyncedAt = new Date()
-          console.log('Favorites synced from server:', this.favoriteIds.length)
-        }
+        // Extract IDs from favorite items
+        this.favoriteIds = favoriteItems.map((item: MenuItem) => item.id)
+        this.persistToLocalStorage()
+        this.lastSyncedAt = new Date()
+        console.log('Favorites synced from server:', this.favoriteIds.length)
       } catch (error) {
-        this.error = 'Failed to fetch favorites from server'
+        this.error = error as ApiError
         console.error('Favorites fetch error:', error)
       } finally {
         this.loading = false

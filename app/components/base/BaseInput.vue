@@ -94,7 +94,6 @@
 
 <script setup lang="ts">
 interface Props {
-  modelValue?: string | number
   type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'textarea'
   label?: string
   placeholder?: string
@@ -122,16 +121,22 @@ const props = withDefaults(defineProps<Props>(), {
   floatingLabel: true
 })
 
+const modelValue = defineModel<string | number>()
+
 const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
   blur: [event: FocusEvent]
   focus: [event: FocusEvent]
+}>()
+
+const slots = defineSlots<{
+  prefix?: () => any
+  suffix?: () => any
 }>()
 
 const inputRef = ref<HTMLInputElement>()
 const isFocused = ref(false)
 
-const inputId = computed(() => `input-${Math.random().toString(36).substr(2, 9)}`)
+const inputId = computed(() => `input-${Math.random().toString(36).substring(2, 11)}`)
 
 const hasValue = computed(() => {
   return modelValue.value !== undefined && modelValue.value !== null && modelValue.value !== ''
@@ -148,8 +153,8 @@ const inputClasses = computed(() => {
   if (props.success) classes.push('base-input__field--success')
   if (props.disabled) classes.push('base-input__field--disabled')
   if (props.readonly) classes.push('base-input__field--readonly')
-  if (props.prefixIcon || $slots.prefix) classes.push('base-input__field--has-prefix')
-  if (props.suffixIcon || $slots.suffix || (props.clearable && hasValue.value)) classes.push('base-input__field--has-suffix')
+  if (props.prefixIcon || slots.prefix) classes.push('base-input__field--has-prefix')
+  if (props.suffixIcon || slots.suffix || (props.clearable && hasValue.value)) classes.push('base-input__field--has-suffix')
   
   return classes
 })
@@ -170,7 +175,7 @@ const labelClasses = computed(() => {
 const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement
   const value = props.type === 'number' ? Number(target.value) : target.value
-  emit('update:modelValue', value)
+  modelValue.value = value
 }
 
 const handleBlur = (event: FocusEvent) => {
@@ -184,7 +189,7 @@ const handleFocus = (event: FocusEvent) => {
 }
 
 const clear = () => {
-  emit('update:modelValue', '')
+  modelValue.value = ''
   inputRef.value?.focus()
 }
 </script>

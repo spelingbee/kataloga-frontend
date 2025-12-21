@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { User, UpdateProfileDto } from '~/types'
+import type { User, UpdateProfileDto, ApiError } from '~/types'
 
 export interface AuthState {
   user: User | null
@@ -7,6 +7,7 @@ export interface AuthState {
   refreshToken: string | null
   isAuthenticated: boolean
   loading: boolean
+  error: ApiError | null
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -16,6 +17,7 @@ export const useAuthStore = defineStore('auth', {
     refreshToken: null,
     isAuthenticated: false,
     loading: false,
+    error: null,
   }),
 
   getters: {
@@ -110,6 +112,7 @@ export const useAuthStore = defineStore('auth', {
 
     async login(credentials: { email: string; password: string; tenantSlug?: string }) {
       this.loading = true
+      this.error = null
       
       try {
         const nuxtApp = useNuxtApp()
@@ -121,27 +124,25 @@ export const useAuthStore = defineStore('auth', {
           tenantSlug: credentials.tenantSlug || useRuntimeConfig().public.tenantSlug
         }
         
-        const response = await $apiClient.post('/auth/login', loginData)
+        // API client now returns unwrapped data directly
+        const loginResult = await $apiClient.post('/auth/login', loginData)
         
-        if (response.success && response.data) {
-          this.setTokens(response.data.accessToken, response.data.refreshToken)
-          this.setUser(response.data.user)
-          
-          // Sync favorites after successful login
-          try {
-            const { useFavoritesStore } = require('./favorites')
-            const favoritesStore = useFavoritesStore()
-            await favoritesStore.syncFavoritesToServer()
-            await favoritesStore.fetchFavoritesFromServer()
-          } catch (error) {
-            console.error('Failed to sync favorites after login:', error)
-          }
-          
-          return response.data
+        this.setTokens(loginResult.accessToken, loginResult.refreshToken)
+        this.setUser(loginResult.user)
+        
+        // Sync favorites after successful login
+        try {
+          const { useFavoritesStore } = require('./favorites')
+          const favoritesStore = useFavoritesStore()
+          await favoritesStore.syncFavoritesToServer()
+          await favoritesStore.fetchFavoritesFromServer()
+        } catch (error) {
+          console.error('Failed to sync favorites after login:', error)
         }
         
-        throw new Error(response.message || 'Login failed')
+        return loginResult
       } catch (error) {
+        this.error = error as ApiError
         this.clearTokens()
         throw error
       } finally {
@@ -158,6 +159,7 @@ export const useAuthStore = defineStore('auth', {
       tenantSlug?: string
     }) {
       this.loading = true
+      this.error = null
       
       try {
         const nuxtApp = useNuxtApp()
@@ -169,26 +171,24 @@ export const useAuthStore = defineStore('auth', {
           tenantSlug: userData.tenantSlug || useRuntimeConfig().public.tenantSlug
         }
         
-        const response = await $apiClient.post('/auth/register', registrationData)
+        // API client now returns unwrapped data directly
+        const registrationResult = await $apiClient.post('/auth/register', registrationData)
         
-        if (response.success && response.data) {
-          this.setTokens(response.data.accessToken, response.data.refreshToken)
-          this.setUser(response.data.user)
-          
-          // Sync favorites after successful registration
-          try {
-            const { useFavoritesStore } = require('./favorites')
-            const favoritesStore = useFavoritesStore()
-            await favoritesStore.syncFavoritesToServer()
-          } catch (error) {
-            console.error('Failed to sync favorites after registration:', error)
-          }
-          
-          return response.data
+        this.setTokens(registrationResult.accessToken, registrationResult.refreshToken)
+        this.setUser(registrationResult.user)
+        
+        // Sync favorites after successful registration
+        try {
+          const { useFavoritesStore } = require('./favorites')
+          const favoritesStore = useFavoritesStore()
+          await favoritesStore.syncFavoritesToServer()
+        } catch (error) {
+          console.error('Failed to sync favorites after registration:', error)
         }
         
-        throw new Error(response.message || 'Registration failed')
+        return registrationResult
       } catch (error) {
+        this.error = error as ApiError
         this.clearTokens()
         throw error
       } finally {
@@ -217,12 +217,11 @@ export const useAuthStore = defineStore('auth', {
       try {
         const nuxtApp = useNuxtApp()
         const $apiClient = (nuxtApp as any).$apiClient
-        const response = await $apiClient.get('/auth/profile')
+        // API client now returns unwrapped data directly
+        const userProfile = await $apiClient.get('/auth/profile')
         
-        if (response.success && response.data) {
-          this.setUser(response.data)
-          return response.data
-        }
+        this.setUser(userProfile)
+        return userProfile
       } catch (error: any) {
         console.error('Failed to fetch user profile:', error)
         
@@ -242,19 +241,18 @@ export const useAuthStore = defineStore('auth', {
       if (!this.isAuthenticated) return
 
       this.loading = true
+      this.error = null
       
       try {
         const nuxtApp = useNuxtApp()
         const $apiClient = (nuxtApp as any).$apiClient
-        const response = await $apiClient.patch('/auth/profile', updates)
+        // API client now returns unwrapped data directly
+        const updatedUser = await $apiClient.patch('/auth/profile', updates)
         
-        if (response.success && response.data) {
-          this.setUser(response.data)
-          return response.data
-        }
-        
-        throw new Error(response.message || 'Profile update failed')
+        this.setUser(updatedUser)
+        return updatedUser
       } catch (error) {
+        this.error = error as ApiError
         throw error
       } finally {
         this.loading = false
@@ -268,18 +266,17 @@ export const useAuthStore = defineStore('auth', {
       if (!this.isAuthenticated) return
 
       this.loading = true
+      this.error = null
       
       try {
         const nuxtApp = useNuxtApp()
         const $apiClient = (nuxtApp as any).$apiClient
-        const response = await $apiClient.post('/auth/change-password', data)
+        // API client now returns unwrapped data directly
+        const result = await $apiClient.post('/auth/change-password', data)
         
-        if (response.success) {
-          return response.data
-        }
-        
-        throw new Error(response.message || 'Password change failed')
+        return result
       } catch (error) {
+        this.error = error as ApiError
         throw error
       } finally {
         this.loading = false
@@ -288,18 +285,17 @@ export const useAuthStore = defineStore('auth', {
 
     async requestPasswordReset(email: string) {
       this.loading = true
+      this.error = null
       
       try {
         const nuxtApp = useNuxtApp()
         const $apiClient = (nuxtApp as any).$apiClient
-        const response = await $apiClient.post('/auth/forgot-password', { email })
+        // API client now returns unwrapped data directly
+        const result = await $apiClient.post('/auth/forgot-password', { email })
         
-        if (response.success) {
-          return response.data
-        }
-        
-        throw new Error(response.message || 'Password reset request failed')
+        return result
       } catch (error) {
+        this.error = error as ApiError
         throw error
       } finally {
         this.loading = false
@@ -311,18 +307,17 @@ export const useAuthStore = defineStore('auth', {
       newPassword: string 
     }) {
       this.loading = true
+      this.error = null
       
       try {
         const nuxtApp = useNuxtApp()
         const $apiClient = (nuxtApp as any).$apiClient
-        const response = await $apiClient.post('/auth/reset-password', data)
+        // API client now returns unwrapped data directly
+        const result = await $apiClient.post('/auth/reset-password', data)
         
-        if (response.success) {
-          return response.data
-        }
-        
-        throw new Error(response.message || 'Password reset failed')
+        return result
       } catch (error) {
+        this.error = error as ApiError
         throw error
       } finally {
         this.loading = false

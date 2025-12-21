@@ -5,18 +5,10 @@
         v-for="item in navigationItems"
         :key="item.path"
         :to="item.path"
-        :class="[
-          'app-navigation__item',
-          { 'app-navigation__item--active': isActive(item.path) }
-        ]"
+        :class="['app-navigation__item', { 'app-navigation__item--active': isActive(item.path) }]"
         @click="handleNavClick(item)"
       >
-        <BaseIcon 
-          :name="item.icon" 
-          size="md" 
-          class="app-navigation__icon"
-          :aria-hidden="true"
-        />
+        <BaseIcon :name="item.icon" size="md" class="app-navigation__icon" :aria-hidden="true" />
         <span class="app-navigation__label">
           {{ item.label }}
         </span>
@@ -34,6 +26,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useCartStore } from '~/stores/cart'
+import { useNotificationStore } from '~/stores/notification'
 
 interface NavigationItem {
   path: string
@@ -51,7 +45,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'bottom',
-  items: () => []
+  items: () => [],
 })
 
 // Stores
@@ -69,56 +63,55 @@ const defaultNavigationItems: NavigationItem[] = [
     icon: 'home',
     label: 'Home',
     badge: false,
-    badgeCount: 0
+    badgeCount: 0,
   },
   {
     path: '/menu',
     icon: 'menu-book',
     label: 'Menu',
     badge: false,
-    badgeCount: 0
+    badgeCount: 0,
   },
   {
     path: '/favourites',
     icon: 'heart',
     label: 'Favourites',
     badge: false,
-    badgeCount: 0
+    badgeCount: 0,
   },
   {
     path: '/cart',
     icon: 'shopping-cart',
     label: 'Cart',
     badge: true,
-    badgeCount: 0
+    badgeCount: 0,
   },
   {
     path: '/orders',
     icon: 'receipt',
     label: 'Orders',
     badge: true,
-    badgeCount: 0
-  }
+    badgeCount: 0,
+  },
 ]
 
 // Navigation items with dynamic badge counts
 const navigationItems = computed(() => {
   const items = props.items.length > 0 ? props.items : defaultNavigationItems
-  
+
   return items.map(item => ({
     ...item,
-    badgeCount: item.path === '/cart' 
-      ? cartStore.itemCount 
-      : item.path === '/orders' 
-        ? notificationStore.unreadCount 
-        : item.badgeCount || 0
+    badgeCount:
+      item.path === '/cart'
+        ? cartStore.itemCount
+        : item.path === '/orders'
+          ? notificationStore.unreadCount
+          : item.badgeCount || 0,
   }))
 })
 
 // Navigation classes
-const navigationClasses = computed(() => [
-  `app-navigation--${props.variant}`
-])
+const navigationClasses = computed(() => [`app-navigation--${props.variant}`])
 
 // Methods
 const isActive = (path: string) => {
@@ -132,19 +125,19 @@ const handleNavClick = (item: NavigationItem) => {
   if (item.disabled) {
     return
   }
-  
+
   // Add haptic feedback for mobile
   if ('vibrate' in navigator) {
     navigator.vibrate(50)
   }
-  
+
   // Handle special navigation cases
   if (item.path === '/cart' && cartStore.itemCount === 0) {
     // Show empty cart message or redirect to menu
     router.push('/menu')
     return
   }
-  
+
   // Normal navigation is handled by NuxtLink
 }
 </script>
@@ -156,7 +149,7 @@ const handleNavClick = (item: NavigationItem) => {
 .app-navigation {
   background: var(--bg-primary);
   border-top: 1px solid var(--border-primary);
-  
+
   // Bottom navigation (mobile)
   &--bottom {
     position: fixed;
@@ -165,7 +158,11 @@ const handleNavClick = (item: NavigationItem) => {
     right: 0;
     z-index: 50;
     padding-bottom: env(safe-area-inset-bottom);
-    
+    backdrop-filter: blur(20px);
+    background: rgba(var(--bg-primary-rgb), 0.95);
+    border-top: 1px solid var(--border-primary);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+
     .app-navigation__container {
       display: flex;
       justify-content: space-around;
@@ -173,54 +170,61 @@ const handleNavClick = (item: NavigationItem) => {
       padding: var(--space-3) var(--space-4);
       max-width: 100%;
     }
-    
+
     .app-navigation__item {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: var(--space-1);
       padding: var(--space-2);
-      min-width: 44px; // Touch target minimum
-      min-height: 44px;
-      border-radius: var(--radius-md);
+      min-width: 48px; // Improved touch target
+      min-height: 48px;
+      border-radius: var(--radius-lg);
       text-decoration: none;
       color: var(--text-secondary);
       transition: all var(--transition-base);
       position: relative;
-      
+
       // Touch-friendly interaction
       @media (hover: hover) {
         &:hover {
           background: var(--bg-secondary);
           color: var(--text-primary);
+          transform: translateY(-2px);
         }
       }
-      
+
       &:active {
         transform: scale(0.95);
       }
-      
+
       &--active {
         color: var(--color-primary);
-        
+        background: rgba(var(--color-primary-rgb), 0.1);
+
         .app-navigation__icon {
           color: var(--color-primary);
         }
+
+        .app-navigation__label {
+          font-weight: var(--font-semibold);
+        }
       }
     }
-    
+
     .app-navigation__icon {
-      font-size: 1.25rem;
-      transition: color var(--transition-base);
+      font-size: 1.375rem;
+      transition: all var(--transition-base);
     }
-    
+
     .app-navigation__label {
       font-size: var(--text-xs);
       font-weight: var(--font-medium);
       text-align: center;
-      line-height: 1;
+      line-height: 1.2;
+      transition: all var(--transition-base);
     }
-    
+
     .app-navigation__badge {
       position: absolute;
       top: 0;
@@ -228,7 +232,7 @@ const handleNavClick = (item: NavigationItem) => {
       transform: translate(25%, -25%);
     }
   }
-  
+
   // Sidebar navigation (tablet/desktop)
   &--sidebar {
     width: 240px;
@@ -238,14 +242,14 @@ const handleNavClick = (item: NavigationItem) => {
     top: 0;
     border-right: 1px solid var(--border-primary);
     border-top: none;
-    
+
     .app-navigation__container {
       display: flex;
       flex-direction: column;
       padding: var(--space-6) var(--space-4);
       gap: var(--space-2);
     }
-    
+
     .app-navigation__item {
       display: flex;
       align-items: center;
@@ -257,43 +261,43 @@ const handleNavClick = (item: NavigationItem) => {
       color: var(--text-secondary);
       transition: all var(--transition-base);
       position: relative;
-      
+
       &:hover {
         background: var(--bg-secondary);
         color: var(--text-primary);
       }
-      
+
       &--active {
         background: var(--color-primary);
         color: white;
-        
+
         .app-navigation__icon {
           color: white;
         }
       }
     }
-    
+
     .app-navigation__icon {
       font-size: 1.25rem;
       flex-shrink: 0;
     }
-    
+
     .app-navigation__label {
       font-size: var(--text-sm);
       font-weight: var(--font-medium);
       flex: 1;
     }
-    
+
     .app-navigation__badge {
       margin-left: auto;
     }
   }
-  
+
   // Horizontal navigation (desktop header)
   &--horizontal {
     border-bottom: 1px solid var(--border-primary);
     border-top: none;
-    
+
     .app-navigation__container {
       display: flex;
       align-items: center;
@@ -302,7 +306,7 @@ const handleNavClick = (item: NavigationItem) => {
       max-width: 1280px;
       margin: 0 auto;
     }
-    
+
     .app-navigation__item {
       display: flex;
       align-items: center;
@@ -314,31 +318,31 @@ const handleNavClick = (item: NavigationItem) => {
       color: var(--text-secondary);
       transition: all var(--transition-base);
       position: relative;
-      
+
       &:hover {
         background: var(--bg-secondary);
         color: var(--text-primary);
       }
-      
+
       &--active {
         color: var(--color-primary);
         background: var(--bg-secondary);
-        
+
         .app-navigation__icon {
           color: var(--color-primary);
         }
       }
     }
-    
+
     .app-navigation__icon {
       font-size: 1.125rem;
     }
-    
+
     .app-navigation__label {
       font-size: var(--text-sm);
       font-weight: var(--font-medium);
     }
-    
+
     .app-navigation__badge {
       margin-left: var(--space-1);
     }
@@ -363,16 +367,16 @@ const handleNavClick = (item: NavigationItem) => {
 @media (prefers-contrast: high) {
   .app-navigation {
     border-color: ButtonText;
-    
+
     .app-navigation__item {
       border: 1px solid transparent;
-      
+
       &:focus {
         border-color: Highlight;
         outline: 2px solid Highlight;
         outline-offset: 2px;
       }
-      
+
       &--active {
         border-color: Highlight;
       }
@@ -384,7 +388,7 @@ const handleNavClick = (item: NavigationItem) => {
 @media (prefers-reduced-motion: reduce) {
   .app-navigation__item {
     transition: none;
-    
+
     &:active {
       transform: none;
     }

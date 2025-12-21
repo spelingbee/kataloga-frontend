@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="favourites-page">
     <!-- Header Section -->
-    <div class="favourites-header">
+    <section class="favourites-header">
       <div class="favourites-header__title-row">
-        <BaseIcon name="heart" size="md" class="favourites-header__icon" />
+        <BaseIcon name="heart" size="lg" class="favourites-header__icon" />
         <AppHeading level="h1" size="display-md" class="favourites-header__title">
           Your Favourites
         </AppHeading>
@@ -11,25 +11,25 @@
       <AppText size="body-lg" class="favourites-header__subtitle">
         Your favorite dishes, ready to order again
       </AppText>
-    </div>
+    </section>
 
-    <!-- Favourites Count -->
-    <div class="px-6 mb-8">
-      <div class="flex items-center justify-between">
-        <AppText class="text-neutral-20">
-          {{ favourites.length }} favorite{{ favourites.length !== 1 ? 's' : '' }}
+    <!-- Favourites Count & Controls -->
+    <section class="favourites-controls">
+      <div class="favourites-controls__row">
+        <AppText class="favourites-controls__count">
+          {{ favourites.length }} favourite{{ favourites.length !== 1 ? 's' : '' }}
         </AppText>
-        <div class="flex gap-2">
+        <div class="favourites-controls__actions">
           <BaseButton 
             variant="secondary" 
-            size="sm"
+            class="favourites-controls__view-toggle"
             @click="showGridView = !showGridView"
           >
             <BaseIcon :name="showGridView ? 'list' : 'grid'" size="sm" />
           </BaseButton>
           <BaseButton 
             variant="ghost" 
-            size="sm"
+            class="favourites-controls__clear"
             :disabled="favourites.length === 0"
             @click="clearAllFavourites"
           >
@@ -37,34 +37,36 @@
           </BaseButton>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Main Content -->
-    <div class="px-6">
+    <section class="favourites-content">
       <!-- Loading State -->
-      <div v-if="menuStore.loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading favourites...</AppText>
+      <div v-if="menuStore.loading" class="favourites-state favourites-state--loading">
+        <div class="favourites-loading-spinner"/>
+        <AppText class="favourites-state__text">Loading favourites...</AppText>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="favourites.length === 0" class="text-center py-16">
-        <BaseIcon name="heart" size="4xl" class="text-neutral-80 mx-auto mb-6" />
-        <AppHeading level="h3" size="heading-lg" class="text-white mb-4">
+      <div v-else-if="favourites.length === 0" class="favourites-state favourites-state--empty">
+        <div class="favourites-state__icon-wrapper">
+          <BaseIcon name="heart" size="xl" class="favourites-state__icon" />
+        </div>
+        <AppHeading level="h3" size="heading-lg" class="favourites-state__title">
           No favourites yet
         </AppHeading>
-        <AppText class="text-neutral-20 mb-8 max-w-md mx-auto">
+        <AppText class="favourites-state__text">
           Start exploring our menu and add dishes to your favourites by clicking the heart icon
         </AppText>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <div class="favourites-state__actions">
           <NuxtLink to="/menu">
-            <BaseButton variant="primary">
-              <BaseIcon name="search" size="sm" class="mr-2" />
+            <BaseButton variant="primary" class="favourites-state__button">
+              <BaseIcon name="search" size="sm" class="u-mr-2" />
               Browse Menu
             </BaseButton>
           </NuxtLink>
           <NuxtLink to="/">
-            <BaseButton variant="secondary">
+            <BaseButton variant="secondary" class="favourites-state__button">
               View Popular Dishes
             </BaseButton>
           </NuxtLink>
@@ -72,9 +74,9 @@
       </div>
 
       <!-- Favourites Grid/List -->
-      <div v-else>
+      <div v-else class="favourites-items">
         <!-- Grid View -->
-        <div v-if="showGridView">
+        <div v-if="showGridView" class="favourites-items__grid">
           <FavouritesGrid 
             :items="favourites"
             @item-selected="onItemSelected"
@@ -83,40 +85,40 @@
         </div>
 
         <!-- List View -->
-        <div v-else class="space-y-4">
+        <div v-else class="favourites-items__list">
           <div
             v-for="item in favourites"
             :key="item.id"
-            class="bg-background-card rounded-xl p-4 flex items-center gap-4 hover:bg-background-card/80 transition-colors"
+            class="favourites-item"
           >
             <!-- Item Image -->
-            <div class="flex-shrink-0">
-              <MenuItemImage 
-                :item="item"
-                size="md"
-                class="cursor-pointer"
+            <div class="favourites-item__image">
+              <BaseImage 
+                :src="item.imageUrl || '/images/placeholder-dish.jpg'"
+                :alt="item.name"
+                class="favourites-item__image-element"
                 @click="onItemSelected(item)"
               />
             </div>
 
             <!-- Item Info -->
-            <div class="flex-1 min-w-0">
+            <div class="favourites-item__content">
               <AppHeading 
                 level="h3" 
                 size="heading-sm" 
-                class="text-white mb-1 cursor-pointer hover:text-primary-green transition-colors"
+                class="favourites-item__title"
                 @click="onItemSelected(item)"
               >
                 {{ item.name }}
               </AppHeading>
-              <AppText size="body-sm" class="text-neutral-20 mb-2 line-clamp-2">
+              <AppText size="body-sm" class="favourites-item__description">
                 {{ item.description }}
               </AppText>
-              <div class="flex items-center gap-4">
+              <div class="favourites-item__meta">
                 <AppPrice :price="item.price" size="md" />
-                <div v-if="item.calories" class="flex items-center gap-1">
-                  <FireIcon size="sm" />
-                  <AppText size="caption" class="text-neutral-20">
+                <div v-if="item.calories" class="favourites-item__calories">
+                  <BaseIcon name="flame" size="sm" />
+                  <AppText size="caption" class="favourites-item__calories-text">
                     {{ item.calories }} cal
                   </AppText>
                 </div>
@@ -124,11 +126,11 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex-shrink-0 flex items-center gap-2">
+            <div class="favourites-item__actions">
               <BaseButton
                 variant="ghost"
                 size="sm"
-                class="text-primary-red hover:text-primary-red/80"
+                class="favourites-item__favorite-btn"
                 @click="onToggleFavourite(item.id)"
               >
                 <BaseIcon name="heart-filled" size="sm" />
@@ -142,26 +144,27 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="mt-12 pt-8 border-t border-neutral-80/20">
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <section class="favourites-actions">
+          <div class="favourites-actions__content">
             <BaseButton 
               variant="primary"
+              class="favourites-actions__button"
               :disabled="favourites.length === 0"
               @click="addAllToCart"
             >
-              <BaseIcon name="shopping-cart" size="sm" class="mr-2" />
+              <BaseIcon name="shopping-cart" size="sm" class="u-mr-2" />
               Add All to Cart
             </BaseButton>
             <NuxtLink to="/menu">
-              <BaseButton variant="secondary">
-                <BaseIcon name="plus" size="sm" class="mr-2" />
+              <BaseButton variant="secondary" class="favourites-actions__button">
+                <BaseIcon name="plus" size="sm" class="u-mr-2" />
                 Find More Dishes
               </BaseButton>
             </NuxtLink>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -234,36 +237,8 @@ onMounted(async () => {
 <style lang="scss" scoped>
 @use '~/assets/scss/tokens' as *;
 @use '~/assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/mixins' as *;
 
-.favourites-header {
-  margin-bottom: $space-12;
-
-  &__title-row {
-    display: flex;
-    align-items: center;
-    gap: $space-4;
-    margin-bottom: $space-4;
-  }
-
-  &__icon {
-    color: var(--color-error);
-    width: 32px;
-    height: 32px;
-  }
-
-  &__title {
-    color: $color-neutral-20;
-  }
-
-  &__subtitle {
-    color: var(--text-secondary);
-  }
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+// Import the favourites page styles
+@import '~/assets/scss/pages/favourites';
 </style>

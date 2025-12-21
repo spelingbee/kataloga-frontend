@@ -41,6 +41,8 @@ const props = withDefaults(defineProps<Props>(), {
   color: 'current'
 })
 
+const slots = defineSlots<{}>()
+
 const iconClasses = computed(() => {
   const classes = ['icon']
   

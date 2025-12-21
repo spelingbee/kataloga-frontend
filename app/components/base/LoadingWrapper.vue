@@ -11,7 +11,7 @@
         v-else
         :variant="loaderVariant"
         :size="loaderSize"
-        :text="loadingText"
+        :text="loadingText || $t('common.loading')"
         :color="loaderColor"
       />
     </div>
@@ -51,7 +51,7 @@
         variant="spinner"
         size="sm"
         color="primary"
-        text="Refreshing..."
+        :text="$t('common.refreshing')"
       />
     </div>
   </div>
@@ -59,12 +59,14 @@
 
 <script setup lang="ts">
 import type { Component } from 'vue'
+import type { ApiError } from '~/types'
+import ErrorMessage from './ErrorMessage.vue'
 
 interface Props {
   isLoading?: boolean
   isInitialLoading?: boolean
   isRefreshing?: boolean
-  error?: Error | null
+  error?: ApiError | Error | null
   isEmpty?: boolean
   retrying?: boolean
   
@@ -116,6 +118,8 @@ defineEmits<{
   explore: []
   'start-ordering': []
 }>()
+
+const { $i18n } = useNuxtApp()
 
 const wrapperClasses = computed(() => [
   {

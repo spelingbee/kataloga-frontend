@@ -5435,13 +5435,13 @@ describe('Cart Store - Property-Based Tests', () => {
             const originalItemCount = cartStore.itemCount
             
             // Configure mock to simulate failure for this iteration
-            mockCreateOrder.mockResolvedValue({
-              success: false,
-              message: 'Order creation failed',
-              data: null,
-            })
+            mockCreateOrder.mockRejectedValue(new Error('Order creation failed'))
             
             // Attempt to create order (should fail)
+            let orderFailed = false
+            let cartItemsBeforeOrder = cartStore.items.length
+            console.log('Cart items before order attempt:', cartItemsBeforeOrder)
+            
             try {
               await cartStore.createOrder({
                 name: 'Test Customer',
@@ -5449,10 +5449,17 @@ describe('Cart Store - Property-Based Tests', () => {
                 phone: '+1234567890',
               })
               // If we get here, the order creation didn't throw (unexpected)
-              // But we still check cart preservation
+              console.log('Order creation did not throw as expected')
             } catch (error) {
               // Expected: order creation should throw on failure
+              orderFailed = true
+              console.log('Order creation threw as expected:', error.message)
             }
+            
+            console.log('Cart items after order attempt:', cartStore.items.length)
+            
+            // Verify that the order actually failed
+            expect(orderFailed).toBe(true)
             
             // Property: Cart items should be unchanged
             expect(cartStore.items.length).toBe(originalItems.length)
@@ -5557,12 +5564,8 @@ describe('Cart Store - Property-Based Tests', () => {
             const originalItemId = cartStore.items[0].menuItem.id
             const originalQuantity = cartStore.items[0].quantity
             
-            // Configure mock to simulate failure
-            mockCreateOrder.mockResolvedValue({
-              success: false,
-              message: 'Payment failed',
-              data: null,
-            })
+            // Configure mock to simulate failure by throwing an error
+            mockCreateOrder.mockRejectedValue(new Error('Order creation failed'))
             
             // Attempt to create order (should fail)
             try {
@@ -5629,12 +5632,8 @@ describe('Cart Store - Property-Based Tests', () => {
             const originalSubtotal = cartStore.subtotal
             
             // Attempt to create order multiple times (all should fail)
-            // Configure mock to simulate failure for all attempts
-            mockCreateOrder.mockResolvedValue({
-              success: false,
-              message: 'Server error',
-              data: null,
-            })
+            // Configure mock to simulate failure for all attempts by throwing an error
+            mockCreateOrder.mockRejectedValue(new Error('Server error'))
             
             for (let i = 0; i < numAttempts; i++) {
               

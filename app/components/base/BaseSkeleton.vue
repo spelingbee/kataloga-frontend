@@ -78,6 +78,8 @@ const customStyle = computed(() => {
   
   return style
 })
+
+const slots = defineSlots<{}>()
 </script>
 
 <style scoped lang="scss">

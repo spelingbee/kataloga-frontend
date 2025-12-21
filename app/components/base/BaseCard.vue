@@ -3,12 +3,12 @@
     :class="cardClasses"
     @click="handleClick"
   >
-    <div v-if="$slots.image" class="base-card__image">
+    <div v-if="slots.image" class="base-card__image">
       <slot name="image" />
     </div>
     
     <div class="base-card__content">
-      <div v-if="$slots.header" class="base-card__header">
+      <div v-if="slots.header" class="base-card__header">
         <slot name="header" />
       </div>
       
@@ -16,7 +16,7 @@
         <slot />
       </div>
       
-      <div v-if="$slots.footer" class="base-card__footer">
+      <div v-if="slots.footer" class="base-card__footer">
         <slot name="footer" />
       </div>
     </div>
@@ -38,6 +38,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   click: [event: Event]
+}>()
+
+const slots = defineSlots<{
+  default?: () => any
+  image?: () => any
+  header?: () => any
+  footer?: () => any
 }>()
 
 const cardClasses = computed(() => {

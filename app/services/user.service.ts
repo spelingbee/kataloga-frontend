@@ -1,39 +1,86 @@
-import type { ApiResponse, User, UserLocation, Notification, Promotion, UpdateProfileDto } from '~/types'
+import type { User, UserLocation, Notification, Promotion, UpdateProfileDto, PaginatedResult } from '~/types'
+import { useApiClient } from '~/utils/api'
 
 export class UserService {
-  private getApiClient(): any {
-    const nuxtApp = useNuxtApp()
-    return (nuxtApp as any).$apiClient
+  private apiClient = useApiClient()
+
+  private getApiClient() {
+    return this.apiClient
   }
 
-  async getProfile(): Promise<ApiResponse<User>> {
-    return this.getApiClient().get('/users/profile')
+  /**
+   * Get user profile (unwrapped data)
+   * Returns: User | null
+   * Requirements: 2.1, 2.3
+   */
+  async getProfile(): Promise<User | null> {
+    try {
+      return await this.getApiClient().get<User>('/users/profile')
+    } catch (error) {
+      // Return null for not found cases
+      if ((error as any)?.code === 'NOT_FOUND') {
+        return null
+      }
+      throw error
+    }
   }
 
-  async updateProfile(updates: UpdateProfileDto): Promise<ApiResponse<User>> {
-    return this.getApiClient().patch('/users/profile', updates)
+  /**
+   * Update user profile (unwrapped data)
+   * Returns: User
+   * Requirements: 2.1
+   */
+  async updateProfile(updates: UpdateProfileDto): Promise<User> {
+    return this.getApiClient().patch<User>('/users/profile', updates)
   }
 
-  async updateLocation(location: UserLocation): Promise<ApiResponse<void>> {
-    return this.getApiClient().post('/users/location', location)
+  /**
+   * Update user location (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
+  async updateLocation(location: UserLocation): Promise<void> {
+    return this.getApiClient().post<void>('/users/location', location)
   }
 
-  async getLocation(): Promise<ApiResponse<UserLocation>> {
-    return this.getApiClient().get('/users/location')
+  /**
+   * Get user location (unwrapped data)
+   * Returns: UserLocation | null
+   * Requirements: 2.1, 2.3
+   */
+  async getLocation(): Promise<UserLocation | null> {
+    try {
+      return await this.getApiClient().get<UserLocation>('/users/location')
+    } catch (error) {
+      // Return null for not found cases
+      if ((error as any)?.code === 'NOT_FOUND') {
+        return null
+      }
+      throw error
+    }
   }
 
+  /**
+   * Get notifications (unwrapped data)
+   * Returns: notification data with pagination
+   * Requirements: 2.1, 2.2
+   */
   async getNotifications(params?: {
     type?: 'order' | 'promotion' | 'system'
     unread?: boolean
     page?: number
     limit?: number
-  }): Promise<ApiResponse<{
+  }): Promise<{
     notifications: Notification[]
     total: number
     unreadCount: number
-    page: number
-    limit: number
-  }>> {
+    pagination: {
+      page: number
+      limit: number
+      totalItems: number
+      totalPages: number
+    }
+  }> {
     const searchParams = new URLSearchParams()
 
     if (params?.type) searchParams.set('type', params.type)
@@ -44,32 +91,68 @@ export class UserService {
     const queryString = searchParams.toString()
     const endpoint = queryString ? `/users/notifications?${queryString}` : '/users/notifications'
 
-    return this.getApiClient().get(endpoint)
+    // Get full response to access pagination metadata
+    const response = await this.getApiClient().getRaw<{
+      notifications: Notification[]
+      total: number
+      unreadCount: number
+    }>(endpoint)
+    
+    if (response.success && response.data) {
+      return {
+        notifications: response.data.notifications,
+        total: response.data.total,
+        unreadCount: response.data.unreadCount,
+        pagination: response.meta.pagination || {
+          page: params?.page || 1,
+          limit: params?.limit || 20,
+          totalItems: response.data.total,
+          totalPages: Math.ceil(response.data.total / (params?.limit || 20))
+        }
+      }
+    } else {
+      throw new Error(response.error?.message || 'Failed to fetch notifications')
+    }
   }
 
-  async markNotificationRead(notificationId: string): Promise<ApiResponse<void>> {
-    return this.getApiClient().patch(`/users/notifications/${notificationId}/read`)
+  /**
+   * Mark notification as read (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
+  async markNotificationRead(notificationId: string): Promise<void> {
+    return this.getApiClient().patch<void>(`/users/notifications/${notificationId}/read`)
   }
 
-  async markAllNotificationsRead(): Promise<ApiResponse<void>> {
-    return this.getApiClient().patch('/users/notifications/read-all')
+  /**
+   * Mark all notifications as read (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
+  async markAllNotificationsRead(): Promise<void> {
+    return this.getApiClient().patch<void>('/users/notifications/read-all')
   }
 
-  async deleteNotification(notificationId: string): Promise<ApiResponse<void>> {
-    return this.getApiClient().delete(`/users/notifications/${notificationId}`)
+  /**
+   * Delete notification (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
+  async deleteNotification(notificationId: string): Promise<void> {
+    return this.getApiClient().delete<void>(`/users/notifications/${notificationId}`)
   }
 
+  /**
+   * Get promotions (unwrapped data)
+   * Returns: PaginatedResult<Promotion>
+   * Requirements: 2.1, 2.2
+   */
   async getPromotions(params?: {
     active?: boolean
     category?: string
     page?: number
     limit?: number
-  }): Promise<ApiResponse<{
-    promotions: Promotion[]
-    total: number
-    page: number
-    limit: number
-  }>> {
+  }): Promise<PaginatedResult<Promotion>> {
     const searchParams = new URLSearchParams()
 
     if (params?.active !== undefined) searchParams.set('active', params.active.toString())
@@ -80,18 +163,47 @@ export class UserService {
     const queryString = searchParams.toString()
     const endpoint = queryString ? `/users/promotions?${queryString}` : '/users/promotions'
 
-    return this.getApiClient().get(endpoint)
+    // Get full response to access pagination metadata
+    const response = await this.getApiClient().getRaw<Promotion[]>(endpoint)
+    
+    if (response.success && response.data) {
+      return {
+        items: response.data,
+        pagination: response.meta.pagination || {
+          page: params?.page || 1,
+          limit: params?.limit || 20,
+          totalItems: response.data.length,
+          totalPages: 1
+        }
+      }
+    } else {
+      throw new Error(response.error?.message || 'Failed to fetch promotions')
+    }
   }
 
-  async claimPromotion(promotionId: string): Promise<ApiResponse<{
+  /**
+   * Claim promotion (unwrapped data)
+   * Returns: promotion claim data
+   * Requirements: 2.1
+   */
+  async claimPromotion(promotionId: string): Promise<{
     success: boolean
     discount: number
     expiresAt: string
-  }>> {
-    return this.getApiClient().post(`/users/promotions/${promotionId}/claim`)
+  }> {
+    return this.getApiClient().post<{
+      success: boolean
+      discount: number
+      expiresAt: string
+    }>(`/users/promotions/${promotionId}/claim`)
   }
 
-  async getPreferences(): Promise<ApiResponse<{
+  /**
+   * Get user preferences (unwrapped data)
+   * Returns: preferences data | null
+   * Requirements: 2.1, 2.3
+   */
+  async getPreferences(): Promise<{
     dietary: string[]
     allergies: string[]
     spiceLevel: number
@@ -104,10 +216,36 @@ export class UserService {
       defaultAddress?: string
       preferredTimeSlots: string[]
     }
-  }>> {
-    return this.getApiClient().get('/users/preferences')
+  } | null> {
+    try {
+      return await this.getApiClient().get<{
+        dietary: string[]
+        allergies: string[]
+        spiceLevel: number
+        notifications: {
+          orderUpdates: boolean
+          promotions: boolean
+          newsletter: boolean
+        }
+        delivery: {
+          defaultAddress?: string
+          preferredTimeSlots: string[]
+        }
+      }>('/users/preferences')
+    } catch (error) {
+      // Return null for not found cases
+      if ((error as any)?.code === 'NOT_FOUND') {
+        return null
+      }
+      throw error
+    }
   }
 
+  /**
+   * Update user preferences (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
   async updatePreferences(preferences: {
     dietary?: string[]
     allergies?: string[]
@@ -121,11 +259,16 @@ export class UserService {
       defaultAddress?: string
       preferredTimeSlots?: string[]
     }
-  }): Promise<ApiResponse<void>> {
-    return this.getApiClient().patch('/users/preferences', preferences)
+  }): Promise<void> {
+    return this.getApiClient().patch<void>('/users/preferences', preferences)
   }
 
-  async getLoyaltyPoints(): Promise<ApiResponse<{
+  /**
+   * Get loyalty points (unwrapped data)
+   * Returns: loyalty data
+   * Requirements: 2.1
+   */
+  async getLoyaltyPoints(): Promise<{
     currentPoints: number
     totalEarned: number
     pointsToNextReward: number
@@ -137,11 +280,28 @@ export class UserService {
       description: string
       available: boolean
     }>
-  }>> {
-    return this.getApiClient().get('/users/loyalty')
+  }> {
+    return this.getApiClient().get<{
+      currentPoints: number
+      totalEarned: number
+      pointsToNextReward: number
+      tier: string
+      rewards: Array<{
+        id: string
+        name: string
+        pointsCost: number
+        description: string
+        available: boolean
+      }>
+    }>('/users/loyalty')
   }
 
-  async redeemLoyaltyReward(rewardId: string): Promise<ApiResponse<{
+  /**
+   * Redeem loyalty reward (unwrapped data)
+   * Returns: redemption data
+   * Requirements: 2.1
+   */
+  async redeemLoyaltyReward(rewardId: string): Promise<{
     success: boolean
     pointsUsed: number
     remainingPoints: number
@@ -151,11 +311,26 @@ export class UserService {
       code?: string
       expiresAt: string
     }
-  }>> {
-    return this.getApiClient().post(`/users/loyalty/redeem/${rewardId}`)
+  }> {
+    return this.getApiClient().post<{
+      success: boolean
+      pointsUsed: number
+      remainingPoints: number
+      reward: {
+        id: string
+        name: string
+        code?: string
+        expiresAt: string
+      }
+    }>(`/users/loyalty/redeem/${rewardId}`)
   }
 
-  async getAddresses(): Promise<ApiResponse<Array<{
+  /**
+   * Get user addresses (unwrapped data)
+   * Returns: address array
+   * Requirements: 2.1
+   */
+  async getAddresses(): Promise<Array<{
     id: string
     name: string
     address: string
@@ -163,10 +338,23 @@ export class UserService {
     longitude: number
     isDefault: boolean
     type: 'home' | 'work' | 'other'
-  }>>> {
-    return this.getApiClient().get('/users/addresses')
+  }>> {
+    return this.getApiClient().get<Array<{
+      id: string
+      name: string
+      address: string
+      latitude: number
+      longitude: number
+      isDefault: boolean
+      type: 'home' | 'work' | 'other'
+    }>>('/users/addresses')
   }
 
+  /**
+   * Add user address (unwrapped data)
+   * Returns: address ID
+   * Requirements: 2.1
+   */
   async addAddress(address: {
     name: string
     address: string
@@ -174,10 +362,15 @@ export class UserService {
     longitude: number
     type: 'home' | 'work' | 'other'
     isDefault?: boolean
-  }): Promise<ApiResponse<{ id: string }>> {
-    return this.getApiClient().post('/users/addresses', address)
+  }): Promise<{ id: string }> {
+    return this.getApiClient().post<{ id: string }>('/users/addresses', address)
   }
 
+  /**
+   * Update user address (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
   async updateAddress(addressId: string, updates: {
     name?: string
     address?: string
@@ -185,29 +378,52 @@ export class UserService {
     longitude?: number
     type?: 'home' | 'work' | 'other'
     isDefault?: boolean
-  }): Promise<ApiResponse<void>> {
-    return this.getApiClient().patch(`/users/addresses/${addressId}`, updates)
+  }): Promise<void> {
+    return this.getApiClient().patch<void>(`/users/addresses/${addressId}`, updates)
   }
 
-  async deleteAddress(addressId: string): Promise<ApiResponse<void>> {
-    return this.getApiClient().delete(`/users/addresses/${addressId}`)
+  /**
+   * Delete user address (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
+  async deleteAddress(addressId: string): Promise<void> {
+    return this.getApiClient().delete<void>(`/users/addresses/${addressId}`)
   }
 
-  async setDefaultAddress(addressId: string): Promise<ApiResponse<void>> {
-    return this.getApiClient().patch(`/users/addresses/${addressId}/default`)
+  /**
+   * Set default address (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
+  async setDefaultAddress(addressId: string): Promise<void> {
+    return this.getApiClient().patch<void>(`/users/addresses/${addressId}/default`)
   }
 
-  async deleteAccount(password: string): Promise<ApiResponse<void>> {
-    return this.getApiClient().delete('/users/account', {
+  /**
+   * Delete user account (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
+  async deleteAccount(password: string): Promise<void> {
+    return this.getApiClient().delete<void>('/users/account', {
       body: { password }
     })
   }
 
-  async exportData(): Promise<ApiResponse<{
+  /**
+   * Export user data (unwrapped data)
+   * Returns: export data
+   * Requirements: 2.1
+   */
+  async exportData(): Promise<{
     downloadUrl: string
     expiresAt: string
-  }>> {
-    return this.getApiClient().post('/users/export-data')
+  }> {
+    return this.getApiClient().post<{
+      downloadUrl: string
+      expiresAt: string
+    }>('/users/export-data')
   }
 }
 

@@ -53,6 +53,7 @@ $border-secondary: $color-neutral-300;
   --color-primary: #{$color-primary};
   --color-primary-light: #{$color-primary-light};
   --color-primary-dark: #{$color-primary-dark};
+  --color-primary-rgb: 184, 87, 26;
   
   // Semantic Colors
   --color-success: #{$color-success};
@@ -76,6 +77,7 @@ $border-secondary: $color-neutral-300;
   --bg-primary: #{$bg-primary};
   --bg-secondary: #{$bg-secondary};
   --bg-tertiary: #{$bg-tertiary};
+  --bg-primary-rgb: 255, 255, 255;
   
   // Semantic Text
   --text-primary: #{$text-primary};
@@ -94,6 +96,7 @@ $border-secondary: $color-neutral-300;
   --bg-primary: #{$color-neutral-900};
   --bg-secondary: #{$color-neutral-800};
   --bg-tertiary: #{$color-neutral-700};
+  --bg-primary-rgb: 17, 24, 39;
   
   // Text (inverted)
   --text-primary: #{$color-neutral-50};

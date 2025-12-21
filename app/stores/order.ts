@@ -1,18 +1,26 @@
 import { defineStore } from 'pinia'
 import { useOrderService } from '~/services/order.service'
-import type { Order, CreateOrderDto, OrderStatus } from '~/types'
+import type { Order, CreateOrderDto, OrderStatus, ApiError, PaginationMeta } from '~/types'
 
 interface OrderState {
+  // Clean business data only
   currentOrder: Order | null
   orderHistory: Order[]
+  pagination: PaginationMeta | null
+  
+  // State management
   loading: boolean
-  error: string | null
+  error: ApiError | null
 }
 
 export const useOrderStore = defineStore('order', {
   state: (): OrderState => ({
+    // Clean business data only
     currentOrder: null,
     orderHistory: [],
+    pagination: null,
+    
+    // State management
     loading: false,
     error: null,
   }),
@@ -30,18 +38,16 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const orderService = useOrderService()
-        const response = await orderService.createOrder(orderData)
+        const order = await orderService.createOrder(orderData)
 
-        if (response.success && response.data) {
-          this.currentOrder = response.data
-          // Add to order history
-          this.orderHistory.unshift(response.data)
-          return response.data
-        } else {
-          throw new Error(response.message || 'Failed to create order')
-        }
+        // Store clean data directly
+        this.currentOrder = order
+        // Add to order history
+        this.orderHistory.unshift(order)
+        return order
+        
       } catch (error) {
-        this.error = 'Failed to create order'
+        this.error = error as ApiError
         console.error('Order creation error:', error)
         return null
       } finally {
@@ -55,18 +61,19 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const orderService = useOrderService()
-        const response = await orderService.getOrderHistory(page, limit)
+        const result = await orderService.getOrderHistory(page, limit)
 
-        if (response.success && response.data) {
-          if (page === 1) {
-            this.orderHistory = response.data.orders
-          } else {
-            // Append for pagination
-            this.orderHistory.push(...response.data.orders)
-          }
+        // Store clean data directly
+        if (page === 1) {
+          this.orderHistory = result.items
+        } else {
+          // Append for pagination
+          this.orderHistory.push(...result.items)
         }
+        this.pagination = result.pagination
+        
       } catch (error) {
-        this.error = 'Failed to fetch order history'
+        this.error = error as ApiError
         console.error('Order history fetch error:', error)
       } finally {
         this.loading = false
@@ -79,10 +86,9 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const orderService = useOrderService()
-        const response = await orderService.trackOrder(orderId)
+        const order = await orderService.trackOrder(orderId)
 
-        if (response.success && response.data) {
-          const order = response.data.order
+        if (order) {
           // Update current order if it matches
           if (this.currentOrder?.id === orderId) {
             this.currentOrder = order
@@ -96,7 +102,7 @@ export const useOrderStore = defineStore('order', {
         }
         return null
       } catch (error) {
-        this.error = 'Failed to track order'
+        this.error = error as ApiError
         console.error('Order tracking error:', error)
         return null
       } finally {
@@ -110,10 +116,9 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const orderService = useOrderService()
-        const response = await orderService.cancelOrder(orderId, reason)
+        const cancelledOrder = await orderService.cancelOrder(orderId, reason)
 
-        if (response.success && response.data) {
-          const cancelledOrder = response.data
+        if (cancelledOrder) {
           // Update current order if it matches
           if (this.currentOrder?.id === orderId) {
             this.currentOrder = cancelledOrder
@@ -127,7 +132,7 @@ export const useOrderStore = defineStore('order', {
         }
         return false
       } catch (error) {
-        this.error = 'Failed to cancel order'
+        this.error = error as ApiError
         console.error('Order cancellation error:', error)
         return false
       } finally {
@@ -141,10 +146,9 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const orderService = useOrderService()
-        const response = await orderService.getOrder(orderId)
+        const order = await orderService.getOrder(orderId)
 
-        if (response.success && response.data) {
-          const order = response.data
+        if (order) {
           // Update in order history if it exists
           const historyIndex = this.orderHistory.findIndex(o => o.id === orderId)
           if (historyIndex >= 0) {
@@ -156,7 +160,7 @@ export const useOrderStore = defineStore('order', {
         }
         return null
       } catch (error) {
-        this.error = 'Failed to fetch order'
+        this.error = error as ApiError
         console.error('Order fetch error:', error)
         return null
       } finally {
@@ -170,17 +174,16 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const orderService = useOrderService()
-        const response = await orderService.repeatOrder(orderId)
+        const newOrder = await orderService.repeatOrder(orderId)
 
-        if (response.success && response.data) {
-          const newOrder = response.data
+        if (newOrder) {
           this.currentOrder = newOrder
           this.orderHistory.unshift(newOrder)
           return newOrder
         }
         return null
       } catch (error) {
-        this.error = 'Failed to repeat order'
+        this.error = error as ApiError
         console.error('Order repeat error:', error)
         return null
       } finally {
@@ -194,14 +197,10 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const orderService = useOrderService()
-        const response = await orderService.getActiveOrders()
-
-        if (response.success && response.data) {
-          return response.data
-        }
-        return []
+        const orders = await orderService.getActiveOrders()
+        return orders
       } catch (error) {
-        this.error = 'Failed to fetch active orders'
+        this.error = error as ApiError
         console.error('Active orders fetch error:', error)
         return []
       } finally {

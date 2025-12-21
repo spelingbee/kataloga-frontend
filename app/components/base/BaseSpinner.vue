@@ -40,6 +40,8 @@ const props = withDefaults(defineProps<Props>(), {
   label: 'Loading...'
 })
 
+const slots = defineSlots<{}>()
+
 const spinnerClasses = computed(() => {
   const classes = ['base-spinner']
   

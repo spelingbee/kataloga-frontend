@@ -82,6 +82,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { MenuItem } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useUserStore } from '~/stores/user'
+import AppText from '../base/AppText.vue'
 
 interface Props {
   items?: MenuItem[]

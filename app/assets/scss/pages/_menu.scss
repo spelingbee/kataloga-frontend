@@ -4,113 +4,225 @@
 // Menu Page Styles
 .menu-page {
   min-height: calc(100vh - 60px);
-  background-color: $color-background-dark;
+  background-color: var(--bg-primary);
+  padding-top: env(safe-area-inset-top);
+  padding-left: max(env(safe-area-inset-left), 16px);
+  padding-right: max(env(safe-area-inset-right), 16px);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120px); // Account for bottom nav + extra space
 
-  @include breakpoint($breakpoint-lg) {
+  @media (min-width: 1024px) {
     min-height: 100vh;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 40px);
   }
 }
 
 .menu-header {
-  padding: $spacing-xl $spacing-lg;
+  padding: 32px 0 24px;
 
   &__title {
-    color: white;
-    margin-bottom: $spacing-md;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-weight: 700;
   }
 
   &__subtitle {
-    color: $color-neutral-20;
+    color: var(--text-secondary);
+    line-height: 1.6;
   }
 }
 
 .menu-controls {
-  padding: 0 $spacing-lg;
-  margin-bottom: $spacing-xl;
+  margin-bottom: 32px;
 
-  &__row {
+  &__search-row {
     display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
-    margin-bottom: $spacing-lg;
-
-    @include breakpoint($breakpoint-md) {
-      flex-direction: row;
-    }
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
   }
 
   &__search {
     flex: 1;
   }
 
-  &__actions {
+  &__search-button {
+    min-width: 44px;
+    min-height: 44px;
+    flex-shrink: 0;
+    border-radius: 12px;
+  }
+
+  &__filter-row {
     display: flex;
-    gap: $spacing-sm;
+    justify-content: flex-start;
+  }
+
+  &__filters-button {
+    min-height: 44px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 500;
   }
 
   &__filters {
-    margin-bottom: $spacing-lg;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-primary);
+  }
+}
+
+// New Categories Section
+.menu-categories {
+  margin-bottom: 32px;
+
+  &__list {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+    
+    &:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--color-primary);
+      color: var(--text-primary);
+    }
+    
+    &--active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
+      
+      .menu-categories__count {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+      }
+    }
+  }
+
+  &__count {
+    background: var(--bg-primary);
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    min-width: 20px;
+    text-align: center;
   }
 }
 
 .menu-content {
   display: flex;
   flex-direction: column;
-  gap: $spacing-lg;
-  padding: 0 $spacing-lg;
-
-  @include breakpoint($breakpoint-lg) {
-    flex-direction: row;
-  }
-}
-
-.menu-sidebar {
-  flex-shrink: 0;
-
-  @include breakpoint($breakpoint-lg) {
-    width: 16rem;
-  }
-}
-
-.menu-main {
-  flex: 1;
+  gap: 24px;
 }
 
 .menu-category-header {
-  margin-bottom: $spacing-lg;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-primary);
 
   &__title {
-    color: white;
-    margin-bottom: $spacing-sm;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-weight: 700;
   }
 
   &__count {
-    color: $color-neutral-20;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
   }
 }
 
 .menu-state {
   text-align: center;
-  padding: $spacing-2xl 0;
+  padding: 64px 20px;
+  max-width: 400px;
+  margin: 0 auto;
 
-  &__icon {
-    margin: 0 auto $spacing-md;
-  }
-
-  &__title {
-    color: white;
-    margin-bottom: $spacing-sm;
+  &__icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(var(--color-primary-rgb), 0.1);
+    margin: 0 auto 20px;
 
     .menu-state--error & {
-      margin-bottom: $spacing-md;
+      background: rgba(220, 38, 38, 0.15);
+    }
+
+    .menu-state--empty & {
+      background: var(--bg-secondary);
     }
   }
 
-  &__text {
-    color: $color-neutral-20;
+  &__icon {
+    color: var(--color-primary);
 
     .menu-state--loading & {
-      color: $color-neutral-20;
+      color: var(--color-success);
+    }
+
+    .menu-state--empty & {
+      color: var(--text-tertiary);
+    }
+  }
+
+  &__title {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  &__text {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    font-size: 14px;
+  }
+
+  &__button {
+    min-height: 48px;
+    padding: 12px 32px;
+    border-radius: 12px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active {
+      transform: translateY(0);
     }
   }
 }
@@ -119,9 +231,9 @@
   width: 3rem;
   height: 3rem;
   border: 2px solid transparent;
-  border-bottom: 2px solid $color-primary-green;
+  border-bottom: 2px solid var(--color-primary);
   border-radius: 50%;
-  margin: 0 auto $spacing-md;
+  margin: 0 auto 16px;
   animation: spin 1s linear infinite;
 }
 
@@ -135,18 +247,146 @@
 }
 
 .menu-actions {
-  padding: $spacing-xl $spacing-lg $spacing-2xl;
-  margin-top: $spacing-2xl;
-  border-top: 1px solid rgba($color-neutral-80, 0.2);
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-primary);
 
   &__content {
     display: flex;
     flex-direction: column;
-    gap: $spacing-md;
+    gap: 16px;
     justify-content: center;
 
-    @include breakpoint($breakpoint-md) {
+    @media (min-width: 768px) {
       flex-direction: row;
+      gap: 20px;
+    }
+
+    // Ensure buttons have proper touch targets
+    a, button {
+      min-height: 48px;
+      border-radius: 12px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
     }
   }
 }
+
+// Mobile-specific improvements
+@media (max-width: 480px) {
+  .menu-page {
+    padding-left: max(env(safe-area-inset-left), 16px);
+    padding-right: max(env(safe-area-inset-right), 16px);
+  }
+
+  .menu-header {
+    padding: 24px 0 20px;
+
+    &__title {
+      font-size: 28px;
+    }
+
+    &__subtitle {
+      font-size: 14px;
+    }
+  }
+
+  .menu-controls {
+    &__search-button {
+      min-width: 40px;
+      min-height: 40px;
+    }
+
+    &__filters-button {
+      min-height: 40px;
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+  }
+
+  .menu-categories {
+    &__chip {
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+  }
+
+  .menu-state {
+    padding: 48px 16px;
+
+    &__button {
+      min-height: 44px;
+      width: 100%;
+    }
+  }
+}
+
+// Tablet improvements
+@media (min-width: 768px) and (max-width: 1024px) {
+  .menu-content {
+    gap: 32px;
+  }
+}
+
+// Large screen improvements
+@media (min-width: 1200px) {
+  .menu-page {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .menu-content {
+    gap: 40px;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .menu-header__title,
+  .menu-category-header__title {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  }
+
+  .menu-state__button {
+    border: 2px solid currentColor;
+  }
+
+  .menu-categories__chip {
+    border-width: 2px;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .menu-state__button {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  .menu-actions__content {
+    a, button {
+      transition: none;
+
+      &:hover {
+        transform: none;
+      }
+    }
+  }
+
+  .menu-categories__chip {
+    transition: none;
+  }
+}
+
+/* End of menu page styles */

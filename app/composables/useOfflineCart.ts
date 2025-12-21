@@ -589,7 +589,10 @@ export const useOfflineCart = () => {
     saveOfflineData,
     loadOfflineData,
     cacheMenuData,
-    
+
+
+
+    initializeOfflineCart,
     // Conflict resolution
     resolveConflict,
   }

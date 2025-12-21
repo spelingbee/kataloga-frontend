@@ -1,9 +1,11 @@
-import type { ApiResponse, Category, MenuItem, MenuFilters } from '~/types'
+import type { Category, MenuItem, MenuFilters, PaginatedResult, ApiResponse } from '~/types'
+import { useApiClient } from '~/utils/api'
 
 export class MenuService {
-  private getApiClient(): any {
-    const nuxtApp = useNuxtApp()
-    return (nuxtApp as any).$apiClient
+  private apiClient = useApiClient()
+
+  private getApiClient() {
+    return this.apiClient
   }
 
   private cache = new Map<string, { data: any; timestamp: number; ttl: number }>()
@@ -25,223 +27,289 @@ export class MenuService {
     })
   }
 
-  async getCategories(): Promise<ApiResponse<Category[]>> {
+  /**
+   * Get categories (unwrapped data)
+   * Returns: Category[] (not ApiResponse<Category[]>)
+   * Requirements: 2.1
+   */
+  async getCategories(): Promise<Category[]> {
     const cacheKey = 'categories'
-    const cached = this.getCachedData<ApiResponse<Category[]>>(cacheKey)
+    const cached = this.getCachedData<Category[]>(cacheKey)
     if (cached) return cached
 
     // Get categories from public categories endpoint
     const tenantSlug = this.getTenantSlug()
+    console.log('🏢 Menu Service - Tenant slug:', tenantSlug)
+    
     if (!tenantSlug) {
-      return {
-        success: false,
-        message: 'Tenant slug not configured',
-        errors: ['TENANT_NOT_CONFIGURED']
-      }
+      console.error('❌ Menu Service - No tenant slug configured')
+      throw new Error('Tenant slug not configured')
     }
 
     try {
-      const response = await this.getApiClient().get(`/public/menu/${tenantSlug}/categories`)
-      if (response.success && response.data) {
-        // Map backend categories to frontend format
-        const categories = response.data.map((cat: any) => ({
-          id: cat.id,
-          name: cat.name,
-          description: `${cat.itemCount} items available`,
-          icon: this.getCategoryIcon(cat.name),
-          count: cat.itemCount,
-          sortOrder: 0
-        }))
-        
-        const categoriesResponse = {
-          success: true,
-          data: categories,
-          message: 'Categories retrieved successfully'
-        }
-        this.setCachedData(cacheKey, categoriesResponse, 600000) // 10 minutes
-        return categoriesResponse
+      const apiUrl = `/public/menu/${tenantSlug}/categories`
+      console.log('🌐 Menu Service - Fetching categories from:', apiUrl)
+      
+      // Use unwrapped API client - returns clean data directly
+      const response = await this.getApiClient().get<Category[]>(apiUrl)
+      console.log('📥 Menu Service - Categories response:', response)
+      
+      // Handle direct array response format
+      let categories: any[] = []
+      
+      if (Array.isArray(response)) {
+        categories = response
+      } else {
+        console.error('❌ Menu Service - Categories response not in expected format:', response)
+        throw new Error('Invalid response format')
       }
-      return response
+      
+      // Map backend categories to frontend format
+      const mappedCategories = categories.map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        description: `${cat.itemCount || 0} items available`,
+        icon: this.getCategoryIcon(cat.name),
+        count: cat.itemCount || 0,
+        sortOrder: 0
+      }))
+      
+      console.log('✅ Menu Service - Categories mapped:', mappedCategories.length, 'categories')
+      
+      this.setCachedData(cacheKey, mappedCategories, 600000) // 10 minutes
+      return mappedCategories
+      
     } catch (error) {
-      return {
-        success: false,
-        message: 'Failed to fetch categories',
-        errors: [error instanceof Error ? error.message : 'Unknown error']
+      console.error('❌ Menu Service - Categories fetch error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      
+      // Check for specific error types
+      if (errorMessage.includes('fetch')) {
+        console.error('🌐 Network Error - Check if backend is running on http://localhost:3001')
       }
+      if (errorMessage.includes('CORS')) {
+        console.error('🚫 CORS Error - Check backend CORS configuration')
+      }
+      if (errorMessage.includes('404')) {
+        console.error('🔍 Not Found - Check if tenant exists:', tenantSlug)
+      }
+      
+      throw new Error(`Failed to fetch categories: ${errorMessage}`)
     }
   }
 
-  async getCategory(categoryId: string): Promise<ApiResponse<Category>> {
-    // Get category from cached categories
-    const categoriesResponse = await this.getCategories()
-    if (categoriesResponse.success && categoriesResponse.data) {
-      const category = categoriesResponse.data.find(cat => cat.id === categoryId)
+  /**
+   * Get single category (unwrapped data)
+   * Returns: Category | null
+   * Requirements: 2.3
+   */
+  async getCategory(categoryId: string): Promise<Category | null> {
+    try {
+      // Get category from cached categories
+      const categories = await this.getCategories()
+      const category = categories.find(cat => cat.id === categoryId)
+      
       if (category) {
-        return {
-          success: true,
-          data: category,
-          message: 'Category retrieved successfully'
-        }
+        return category
       }
-    }
-    
-    return {
-      success: false,
-      message: 'Category not found',
-      errors: ['CATEGORY_NOT_FOUND']
+      
+      // Category not found - return null instead of throwing
+      return null
+    } catch (error) {
+      console.error('❌ Menu Service - Category fetch error:', error)
+      // Return null for not found cases
+      return null
     }
   }
 
+  /**
+   * Get paginated menu items (unwrapped data)
+   * Returns: PaginatedResult<MenuItem> (not ApiResponse)
+   * Requirements: 2.1, 2.2
+   */
   async getMenuItems(params?: {
     categoryId?: string
     search?: string
     filters?: MenuFilters
     page?: number
     limit?: number
-  }): Promise<ApiResponse<{ items: MenuItem[]; total: number; page: number; limit: number }>> {
+  }): Promise<PaginatedResult<MenuItem>> {
     const tenantSlug = this.getTenantSlug()
+    console.log('🏢 Menu Service - Getting menu items for tenant:', tenantSlug)
+    
     if (!tenantSlug) {
-      return {
-        success: false,
-        message: 'Tenant slug not configured',
-        errors: ['TENANT_NOT_CONFIGURED']
-      }
+      console.error('❌ Menu Service - No tenant slug configured')
+      throw new Error('Tenant slug not configured')
     }
 
     try {
-      const response = await this.getApiClient().get(`/public/menu/${tenantSlug}`)
+      const apiUrl = `/public/menu/${tenantSlug}`
+      console.log('🌐 Menu Service - Fetching menu from:', apiUrl)
+      console.log('📋 Menu Service - Params:', params)
+      
+      // Get full response to access pagination metadata
+      const response = await this.getApiClient().getRaw<MenuItem[]>(apiUrl)
+      console.log('📥 Menu Service - Menu response:', response)
+      
+      // Handle direct array response format
+      let menus: any[] = []
+      
       if (response.success && response.data) {
-        let items = this.extractMenuItemsFromMenus(response.data)
-        
-        // Apply filters
-        items = this.applyFiltersToItems(items, params)
-        
-        // Apply pagination
-        const page = params?.page || 1
-        const limit = params?.limit || 20
-        const startIndex = (page - 1) * limit
-        const endIndex = startIndex + limit
-        const paginatedItems = items.slice(startIndex, endIndex)
-        
-        return {
-          success: true,
-          data: {
-            items: paginatedItems,
-            total: items.length,
-            page,
-            limit
-          },
-          message: 'Menu items retrieved successfully'
+        if (Array.isArray(response.data)) {
+          menus = response.data
+        } else {
+          console.error('❌ Menu Service - Menu response data not an array:', response.data)
+          throw new Error('Invalid response format - expected array')
         }
+      } else {
+        console.error('❌ Menu Service - Menu response not successful:', response)
+        throw new Error(response.error?.message || 'Failed to fetch menu items')
       }
-      return response
-    } catch (error) {
+      
+      let items = this.extractMenuItemsFromMenus(menus)
+      console.log('📦 Menu Service - Extracted items:', items.length)
+      
+      // Apply filters
+      items = this.applyFiltersToItems(items, params)
+      console.log('🔍 Menu Service - Filtered items:', items.length)
+      
+      // Apply pagination
+      const page = params?.page || 1
+      const limit = params?.limit || 20
+      const startIndex = (page - 1) * limit
+      const endIndex = startIndex + limit
+      const paginatedItems = items.slice(startIndex, endIndex)
+      
+      console.log('✅ Menu Service - Returning', paginatedItems.length, 'items (page', page, 'of', Math.ceil(items.length / limit), ')')
+      
+      // Return PaginatedResult format
       return {
-        success: false,
-        message: 'Failed to fetch menu items',
-        errors: [error instanceof Error ? error.message : 'Unknown error']
-      }
-    }
-  }
-
-  async getMenuItem(itemId: string): Promise<ApiResponse<MenuItem>> {
-    // Get item from all menu items
-    const menuItemsResponse = await this.getMenuItems()
-    if (menuItemsResponse.success && menuItemsResponse.data) {
-      const item = menuItemsResponse.data.items.find(item => item.id === itemId)
-      if (item) {
-        return {
-          success: true,
-          data: item,
-          message: 'Menu item retrieved successfully'
+        items: paginatedItems,
+        pagination: {
+          page,
+          limit,
+          totalItems: items.length,
+          totalPages: Math.ceil(items.length / limit)
         }
       }
-    }
-    
-    return {
-      success: false,
-      message: 'Menu item not found',
-      errors: ['MENU_ITEM_NOT_FOUND']
+      
+    } catch (error) {
+      console.error('❌ Menu Service - Menu items fetch error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      
+      // Check for specific error types
+      if (errorMessage.includes('fetch')) {
+        console.error('🌐 Network Error - Check if backend is running on http://localhost:3001')
+      }
+      if (errorMessage.includes('CORS')) {
+        console.error('🚫 CORS Error - Check backend CORS configuration')
+      }
+      if (errorMessage.includes('404')) {
+        console.error('🔍 Not Found - Check if tenant exists and has menus:', tenantSlug)
+      }
+      
+      throw new Error(`Failed to fetch menu items: ${errorMessage}`)
     }
   }
 
-  async getPopularItems(limit: number = 10): Promise<ApiResponse<MenuItem[]>> {
+  /**
+   * Get single menu item (unwrapped data)
+   * Returns: MenuItem | null
+   * Requirements: 2.3
+   */
+  async getMenuItem(itemId: string): Promise<MenuItem | null> {
+    try {
+      // Get item from all menu items
+      const menuItemsResult = await this.getMenuItems()
+      const item = menuItemsResult.items.find(item => item.id === itemId)
+      
+      if (item) {
+        return item
+      }
+      
+      // Item not found - return null instead of throwing
+      return null
+    } catch (error) {
+      console.error('❌ Menu Service - Menu item fetch error:', error)
+      // Return null for not found cases
+      return null
+    }
+  }
+
+  /**
+   * Get popular items (unwrapped data)
+   * Returns: MenuItem[]
+   * Requirements: 2.1
+   */
+  async getPopularItems(limit: number = 10): Promise<MenuItem[]> {
     const cacheKey = `popular_${limit}`
-    const cached = this.getCachedData<ApiResponse<MenuItem[]>>(cacheKey)
+    const cached = this.getCachedData<MenuItem[]>(cacheKey)
     if (cached) return cached
 
-    // For now, get all items and return first N items as "popular"
-    // In a real implementation, this would be based on order analytics
-    const menuItemsResponse = await this.getMenuItems({ limit })
-    if (menuItemsResponse.success && menuItemsResponse.data) {
-      const popularResponse = {
-        success: true,
-        data: menuItemsResponse.data.items,
-        message: 'Popular items retrieved successfully'
-      }
-      this.setCachedData(cacheKey, popularResponse, 300000) // 5 minutes
-      return popularResponse
-    }
-    
-    return {
-      success: false,
-      message: 'Failed to fetch popular items',
-      errors: ['POPULAR_ITEMS_FETCH_FAILED']
+    try {
+      // For now, get all items and return first N items as "popular"
+      // In a real implementation, this would be based on order analytics
+      const menuItemsResult = await this.getMenuItems({ limit })
+      const popularItems = menuItemsResult.items
+      
+      this.setCachedData(cacheKey, popularItems, 300000) // 5 minutes
+      return popularItems
+    } catch (error) {
+      console.error('❌ Menu Service - Popular items fetch error:', error)
+      throw new Error('Failed to fetch popular items')
     }
   }
 
-  async searchMenuItems(query: string, filters?: MenuFilters): Promise<ApiResponse<MenuItem[]>> {
-    const params = { search: query, filters }
-    const response = await this.getMenuItems(params)
-    
-    if (response.success && response.data) {
-      return {
-        success: response.success,
-        data: response.data.items,
-        message: response.message,
-        errors: response.errors,
-      }
-    }
-    
-    return {
-      success: false,
-      message: response.message || 'Search failed',
-      errors: response.errors,
+  /**
+   * Search menu items (unwrapped data)
+   * Returns: MenuItem[]
+   * Requirements: 2.1
+   */
+  async searchMenuItems(query: string, filters?: MenuFilters): Promise<MenuItem[]> {
+    try {
+      const params = { search: query, filters }
+      const result = await this.getMenuItems(params)
+      
+      return result.items
+    } catch (error) {
+      console.error('❌ Menu Service - Search error:', error)
+      throw new Error('Search failed')
     }
   }
 
-  async getFavoriteItems(): Promise<ApiResponse<MenuItem[]>> {
+  /**
+   * Get favorite items (unwrapped data)
+   * Returns: MenuItem[]
+   * Requirements: 2.1
+   */
+  async getFavoriteItems(): Promise<MenuItem[]> {
     // For now, use localStorage for favorites since there's no backend endpoint
     // In a real implementation, this would be a user-specific endpoint
     if (import.meta.client) {
       try {
         const favoriteIds = JSON.parse(localStorage.getItem('favorites') || '[]')
-        const allItemsResponse = await this.getMenuItems()
+        const allItemsResult = await this.getMenuItems()
         
-        if (allItemsResponse.success && allItemsResponse.data) {
-          const favoriteItems = allItemsResponse.data.items.filter(item => 
-            favoriteIds.includes(item.id)
-          )
-          
-          return {
-            success: true,
-            data: favoriteItems,
-            message: 'Favorite items retrieved successfully'
-          }
-        }
+        const favoriteItems = allItemsResult.items.filter(item => 
+          favoriteIds.includes(item.id)
+        )
+        
+        return favoriteItems
       } catch (error) {
         console.error('Failed to get favorites:', error)
+        return []
       }
     }
     
-    return {
-      success: true,
-      data: [],
-      message: 'No favorite items found'
-    }
+    return []
   }
 
-  async addToFavorites(itemId: string): Promise<ApiResponse<void>> {
+  /**
+   * Add item to favorites (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
+  async addToFavorites(itemId: string): Promise<void> {
     // For now, use localStorage for favorites
     // In a real implementation, this would be a POST to /users/favorites
     if (import.meta.client) {
@@ -251,28 +319,21 @@ export class MenuService {
           favoriteIds.push(itemId)
           localStorage.setItem('favorites', JSON.stringify(favoriteIds))
         }
-        
-        return {
-          success: true,
-          message: 'Item added to favorites'
-        }
+        return
       } catch (error) {
-        return {
-          success: false,
-          message: 'Failed to add to favorites',
-          errors: [error instanceof Error ? error.message : 'Unknown error']
-        }
+        throw new Error(`Failed to add to favorites: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     }
     
-    return {
-      success: false,
-      message: 'Client-side storage not available',
-      errors: ['CLIENT_STORAGE_UNAVAILABLE']
-    }
+    throw new Error('Client-side storage not available')
   }
 
-  async removeFromFavorites(itemId: string): Promise<ApiResponse<void>> {
+  /**
+   * Remove item from favorites (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
+  async removeFromFavorites(itemId: string): Promise<void> {
     // For now, use localStorage for favorites
     // In a real implementation, this would be a DELETE to /users/favorites/{itemId}
     if (import.meta.client) {
@@ -280,28 +341,21 @@ export class MenuService {
         const favoriteIds = JSON.parse(localStorage.getItem('favorites') || '[]')
         const updatedIds = favoriteIds.filter((id: string) => id !== itemId)
         localStorage.setItem('favorites', JSON.stringify(updatedIds))
-        
-        return {
-          success: true,
-          message: 'Item removed from favorites'
-        }
+        return
       } catch (error) {
-        return {
-          success: false,
-          message: 'Failed to remove from favorites',
-          errors: [error instanceof Error ? error.message : 'Unknown error']
-        }
+        throw new Error(`Failed to remove from favorites: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     }
     
-    return {
-      success: false,
-      message: 'Client-side storage not available',
-      errors: ['CLIENT_STORAGE_UNAVAILABLE']
-    }
+    throw new Error('Client-side storage not available')
   }
 
-  async getMenuItemReviews(itemId: string, page: number = 1, limit: number = 10): Promise<ApiResponse<{
+  /**
+   * Get menu item reviews (unwrapped data)
+   * Returns: review data object
+   * Requirements: 2.1, 2.2
+   */
+  async getMenuItemReviews(itemId: string, page: number = 1, limit: number = 10): Promise<{
     reviews: Array<{
       id: string
       rating: number
@@ -311,22 +365,42 @@ export class MenuService {
     }>
     total: number
     averageRating: number
-  }>> {
-    return this.getApiClient().get(`/menu/items/${itemId}/reviews?page=${page}&limit=${limit}`)
+  }> {
+    return this.getApiClient().get<{
+      reviews: Array<{
+        id: string
+        rating: number
+        comment: string
+        userName: string
+        createdAt: string
+      }>
+      total: number
+      averageRating: number
+    }>(`/menu/items/${itemId}/reviews?page=${page}&limit=${limit}`)
   }
 
+  /**
+   * Add menu item review (unwrapped data)
+   * Returns: void
+   * Requirements: 2.3
+   */
   async addMenuItemReview(itemId: string, review: {
     rating: number
     comment: string
-  }): Promise<ApiResponse<void>> {
-    return this.getApiClient().post(`/menu/items/${itemId}/reviews`, review)
+  }): Promise<void> {
+    return this.getApiClient().post<void>(`/menu/items/${itemId}/reviews`, review)
   }
 
   // Helper methods
   private getTenantSlug(): string | null {
     const nuxtApp = useNuxtApp()
     const runtimeConfig = nuxtApp.$config
-    return runtimeConfig?.public?.tenantSlug || null
+    const tenantSlug = runtimeConfig?.public?.tenantSlug || null
+    
+    console.log('🏢 Menu Service - Runtime config:', runtimeConfig?.public)
+    console.log('🏢 Menu Service - Tenant slug from config:', tenantSlug)
+    
+    return tenantSlug
   }
 
   private extractCategoriesFromMenus(menus: any[]): Category[] {

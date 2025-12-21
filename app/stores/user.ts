@@ -1,27 +1,37 @@
 import { defineStore } from 'pinia'
 import { useUserService } from '~/services/user.service'
-import type { User, UserLocation, Notification, UpdateProfileDto, Promotion } from '~/types'
+import type { User, UserLocation, Notification, UpdateProfileDto, Promotion, ApiError, PaginationMeta } from '~/types'
 import { Platform } from '~/types'
 
 interface UserState {
+  // Clean business data only
   user: User | null
-  isAuthenticated: boolean
-  platform: Platform
   notifications: Notification[]
   promotions: Promotion[]
   location: UserLocation | null
+  notificationsPagination: PaginationMeta | null
+  promotionsPagination: PaginationMeta | null
+  
+  // State management
+  isAuthenticated: boolean
+  platform: Platform
   loading: boolean
-  error: string | null
+  error: ApiError | null
 }
 
 export const useUserStore = defineStore('user', {
   state: (): UserState => ({
+    // Clean business data only
     user: null,
-    isAuthenticated: false,
-    platform: Platform.WEB,
     notifications: [],
     promotions: [],
     location: null,
+    notificationsPagination: null,
+    promotionsPagination: null,
+    
+    // State management
+    isAuthenticated: false,
+    platform: Platform.WEB,
     loading: false,
     error: null,
   }),
@@ -133,15 +143,13 @@ export const useUserStore = defineStore('user', {
 
       try {
         const userService = useUserService()
-        const response = await userService.updateProfile(data)
+        const user = await userService.updateProfile(data)
 
-        if (response.success && response.data) {
-          this.user = response.data
-        } else {
-          throw new Error(response.message || 'Failed to update profile')
-        }
+        // Store clean data directly
+        this.user = user
+        
       } catch (error) {
-        this.error = 'Failed to update profile'
+        this.error = error as ApiError
         console.error('Profile update error:', error)
       } finally {
         this.loading = false
@@ -156,6 +164,7 @@ export const useUserStore = defineStore('user', {
         const userService = useUserService()
         await userService.updateLocation(location)
         
+        // Store clean data directly
         this.location = location
 
         // Persist location
@@ -163,7 +172,7 @@ export const useUserStore = defineStore('user', {
           localStorage.setItem('user_location', JSON.stringify(location))
         }
       } catch (error) {
-        this.error = 'Failed to update location'
+        this.error = error as ApiError
         console.error('Location update error:', error)
       } finally {
         this.loading = false
@@ -181,18 +190,19 @@ export const useUserStore = defineStore('user', {
 
       try {
         const userService = useUserService()
-        const response = await userService.getNotifications(params)
+        const result = await userService.getNotifications(params)
 
-        if (response.success && response.data) {
-          if (params?.page && params.page > 1) {
-            // Append for pagination
-            this.notifications.push(...response.data.notifications)
-          } else {
-            this.notifications = response.data.notifications
-          }
+        // Store clean data directly
+        if (params?.page && params.page > 1) {
+          // Append for pagination
+          this.notifications.push(...result.items)
+        } else {
+          this.notifications = result.items
         }
+        this.notificationsPagination = result.pagination
+        
       } catch (error) {
-        this.error = 'Failed to fetch notifications'
+        this.error = error as ApiError
         console.error('Notifications fetch error:', error)
       } finally {
         this.loading = false
@@ -237,18 +247,19 @@ export const useUserStore = defineStore('user', {
 
       try {
         const userService = useUserService()
-        const response = await userService.getPromotions(params)
+        const result = await userService.getPromotions(params)
 
-        if (response.success && response.data) {
-          if (params?.page && params.page > 1) {
-            // Append for pagination
-            this.promotions.push(...response.data.promotions)
-          } else {
-            this.promotions = response.data.promotions
-          }
+        // Store clean data directly
+        if (params?.page && params.page > 1) {
+          // Append for pagination
+          this.promotions.push(...result.items)
+        } else {
+          this.promotions = result.items
         }
+        this.promotionsPagination = result.pagination
+        
       } catch (error) {
-        this.error = 'Failed to fetch promotions'
+        this.error = error as ApiError
         console.error('Promotions fetch error:', error)
       } finally {
         this.loading = false
@@ -261,15 +272,10 @@ export const useUserStore = defineStore('user', {
 
       try {
         const userService = useUserService()
-        const response = await userService.claimPromotion(promotionId)
-
-        if (response.success && response.data) {
-          return response.data
-        } else {
-          throw new Error(response.message || 'Failed to claim promotion')
-        }
+        const result = await userService.claimPromotion(promotionId)
+        return result
       } catch (error) {
-        this.error = 'Failed to claim promotion'
+        this.error = error as ApiError
         console.error('Promotion claim error:', error)
         return null
       } finally {
@@ -283,18 +289,17 @@ export const useUserStore = defineStore('user', {
 
       try {
         const userService = useUserService()
-        const response = await userService.getLocation()
+        const location = await userService.getLocation()
 
-        if (response.success && response.data) {
-          this.location = response.data
-          
-          // Persist location
-          if (import.meta.client) {
-            localStorage.setItem('user_location', JSON.stringify(response.data))
-          }
+        // Store clean data directly
+        this.location = location
+        
+        // Persist location
+        if (import.meta.client) {
+          localStorage.setItem('user_location', JSON.stringify(location))
         }
       } catch (error) {
-        this.error = 'Failed to fetch user location'
+        this.error = error as ApiError
         console.error('User location fetch error:', error)
         
         // Fall back to localStorage

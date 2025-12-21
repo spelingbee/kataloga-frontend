@@ -46,7 +46,7 @@
     
     <!-- Overlay -->
     <div
-      v-if="$slots.overlay"
+      v-if="slots.overlay"
       class="absolute inset-0 flex items-center justify-center"
     >
       <slot name="overlay" />
@@ -142,6 +142,10 @@ const handleError = () => {
   error.value = true
   imageLoaded.value = false
 }
+
+const slots = defineSlots<{
+  overlay?: () => any
+}>()
 
 // Reset state when src changes
 watch(() => props.src, () => {

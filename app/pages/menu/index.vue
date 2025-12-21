@@ -12,25 +12,28 @@
 
     <!-- Search and Filters -->
     <section class="menu-controls">
-      <div class="menu-controls__row">
+      <div class="menu-controls__search-row">
         <div class="menu-controls__search">
           <MenuSearch />
         </div>
-        <div class="menu-controls__actions">
-          <BaseButton 
-            variant="secondary" 
-            class="u-whitespace-nowrap"
-            @click="showFilters = !showFilters"
-          >
-            <BaseIcon name="filter" size="sm" class="u-mr-2" />
-            Filters
-          </BaseButton>
-          <NuxtLink to="/menu/search">
-            <BaseButton variant="ghost">
-              <BaseIcon name="search" size="sm" />
-            </BaseButton>
-          </NuxtLink>
-        </div>
+        <BaseButton 
+          variant="secondary" 
+          class="menu-controls__search-button"
+          @click="$router.push('/menu/search')"
+        >
+          <BaseIcon name="search" size="sm" />
+        </BaseButton>
+      </div>
+      
+      <div class="menu-controls__filter-row">
+        <BaseButton 
+          variant="secondary" 
+          class="menu-controls__filters-button"
+          @click="showFilters = !showFilters"
+        >
+          <BaseIcon name="filter" size="sm" class="u-mr-2" />
+          Filters
+        </BaseButton>
       </div>
 
       <!-- Filters Panel -->
@@ -39,68 +42,94 @@
       </div>
     </section>
 
+    <!-- Categories Section -->
+    <section v-if="categories.length > 0" class="menu-categories">
+      <div class="menu-categories__list">
+        <button
+          v-for="category in categories"
+          :key="category.id"
+          class="menu-categories__chip"
+          :class="{ 'menu-categories__chip--active': activeCategory === category.id }"
+          @click="onCategorySelected(category.id)"
+        >
+          {{ category.name }}
+          <span class="menu-categories__count">{{ category.count || 0 }}</span>
+        </button>
+        <button
+          class="menu-categories__chip"
+          :class="{ 'menu-categories__chip--active': activeCategory === 'all' || !activeCategory }"
+          @click="onCategorySelected(null)"
+        >
+          All Items
+          <span class="menu-categories__count">{{ filteredItems.length }}</span>
+        </button>
+      </div>
+    </section>
+
     <!-- Main Content -->
     <section class="menu-content">
-      <!-- Categories Sidebar -->
-      <aside class="menu-sidebar">
-        <CategorySidebar 
-          :categories="categories"
-          :active-category="activeCategory"
-          @category-selected="onCategorySelected"
-        />
-      </aside>
+      <!-- Category Title -->
+      <div v-if="activeCategory" class="menu-category-header">
+        <AppHeading level="h2" size="heading-xl" class="menu-category-header__title">
+          {{ getCategoryName(activeCategory) }}
+        </AppHeading>
+        <AppText class="menu-category-header__count">
+          {{ filteredItems.length > 0 ? `${filteredItems.length} items available` : 'No items available' }}
+        </AppText>
+      </div>
 
-      <!-- Menu Items Grid -->
-      <main class="menu-main">
-        <!-- Category Title -->
-        <div v-if="activeCategory" class="menu-category-header">
-          <AppHeading level="h2" size="heading-xl" class="menu-category-header__title">
-            {{ getCategoryName(activeCategory) }}
-          </AppHeading>
-          <AppText class="menu-category-header__count">
-            {{ filteredItems.length }} items available
-          </AppText>
-        </div>
-
-        <!-- Loading State -->
-        <div v-if="menuStore.loading" class="menu-state menu-state--loading">
-          <div class="menu-loading-spinner"/>
-          <AppText class="menu-state__text">Loading menu...</AppText>
-        </div>
-
-        <!-- Error State -->
-        <div v-else-if="menuStore.error" class="menu-state menu-state--error">
-          <BaseIcon name="alert-circle" size="xl" class="menu-state__icon u-text-primary-red" />
-          <AppText class="menu-state__title">{{ menuStore.error }}</AppText>
-          <BaseButton @click="menuStore.fetchMenu()">
-            Try Again
-          </BaseButton>
-        </div>
-
+      <!-- Loading State -->
+      <LoadingWrapper
+        :is-loading="menuStore.loading"
+        :error="menuStore.error"
+        :is-empty="filteredItems.length === 0 && !menuStore.loading"
+        :show-retry="true"
+        skeleton
+        skeleton-component="MenuGridSkeleton"
+        empty-component="EmptyMenu"
+        @retry="menuStore.fetchMenu()"
+      >
         <!-- Menu Items -->
-        <div v-else class="menu-items">
+        <div class="menu-items">
           <MenuItemGrid 
             :items="filteredItems"
             @item-selected="onItemSelected"
+            @add-to-cart="onAddToCart"
           />
 
-          <!-- Empty State -->
-          <div v-if="filteredItems.length === 0" class="menu-state menu-state--empty">
-            <BaseIcon name="search" size="xl" class="menu-state__icon u-text-neutral-80" />
-            <AppText class="menu-state__title">No items found</AppText>
-            <AppText class="menu-state__text">
-              Try adjusting your search or filters
-            </AppText>
-            <BaseButton 
-              variant="secondary" 
-              class="u-mt-4"
-              @click="clearFilters"
-            >
-              Clear Filters
-            </BaseButton>
-          </div>
+          <!-- Pagination -->
+          <BasePagination
+            v-if="menuStore.pagination && menuStore.pagination.totalPages > 1"
+            :pagination="menuStore.pagination"
+            @page-change="onPageChange"
+          />
         </div>
-      </main>
+      </LoadingWrapper>
+    </section>
+
+    <!-- Debug Actions (Development Only) -->
+    <section v-if="$config.public.NODE_ENV === 'development'" class="menu-debug" style="background: #333; padding: 1rem; margin: 1rem 0; border-radius: 8px;">
+      <h3 style="color: white; margin-bottom: 1rem;">🔧 Debug Tools</h3>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <BaseButton variant="primary" @click="testApiConnection">
+          🌐 Test API Connection
+        </BaseButton>
+        <BaseButton variant="secondary" @click="testTenantConfig">
+          🏢 Test Tenant Config
+        </BaseButton>
+        <BaseButton variant="secondary" @click="manualFetchMenu">
+          🍽️ Manual Fetch Menu
+        </BaseButton>
+        <BaseButton variant="secondary" @click="clearCache">
+          🗑️ Clear Cache
+        </BaseButton>
+      </div>
+      <div style="margin-top: 1rem; color: white; font-size: 0.875rem;">
+        <div>Loading: {{ menuStore.loading }}</div>
+        <div>Error: {{ menuStore.error }}</div>
+        <div>Categories: {{ categories.length }}</div>
+        <div>Items: {{ filteredItems.length }}</div>
+      </div>
     </section>
 
     <!-- Quick Actions -->
@@ -128,6 +157,11 @@ import type { MenuItem } from '~/types'
 
 // Stores
 import { useMenuStore } from '~/stores/menu'
+import { useCartStore } from '~/stores/cart'
+import AppText from '../../components/base/AppText.vue'
+import AppHeading from '../../components/base/AppHeading.vue'
+import LoadingWrapper from '../../components/base/LoadingWrapper.vue'
+import BasePagination from '../../components/base/BasePagination.vue'
 
 // Page setup
 definePageMeta({
@@ -135,6 +169,7 @@ definePageMeta({
 })
 
 const menuStore = useMenuStore()
+const cartStore = useCartStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -145,7 +180,8 @@ const activeCategory = ref<string | null>(null)
 // Computed
 const categories = computed(() => menuStore.categories)
 const filteredItems = computed(() => {
-  return menuStore.filteredItems
+  const items = menuStore.filteredItems
+  return Array.isArray(items) ? items : []
 })
 
 // Methods
@@ -166,10 +202,21 @@ const onItemSelected = (item: MenuItem) => {
   router.push(`/dish/${item.id}`)
 }
 
+const onAddToCart = (item: MenuItem) => {
+  // The MenuItemCard component already handles adding to cart
+  // This is just for additional handling if needed
+  console.log('Item added to cart:', item.name)
+}
+
 const getCategoryName = (categoryId: string | null) => {
   if (!categoryId || categoryId === 'all') return 'All Items'
-  const category = categories.find(cat => cat.id === categoryId)
+  const category = categories.value.find(cat => cat.id === categoryId)
   return category?.name || 'Category'
+}
+
+const onPageChange = (page: number) => {
+  // Update pagination and fetch new data
+  menuStore.fetchMenuItems({ page })
 }
 
 const clearFilters = () => {
@@ -177,10 +224,57 @@ const clearFilters = () => {
   showFilters.value = false
 }
 
+// Debug methods
+const testApiConnection = async () => {
+  console.log('🧪 Testing API Connection...')
+  try {
+    const response = await fetch('http://localhost:3001/health')
+    const text = await response.text()
+    console.log('✅ Health Check:', response.status, text)
+    alert(`Health Check: ${response.status} - ${text}`)
+  } catch (error) {
+    console.error('❌ Health Check Failed:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    alert(`Health Check Failed: ${errorMessage}`)
+  }
+}
+
+const testTenantConfig = () => {
+  console.log('🧪 Testing Tenant Config...')
+  const config = useRuntimeConfig()
+  console.log('🔧 Runtime Config:', config.public)
+  alert(`Tenant Slug: ${config.public.tenantSlug}\nAPI Base URL: ${config.public.apiBaseUrl}`)
+}
+
+const manualFetchMenu = async () => {
+  console.log('🧪 Manual Fetch Menu...')
+  try {
+    await menuStore.fetchMenu()
+    alert('Manual fetch completed! Check console for details.')
+  } catch (error) {
+    console.error('❌ Manual fetch failed:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    alert(`Manual fetch failed: ${errorMessage}`)
+  }
+}
+
+const clearCache = () => {
+  console.log('🧪 Clearing Cache...')
+  localStorage.clear()
+  if ('indexedDB' in window) {
+    indexedDB.deleteDatabase('MenuAppDB')
+  }
+  alert('Cache cleared! Refresh the page.')
+}
+
 // Initialize
 onMounted(async () => {
+  console.log('🎯 Menu Page - onMounted called')
+  
   // Set initial category from query params
   const categoryFromQuery = route.query.category as string
+  console.log('📋 Menu Page - Category from query:', categoryFromQuery)
+  
   if (categoryFromQuery) {
     activeCategory.value = categoryFromQuery
     menuStore.setCurrentCategory(categoryFromQuery)
@@ -189,11 +283,15 @@ onMounted(async () => {
     menuStore.setCurrentCategory(null)
   }
   
+  console.log('🏪 Menu Page - Active category set to:', activeCategory.value)
+  
   // Fetch menu data
+  console.log('🚀 Menu Page - Starting fetchMenu...')
   try {
     await menuStore.fetchMenu()
+    console.log('✅ Menu Page - fetchMenu completed successfully')
   } catch (error) {
-    console.error('Failed to fetch menu:', error)
+    console.error('❌ Menu Page - fetchMenu failed:', error)
     // Error is handled by the store
   }
 })

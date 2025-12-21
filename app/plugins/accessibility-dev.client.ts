@@ -24,7 +24,7 @@ export default defineNuxtPlugin(() => {
 
     auditTimeout = setTimeout(() => {
       isAuditRunning = true
-      
+
       try {
         logAccessibilityIssues()
       } catch (error) {
@@ -41,7 +41,7 @@ export default defineNuxtPlugin(() => {
   const showAccessibilityScore = () => {
     const result = runAccessibilityAudit()
     const { compliance, summary } = result
-    
+
     console.group('🔍 Accessibility Score')
     console.log(`📊 Score: ${compliance.score}/100`)
     console.log(`${compliance.wcagAA ? '✅' : '❌'} WCAG AA: ${compliance.wcagAA ? 'PASS' : 'FAIL'}`)
@@ -61,7 +61,7 @@ export default defineNuxtPlugin(() => {
       const el = element as HTMLElement
       el.style.outline = '2px solid #FF6B35'
       el.style.outlineOffset = '2px'
-      
+
       // Add touch target size indicator
       const rect = el.getBoundingClientRect()
       if (rect.width < 44 || rect.height < 44) {
@@ -71,7 +71,7 @@ export default defineNuxtPlugin(() => {
     })
 
     console.log(`🎯 Highlighted ${elements.length} interactive elements`)
-    
+
     // Remove highlights after 5 seconds
     setTimeout(() => {
       elements.forEach((element) => {
@@ -91,14 +91,14 @@ export default defineNuxtPlugin(() => {
    */
   const showHeadingHierarchy = () => {
     const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6')
-    
+
     console.group('📋 Heading Hierarchy')
     headings.forEach((heading, index) => {
       const level = parseInt(heading.tagName.substring(1))
       const indent = '  '.repeat(level - 1)
       const text = heading.textContent?.trim() || '[Empty heading]'
       console.log(`${indent}${heading.tagName}: ${text}`)
-      
+
       // Highlight in DOM
       const el = heading as HTMLElement
       el.style.outline = `${level}px solid #3B82F6`
@@ -128,9 +128,9 @@ export default defineNuxtPlugin(() => {
 
     console.group('⌨️ Keyboard Navigation Test')
     console.log(`Found ${focusableElements.length} focusable elements`)
-    
+
     let currentIndex = 0
-    
+
     const focusNext = () => {
       if (currentIndex < focusableElements.length) {
         const element = focusableElements[currentIndex]
@@ -138,10 +138,10 @@ export default defineNuxtPlugin(() => {
           element.focus()
           element.style.outline = '3px solid #10B981'
           element.style.outlineOffset = '2px'
-          
+
           console.log(`${currentIndex + 1}/${focusableElements.length}: ${element.tagName} - ${element.textContent?.trim() || element.getAttribute('aria-label') || '[No accessible name]'}`)
         }
-        
+
         // Remove previous highlight
         if (currentIndex > 0) {
           const prevElement = focusableElements[currentIndex - 1]
@@ -150,9 +150,9 @@ export default defineNuxtPlugin(() => {
             prevElement.style.outlineOffset = ''
           }
         }
-        
+
         currentIndex++
-        
+
         if (currentIndex < focusableElements.length) {
           setTimeout(focusNext, 1000)
         } else {
@@ -184,13 +184,13 @@ export default defineNuxtPlugin(() => {
     let failCount = 0
 
     console.group('🎨 Color Contrast Check')
-    
+
     textElements.forEach((element) => {
       const el = element as HTMLElement
       const computedStyle = window.getComputedStyle(el)
       const color = computedStyle.color
       const backgroundColor = computedStyle.backgroundColor
-      
+
       // Skip if no background or transparent
       if (!backgroundColor || backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent') {
         return
@@ -200,13 +200,13 @@ export default defineNuxtPlugin(() => {
         // Simple contrast check (would need full implementation for production)
         const colorLuminance = getLuminanceFromRGB(color)
         const bgLuminance = getLuminanceFromRGB(backgroundColor)
-        
+
         if (colorLuminance !== null && bgLuminance !== null) {
           const ratio = (Math.max(colorLuminance, bgLuminance) + 0.05) / (Math.min(colorLuminance, bgLuminance) + 0.05)
           const fontSize = parseFloat(computedStyle.fontSize)
           const isLargeText = fontSize >= 18
           const requiredRatio = isLargeText ? 3 : 4.5
-          
+
           if (ratio >= requiredRatio) {
             passCount++
           } else {
@@ -247,7 +247,7 @@ export default defineNuxtPlugin(() => {
       const sRGB = c / 255
       return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4)
     })
-    
+
     return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
   }
 
@@ -258,31 +258,31 @@ export default defineNuxtPlugin(() => {
       event.preventDefault()
       runAudit()
     }
-    
+
     // Ctrl/Cmd + Shift + S: Show accessibility score
     if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'S') {
       event.preventDefault()
       showAccessibilityScore()
     }
-    
+
     // Ctrl/Cmd + Shift + H: Highlight interactive elements
     if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'H') {
       event.preventDefault()
       highlightInteractiveElements()
     }
-    
+
     // Ctrl/Cmd + Shift + G: Show heading hierarchy
     if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'G') {
       event.preventDefault()
       showHeadingHierarchy()
     }
-    
+
     // Ctrl/Cmd + Shift + K: Test keyboard navigation
     if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'K') {
       event.preventDefault()
       testKeyboardNavigation()
     }
-    
+
     // Ctrl/Cmd + Shift + C: Check color contrast
     if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'C') {
       event.preventDefault()
@@ -291,20 +291,20 @@ export default defineNuxtPlugin(() => {
   }
 
   // Add event listeners
-  document.addEventListener('keydown', handleKeyDown)
+  // document.addEventListener('keydown', handleKeyDown)
 
   // Run initial audit after page load
-  if (document.readyState === 'complete') {
-    setTimeout(runAudit, 2000)
-  } else {
-    window.addEventListener('load', () => {
-      setTimeout(runAudit, 2000)
-    })
-  }
+  // if (document.readyState === 'complete') {
+  //   setTimeout(runAudit, 2000)
+  // } else {
+  //   window.addEventListener('load', () => {
+  //     setTimeout(runAudit, 2000)
+  //   })
+  // }
 
   // Run audit on DOM changes (debounced)
   const observer = new MutationObserver(() => {
-    runAudit()
+    // runAudit()
   })
 
   observer.observe(document.body, {

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useMenuService } from '~/services/menu.service'
 import { useOfflineCart } from '~/composables/useOfflineCart'
-import type { Category, MenuItem, MenuFilters } from '~/types'
+import type { Category, MenuItem, MenuFilters, PaginationMeta, ApiError } from '~/types'
 
 // Helper function to get tenant store (to avoid circular dependency)
 function getTenantSlug(): string {
@@ -15,32 +15,40 @@ function getTenantSlug(): string {
 }
 
 interface MenuState {
+  // Clean business data only (no ApiResponse wrappers)
   categories: Category[]
   menuItems: MenuItem[]
+  pagination: PaginationMeta | null
   currentCategory: string | null
   searchQuery: string
   filters: MenuFilters
-  loading: boolean
-  error: string | null
   selectedDish: MenuItem | null
+  
+  // State management
+  loading: boolean
+  error: ApiError | null
 }
 
 export const useMenuStore = defineStore('menu', {
   state: (): MenuState => ({
+    // Clean business data only
     categories: [],
     menuItems: [],
+    pagination: null,
     currentCategory: null,
     searchQuery: '',
     filters: {},
+    selectedDish: null,
+    
+    // State management
     loading: false,
     error: null,
-    selectedDish: null,
   }),
 
   getters: {
     filteredMenuItems: state => {
       let items = state.menuItems
-
+      console.log(items)
       // Filter by category
       if (state.currentCategory) {
         items = items.filter(item => item.categoryId === state.currentCategory)
@@ -124,64 +132,97 @@ export const useMenuStore = defineStore('menu', {
 
   actions: {
     async fetchMenu() {
+      console.log('🍽️ Menu Store - Starting fetchMenu')
       this.loading = true
       this.error = null
 
       try {
         const menuService = useMenuService()
-        const { saveOfflineData, loadOfflineData } = useOfflineCart()
+        console.log('✅ Menu Store - Menu service initialized')
         
-        // Try to load from cache first for faster initial render
-        const cachedCategories = await loadOfflineData('categories')
-        const cachedMenuItems = await loadOfflineData('menuItems')
-        
-        if (cachedCategories && cachedMenuItems) {
-          this.categories = cachedCategories
-          this.menuItems = cachedMenuItems
-          console.log('Menu loaded from cache:', this.menuItems.length, 'items')
+        // Try to load from cache first for faster initial render (non-blocking)
+        try {
+          const { loadOfflineData } = useOfflineCart()
+          console.log('📦 Menu Store - Attempting to load from cache...')
+          
+          const cachedCategories = await loadOfflineData('categories')
+          const cachedMenuItems = await loadOfflineData('menuItems')
+          
+          if (cachedCategories && cachedMenuItems) {
+            this.categories = cachedCategories
+            this.menuItems = cachedMenuItems
+            console.log('✅ Menu Store - Loaded from cache:', this.menuItems.length, 'items')
+          } else {
+            console.log('ℹ️ Menu Store - No cache found')
+          }
+        } catch (cacheError) {
+          console.warn('⚠️ Menu Store - Cache loading failed (non-critical):', cacheError)
         }
         
-        // Fetch fresh data from API
-        const [categoriesResponse, menuItemsResponse] = await Promise.all([
+        // Fetch fresh data from API (now returns unwrapped data)
+        console.log('🌐 Menu Store - Fetching fresh data from API')
+        const [categories, menuItemsResult] = await Promise.all([
           menuService.getCategories(),
           menuService.getMenuItems()
         ])
 
-        if (categoriesResponse.success && categoriesResponse.data) {
-          this.categories = categoriesResponse.data
-          // Cache categories for offline use
-          await saveOfflineData('categories', this.categories)
-          console.log('Categories loaded from API:', this.categories)
-        } else {
-          console.error('Failed to load categories:', categoriesResponse.message)
-          // If API fails and we have no cache, throw error
-          if (!cachedCategories) {
-            throw new Error('No categories available')
-          }
-        }
+        console.log('📥 Menu Store - API responses received')
+        console.log('  Categories:', categories.length, 'categories')
+        console.log('  Menu Items:', menuItemsResult.items.length, 'items')
 
-        if (menuItemsResponse.success && menuItemsResponse.data) {
-          this.menuItems = menuItemsResponse.data.items
-          // Cache menu items for offline use
-          await saveOfflineData('menuItems', this.menuItems)
-          console.log('Menu items loaded from API:', this.menuItems.length, 'items')
-        } else {
-          console.error('Failed to load menu items:', menuItemsResponse.message)
-          // If API fails and we have no cache, throw error
-          if (!cachedMenuItems) {
-            throw new Error('No menu items available')
-          }
+        // Store clean data directly
+        this.categories = categories
+        this.menuItems = menuItemsResult.items
+        this.pagination = menuItemsResult.pagination
+        
+        console.log('✅ Menu Store - Data stored successfully')
+        
+        // Cache data for offline use (non-blocking)
+        try {
+          const { saveOfflineData } = useOfflineCart()
+          await Promise.all([
+            saveOfflineData('categories', this.categories),
+            saveOfflineData('menuItems', this.menuItems)
+          ])
+          console.log('💾 Menu Store - Data cached successfully')
+        } catch (cacheError) {
+          console.warn('⚠️ Menu Store - Data caching failed (non-critical):', cacheError)
         }
 
       } catch (error) {
-        // If we have cached data, use it and don't show error
+        console.error('❌ Menu Store - Fetch error:', error)
+        
+        // Store typed error
+        this.error = error as ApiError
+        
+        // If we have cached data, use it and clear error
         if (this.categories.length > 0 && this.menuItems.length > 0) {
-          console.log('Using cached menu data due to network error')
+          console.log('📦 Menu Store - Using cached data due to error')
           this.error = null
         } else {
-          this.error = 'Failed to fetch menu data'
-          console.error('Menu fetch error:', error)
+          console.error('💥 Menu Store - Final error:', this.error)
         }
+      } finally {
+        this.loading = false
+        console.log('🏁 Menu Store - fetchMenu completed')
+      }
+    },
+
+    async fetchMenuItems(params?: { page?: number; categoryId?: string; limit?: number }) {
+      this.loading = true
+      this.error = null
+
+      try {
+        const menuService = useMenuService()
+        const result = await menuService.getMenuItems(params)
+
+        // Store clean data directly
+        this.menuItems = result.items
+        this.pagination = result.pagination
+        
+      } catch (error) {
+        this.error = error as ApiError
+        console.error('Menu items fetch error:', error)
       } finally {
         this.loading = false
       }
@@ -194,19 +235,20 @@ export const useMenuStore = defineStore('menu', {
 
       try {
         const menuService = useMenuService()
-        const response = await menuService.getMenuItems({ categoryId })
+        const result = await menuService.getMenuItems({ categoryId })
 
-        if (response.success && response.data) {
-          // Update menu items for this category
-          const categoryItems = response.data.items
-          // Replace items for this category while keeping others
-          this.menuItems = [
-            ...this.menuItems.filter(item => item.categoryId !== categoryId),
-            ...categoryItems
-          ]
-        }
+        // Store clean data directly
+        const categoryItems = result.items
+        // Replace items for this category while keeping others
+        this.menuItems = [
+          ...this.menuItems.filter(item => item.categoryId !== categoryId),
+          ...categoryItems
+        ]
+        // Update pagination metadata
+        this.pagination = result.pagination
+        
       } catch (error) {
-        this.error = 'Failed to fetch category data'
+        this.error = error as ApiError
         console.error('Category fetch error:', error)
       } finally {
         this.loading = false
@@ -225,16 +267,16 @@ export const useMenuStore = defineStore('menu', {
 
       try {
         const menuService = useMenuService()
-        const response = await menuService.searchMenuItems(query, this.filters)
+        const items = await menuService.searchMenuItems(query, this.filters)
 
-        if (response.success && response.data) {
-          // Update search results
-          this.menuItems = response.data
-        }
+        // Store clean data directly
+        this.menuItems = items
+        // Clear pagination for search results
+        this.pagination = null
 
         return this.filteredMenuItems
       } catch (error) {
-        this.error = 'Failed to search menu items'
+        this.error = error as ApiError
         console.error('Search error:', error)
         return this.filteredMenuItems
       } finally {
@@ -294,18 +336,16 @@ export const useMenuStore = defineStore('menu', {
 
       try {
         const menuService = useMenuService()
-        const response = await menuService.getPopularItems(8)
+        const popularItems = await menuService.getPopularItems(8)
 
-        if (response.success && response.data) {
-          // Update popular items in the menu items array
-          const popularItems = response.data
-          // Merge with existing items, avoiding duplicates
-          const existingIds = new Set(this.menuItems.map(item => item.id))
-          const newItems = popularItems.filter(item => !existingIds.has(item.id))
-          this.menuItems = [...this.menuItems, ...newItems]
-        }
+        // Store clean data directly
+        // Merge with existing items, avoiding duplicates
+        const existingIds = new Set(this.menuItems.map(item => item.id))
+        const newItems = popularItems.filter(item => !existingIds.has(item.id))
+        this.menuItems = [...this.menuItems, ...newItems]
+        
       } catch (error) {
-        this.error = 'Failed to fetch popular items'
+        this.error = error as ApiError
         console.error('Popular items fetch error:', error)
       } finally {
         this.loading = false
@@ -328,10 +368,10 @@ export const useMenuStore = defineStore('menu', {
 
       try {
         const menuService = useMenuService()
-        const response = await menuService.getMenuItem(itemId)
+        const item = await menuService.getMenuItem(itemId)
 
-        if (response.success && response.data) {
-          const item = response.data
+        if (item) {
+          // Store clean data directly
           this.selectedDish = item
           
           // Update the item in the menu items array if it exists
@@ -343,10 +383,18 @@ export const useMenuStore = defineStore('menu', {
           }
           
           return item
+        } else {
+          // Item not found
+          this.error = {
+            code: 'NOT_FOUND',
+            message: 'Menu item not found'
+          } as ApiError
+          return null
         }
       } catch (error) {
-        this.error = 'Failed to fetch menu item'
+        this.error = error as ApiError
         console.error('Menu item fetch error:', error)
+        return null
       } finally {
         this.loading = false
       }

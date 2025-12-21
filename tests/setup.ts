@@ -1,42 +1,85 @@
 import { vi } from 'vitest'
 import { config } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
+import { createApiClient } from '~/utils/api'
 
-// Mock Vue composables
+// Mock Vue composables properly
 vi.mock('vue', async () => {
   const actual = await vi.importActual('vue')
   return {
     ...actual,
-    ref: vi.fn((value) => ({ value })),
-    computed: vi.fn((fn) => ({ value: fn() })),
-    reactive: vi.fn((obj) => obj),
+    ref: (value: any) => {
+      const refObj = { value }
+      return refObj
+    },
+    computed: (fn: () => any) => {
+      const computedObj = { value: fn() }
+      return computedObj
+    },
+    reactive: (obj: any) => obj,
+    readonly: (obj: any) => obj,
     watch: vi.fn(),
     watchEffect: vi.fn(),
     onMounted: vi.fn(),
     onUnmounted: vi.fn(),
     nextTick: vi.fn(() => Promise.resolve()),
+    getCurrentInstance: vi.fn(() => ({ type: { name: 'TestComponent' } })),
   }
 })
 
-// Mock Pinia composables
+// Mock Pinia composables properly
 vi.mock('pinia', async () => {
   const actual = await vi.importActual('pinia')
   return {
     ...actual,
-    storeToRefs: vi.fn((store) => {
-      const refs = {}
+    storeToRefs: (store: any) => {
+      const refs: any = {}
       for (const key in store) {
         if (typeof store[key] !== 'function') {
           refs[key] = { value: store[key] }
         }
       }
       return refs
-    }),
+    },
   }
 })
 
-// Mock Nuxt composables
+// Mock Nuxt composables globally
 vi.mock('#app', () => ({
+  useNuxtApp: vi.fn(() => ({
+    $config: {
+      public: {
+        tenantSlug: 'test-tenant',
+        apiUrl: 'http://localhost:3001',
+        stripePublishableKey: 'pk_test_123',
+      },
+    },
+    $reportError: vi.fn(),
+  })),
+  useRuntimeConfig: vi.fn(() => ({
+    public: {
+      tenantSlug: 'test-tenant',
+      apiUrl: 'http://localhost:3001',
+      stripePublishableKey: 'pk_test_123',
+    },
+  })),
+  navigateTo: vi.fn(),
+  useRoute: vi.fn(() => ({
+    params: { tenant: 'test-tenant' },
+    query: {},
+    path: '/test-tenant',
+  })),
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    go: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+  })),
+}))
+
+// Also mock the direct imports
+vi.mock('nuxt/app', () => ({
   useNuxtApp: vi.fn(() => ({
     $config: {
       public: {
@@ -117,6 +160,52 @@ beforeEach(() => {
   }
   vi.stubGlobal('localStorage', localStorageMock)
   
+  // Initialize API client for tests
+  createApiClient({
+    baseURL: 'http://localhost:3001',
+    tenantSlug: 'test-tenant',
+  })
+  
+  // Mock fetch with proper Response objects
+  const mockFetch = vi.fn().mockImplementation((url, options) => {
+    const response = {
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      headers: new Headers({
+        'content-type': 'application/json',
+      }),
+      json: () => Promise.resolve({
+        success: true,
+        statusCode: 200,
+        data: { message: 'Mock response' },
+        error: null,
+        meta: {
+          requestId: 'test-request-id',
+          timestamp: new Date().toISOString(),
+          tenantId: 'test-tenant',
+        },
+      }),
+      text: () => Promise.resolve(JSON.stringify({
+        success: true,
+        statusCode: 200,
+        data: { message: 'Mock response' },
+        error: null,
+        meta: {
+          requestId: 'test-request-id',
+          timestamp: new Date().toISOString(),
+          tenantId: 'test-tenant',
+        },
+      })),
+      blob: () => Promise.resolve(new Blob()),
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+      formData: () => Promise.resolve(new FormData()),
+      clone: () => response,
+    }
+    return Promise.resolve(response as Response)
+  })
+  vi.stubGlobal('fetch', mockFetch)
+  
   // Mock window.Telegram for Telegram Web App tests
   vi.stubGlobal('window', {
     Telegram: {
@@ -175,6 +264,14 @@ beforeEach(() => {
       addListener: vi.fn(),
       removeListener: vi.fn(),
     })),
+    getComputedStyle: vi.fn(() => ({
+      getPropertyValue: vi.fn(() => 'none'),
+      outline: 'none',
+      outlineWidth: '0px',
+      outlineStyle: 'none',
+      outlineColor: 'transparent',
+    })),
+    localStorage: localStorageMock,
   })
   
   // Mock fetch
@@ -183,3 +280,52 @@ beforeEach(() => {
 
 // Configure Vue Test Utils
 config.global.plugins = []
+
+// Add global mocks for Vue composables
+vi.stubGlobal('ref', (value: any) => ({ value }))
+vi.stubGlobal('computed', (fn: () => any) => ({ value: fn() }))
+vi.stubGlobal('reactive', (obj: any) => obj)
+vi.stubGlobal('readonly', (obj: any) => obj)
+vi.stubGlobal('watch', vi.fn())
+vi.stubGlobal('watchEffect', vi.fn())
+vi.stubGlobal('onMounted', vi.fn())
+vi.stubGlobal('onUnmounted', vi.fn())
+vi.stubGlobal('nextTick', vi.fn(() => Promise.resolve()))
+vi.stubGlobal('getCurrentInstance', vi.fn(() => ({ type: { name: 'TestComponent' } })))
+vi.stubGlobal('storeToRefs', (store: any) => {
+  const refs: any = {}
+  for (const key in store) {
+    if (typeof store[key] !== 'function') {
+      refs[key] = { value: store[key] }
+    }
+  }
+  return refs
+})
+
+// Add global mocks for Nuxt composables
+vi.stubGlobal('useNuxtApp', () => ({
+  $config: {
+    public: {
+      tenantSlug: 'test-tenant',
+      apiUrl: 'http://localhost:3001',
+      stripePublishableKey: 'pk_test_123',
+    },
+  },
+  $reportError: vi.fn(),
+}))
+
+vi.stubGlobal('useRuntimeConfig', () => ({
+  public: {
+    tenantSlug: 'test-tenant',
+    apiUrl: 'http://localhost:3001',
+    stripePublishableKey: 'pk_test_123',
+  },
+}))
+
+vi.stubGlobal('useApiError', () => ({
+  error: { value: null },
+  isError: { value: false },
+  clearError: vi.fn(),
+  setError: vi.fn(),
+  retry: vi.fn(),
+}))

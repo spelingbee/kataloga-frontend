@@ -202,11 +202,25 @@ export class CartValidationService {
 
       const response = await this.getApiClient().get(`/public/menu/${tenantSlug}`)
 
-      if (response.success && response.data) {
+      // Check if response is in ApiResponse format or direct data
+      let menus: any[] = []
+      
+      if (response && typeof response === 'object') {
+        if ('success' in response && 'data' in response && response.success) {
+          // Standard ApiResponse format
+          menus = response.data
+        } else if (Array.isArray(response)) {
+          // Direct array response from public endpoints
+          menus = response
+        } else {
+          console.error('❌ Cart Validation - Menu response not in expected format:', response)
+          return null
+        }
+        
         // Extract menu items from menus
         const items: MenuItem[] = []
 
-        response.data.forEach((menu: any) => {
+        menus.forEach((menu: any) => {
           if (menu.items) {
             menu.items.forEach((item: any) => {
               items.push({
@@ -285,7 +299,7 @@ export class CartValidationService {
       if (result.errors.length > 0) {
         return {
           title: 'Validation Error',
-          message: result.errors[0],
+          message: result.errors[0] || 'Unknown validation error',
           type: 'error',
         }
       }
@@ -301,7 +315,7 @@ export class CartValidationService {
       }
       return {
         title: 'Cart Updated',
-        message: result.warnings[0],
+        message: result.warnings[0] || 'Cart has been updated',
         type: 'warning',
       }
     }

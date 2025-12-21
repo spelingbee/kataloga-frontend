@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { useOrderService } from '~/services/order.service'
 import { useOfflineCart } from '~/composables/useOfflineCart'
 import { useTelegramHaptic } from '~/composables/useTelegramHaptic'
-import type { CartItem, MenuItem, ApiResponse } from '~/types'
+import type { CartItem, MenuItem, ApiError } from '~/types'
 
 // Helper function to get tenant store (to avoid circular dependency)
 function getTenantSlug(): string {
@@ -20,26 +20,34 @@ function getTenantSlug(): string {
 }
 
 interface CartState {
+  // Clean business data only
   items: CartItem[]
-  loading: boolean
-  syncing: boolean
-  lastSyncAt: Date | null
   promoCode: string | null
   discount: number
   deliveryFee: number
   minimumOrderAmount: number
+  
+  // State management
+  loading: boolean
+  syncing: boolean
+  lastSyncAt: Date | null
+  error: ApiError | null
 }
 
 export const useCartStore = defineStore('cart', {
   state: (): CartState => ({
+    // Clean business data only
     items: [],
-    loading: false,
-    syncing: false,
-    lastSyncAt: null,
     promoCode: null,
     discount: 0,
     deliveryFee: 0,
     minimumOrderAmount: 0,
+    
+    // State management
+    loading: false,
+    syncing: false,
+    lastSyncAt: null,
+    error: null,
   }),
 
   getters: {
@@ -211,24 +219,30 @@ export const useCartStore = defineStore('cart', {
       }
 
       this.loading = true
+      this.error = null
+      
       try {
         const apiClient = (useNuxtApp() as any).$apiClient
-        const response: ApiResponse<{ discount: number; message: string }> = await apiClient.post('/promo/validate', {
+        const result = await apiClient.post<{ discount: number; message: string }>('/promo/validate', {
           code: code.trim(),
           subtotal: this.subtotal
         })
 
-        if (response.success && response.data) {
-          this.promoCode = code.trim()
-          this.discount = response.data.discount
-          this.persistCart()
-          return { success: true, message: response.data.message || 'Promo code applied successfully' }
-        } else {
-          return { success: false, message: response.message || 'Invalid promo code' }
-        }
+        // Store clean data directly
+        this.promoCode = code.trim()
+        this.discount = result.discount
+        this.persistCart()
+        
+        return { success: true, message: result.message || 'Promo code applied successfully' }
+        
       } catch (error: any) {
         console.error('Failed to apply promo code:', error)
-        return { success: false, message: error.message || 'Failed to apply promo code' }
+        
+        // Store typed error
+        this.error = error as ApiError
+        
+        const errorMessage = (error as ApiError)?.message || error.message || 'Failed to apply promo code'
+        return { success: false, message: errorMessage }
       } finally {
         this.loading = false
       }
@@ -326,6 +340,7 @@ export const useCartStore = defineStore('cart', {
     // Create order with offline support
     async createOrder(customerInfo: any) {
       this.loading = true
+      this.error = null
       
       try {
         const orderService = useOrderService()
@@ -342,33 +357,23 @@ export const useCartStore = defineStore('cart', {
         }
 
         if (isOnline.value) {
-          // Try to create order online
-          const response = await orderService.createOrder(orderData)
+          // Try to create order online - service returns unwrapped data directly
+          const order = await orderService.createOrder(orderData)
           
-          if (response.success) {
-            // Trigger success haptic feedback
-            try {
-              const { cartActions } = useTelegramHaptic()
-              cartActions.checkoutSuccess()
-            } catch (error) {
-              // Silently fail if haptic feedback is not available
-            }
-            
-            // Clear cart only on successful order creation
-            this.clearCart()
-            return response
-          } else {
-            // If online but failed, DO NOT clear cart - preserve it for retry
-            // Trigger error haptic feedback
-            try {
-              const { cartActions } = useTelegramHaptic()
-              cartActions.checkoutError()
-            } catch (hapticError) {
-              // Silently fail if haptic feedback is not available
-            }
-            
-            // Throw error to indicate failure, but cart is preserved
-            throw new Error(response.message || 'Failed to create order')
+          // Trigger success haptic feedback
+          try {
+            const { cartActions } = useTelegramHaptic()
+            cartActions.checkoutSuccess()
+          } catch (error) {
+            // Silently fail if haptic feedback is not available
+          }
+          
+          // Clear cart only on successful order creation
+          this.clearCart()
+          return {
+            success: true,
+            message: 'Order created successfully',
+            data: order
           }
         } else {
           // Save as pending order for offline sync
@@ -387,6 +392,9 @@ export const useCartStore = defineStore('cart', {
         }
       } catch (error) {
         console.error('Failed to create order:', error)
+        
+        // Store typed error
+        this.error = error as ApiError
         
         // Trigger error haptic feedback
         try {
@@ -413,10 +421,12 @@ export const useCartStore = defineStore('cart', {
         if (!$auth?.user) return
 
         this.syncing = true
+        this.error = null
+        
         const apiClient = (useNuxtApp() as any).$apiClient
         
-        // Save cart to server
-        await apiClient.post('/cart/sync', {
+        // Save cart to server - service returns unwrapped data
+        await apiClient.post<void>('/cart/sync', {
           items: this.items.map(item => ({
             menuItemId: item.menuItem.id,
             quantity: item.quantity,
@@ -427,6 +437,7 @@ export const useCartStore = defineStore('cart', {
         this.lastSyncAt = new Date()
       } catch (error) {
         console.error('Failed to sync cart with server:', error)
+        this.error = error as ApiError
       } finally {
         this.syncing = false
       }
@@ -437,13 +448,16 @@ export const useCartStore = defineStore('cart', {
       if (!$auth?.user) return
 
       this.loading = true
+      this.error = null
+      
       try {
         const apiClient = (useNuxtApp() as any).$apiClient
-        const response: ApiResponse<{ items: any[] }> = await apiClient.get('/cart')
+        const result = await apiClient.get<{ items: any[] }>('/cart')
         
-        if (response.success && response.data?.items) {
+        // Store clean data directly
+        if (result?.items) {
           // Merge server cart with local cart
-          const serverItems = response.data.items
+          const serverItems = result.items
           const mergedItems = this.mergeCartItems(serverItems)
           this.items = mergedItems
           this.persistCart()
@@ -451,6 +465,7 @@ export const useCartStore = defineStore('cart', {
         }
       } catch (error) {
         console.error('Failed to load cart from server:', error)
+        this.error = error as ApiError
       } finally {
         this.loading = false
       }
@@ -490,11 +505,13 @@ export const useCartStore = defineStore('cart', {
       if (!$auth?.user) return
 
       try {
+        this.error = null
         const apiClient = (useNuxtApp() as any).$apiClient
-        await apiClient.delete('/cart')
+        await apiClient.delete<void>('/cart')
         this.lastSyncAt = new Date()
       } catch (error) {
         console.error('Failed to clear server cart:', error)
+        this.error = error as ApiError
       }
     },
 

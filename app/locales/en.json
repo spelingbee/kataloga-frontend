@@ -1,6 +1,7 @@
 {
   "common": {
     "loading": "Loading...",
+    "refreshing": "Refreshing...",
     "error": "Error",
     "success": "Success",
     "cancel": "Cancel",
@@ -36,6 +37,8 @@
     "new": "New",
     "popular": "Popular",
     "noItems": "No menu items found",
+    "noItemsFound": "No items found",
+    "tryAdjustingFilters": "Try adjusting your search or filters",
     "clearFilters": "Clear Filters",
     "itemDetails": "Item Details",
     "allergens": "Allergens",
@@ -156,8 +159,75 @@
     "logoutSuccess": "Logged out successfully"
   },
   "errors": {
+    "unknown": {
+      "title": "Something went wrong",
+      "message": "An unexpected error occurred"
+    },
+    "authentication_error": {
+      "title": "Authentication Required",
+      "message": "Please log in to continue"
+    },
+    "auth_required": {
+      "title": "Authentication Required", 
+      "message": "Please log in to continue"
+    },
+    "authorization_error": {
+      "title": "Access Denied",
+      "message": "You do not have permission to perform this action"
+    },
+    "access_denied": {
+      "title": "Access Denied",
+      "message": "You do not have permission to perform this action"
+    },
+    "not_found": {
+      "title": "Not Found",
+      "message": "The requested resource was not found"
+    },
+    "resource_not_found": {
+      "title": "Not Found",
+      "message": "The requested resource was not found"
+    },
+    "validation_error": {
+      "title": "Invalid Input",
+      "message": "Please check your input and try again"
+    },
+    "rate_limit_error": {
+      "title": "Too Many Requests",
+      "message": "Too many requests. Please try again later"
+    },
+    "server_error": {
+      "title": "Server Error",
+      "message": "Internal server error. Please try again later"
+    },
+    "network_error": {
+      "title": "Connection Error",
+      "message": "Network error. Please check your connection"
+    },
+    "auth": {
+      "title": "Authentication Required",
+      "message": "Please log in to continue"
+    },
+    "not-found": {
+      "title": "Not Found",
+      "message": "The requested resource was not found"
+    },
+    "validation": {
+      "title": "Invalid Input",
+      "message": "Please check your input and try again"
+    },
+    "rate-limit": {
+      "title": "Too Many Requests",
+      "message": "Too many requests. Please try again later"
+    },
+    "server": {
+      "title": "Server Error",
+      "message": "Internal server error. Please try again later"
+    },
+    "network": {
+      "title": "Connection Error",
+      "message": "Network error. Please check your connection"
+    },
     "generic": "Something went wrong",
-    "network": "Network error. Please check your connection",
     "timeout": "Request timeout. Please try again",
     "notFound": "Not found",
     "unauthorized": "Unauthorized access",
@@ -191,5 +261,13 @@
   },
   "currency": {
     "som": "som"
+  },
+  "pagination": {
+    "navigation": "Pagination Navigation",
+    "showing": "Showing {start} to {end} of {total} results",
+    "previous": "Previous",
+    "next": "Next",
+    "goToPage": "Go to page {page}",
+    "itemsPerPage": "Items per page"
   }
 }

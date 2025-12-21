@@ -28,6 +28,7 @@
 <script setup lang="ts">
 import type { ApiError } from '~/types'
 import { attemptErrorRecovery } from '~/utils/error-recovery'
+import ErrorMessage from './ErrorMessage.vue'
 
 interface Props {
   fallback?: boolean

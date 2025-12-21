@@ -58,6 +58,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
+import AppText from '../base/AppText.vue'
 
 // Store
 const cartStore = useCartStore()

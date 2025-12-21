@@ -31,7 +31,7 @@
             <div class="category-scroller__item-icon">
               <BaseIcon name="grid" size="md" />
             </div>
-            <span class="category-scroller__item-text">All</span>
+            <span class="category-scroller__item-text">{{ $t('menu.allCategories') }}</span>
           </button>
 
           <!-- Category Items -->
@@ -91,6 +91,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   categorySelect: [categoryId: string | null]
 }>()
+
+const { $i18n } = useNuxtApp()
 
 // Refs
 const scrollContainer = ref<HTMLElement | null>(null)

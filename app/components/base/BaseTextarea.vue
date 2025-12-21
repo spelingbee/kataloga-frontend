@@ -75,7 +75,6 @@
 
 <script setup lang="ts">
 interface Props {
-  modelValue?: string
   label?: string
   placeholder?: string
   size?: 'sm' | 'md' | 'lg'
@@ -103,23 +102,26 @@ const props = withDefaults(defineProps<Props>(), {
   autoResize: false
 })
 
+const modelValue = defineModel<string>()
+
 const emit = defineEmits<{
-  'update:modelValue': [value: string]
   blur: [event: FocusEvent]
   focus: [event: FocusEvent]
 }>()
 
+const slots = defineSlots<{}>()
+
 const textareaRef = ref<HTMLTextAreaElement>()
 const isFocused = ref(false)
 
-const textareaId = computed(() => `textarea-${Math.random().toString(36).substr(2, 9)}`)
+const textareaId = computed(() => `textarea-${Math.random().toString(36).substring(2, 11)}`)
 
 const hasValue = computed(() => {
-  return props.modelValue !== undefined && props.modelValue !== null && props.modelValue !== ''
+  return modelValue.value !== undefined && modelValue.value !== null && modelValue.value !== ''
 })
 
 const characterCount = computed(() => {
-  return props.modelValue?.length || 0
+  return modelValue.value?.length || 0
 })
 
 const textareaClasses = computed(() => {
@@ -152,7 +154,7 @@ const labelClasses = computed(() => {
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLTextAreaElement
-  emit('update:modelValue', target.value)
+  modelValue.value = target.value
   
   if (props.autoResize) {
     autoResizeTextarea(target)
@@ -182,7 +184,7 @@ onMounted(() => {
 })
 
 // Watch for value changes to auto-resize
-watch(() => props.modelValue, () => {
+watch(() => modelValue.value, () => {
   if (props.autoResize && textareaRef.value) {
     nextTick(() => {
       autoResizeTextarea(textareaRef.value!)

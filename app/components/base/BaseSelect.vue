@@ -85,7 +85,6 @@ interface Option {
 }
 
 interface Props {
-  modelValue?: string | number
   options: Option[] | string[] | number[]
   label?: string
   placeholder?: string
@@ -105,19 +104,22 @@ const props = withDefaults(defineProps<Props>(), {
   floatingLabel: true
 })
 
+const modelValue = defineModel<string | number>()
+
 const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
   blur: [event: FocusEvent]
   focus: [event: FocusEvent]
 }>()
 
+const slots = defineSlots<{}>()
+
 const selectRef = ref<HTMLSelectElement>()
 const isFocused = ref(false)
 
-const selectId = computed(() => `select-${Math.random().toString(36).substr(2, 9)}`)
+const selectId = computed(() => `select-${Math.random().toString(36).substring(2, 11)}`)
 
 const hasValue = computed(() => {
-  return props.modelValue !== undefined && props.modelValue !== null && props.modelValue !== ''
+  return modelValue.value !== undefined && modelValue.value !== null && modelValue.value !== ''
 })
 
 const selectClasses = computed(() => {
@@ -171,7 +173,7 @@ const getOptionDisabled = (option: Option | string | number): boolean => {
 const handleChange = (event: Event) => {
   const target = event.target as HTMLSelectElement
   const value = target.value
-  emit('update:modelValue', value)
+  modelValue.value = value
 }
 
 const handleBlur = (event: FocusEvent) => {

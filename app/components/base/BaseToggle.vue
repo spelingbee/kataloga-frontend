@@ -59,7 +59,6 @@
 
 <script setup lang="ts">
 interface Props {
-  modelValue: boolean
   label?: string
   labelPosition?: 'left' | 'right'
   size?: 'sm' | 'md' | 'lg'
@@ -72,12 +71,15 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false
 })
 
+const modelValue = defineModel<boolean>({ default: false })
+
 const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
   change: [value: boolean]
 }>()
 
-const toggleId = computed(() => `toggle-${Math.random().toString(36).substr(2, 9)}`)
+const slots = defineSlots<{}>()
+
+const toggleId = computed(() => `toggle-${Math.random().toString(36).substring(2, 11)}`)
 
 const sizeClasses = {
   sm: 'w-9 h-5 rounded-full',
@@ -93,8 +95,8 @@ const thumbSizeClasses = {
 
 const toggle = () => {
   if (!props.disabled) {
-    const newValue = !props.modelValue
-    emit('update:modelValue', newValue)
+    const newValue = !modelValue.value
+    modelValue.value = newValue
     emit('change', newValue)
   }
 }

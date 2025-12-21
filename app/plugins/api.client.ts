@@ -11,7 +11,14 @@ export default defineNuxtPlugin({
   name: 'api-client' as any,
   enforce: 'pre' as any, // Ensure this runs before tenant-resolver
   async setup() {
+    console.log('🔌 API Client Plugin - Initializing...')
+    
     const config = useRuntimeConfig()
+    console.log('⚙️ API Client Plugin - Config:', {
+      apiBaseUrl: config.public.apiBaseUrl,
+      tenantSlug: config.public.tenantSlug
+    })
+    
     const { createApiClient } = await import('~/utils/api')
 
     // Create API client with configuration
@@ -22,6 +29,8 @@ export default defineNuxtPlugin({
       retries: 2, // Reduced from 3 to 2 for faster failure
       retryDelay: 1000,
     })
+    
+    console.log('✅ API Client Plugin - API Client created')
 
     // Initialize stores and connect them to API client
     const { useAuthStore } = await import('~/stores/auth')
@@ -69,6 +78,8 @@ export default defineNuxtPlugin({
       await authStore.initializeAuth()
     }
 
+    console.log('🎯 API Client Plugin - Providing API Client to Nuxt App')
+    
     return {
       provide: {
         apiClient,

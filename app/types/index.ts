@@ -1,8 +1,14 @@
+// Export API types
+export * from './api'
+
 // Export tenant types
 export * from './tenant'
 
 // Export payment types
 export * from './payment'
+
+// Export constants
+export * from '../constants/error-codes'
 
 // User types
 export interface User {
@@ -260,29 +266,4 @@ export interface Promotion {
   validFrom: string
   validTo: string
   isActive: boolean
-}
-
-// API Response types
-export interface ApiResponse<T = any> {
-  success: boolean
-  data?: T
-  message?: string
-  errors?: string[]
-  tenantId?: string // For tenant-aware responses
-}
-
-export interface ApiError extends Error {
-  status?: number
-  code?: string
-  details?: any
-  tenantSlug?: string // For tenant-specific errors
-}
-
-// Enhanced request configuration for tenant support
-export interface RequestConfig {
-  headers?: Record<string, string>
-  params?: Record<string, any>
-  timeout?: number
-  bypassTenant?: boolean // For system-wide requests
-  targetTenant?: string  // Override current tenant
 }

@@ -83,6 +83,7 @@ defineEmits<{
   dismiss: []
 }>()
 
+const { $i18n } = useNuxtApp()
 const detailsExpanded = ref(false)
 
 const errorData = computed(() => {
@@ -90,18 +91,17 @@ const errorData = computed(() => {
   
   if (typeof props.error === 'string') {
     return {
-      name: 'Error',
+      code: 'UNKNOWN_ERROR',
       message: props.error,
-      status: undefined,
+      statusCode: undefined,
     } as ApiError
   }
   
   if (props.error instanceof Error) {
     return {
-      name: props.error.name,
+      code: 'code' in props.error ? (props.error as ApiError).code : 'UNKNOWN_ERROR',
       message: props.error.message,
-      status: 'status' in props.error ? (props.error as ApiError).status : undefined,
-      code: 'code' in props.error ? (props.error as ApiError).code : undefined,
+      statusCode: 'statusCode' in props.error ? (props.error as ApiError).statusCode : undefined,
       details: 'details' in props.error ? (props.error as ApiError).details : undefined,
     } as ApiError
   }
@@ -110,16 +110,17 @@ const errorData = computed(() => {
 })
 
 const errorType = computed(() => {
-  if (!errorData.value?.status) return 'unknown'
+  if (!errorData.value?.code) return 'unknown'
   
-  const status = errorData.value.status
-  if (status === 401 || status === 403) return 'auth'
-  if (status === 404) return 'not-found'
-  if (status === 422) return 'validation'
-  if (status === 429) return 'rate-limit'
-  if (status >= 500) return 'server'
-  if (status >= 400) return 'client'
-  return 'network'
+  const code = errorData.value.code
+  if (code === 'AUTHENTICATION_ERROR' || code === 'AUTH_REQUIRED') return 'auth'
+  if (code === 'AUTHORIZATION_ERROR' || code === 'ACCESS_DENIED') return 'auth'
+  if (code === 'NOT_FOUND' || code === 'RESOURCE_NOT_FOUND') return 'not-found'
+  if (code === 'VALIDATION_ERROR') return 'validation'
+  if (code === 'RATE_LIMIT_ERROR') return 'rate-limit'
+  if (code === 'SERVER_ERROR') return 'server'
+  if (code === 'NETWORK_ERROR') return 'network'
+  return 'unknown'
 })
 
 const errorTypeClass = computed(() => {
@@ -161,48 +162,31 @@ const iconSize = computed(() => {
 })
 
 const errorTitle = computed(() => {
-  switch (errorType.value) {
-    case 'auth':
-      return 'Authentication Required'
-    case 'not-found':
-      return 'Not Found'
-    case 'validation':
-      return 'Invalid Input'
-    case 'rate-limit':
-      return 'Too Many Requests'
-    case 'server':
-      return 'Server Error'
-    case 'network':
-      return 'Connection Error'
-    default:
-      return 'Something went wrong'
-  }
+  if (!errorData.value?.code) return $i18n.t('errors.unknown.title')
+  
+  // Use localized messages based on error code
+  const titleKey = `errors.${errorData.value.code.toLowerCase()}.title`
+  const fallbackKey = `errors.${errorType.value}.title`
+  
+  return $i18n.te(titleKey) 
+    ? $i18n.t(titleKey)
+    : $i18n.te(fallbackKey)
+    ? $i18n.t(fallbackKey)
+    : $i18n.t('errors.unknown.title')
 })
 
 const errorMessage = computed(() => {
-  if (!errorData.value) return 'An unknown error occurred'
+  if (!errorData.value) return $i18n.t('errors.unknown.message')
   
-  // Use custom error messages based on status
-  switch (errorData.value.status) {
-    case 401:
-      return 'Please log in to continue'
-    case 403:
-      return 'You do not have permission to perform this action'
-    case 404:
-      return 'The requested resource was not found'
-    case 422:
-      return 'Please check your input and try again'
-    case 429:
-      return 'Too many requests. Please try again later'
-    case 500:
-      return 'Internal server error. Please try again later'
-    case 502:
-    case 503:
-    case 504:
-      return 'Service temporarily unavailable. Please try again later'
-    default:
-      return errorData.value.message || 'An unexpected error occurred'
-  }
+  // Use localized messages based on error code
+  const messageKey = `errors.${errorData.value.code.toLowerCase()}.message`
+  const fallbackKey = `errors.${errorType.value}.message`
+  
+  return $i18n.te(messageKey)
+    ? $i18n.t(messageKey)
+    : $i18n.te(fallbackKey)
+    ? $i18n.t(fallbackKey)
+    : errorData.value.message || $i18n.t('errors.unknown.message')
 })
 </script>
 

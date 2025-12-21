@@ -254,6 +254,8 @@ import { useGeolocation } from '~/composables/useGeolocation'
 
 // Stores
 import { useLocationStore } from '~/stores/location'
+import AppText from '../../components/base/AppText.vue'
+import AppHeading from '../../components/base/AppHeading.vue'
 
 // Page setup
 definePageMeta({

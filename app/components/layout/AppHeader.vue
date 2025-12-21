@@ -142,7 +142,8 @@
 import { ref, computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
-import { useTenantStore, useNotificationStore  } from '~/stores/tenant'
+import { useTenantStore } from '~/stores/tenant'
+import { useNotificationStore } from '~/stores/notification'
 import { useTenant } from '~/composables/useTenant'
 import LanguageSwitcher from '../base/LanguageSwitcher.vue'
 

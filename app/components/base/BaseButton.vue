@@ -18,7 +18,7 @@
       v-else-if="icon && iconPosition === 'left'"
       :name="icon"
       :size="iconSize"
-      :class="['base-button__icon', { 'base-button__icon--left': $slots.default }]"
+      :class="['base-button__icon', { 'base-button__icon--left': slots.default }]"
     />
     
     <slot />
@@ -27,7 +27,7 @@
       v-if="icon && iconPosition === 'right' && !loading"
       :name="icon"
       :size="iconSize"
-      :class="['base-button__icon', { 'base-button__icon--right': $slots.default }]"
+      :class="['base-button__icon', { 'base-button__icon--right': slots.default }]"
     />
   </component>
 </template>
@@ -60,6 +60,10 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   click: [event: Event]
+}>()
+
+const slots = defineSlots<{
+  default?: () => any
 }>()
 
 const buttonClasses = computed(() => {

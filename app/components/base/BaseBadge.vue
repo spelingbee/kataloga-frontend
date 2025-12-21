@@ -4,7 +4,7 @@
       v-if="icon"
       :name="icon"
       :size="iconSize"
-      :class="{ 'base-badge__icon--with-text': $slots.default }"
+      :class="{ 'base-badge__icon--with-text': slots.default }"
     />
     <slot />
   </span>
@@ -23,6 +23,10 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'md',
   pulse: false
 })
+
+const slots = defineSlots<{
+  default?: () => any
+}>()
 
 const badgeClasses = computed(() => {
   const classes = ['base-badge']

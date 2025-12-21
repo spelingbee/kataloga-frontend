@@ -44,10 +44,10 @@
           <BaseIcon name="search" size="xl" />
         </div>
         <h3 class="menu-grid__empty-title">
-          {{ emptyTitle || 'No items found' }}
+          {{ emptyTitle || $t('menu.noItemsFound') }}
         </h3>
         <p class="menu-grid__empty-message">
-          {{ emptyMessage || 'Try adjusting your search or filters' }}
+          {{ emptyMessage || $t('menu.tryAdjustingFilters') }}
         </p>
       </div>
 
@@ -94,6 +94,8 @@ const emit = defineEmits<{
   toggleFavorite: [item: MenuItem]
   loadMore: []
 }>()
+
+const { $i18n } = useNuxtApp()
 
 // Refs
 const gridContainer = ref<HTMLElement | null>(null)
