@@ -5,9 +5,9 @@
 
 // Primary Palette - Warm Orange for Food Industry (WCAG AA Compliant)
 // -----------------------------------------------------------------------------
-$color-primary: #B8571A;        // Darker orange for better contrast (4.5:1 on white)
-$color-primary-light: #D2691E;  // Hover состояния (lighter but still accessible)
-$color-primary-dark: #A04D17;   // Active состояния
+$color-primary: #FF6B00;
+$color-primary-light: #ff8120;
+$color-primary-dark: #e66000;
 
 // Semantic Colors (WCAG AA Compliant)
 // -----------------------------------------------------------------------------
@@ -31,13 +31,13 @@ $color-neutral-900: #111827;    // Самый темный
 
 // Semantic Background Colors
 // -----------------------------------------------------------------------------
-$bg-primary: white;
-$bg-secondary: $color-neutral-50;
+$bg-primary: #FFFFFF; // Surface/Card Color
+$bg-secondary: #F9FAFB; // Background Color
 $bg-tertiary: $color-neutral-100;
 
 // Semantic Text Colors
 // -----------------------------------------------------------------------------
-$text-primary: $color-neutral-900;
+$text-primary: #1F2937; // Text Main
 $text-secondary: $color-neutral-600;
 $text-tertiary: $color-neutral-400;
 
@@ -53,7 +53,7 @@ $border-secondary: $color-neutral-300;
   --color-primary: #{$color-primary};
   --color-primary-light: #{$color-primary-light};
   --color-primary-dark: #{$color-primary-dark};
-  --color-primary-rgb: 184, 87, 26;
+  --color-primary-rgb: 255, 107, 0;
   
   // Semantic Colors
   --color-success: #{$color-success};
