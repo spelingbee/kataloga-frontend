@@ -144,15 +144,16 @@ const addToCart = async () => {
 .product-card {
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: 16px;
+  border-radius: $radius-card;
   overflow: hidden;
   transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     border-color: var(--color-primary);
   }
   
@@ -268,11 +269,11 @@ const addToCart = async () => {
 }
 
 .product-card__add-btn {
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 10px 16px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-full;
+  padding: $space-2;
   font-size: 14px;
   font-weight: 600;
   display: flex;
@@ -280,11 +281,10 @@ const addToCart = async () => {
   gap: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 80px;
-  justify-content: center;
   
   &:hover:not(&--disabled) {
-    background: var(--color-primary-dark);
+    background: var(--color-primary);
+    color: white;
     transform: translateY(-1px);
   }
   
