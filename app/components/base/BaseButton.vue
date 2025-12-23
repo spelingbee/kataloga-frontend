@@ -109,8 +109,8 @@ const handleClick = (event: Event) => {
   align-items: center;
   justify-content: center;
   gap: $space-2;
-  font-family: $font-primary;
-  font-weight: $font-medium;
+  font-family: $font-secondary;
+  font-weight: $font-bold;
   border: none;
   border-radius: $radius-button;
   cursor: pointer;
@@ -145,7 +145,7 @@ const handleClick = (event: Event) => {
   &--primary {
     background-color: var(--color-primary);
     color: white;
-    box-shadow: $shadow-button;
+    box-shadow: 0 4px 14px 0 rgba(255, 107, 0, 0.39);
     position: relative;
     overflow: hidden;
     
