@@ -32,7 +32,7 @@
     </div>
 
     <!-- Dish Details -->
-    <div v-else-if="dish" class="pb-8">
+    <div v-else-if="dish" class="dish-details-wrapper pb-8">
       <!-- Header with Navigation -->
       <div class="px-6 py-4 flex items-center justify-between border-b border-neutral-80/20">
         <div class="flex items-center gap-4">
@@ -62,14 +62,11 @@
       </div>
 
       <!-- Main Content -->
-      <div class="flex flex-col lg:flex-row">
+      <div class="content-sheet flex flex-col lg:flex-row">
         <!-- Left Column - Images and Info -->
         <div class="lg:w-2/3 px-6 py-8">
           <!-- Dish Hero Section -->
-          <DishHero 
-            :dish="dish"
-            class="mb-8"
-          />
+          <img :src="dish.imageUrl || '/images/placeholder-dish.svg'" :alt="dish.name" class="hero-image" />
 
           <!-- Dish Images Slider -->
           <div class="mb-8">
@@ -279,40 +276,39 @@
               </AppText>
             </div>
 
-            <!-- Add to Cart Button -->
-            <AddToCartButton 
-              :item="dish"
-              :quantity="quantity"
-              :customizations="customizations"
-              :special-instructions="specialInstructions"
-              size="lg"
-              class="w-full mb-4"
-              @added="onAddedToCart"
-            />
-
-            <!-- Quick Actions -->
-            <div class="flex gap-2">
-              <BaseButton 
-                variant="secondary" 
-                size="sm"
-                class="flex-1"
-                @click="addToFavourites"
-              >
-                <BaseIcon name="heart" size="sm" class="mr-2" />
-                Save
-              </BaseButton>
-              <BaseButton 
-                variant="ghost" 
-                size="sm"
-                class="flex-1"
-                @click="compareDish"
-              >
-                <BaseIcon name="compare" size="sm" class="mr-2" />
-                Compare
-              </BaseButton>
-            </div>
           </div>
         </div>
+      </div>
+      <div class="sticky-footer">
+        <div class="flex gap-2 mb-4">
+          <BaseButton
+            variant="secondary"
+            size="sm"
+            class="flex-1"
+            @click="addToFavourites"
+          >
+            <BaseIcon name="heart" size="sm" class="mr-2" />
+            Save
+          </BaseButton>
+          <BaseButton
+            variant="ghost"
+            size="sm"
+            class="flex-1"
+            @click="compareDish"
+          >
+            <BaseIcon name="compare" size="sm" class="mr-2" />
+            Compare
+          </BaseButton>
+        </div>
+        <AddToCartButton
+          :item="dish"
+          :quantity="quantity"
+          :customizations="customizations"
+          :special-instructions="specialInstructions"
+          size="lg"
+          class="w-full"
+          @added="onAddedToCart"
+        />
       </div>
 
       <!-- Related Dishes -->
@@ -501,3 +497,32 @@ watchEffect(() => {
   }
 })
 </script>
+
+<style scoped>
+.dish-details-wrapper {
+  padding-bottom: 120px; /* Add padding to prevent content from being hidden by the sticky footer */
+}
+
+.hero-image {
+  width: 100%;
+  height: 40vh;
+  object-fit: cover;
+}
+
+.content-sheet {
+  background-color: white;
+  margin-top: -40px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+}
+
+.sticky-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+</style>
