@@ -1,0 +1,450 @@
+@use '../abstracts/variables' as *;
+@use '../abstracts/mixins' as *;
+
+// Favourites Page Styles
+.favourites-page {
+  min-height: calc(100vh - 60px);
+  background-color: $color-background-dark;
+  padding-top: env(safe-area-inset-top);
+  padding-left: max(env(safe-area-inset-left), $spacing-lg);
+  padding-right: max(env(safe-area-inset-right), $spacing-lg);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 100px); // Account for bottom nav
+
+  @include breakpoint($breakpoint-lg) {
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+.favourites-header {
+  padding: $spacing-xl 0 $spacing-lg;
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    margin-bottom: $spacing-md;
+  }
+
+  &__icon {
+    color: $color-primary-red;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    color: white;
+    font-weight: $font-weight-bold;
+  }
+
+  &__subtitle {
+    color: $color-neutral-20;
+    line-height: $line-height-relaxed;
+  }
+}
+
+.favourites-controls {
+  margin-bottom: $spacing-xl;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+  }
+
+  &__count {
+    color: $color-neutral-20;
+    font-weight: $font-weight-medium;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &__view-toggle,
+  &__clear {
+    min-height: 40px;
+    border-radius: $radius-lg;
+    font-weight: $font-weight-medium;
+  }
+
+  &__view-toggle {
+    min-width: 40px;
+    padding: $spacing-sm;
+  }
+
+  &__clear {
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.favourites-content {
+  flex: 1;
+}
+
+.favourites-state {
+  text-align: center;
+  padding: $spacing-2xl $spacing-lg;
+  max-width: 400px;
+  margin: 0 auto;
+
+  &__icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: $radius-full;
+    background: rgba($color-primary-red, 0.1);
+    margin: 0 auto $spacing-xl;
+
+    .favourites-state--loading & {
+      background: rgba($color-primary-green, 0.1);
+    }
+  }
+
+  &__icon {
+    color: $color-primary-red;
+
+    .favourites-state--loading & {
+      color: $color-primary-green;
+    }
+  }
+
+  &__title {
+    color: white;
+    margin-bottom: $spacing-md;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__text {
+    color: $color-neutral-20;
+    line-height: $line-height-relaxed;
+    margin-bottom: $spacing-xl;
+    font-size: $font-size-sm;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    align-items: center;
+
+    @include breakpoint($breakpoint-sm) {
+      flex-direction: row;
+      justify-content: center;
+    }
+  }
+
+  &__button {
+    min-height: 48px;
+    padding: $spacing-md $spacing-xl;
+    border-radius: $radius-lg;
+    font-weight: $font-weight-semibold;
+    box-shadow: $shadow-md;
+    transition: all $transition-base;
+    min-width: 160px;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: $shadow-lg;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.favourites-loading-spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 2px solid transparent;
+  border-bottom: 2px solid $color-primary-green;
+  border-radius: 50%;
+  margin: 0 auto $spacing-md;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.favourites-items {
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__grid {
+    // Grid styles will be handled by the FavouritesGrid component
+    display: block;
+  }
+}
+
+.favourites-item {
+  background: $color-background-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+  transition: all $transition-base;
+
+  &:hover {
+    background: rgba($color-background-card, 0.8);
+    transform: translateY(-2px);
+  }
+
+  &__image {
+    flex-shrink: 0;
+  }
+
+  &__image-element {
+    cursor: pointer;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    transition: transform $transition-base;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    color: white;
+    margin-bottom: $spacing-xs;
+    cursor: pointer;
+    transition: color $transition-base;
+
+    &:hover {
+      color: $color-primary-green;
+    }
+  }
+
+  &__description {
+    color: $color-neutral-20;
+    margin-bottom: $spacing-sm;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: $line-height-snug;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+  }
+
+  &__calories {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+  }
+
+  &__calories-text {
+    color: $color-neutral-20;
+  }
+
+  &__actions {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  &__favorite-btn {
+    color: $color-primary-red;
+    min-width: 40px;
+    min-height: 40px;
+    border-radius: $radius-lg;
+    transition: all $transition-base;
+
+    &:hover {
+      color: rgba($color-primary-red, 0.8);
+      background: rgba($color-primary-red, 0.1);
+    }
+  }
+}
+
+.favourites-actions {
+  margin-top: $spacing-2xl;
+  padding-top: $spacing-xl;
+  border-top: 1px solid rgba($color-neutral-80, 0.15);
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    align-items: center;
+
+    @include breakpoint($breakpoint-md) {
+      flex-direction: row;
+      justify-content: center;
+      gap: $spacing-lg;
+    }
+  }
+
+  &__button {
+    min-height: 48px;
+    padding: $spacing-md $spacing-xl;
+    border-radius: $radius-lg;
+    font-weight: $font-weight-semibold;
+    transition: all $transition-base;
+    min-width: 180px;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+  }
+}
+
+// Mobile-specific improvements
+@media (max-width: 480px) {
+  .favourites-page {
+    padding-left: max(env(safe-area-inset-left), $spacing-md);
+    padding-right: max(env(safe-area-inset-right), $spacing-md);
+  }
+
+  .favourites-header {
+    padding: $spacing-lg 0;
+
+    &__title {
+      font-size: $font-size-2xl;
+    }
+
+    &__subtitle {
+      font-size: $font-size-sm;
+    }
+  }
+
+  .favourites-controls {
+    &__row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: $spacing-md;
+    }
+
+    &__actions {
+      align-self: stretch;
+      justify-content: space-between;
+    }
+  }
+
+  .favourites-item {
+    padding: $spacing-md;
+    gap: $spacing-md;
+
+    &__content {
+      min-width: 0;
+    }
+
+    &__actions {
+      flex-direction: column;
+      gap: $spacing-xs;
+    }
+  }
+
+  .favourites-state {
+    padding: $spacing-xl $spacing-md;
+
+    &__actions {
+      width: 100%;
+    }
+
+    &__button {
+      width: 100%;
+    }
+  }
+
+  .favourites-actions {
+    &__content {
+      width: 100%;
+    }
+
+    &__button {
+      width: 100%;
+    }
+  }
+}
+
+// Tablet improvements
+@media (min-width: 768px) and (max-width: 1024px) {
+  .favourites-item {
+    &__actions {
+      flex-direction: row;
+    }
+  }
+}
+
+// Large screen improvements
+@media (min-width: 1200px) {
+  .favourites-page {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .favourites-header__title,
+  .favourites-item__title {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  }
+
+  .favourites-state__button,
+  .favourites-actions__button {
+    border: 2px solid currentColor;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .favourites-item,
+  .favourites-state__button,
+  .favourites-actions__button {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  .favourites-item__image-element {
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+/* End of favourites page styles */

@@ -1,0 +1,27 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#F3F4F6"/>
+  <g transform="translate(50, 50)">
+    <!-- Plate -->
+    <circle cx="50" cy="50" r="45" fill="#E5E7EB" stroke="#D1D5DB" stroke-width="2"/>
+    <circle cx="50" cy="50" r="35" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1"/>
+    
+    <!-- Fork -->
+    <g transform="translate(25, 30)">
+      <rect x="0" y="0" width="2" height="25" fill="#9CA3AF"/>
+      <rect x="4" y="0" width="2" height="25" fill="#9CA3AF"/>
+      <rect x="8" y="0" width="2" height="25" fill="#9CA3AF"/>
+      <rect x="0" y="25" width="10" height="15" fill="#9CA3AF"/>
+    </g>
+    
+    <!-- Knife -->
+    <g transform="translate(65, 30)">
+      <rect x="0" y="0" width="3" height="40" fill="#9CA3AF"/>
+      <rect x="0" y="0" width="8" height="3" fill="#D1D5DB"/>
+    </g>
+  </g>
+  
+  <!-- Text -->
+  <text x="100" y="170" text-anchor="middle" fill="#6B7280" font-family="system-ui, sans-serif" font-size="12">
+    No Image Available
+  </text>
+</svg>
