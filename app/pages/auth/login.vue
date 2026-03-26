@@ -1,13 +1,24 @@
 <template>
-  <div class="auth-page">
-    <div class="auth-container">
+  <div class="auth-page u-min-h-screen u-bg-neutral-950 u-flex u-items-center u-justify-center u-py-12 u-px-4 sm:u-px-6 lg:u-px-8">
+    <div class="auth-container u-bg-neutral-900 u-text-white">
       <div class="auth-header">
-        <h2 class="auth-header__title">
+        <div class="u-mb-4">
+            <BaseButton
+                variant="ghost"
+                size="sm"
+                class="u-pl-0 hover:u-bg-transparent u-text-white"
+                @click="router.push('/')"
+            >
+                <BaseIcon name="arrow-left" size="sm" class="u-mr-1" color="white" />
+                Back to Home
+            </BaseButton>
+        </div>
+        <h2 class="auth-header__title u-text-white">
           Войти в аккаунт
         </h2>
-        <p class="auth-header__subtitle">
+        <p class="auth-header__subtitle u-text-gray-400">
           Или
-          <NuxtLink to="/auth/register" class="auth-header__link">
+          <NuxtLink to="/auth/register" class="auth-header__link u-text-primary-400 hover:u-text-primary-300">
             создайте новый аккаунт
           </NuxtLink>
         </p>
@@ -25,7 +36,7 @@
               autocomplete="email"
               required
               :class="[
-                'auth-form__input auth-form__input--top',
+                'auth-form__input auth-form__input--top u-bg-neutral-800 u-border-neutral-700 u-text-white placeholder:u-text-gray-500',
                 { 'auth-form__input--error': errors.email }
               ]"
               placeholder="Email адрес"
@@ -43,7 +54,7 @@
               autocomplete="current-password"
               required
               :class="[
-                'auth-form__input auth-form__input--bottom',
+                'auth-form__input auth-form__input--bottom u-bg-neutral-800 u-border-neutral-700 u-text-white placeholder:u-text-gray-500',
                 { 'auth-form__input--error': errors.password }
               ]"
               placeholder="Пароль"
@@ -61,13 +72,13 @@
               type="checkbox"
               class="auth-form__checkbox-input"
             />
-            <label for="remember-me" class="auth-form__checkbox-label">
+            <label for="remember-me" class="auth-form__checkbox-label u-text-gray-300">
               Запомнить меня
             </label>
           </div>
 
           <div class="auth-form__forgot">
-            <NuxtLink to="/auth/forgot-password" class="auth-form__forgot-link">
+            <NuxtLink to="/auth/forgot-password" class="auth-form__forgot-link u-text-primary-400 hover:u-text-primary-300">
               Забыли пароль?
             </NuxtLink>
           </div>

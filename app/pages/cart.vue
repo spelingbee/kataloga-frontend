@@ -1,7 +1,7 @@
 <template>
   <div class="cart-view">
     <div class="cart-view__header">
-      <BaseButton variant="ghost" @click="$router.go(-1)">
+      <BaseButton variant="ghost" @click="router.go(-1)">
         <BaseIcon name="arrow-left" size="md" />
       </BaseButton>
       <h1 class="cart-view__title">Your Cart</h1>
@@ -9,7 +9,7 @@
 
     <div v-if="cartStore.isEmpty" class="cart-view__empty">
       <p>Your cart is empty.</p>
-      <BaseButton @click="$router.push('/menu')">
+      <BaseButton @click="router.push('/menu')">
         Continue Shopping
       </BaseButton>
     </div>
@@ -29,8 +29,9 @@
         :subtotal="cartStore.subtotal"
         :total="cartStore.total"
         :item-count="cartStore.itemCount"
-        :delivery-fee="5"
+        :delivery-fee="cartStore.deliveryFee"
         show-delivery-fee
+        @checkout="handleCheckout"
       />
     </div>
   </div>
@@ -42,17 +43,26 @@ import CartItem from '~/components/cart/CartItem.vue'
 import CartSummary from '~/components/cart/CartSummary.vue'
 
 const cartStore = useCartStore()
+const router = useRouter()
 
 const updateQuantity = (menuItemId: string, quantity: number, customizations?: Record<string, any>) => {
-  cartStore.updateItemQuantity(menuItemId, quantity, customizations)
+  cartStore.updateQuantity(menuItemId, quantity, customizations)
 }
 
 const removeItem = (menuItemId: string, customizations?: Record<string, any>) => {
   cartStore.removeItem(menuItemId, customizations)
 }
+
+const handleCheckout = () => {
+  router.push('/checkout')
+}
 </script>
 
 <style scoped lang="scss">
+@use '../assets/scss/tokens/spacing' as *;
+@use '../assets/scss/tokens/typography' as *;
+@use '../assets/scss/tokens/colors' as *;
+
 .cart-view {
   min-height: 100vh;
   background: var(--bg-secondary);
@@ -61,32 +71,33 @@ const removeItem = (menuItemId: string, customizations?: Record<string, any>) =>
 .cart-view__header {
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: $space-4;
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-primary);
 }
 
 .cart-view__title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-left: 16px;
+  font-size: $text-xl;
+  font-weight: $font-semibold;
+  margin-left: $space-4;
 }
 
 .cart-view__empty {
   text-align: center;
-  padding: 40px;
+  padding: $space-10;
 }
 
 .cart-view__content {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: calc(100vh - 73px); /* 73px is the height of the header */
+  /* Natural height */
+  min-height: calc(100vh - 73px);
 }
 
 .cart-view__items {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 16px;
+  /* flex: 1; Removed to prevent "Abyss" - summary should follow items directly */
+  width: 100%;
+  overflow-y: visible;
+  padding: $space-4;
 }
 </style>

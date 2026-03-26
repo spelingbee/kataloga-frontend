@@ -91,7 +91,8 @@ export default defineNuxtPlugin(() => {
     // Add aspect ratio to images without dimensions
     const images = document.querySelectorAll('img:not([width]):not([height])')
     images.forEach((img) => {
-      img.style.aspectRatio = '16 / 9'
+      const imgElement = img as HTMLImageElement
+      imgElement.style.aspectRatio = '16 / 9'
     })
   }
 

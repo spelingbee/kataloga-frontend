@@ -2,7 +2,9 @@ import { useOfflineStore } from '~/stores/offline'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 import { useAuthStore } from '~/stores/auth'
+import { useNotification } from '~/composables/useNotification'
 import type { ApiError } from '~/types'
+import { isDefined, safePropertyAccess } from '~/types/utils/type-guards'
 
 export interface RecoveryStrategy {
   name: string
@@ -35,7 +37,7 @@ export async function attemptErrorRecovery(
   } = options
 
   // Find applicable recovery strategies
-  const applicableStrategies = strategies.filter(strategy => 
+  const applicableStrategies = strategies.filter(strategy =>
     strategy.canRecover(error)
   )
 
@@ -48,15 +50,15 @@ export async function attemptErrorRecovery(
   // Try each strategy
   for (const strategy of applicableStrategies) {
     let attempt = 0
-    
+
     while (attempt < maxAttempts) {
       attempt++
-      
+
       try {
         onRecoveryAttempt?.(strategy, attempt)
-        
+
         const recovered = await strategy.recover()
-        
+
         if (recovered) {
           console.log(`Recovery successful using strategy: ${strategy.name}`)
           onRecoverySuccess?.(strategy)
@@ -65,7 +67,7 @@ export async function attemptErrorRecovery(
       } catch (recoveryError) {
         console.error(`Recovery attempt ${attempt} failed for strategy ${strategy.name}:`, recoveryError)
       }
-      
+
       // Wait before next attempt with exponential backoff
       if (attempt < maxAttempts) {
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000)
@@ -88,12 +90,14 @@ export function getDefaultRecoveryStrategies(): RecoveryStrategy[] {
     {
       name: 'refresh-auth',
       description: 'Refresh authentication token',
-      canRecover: (error) => error.status === 401,
+      canRecover: (error) => safePropertyAccess(error, 'status') === 401,
       recover: async () => {
         try {
-          const authStore = useAuthStore()
-          await authStore.refreshToken()
-          return true
+          const apiClient = useApiClient()
+
+          // Use API client's handleTokenRefresh
+          const success = await apiClient.handleTokenRefresh()
+          return success
         } catch {
           return false
         }
@@ -104,20 +108,26 @@ export function getDefaultRecoveryStrategies(): RecoveryStrategy[] {
     {
       name: 'clear-cache',
       description: 'Clear cached data and reload',
-      canRecover: (error) => 
-        error.status === 409 || // Conflict
-        error.status === 412 || // Precondition failed
-        error.message?.includes('cache') ||
-        error.message?.includes('stale'),
+      canRecover: (error) => {
+        const status = safePropertyAccess(error, 'status')
+        const message = safePropertyAccess(error, 'message')
+
+        return (isDefined(status) && (status === 409 || status === 412)) ||
+          (typeof message === 'string' && (message.includes('cache') || message.includes('stale')))
+      },
       recover: async () => {
         try {
           // Clear relevant caches
           const menuStore = useMenuStore()
           const cartStore = useCartStore()
-          
+
           await menuStore.fetchMenu()
-          await cartStore.validateCart()
-          
+
+          // Check if validateCartAgainstMenu method exists and is callable
+          if (typeof cartStore.validateCartAgainstMenu === 'function') {
+            await cartStore.validateCartAgainstMenu()
+          }
+
           return true
         } catch {
           return false
@@ -129,9 +139,10 @@ export function getDefaultRecoveryStrategies(): RecoveryStrategy[] {
     {
       name: 'retry-fresh',
       description: 'Retry operation with fresh data',
-      canRecover: (error) => 
-        error.status === 422 || // Validation error
-        error.status === 409,   // Conflict
+      canRecover: (error) => {
+        const status = safePropertyAccess(error, 'status')
+        return isDefined(status) && (status === 422 || status === 409)
+      },
       recover: async () => {
         // This is a placeholder - actual implementation would depend on context
         // The calling code should provide a custom strategy for this
@@ -143,24 +154,32 @@ export function getDefaultRecoveryStrategies(): RecoveryStrategy[] {
     {
       name: 'offline-fallback',
       description: 'Switch to offline mode',
-      canRecover: (error) => 
-        error.status === 503 || // Service unavailable
-        error.status === 504 || // Gateway timeout
-        (typeof navigator !== 'undefined' && 'onLine' in navigator && !navigator.onLine),
+      canRecover: (error) => {
+        const status = safePropertyAccess(error, 'status')
+        return (isDefined(status) && (status === 503 || status === 504)) ||
+          (typeof navigator !== 'undefined' && 'onLine' in navigator && !navigator.onLine)
+      },
       recover: async () => {
         try {
           // Enable offline mode
           const offlineStore = useOfflineStore()
           offlineStore.setOfflineMode(true)
-          
-          // Show notification to user
-          const { showNotification } = useNotifications()
-          showNotification({
-            type: 'warning',
-            title: 'Offline Mode',
-            message: 'You are now in offline mode. Some features may be limited.',
-          })
-          
+
+          // Try to show notification to user
+          try {
+            const { showNotification } = useNotification()
+            if (typeof showNotification === 'function') {
+              showNotification({
+                type: 'warning',
+                title: 'Offline Mode',
+                message: 'You are now in offline mode. Some features may be limited.',
+              })
+            }
+          } catch (notificationError) {
+            // Notification failed, but offline mode is still enabled
+            console.warn('Failed to show offline notification:', notificationError)
+          }
+
           return true
         } catch {
           return false
@@ -172,21 +191,24 @@ export function getDefaultRecoveryStrategies(): RecoveryStrategy[] {
     {
       name: 'page-reload',
       description: 'Reload the page',
-      canRecover: (error) => 
-        error.status === 500 || // Internal server error
-        error.message?.includes('chunk') || // Chunk loading error
-        error.message?.includes('module'),
+      canRecover: (error) => {
+        const status = safePropertyAccess(error, 'status')
+        const message = safePropertyAccess(error, 'message')
+
+        return (isDefined(status) && status === 500) ||
+          (typeof message === 'string' && (message.includes('chunk') || message.includes('module')))
+      },
       recover: async () => {
         // Ask user before reloading
         const confirmed = confirm(
           'An error occurred. Would you like to reload the page to try again?'
         )
-        
+
         if (confirmed) {
           window.location.reload()
           return true
         }
-        
+
         return false
       },
     },
@@ -203,10 +225,10 @@ export function getErrorMessageWithRecovery(error: ApiError): {
 } {
   const strategies = getDefaultRecoveryStrategies()
   const applicableStrategies = strategies.filter(s => s.canRecover(error))
-  
+
   const baseMessage = getBaseErrorMessage(error)
   const suggestions = applicableStrategies.map(s => s.description)
-  
+
   return {
     message: baseMessage,
     suggestions,
@@ -215,7 +237,13 @@ export function getErrorMessageWithRecovery(error: ApiError): {
 }
 
 function getBaseErrorMessage(error: ApiError): string {
-  switch (error.status) {
+  const status = safePropertyAccess(error, 'status')
+
+  if (!isDefined(status)) {
+    return safePropertyAccess(error, 'message') || 'An unexpected error occurred.'
+  }
+
+  switch (status) {
     case 400:
       return 'Invalid request. Please check your input and try again.'
     case 401:
@@ -237,7 +265,7 @@ function getBaseErrorMessage(error: ApiError): string {
     case 504:
       return 'The service is temporarily unavailable. Please try again later.'
     default:
-      return error.message || 'An unexpected error occurred.'
+      return safePropertyAccess(error, 'message') || 'An unexpected error occurred.'
   }
 }
 

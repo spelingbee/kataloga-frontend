@@ -206,7 +206,7 @@
         </AppText>
       </div>
       <AppText size="caption" class="text-neutral-20 mt-1">
-        {{ deliveryFee === 0 ? 'Free delivery on orders over 500₽' : 'Standard delivery fee applies' }}
+        {{ deliveryFee === 0 ? 'Free delivery applied' : 'Standard delivery fee applies' }}
       </AppText>
     </div>
   </div>
@@ -216,6 +216,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import MapPicker from '../checkout/MapPicker.vue'
 import type { Coordinates } from '../../types/delivery'
+import { usePriceFormatter } from '~/composables/usePriceFormatter'
 
 // Props & Emits
 interface DeliveryInfo {
@@ -248,13 +249,6 @@ const emit = defineEmits<{
 
 // Local state
 const localDeliveryInfo = ref<DeliveryInfo>({ 
-  type: 'delivery',
-  address: '',
-  pickupLocation: '',
-  deliveryTime: 'asap',
-  customDate: '',
-  customTime: '',
-  instructions: '',
   ...props.modelValue 
 })
 
@@ -396,14 +390,7 @@ const handleLocationSelected = (coords: Coordinates, address: string, zoneId: st
   emit('validate', { ...errors })
 }
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(price)
-}
+const { formatPrice } = usePriceFormatter()
 
 // Watch for changes and emit updates
 watch(localDeliveryInfo, (newValue) => {

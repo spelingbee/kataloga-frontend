@@ -1,11 +1,15 @@
 import { defineStore } from 'pinia'
 import { useOrderService } from '~/services/order.service'
-import type { Order, CreateOrderDto, OrderStatus, ApiError, PaginationMeta } from '~/types'
+import { 
+  orderAPIToUI, 
+  convertArrayAPIToUI 
+} from '~/types/utils/converters'
+import type { OrderUI, CreateOrderDto, OrderStatus, ApiError, PaginationMeta, CustomerInfo } from '~/types'
 
 interface OrderState {
   // Clean business data only
-  currentOrder: Order | null
-  orderHistory: Order[]
+  currentOrder: OrderUI | null
+  orderHistory: OrderUI[]
   pagination: PaginationMeta | null
   
   // State management
@@ -32,19 +36,31 @@ export const useOrderStore = defineStore('order', {
   },
 
   actions: {
-    async createOrder(orderData: CreateOrderDto): Promise<Order | null> {
+    async createOrder(orderData: CreateOrderDto): Promise<OrderUI | null> {
       this.loading = true
       this.error = null
 
       try {
         const orderService = useOrderService()
-        const order = await orderService.createOrder(orderData)
+        const orderAPI = await orderService.createOrder(orderData)
 
-        // Store clean data directly
-        this.currentOrder = order
+        // Create default customer info (should be passed from orderData in real implementation)
+        const customerInfo: CustomerInfo = {
+          name: orderData.customerInfo?.name || 'Customer',
+          phone: orderData.customerInfo?.phone || '',
+          email: orderData.customerInfo?.email,
+          address: orderData.customerInfo?.address,
+          notes: orderData.customerInfo?.notes
+        }
+        
+        // Convert API data to UI type using converter
+        const orderUI = orderAPIToUI(orderAPI, customerInfo)
+        
+        // Store converted UI data
+        this.currentOrder = orderUI
         // Add to order history
-        this.orderHistory.unshift(order)
-        return order
+        this.orderHistory.unshift(orderUI)
+        return orderUI
         
       } catch (error) {
         this.error = error as ApiError
@@ -63,12 +79,22 @@ export const useOrderStore = defineStore('order', {
         const orderService = useOrderService()
         const result = await orderService.getOrderHistory(page, limit)
 
-        // Store clean data directly
+        // Convert API data to UI types using converters
+        // Note: In a real implementation, customer info should come from the API
+        const ordersUI = result.items.map(orderAPI => {
+          const customerInfo: CustomerInfo = {
+            name: 'Customer', // Should come from API
+            phone: '', // Should come from API
+          }
+          return orderAPIToUI(orderAPI, customerInfo)
+        })
+        
+        // Store converted UI data
         if (page === 1) {
-          this.orderHistory = result.items
+          this.orderHistory = ordersUI
         } else {
           // Append for pagination
-          this.orderHistory.push(...result.items)
+          this.orderHistory.push(...ordersUI)
         }
         this.pagination = result.pagination
         
@@ -80,25 +106,34 @@ export const useOrderStore = defineStore('order', {
       }
     },
 
-    async trackOrder(orderId: string): Promise<Order | null> {
+    async trackOrder(orderId: string): Promise<OrderUI | null> {
       this.loading = true
       this.error = null
 
       try {
         const orderService = useOrderService()
-        const order = await orderService.trackOrder(orderId)
+        const trackingResult = await orderService.trackOrder(orderId)
 
-        if (order) {
+        if (trackingResult?.order) {
+          // Create default customer info
+          const customerInfo: CustomerInfo = {
+            name: 'Customer', // Should come from API
+            phone: '', // Should come from API
+          }
+          
+          // Convert API data to UI type using converter
+          const orderUI = orderAPIToUI(trackingResult.order, customerInfo)
+          
           // Update current order if it matches
           if (this.currentOrder?.id === orderId) {
-            this.currentOrder = order
+            this.currentOrder = orderUI
           }
           // Update in order history
           const historyIndex = this.orderHistory.findIndex(o => o.id === orderId)
           if (historyIndex >= 0) {
-            this.orderHistory[historyIndex] = order
+            this.orderHistory[historyIndex] = orderUI
           }
-          return order
+          return orderUI
         }
         return null
       } catch (error) {
@@ -116,17 +151,26 @@ export const useOrderStore = defineStore('order', {
 
       try {
         const orderService = useOrderService()
-        const cancelledOrder = await orderService.cancelOrder(orderId, reason)
+        const cancelledOrderAPI = await orderService.cancelOrder(orderId, reason)
 
-        if (cancelledOrder) {
+        if (cancelledOrderAPI) {
+          // Create default customer info
+          const customerInfo: CustomerInfo = {
+            name: 'Customer', // Should come from API
+            phone: '', // Should come from API
+          }
+          
+          // Convert API data to UI type using converter
+          const cancelledOrderUI = orderAPIToUI(cancelledOrderAPI, customerInfo)
+          
           // Update current order if it matches
           if (this.currentOrder?.id === orderId) {
-            this.currentOrder = cancelledOrder
+            this.currentOrder = cancelledOrderUI
           }
           // Update in order history
           const historyIndex = this.orderHistory.findIndex(o => o.id === orderId)
           if (historyIndex >= 0) {
-            this.orderHistory[historyIndex] = cancelledOrder
+            this.orderHistory[historyIndex] = cancelledOrderUI
           }
           return true
         }
@@ -140,23 +184,32 @@ export const useOrderStore = defineStore('order', {
       }
     },
 
-    async getOrder(orderId: string): Promise<Order | null> {
+    async getOrder(orderId: string): Promise<OrderUI | null> {
       this.loading = true
       this.error = null
 
       try {
         const orderService = useOrderService()
-        const order = await orderService.getOrder(orderId)
+        const orderAPI = await orderService.getOrder(orderId)
 
-        if (order) {
+        if (orderAPI) {
+          // Create default customer info
+          const customerInfo: CustomerInfo = {
+            name: 'Customer', // Should come from API
+            phone: '', // Should come from API
+          }
+          
+          // Convert API data to UI type using converter
+          const orderUI = orderAPIToUI(orderAPI, customerInfo)
+          
           // Update in order history if it exists
           const historyIndex = this.orderHistory.findIndex(o => o.id === orderId)
           if (historyIndex >= 0) {
-            this.orderHistory[historyIndex] = order
+            this.orderHistory[historyIndex] = orderUI
           } else {
-            this.orderHistory.unshift(order)
+            this.orderHistory.unshift(orderUI)
           }
-          return order
+          return orderUI
         }
         return null
       } catch (error) {
@@ -168,18 +221,27 @@ export const useOrderStore = defineStore('order', {
       }
     },
 
-    async repeatOrder(orderId: string): Promise<Order | null> {
+    async repeatOrder(orderId: string): Promise<OrderUI | null> {
       this.loading = true
       this.error = null
 
       try {
         const orderService = useOrderService()
-        const newOrder = await orderService.repeatOrder(orderId)
+        const newOrderAPI = await orderService.repeatOrder(orderId)
 
-        if (newOrder) {
-          this.currentOrder = newOrder
-          this.orderHistory.unshift(newOrder)
-          return newOrder
+        if (newOrderAPI) {
+          // Create default customer info
+          const customerInfo: CustomerInfo = {
+            name: 'Customer', // Should come from API
+            phone: '', // Should come from API
+          }
+          
+          // Convert API data to UI type using converter
+          const newOrderUI = orderAPIToUI(newOrderAPI, customerInfo)
+          
+          this.currentOrder = newOrderUI
+          this.orderHistory.unshift(newOrderUI)
+          return newOrderUI
         }
         return null
       } catch (error) {
@@ -191,14 +253,24 @@ export const useOrderStore = defineStore('order', {
       }
     },
 
-    async getActiveOrders(): Promise<Order[]> {
+    async getActiveOrders(): Promise<OrderUI[]> {
       this.loading = true
       this.error = null
 
       try {
         const orderService = useOrderService()
-        const orders = await orderService.getActiveOrders()
-        return orders
+        const ordersAPI = await orderService.getActiveOrders()
+        
+        // Convert API data to UI types using converters
+        const ordersUI = ordersAPI.map(orderAPI => {
+          const customerInfo: CustomerInfo = {
+            name: 'Customer', // Should come from API
+            phone: '', // Should come from API
+          }
+          return orderAPIToUI(orderAPI, customerInfo)
+        })
+        
+        return ordersUI
       } catch (error) {
         this.error = error as ApiError
         console.error('Active orders fetch error:', error)
@@ -208,7 +280,7 @@ export const useOrderStore = defineStore('order', {
       }
     },
 
-    setCurrentOrder(order: Order | null) {
+    setCurrentOrder(order: OrderUI | null) {
       this.currentOrder = order
     },
 

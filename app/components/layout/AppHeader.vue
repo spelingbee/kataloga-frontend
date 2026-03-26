@@ -81,6 +81,9 @@
         />
       </BaseButton>
 
+      <!-- Theme Switcher -->
+      <ThemeSwitcher class="app-header__theme-switcher" />
+
       <!-- Language Switcher -->
       <LanguageSwitcher class="app-header__language-switcher" />
 
@@ -143,9 +146,9 @@ import { ref, computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
 import { useTenantStore } from '~/stores/tenant'
-import { useNotificationStore } from '~/stores/notification'
 import { useTenant } from '~/composables/useTenant'
 import LanguageSwitcher from '../base/LanguageSwitcher.vue'
+import ThemeSwitcher from '../base/ThemeSwitcher.vue'
 
 // Emits
 defineEmits<{
@@ -158,7 +161,7 @@ const userStore = useUserStore()
 const cartStore = useCartStore()
 const tenantStore = useTenantStore()
 const notificationStore = useNotificationStore()
-const { $router } = useNuxtApp()
+const router = useRouter()
 
 // Tenant composable
 const { currentTenant, isMultiTenant, tenantBranding } = useTenant()
@@ -192,13 +195,13 @@ const closeMobileSearch = () => {
 }
 
 const openNotifications = () => {
-  $router.push('/notifications')
+  router.push('/notifications')
 }
 
 const logout = async () => {
   await userStore.logout()
   closeUserMenu()
-  $router.push('/')
+  router.push('/')
 }
 
 // Close dropdowns when clicking outside

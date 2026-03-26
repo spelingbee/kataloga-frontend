@@ -10,7 +10,7 @@ import type {
 } from '~/types/payment'
 
 export class OGateway extends BasePaymentGateway {
-  private apiUrl: string
+  private apiUrl: string = ''
   private initialized = false
 
   async initialize(): Promise<void> {

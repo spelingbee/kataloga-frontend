@@ -50,7 +50,7 @@
           :to="`/menu/categories/${category.id}`"
           class="group"
         >
-          <BaseCard class="p-6 text-center bg-background-card hover:bg-background-card/80 transition-all duration-300 group-hover:scale-105">
+          <BaseCard class="text-center bg-background-card hover:bg-background-card/80 transition-all duration-300 group-hover:scale-105">
             <!-- Category Icon -->
             <div class="mb-4">
               <CategoryIcon 
@@ -146,7 +146,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Category } from '~/types'
+import { ref, computed, onMounted } from 'vue'
+import type { CategoryUI } from '~/types'
 
 // Stores
 import { useMenuStore } from '~/stores/menu'
@@ -161,97 +162,15 @@ const menuStore = useMenuStore()
 // Reactive state
 const searchQuery = ref('')
 
-// Sample categories data - will be replaced with real data from API
-const categories = ref<Category[]>([
-  { 
-    id: 'all', 
-    name: 'All Items', 
-    description: 'Browse our complete menu',
-    icon: '🍔', 
-    count: 48,
-    sortOrder: 0
-  },
-  { 
-    id: 'salads', 
-    name: 'Fresh Salads', 
-    description: 'Healthy and nutritious salads',
-    icon: '🥗', 
-    count: 12,
-    sortOrder: 1
-  },
-  { 
-    id: 'main-dishes', 
-    name: 'Main Dishes', 
-    description: 'Hearty and satisfying meals',
-    icon: '🍽️', 
-    count: 18,
-    sortOrder: 2
-  },
-  { 
-    id: 'meat', 
-    name: 'Meat Dishes', 
-    description: 'Premium meat selections',
-    icon: '🥩', 
-    count: 15,
-    sortOrder: 3
-  },
-  { 
-    id: 'fastfood', 
-    name: 'Fast Food', 
-    description: 'Quick and delicious options',
-    icon: '🍟', 
-    count: 20,
-    sortOrder: 4
-  },
-  { 
-    id: 'desserts', 
-    name: 'Sweet Desserts', 
-    description: 'Indulgent treats and sweets',
-    icon: '🧁', 
-    count: 8,
-    sortOrder: 5
-  },
-  { 
-    id: 'drinks', 
-    name: 'Beverages', 
-    description: 'Refreshing drinks and cocktails',
-    icon: '🥤', 
-    count: 16,
-    sortOrder: 6
-  },
-  { 
-    id: 'appetizers', 
-    name: 'Appetizers', 
-    description: 'Perfect starters for your meal',
-    icon: '🥨', 
-    count: 10,
-    sortOrder: 7
-  },
-  { 
-    id: 'soups', 
-    name: 'Soups', 
-    description: 'Warm and comforting soups',
-    icon: '🍲', 
-    count: 6,
-    sortOrder: 8
-  },
-  { 
-    id: 'pizza', 
-    name: 'Pizza', 
-    description: 'Authentic wood-fired pizzas',
-    icon: '🍕', 
-    count: 12,
-    sortOrder: 9
-  }
-])
+// Computed properties
+const categories = computed(() => menuStore.categories)
 
 // Popular categories (based on order frequency)
 const popularCategories = ['fastfood', 'main-dishes', 'pizza', 'drinks']
 
-// Computed
 const filteredCategories = computed(() => {
   if (!searchQuery.value.trim()) {
-    return categories.value.sort((a, b) => a.sortOrder - b.sortOrder)
+    return categories.value
   }
   
   const query = searchQuery.value.toLowerCase()
@@ -260,7 +179,6 @@ const filteredCategories = computed(() => {
       category.name.toLowerCase().includes(query) ||
       (category.description && category.description.toLowerCase().includes(query))
     )
-    .sort((a, b) => a.sortOrder - b.sortOrder)
 })
 
 // Methods

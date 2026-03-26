@@ -1,5 +1,8 @@
-import type { Category, MenuItem, MenuFilters, PaginatedResult, ApiResponse } from '~/types'
+import type { CategoryAPI, MenuItemAPI, MenuFilters, PaginatedResult } from '~/types'
 import { useApiClient } from '~/utils/api'
+
+// Import store at the bottom to avoid circular dependency issues if any
+import { useTenantStore } from '~/stores/tenant'
 
 export class MenuService {
   private apiClient = useApiClient()
@@ -28,19 +31,19 @@ export class MenuService {
   }
 
   /**
-   * Get categories (unwrapped data)
-   * Returns: Category[] (not ApiResponse<Category[]>)
+   * Get categories (returns API types for conversion)
+   * Returns: CategoryAPI[] (to be converted to UI types by stores)
    * Requirements: 2.1
    */
-  async getCategories(): Promise<Category[]> {
+  async getCategories(): Promise<CategoryAPI[]> {
     const cacheKey = 'categories'
-    const cached = this.getCachedData<Category[]>(cacheKey)
+    const cached = this.getCachedData<CategoryAPI[]>(cacheKey)
     if (cached) return cached
 
     // Get categories from public categories endpoint
     const tenantSlug = this.getTenantSlug()
     console.log('🏢 Menu Service - Tenant slug:', tenantSlug)
-    
+
     if (!tenantSlug) {
       console.error('❌ Menu Service - No tenant slug configured')
       throw new Error('Tenant slug not configured')
@@ -49,40 +52,41 @@ export class MenuService {
     try {
       const apiUrl = `/public/menu/${tenantSlug}/categories`
       console.log('🌐 Menu Service - Fetching categories from:', apiUrl)
-      
+
       // Use unwrapped API client - returns clean data directly
-      const response = await this.getApiClient().get<Category[]>(apiUrl)
+      const response = await this.getApiClient().get<CategoryAPI[]>(apiUrl)
       console.log('📥 Menu Service - Categories response:', response)
-      
+
       // Handle direct array response format
       let categories: any[] = []
-      
+
       if (Array.isArray(response)) {
         categories = response
       } else {
         console.error('❌ Menu Service - Categories response not in expected format:', response)
         throw new Error('Invalid response format')
       }
-      
-      // Map backend categories to frontend format
-      const mappedCategories = categories.map((cat: any) => ({
+
+      // Map backend categories to API format (not UI format)
+      const mappedCategories: CategoryAPI[] = categories.map((cat: any) => ({
         id: cat.id,
         name: cat.name,
-        description: `${cat.itemCount || 0} items available`,
+        slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, '-'),
+        description: cat.description || null, // Use null for API compatibility
+        imageUrl: null, // Backend doesn't provide imageUrl yet
         icon: this.getCategoryIcon(cat.name),
-        count: cat.itemCount || 0,
         sortOrder: 0
       }))
-      
+
       console.log('✅ Menu Service - Categories mapped:', mappedCategories.length, 'categories')
-      
+
       this.setCachedData(cacheKey, mappedCategories, 600000) // 10 minutes
       return mappedCategories
-      
+
     } catch (error) {
       console.error('❌ Menu Service - Categories fetch error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      
+
       // Check for specific error types
       if (errorMessage.includes('fetch')) {
         console.error('🌐 Network Error - Check if backend is running on http://localhost:3001')
@@ -93,26 +97,26 @@ export class MenuService {
       if (errorMessage.includes('404')) {
         console.error('🔍 Not Found - Check if tenant exists:', tenantSlug)
       }
-      
+
       throw new Error(`Failed to fetch categories: ${errorMessage}`)
     }
   }
 
   /**
-   * Get single category (unwrapped data)
-   * Returns: Category | null
+   * Get single category (returns API type for conversion)
+   * Returns: CategoryAPI | null
    * Requirements: 2.3
    */
-  async getCategory(categoryId: string): Promise<Category | null> {
+  async getCategory(categoryId: string): Promise<CategoryAPI | null> {
     try {
       // Get category from cached categories
       const categories = await this.getCategories()
       const category = categories.find(cat => cat.id === categoryId)
-      
+
       if (category) {
         return category
       }
-      
+
       // Category not found - return null instead of throwing
       return null
     } catch (error) {
@@ -123,8 +127,8 @@ export class MenuService {
   }
 
   /**
-   * Get paginated menu items (unwrapped data)
-   * Returns: PaginatedResult<MenuItem> (not ApiResponse)
+   * Get paginated menu items (returns API types for conversion)
+   * Returns: PaginatedResult<MenuItemAPI> (to be converted to UI types by stores)
    * Requirements: 2.1, 2.2
    */
   async getMenuItems(params?: {
@@ -133,10 +137,10 @@ export class MenuService {
     filters?: MenuFilters
     page?: number
     limit?: number
-  }): Promise<PaginatedResult<MenuItem>> {
+  }): Promise<PaginatedResult<MenuItemAPI>> {
     const tenantSlug = this.getTenantSlug()
     console.log('🏢 Menu Service - Getting menu items for tenant:', tenantSlug)
-    
+
     if (!tenantSlug) {
       console.error('❌ Menu Service - No tenant slug configured')
       throw new Error('Tenant slug not configured')
@@ -146,14 +150,14 @@ export class MenuService {
       const apiUrl = `/public/menu/${tenantSlug}`
       console.log('🌐 Menu Service - Fetching menu from:', apiUrl)
       console.log('📋 Menu Service - Params:', params)
-      
+
       // Get full response to access pagination metadata
-      const response = await this.getApiClient().getRaw<MenuItem[]>(apiUrl)
+      const response = await this.getApiClient().getRaw<MenuItemAPI[]>(apiUrl)
       console.log('📥 Menu Service - Menu response:', response)
-      
+
       // Handle direct array response format
       let menus: any[] = []
-      
+
       if (response.success && response.data) {
         if (Array.isArray(response.data)) {
           menus = response.data
@@ -165,24 +169,24 @@ export class MenuService {
         console.error('❌ Menu Service - Menu response not successful:', response)
         throw new Error(response.error?.message || 'Failed to fetch menu items')
       }
-      
+
       let items = this.extractMenuItemsFromMenus(menus)
       console.log('📦 Menu Service - Extracted items:', items.length)
-      
+
       // Apply filters
       items = this.applyFiltersToItems(items, params)
       console.log('🔍 Menu Service - Filtered items:', items.length)
-      
+
       // Apply pagination
       const page = params?.page || 1
       const limit = params?.limit || 20
       const startIndex = (page - 1) * limit
       const endIndex = startIndex + limit
       const paginatedItems = items.slice(startIndex, endIndex)
-      
+
       console.log('✅ Menu Service - Returning', paginatedItems.length, 'items (page', page, 'of', Math.ceil(items.length / limit), ')')
-      
-      // Return PaginatedResult format
+
+      // Return PaginatedResult format with API types
       return {
         items: paginatedItems,
         pagination: {
@@ -192,11 +196,11 @@ export class MenuService {
           totalPages: Math.ceil(items.length / limit)
         }
       }
-      
+
     } catch (error) {
       console.error('❌ Menu Service - Menu items fetch error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-      
+
       // Check for specific error types
       if (errorMessage.includes('fetch')) {
         console.error('🌐 Network Error - Check if backend is running on http://localhost:3001')
@@ -207,26 +211,26 @@ export class MenuService {
       if (errorMessage.includes('404')) {
         console.error('🔍 Not Found - Check if tenant exists and has menus:', tenantSlug)
       }
-      
+
       throw new Error(`Failed to fetch menu items: ${errorMessage}`)
     }
   }
 
   /**
-   * Get single menu item (unwrapped data)
-   * Returns: MenuItem | null
+   * Get single menu item (returns API type for conversion)
+   * Returns: MenuItemAPI | null
    * Requirements: 2.3
    */
-  async getMenuItem(itemId: string): Promise<MenuItem | null> {
+  async getMenuItem(itemId: string): Promise<MenuItemAPI | null> {
     try {
       // Get item from all menu items
       const menuItemsResult = await this.getMenuItems()
       const item = menuItemsResult.items.find(item => item.id === itemId)
-      
+
       if (item) {
         return item
       }
-      
+
       // Item not found - return null instead of throwing
       return null
     } catch (error) {
@@ -237,13 +241,13 @@ export class MenuService {
   }
 
   /**
-   * Get popular items (unwrapped data)
-   * Returns: MenuItem[]
+   * Get popular items (returns API types for conversion)
+   * Returns: MenuItemAPI[]
    * Requirements: 2.1
    */
-  async getPopularItems(limit: number = 10): Promise<MenuItem[]> {
+  async getPopularItems(limit: number = 10): Promise<MenuItemAPI[]> {
     const cacheKey = `popular_${limit}`
-    const cached = this.getCachedData<MenuItem[]>(cacheKey)
+    const cached = this.getCachedData<MenuItemAPI[]>(cacheKey)
     if (cached) return cached
 
     try {
@@ -251,7 +255,7 @@ export class MenuService {
       // In a real implementation, this would be based on order analytics
       const menuItemsResult = await this.getMenuItems({ limit })
       const popularItems = menuItemsResult.items
-      
+
       this.setCachedData(cacheKey, popularItems, 300000) // 5 minutes
       return popularItems
     } catch (error) {
@@ -261,15 +265,15 @@ export class MenuService {
   }
 
   /**
-   * Search menu items (unwrapped data)
-   * Returns: MenuItem[]
+   * Search menu items (returns API types for conversion)
+   * Returns: MenuItemAPI[]
    * Requirements: 2.1
    */
-  async searchMenuItems(query: string, filters?: MenuFilters): Promise<MenuItem[]> {
+  async searchMenuItems(query: string, filters?: MenuFilters): Promise<MenuItemAPI[]> {
     try {
       const params = { search: query, filters }
       const result = await this.getMenuItems(params)
-      
+
       return result.items
     } catch (error) {
       console.error('❌ Menu Service - Search error:', error)
@@ -278,29 +282,29 @@ export class MenuService {
   }
 
   /**
-   * Get favorite items (unwrapped data)
-   * Returns: MenuItem[]
+   * Get favorite items (returns API types for conversion)
+   * Returns: MenuItemAPI[]
    * Requirements: 2.1
    */
-  async getFavoriteItems(): Promise<MenuItem[]> {
+  async getFavoriteItems(): Promise<MenuItemAPI[]> {
     // For now, use localStorage for favorites since there's no backend endpoint
     // In a real implementation, this would be a user-specific endpoint
     if (import.meta.client) {
       try {
         const favoriteIds = JSON.parse(localStorage.getItem('favorites') || '[]')
         const allItemsResult = await this.getMenuItems()
-        
-        const favoriteItems = allItemsResult.items.filter(item => 
+
+        const favoriteItems = allItemsResult.items.filter(item =>
           favoriteIds.includes(item.id)
         )
-        
+
         return favoriteItems
       } catch (error) {
         console.error('Failed to get favorites:', error)
         return []
       }
     }
-    
+
     return []
   }
 
@@ -324,7 +328,7 @@ export class MenuService {
         throw new Error(`Failed to add to favorites: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     }
-    
+
     throw new Error('Client-side storage not available')
   }
 
@@ -346,7 +350,7 @@ export class MenuService {
         throw new Error(`Failed to remove from favorites: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     }
-    
+
     throw new Error('Client-side storage not available')
   }
 
@@ -393,127 +397,88 @@ export class MenuService {
 
   // Helper methods
   private getTenantSlug(): string | null {
+    const tenantStore = useTenantStore()
+    const tenantSlug = tenantStore.tenantSlug
+
+    if (tenantSlug) {
+      console.log('🏢 Menu Service - Tenant slug from store:', tenantSlug)
+      return tenantSlug
+    }
+
     const nuxtApp = useNuxtApp()
     const runtimeConfig = nuxtApp.$config
-    const tenantSlug = runtimeConfig?.public?.tenantSlug || null
-    
+    const configSlug = runtimeConfig?.public?.tenantSlug || null
+
     console.log('🏢 Menu Service - Runtime config:', runtimeConfig?.public)
-    console.log('🏢 Menu Service - Tenant slug from config:', tenantSlug)
-    
-    return tenantSlug
+    console.log('🏢 Menu Service - Tenant slug from config:', configSlug)
+
+    return configSlug
   }
 
-  private extractCategoriesFromMenus(menus: any[]): Category[] {
-    const categoryMap = new Map<string, Category>()
-    
-    menus.forEach(menu => {
-      if (menu.itemsByCategory) {
-        menu.itemsByCategory.forEach((categoryGroup: any) => {
-          if (!categoryMap.has(categoryGroup.id)) {
-            categoryMap.set(categoryGroup.id, {
-              id: categoryGroup.id,
-              name: categoryGroup.name,
-              description: `${categoryGroup.items?.length || 0} items available`,
-              icon: this.getCategoryIcon(categoryGroup.name),
-              count: categoryGroup.items?.length || 0,
-              sortOrder: 0
-            })
-          }
-        })
-      }
-    })
-    
-    return Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name))
-  }
+  private extractMenuItemsFromMenus(menus: any[]): MenuItemAPI[] {
+    const items: MenuItemAPI[] = []
 
-  private extractMenuItemsFromMenus(menus: any[]): MenuItem[] {
-    const items: MenuItem[] = []
-    
     menus.forEach(menu => {
       if (menu.items) {
         menu.items.forEach((item: any) => {
           items.push({
             id: item.id,
             name: item.name,
-            description: item.description,
+            description: item.description || null, // Use null for API compatibility
             price: item.price,
-            imageUrl: item.imageUrl,
-            isActive: item.isActive,
-            categoryId: item.category?.id,
-            category: item.category,
-            calories: item.calories,
-            nutritionInfo: item.nutritionInfo,
-            cookingTime: item.cookingTime,
-            dietary: item.dietary || []
+            imageUrl: item.imageUrl || null, // Use null for API compatibility
+            categoryId: item.category?.id || null, // Use null for API compatibility
+            menuId: item.menuId,
+            isActive: item.isActive ?? true,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt
           })
         })
       }
     })
-    
+
     return items
   }
 
-  private applyFiltersToItems(items: MenuItem[], params?: {
+  private applyFiltersToItems(items: MenuItemAPI[], params?: {
     categoryId?: string
     search?: string
     filters?: MenuFilters
-  }): MenuItem[] {
+  }): MenuItemAPI[] {
     let filteredItems = [...items]
-    
+
     // Filter by category
     if (params?.categoryId) {
       filteredItems = filteredItems.filter(item => item.categoryId === params.categoryId)
     }
-    
+
     // Filter by search query
     if (params?.search) {
       const query = params.search.toLowerCase()
       filteredItems = filteredItems.filter(item =>
         item.name.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query)
+        (item.description && item.description.toLowerCase().includes(query))
       )
     }
-    
+
     // Apply filters
     if (params?.filters) {
       const filters = params.filters
-      
+
       // Price range filter
       if (filters.priceRange) {
         const [minPrice, maxPrice] = filters.priceRange
-        filteredItems = filteredItems.filter(item => 
+        filteredItems = filteredItems.filter(item =>
           item.price >= minPrice && item.price <= maxPrice
         )
       }
-      
-      // Calories filter
-      if (filters.calories && filters.calories.length === 2) {
-        const [minCalories, maxCalories] = filters.calories
-        filteredItems = filteredItems.filter(item => 
-          item.calories && item.calories >= minCalories && item.calories <= maxCalories
-        )
-      }
-      
-      // Dietary restrictions filter
-      if (filters.dietary && filters.dietary.length > 0) {
-        filteredItems = filteredItems.filter(item =>
-          filters.dietary!.some(diet => item.dietary?.includes(diet))
-        )
-      }
-      
-      // Cooking time filter
-      if (filters.cookingTime) {
-        filteredItems = filteredItems.filter(item =>
-          item.cookingTime && item.cookingTime <= filters.cookingTime!
-        )
-      }
-      
+
       // Availability filter
       if (filters.availability) {
         filteredItems = filteredItems.filter(item => item.isActive)
       }
     }
-    
+
     return filteredItems
   }
 
@@ -540,7 +505,7 @@ export class MenuService {
       'snacks': '🍿',
       'drinks': '🥤'
     }
-    
+
     const key = categoryName.toLowerCase()
     return iconMap[key] || '🍽️'
   }

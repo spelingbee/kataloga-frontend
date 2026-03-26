@@ -7,7 +7,7 @@
       <BaseBadge
         v-if="group.required"
         variant="warning"
-        size="xs"
+        size="sm"
       >
         Required
       </BaseBadge>

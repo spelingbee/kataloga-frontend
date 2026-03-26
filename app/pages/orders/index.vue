@@ -58,7 +58,7 @@
           <div class="orders-page__stat-label">Total Orders</div>
         </BaseCard>
         <BaseCard class="orders-page__stat-card">
-          <div class="orders-page__stat-value">${{ totalSpent }}</div>
+          <div class="orders-page__stat-value">{{ formatPrice(totalSpent) }}</div>
           <div class="orders-page__stat-label">Total Spent</div>
         </BaseCard>
         <BaseCard class="orders-page__stat-card">
@@ -66,7 +66,7 @@
           <div class="orders-page__stat-label">Favorite</div>
         </BaseCard>
         <BaseCard class="orders-page__stat-card">
-          <div class="orders-page__stat-value">${{ averageOrderValue }}</div>
+          <div class="orders-page__stat-value">{{ formattedAverageOrderValue }}</div>
           <div class="orders-page__stat-label">Avg. Order</div>
         </BaseCard>
       </div>
@@ -284,7 +284,7 @@
             v-for="order in filteredOrders"
             :key="order.id"
             class="bg-background-card rounded-xl p-6 hover:bg-background-card/80 transition-colors cursor-pointer"
-            @click="$router.push(`/orders/${order.id}`)"
+            @click="router.push(`/orders/${order.id}`)"
           >
             <div class="flex items-center justify-between mb-4">
               <StatusBadge :status="order.status" />
@@ -338,15 +338,17 @@
 </template>
 
 <script setup lang="ts">
-import type { Order } from '~/types'
+import type { OrderUI, OrderItemUI } from '~/types'
 import { useOrders } from '~/composables/useOrders'
 import { useCart } from '~/composables/useCart'
 import { useOrderStore } from '~/stores/order'
 import { useCartStore } from '~/stores/cart'
+import { usePriceFormatter } from '~/composables/usePriceFormatter'
 
 // Page setup
 definePageMeta({
-  title: 'Order History - Menu Ordering App'
+  title: 'Order History - Menu Ordering App',
+  middleware: ['auth']
 })
 
 // Stores
@@ -354,6 +356,7 @@ const orderStore = useOrderStore()
 const cartStore = useCartStore()
 
 // Composables
+const { formatPrice } = usePriceFormatter()
 const { 
   orderHistory, 
   loading, 
@@ -377,13 +380,23 @@ const loadingMore = ref(false)
 const hasMoreOrders = ref(true)
 
 // Computed
-const orders = computed(() => orderHistory.value)
+const orders = computed<OrderUI[]>(() => {
+  return orderHistory.value.map(order => ({
+    ...order,
+    items: order.items.slice() as OrderItemUI[],
+    trackingInfo: order.trackingInfo ? {
+      ...order.trackingInfo,
+      updates: order.trackingInfo.updates.slice() as any[]
+    } : undefined
+  }))
+})
+
 const orderStats = computed(() => getOrderStats())
 
 const totalOrders = computed(() => orderStats.value.total)
 const totalSpent = computed(() => orderStats.value.totalSpent)
 const favoriteRestaurant = computed(() => orderStats.value.favoriteItems[0]?.name || 'N/A')
-const averageOrderValue = computed(() => `$${orderStats.value.averageOrderValue.toFixed(2)}`)
+const formattedAverageOrderValue = computed(() => formatPrice(orderStats.value.averageOrderValue))
 
 const activeOrders = computed(() => {
   return orders.value.filter(order => 
@@ -470,7 +483,7 @@ const trackOrder = (orderId: string) => {
   router.push(`/orders/${orderId}?tab=tracking`)
 }
 
-const reorderItems = (order: Order) => {
+const reorderItems = (order: OrderUI) => {
   // Add all items from the order to cart
   const orderCopy = JSON.parse(JSON.stringify(order))
   orderCopy.items.forEach((item: any) => {
@@ -480,7 +493,7 @@ const reorderItems = (order: Order) => {
   router.push('/cart')
 }
 
-const shareOrder = (order: Order) => {
+const shareOrder = (order: OrderUI) => {
   const orderCopy = JSON.parse(JSON.stringify(order))
   if (navigator.share) {
     navigator.share({
@@ -496,8 +509,11 @@ const shareOrder = (order: Order) => {
 
 const exportOrders = () => {
   // Mock export functionality
-  console.log('Exporting orders...')
+  // console.log('Exporting orders...') - REMOVED
   // In a real app, this would generate and download a CSV/PDF
+  // Use a toast notification instead:
+  // useToast().success('Export functionality coming soon')
+  alert('Export functionality coming soon')
 }
 
 const loadMoreOrders = async () => {
@@ -515,7 +531,14 @@ const loadMoreOrders = async () => {
 
 // Initialize
 onMounted(() => {
-  orderStore.fetchOrderHistory()
+  // Only fetch if we don't have orders (or if they are stale - optional logic)
+  // This prevents resetting the view when navigating back from details
+  if (orderStore.orderHistory.length === 0) {
+    orderStore.fetchOrderHistory()
+  } else {
+    // Optional: Background refresh without setting loading state
+    // orderStore.defaults.fetchOrderHistory({ background: true })
+  }
 })
 </script>
 

@@ -86,7 +86,7 @@ const buttonClasses = computed(() => {
 
 const iconSize = computed((): 'xs' | 'sm' | 'md' | 'lg' | 'xl' => {
   const sizes: Record<string, 'xs' | 'sm' | 'md' | 'lg' | 'xl'> = { sm: 'sm', md: 'md', lg: 'lg' }
-  return sizes[props.size]
+  return sizes[props.size] || 'md'
 })
 
 const handleClick = (event: Event) => {
@@ -143,43 +143,49 @@ const handleClick = (event: Event) => {
   
   // Variant styles
   &--primary {
-    background-color: var(--color-primary);
+    background: var(--gradient-primary);
     color: white;
-    box-shadow: 0 4px 14px 0 rgba(255, 107, 0, 0.39);
+    box-shadow: var(--shadow-glow-primary); // Using new glow token
     position: relative;
     overflow: hidden;
+    border: none;
     
+    // Shine effect
     &::before {
       content: '';
       position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      transition: width $transition-fast $ease-out, height $transition-fast $ease-out;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: skewX(-25deg);
+      transition: none;
     }
     
     &:hover:not(.base-button--disabled):not(.base-button--loading) {
-      background-color: var(--color-primary-light);
-      box-shadow: var(--hover-shadow-button);
-      transform: translateY(-2px) scale(1.02);
-    }
-    
-    &:active:not(.base-button--disabled):not(.base-button--loading) {
-      background-color: var(--color-primary-dark);
-      transform: translateY(0) scale(0.98);
+      background: var(--gradient-primary-hover);
+      box-shadow: var(--shadow-glow-primary-hover);
+      transform: translateY(-2px);
       
       &::before {
-        width: 300px;
-        height: 300px;
+        left: 200%;
+        transition: left 0.7s ease-in-out;
       }
     }
     
+    &:active:not(.base-button--disabled):not(.base-button--loading) {
+      transform: translateY(0) scale(0.98);
+      box-shadow: var(--shadow-sm);
+    }
+    
     &:focus-visible {
-      box-shadow: var(--hover-shadow-button), 0 0 0 3px rgba(var(--color-primary-rgb), 0.3);
+      box-shadow: var(--shadow-glow-primary), 0 0 0 3px rgba(var(--color-primary-rgb), 0.3);
     }
   }
   
@@ -190,7 +196,8 @@ const handleClick = (event: Event) => {
     
     &:hover:not(.base-button--disabled):not(.base-button--loading) {
       background-color: var(--bg-tertiary);
-      border-color: var(--border-secondary);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
     }

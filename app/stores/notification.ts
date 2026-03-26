@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Notification, Promotion } from '~/types'
+import { isDefined } from '~/types/utils/type-guards'
 
 interface NotificationState {
   notifications: Notification[]
@@ -145,7 +146,7 @@ export const useNotificationStore = defineStore('notification', {
       const index = this.notifications.findIndex(n => n.id === notificationId)
       if (index > -1) {
         const notification = this.notifications[index]
-        if (!notification.isRead) {
+        if (isDefined(notification) && !notification.isRead) {
           this.unreadCount = Math.max(0, this.unreadCount - 1)
         }
         this.notifications.splice(index, 1)

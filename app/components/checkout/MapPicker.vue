@@ -5,7 +5,7 @@
       
       <!-- Pin icon overlay -->
       <div class="map-picker__pin">
-        <BaseIcon name="map-pin" size="32" color="primary-red" />
+        <BaseIcon name="map-pin" :size="32" color="primary-red" />
       </div>
       
       <!-- Address display -->
@@ -36,7 +36,7 @@
       
       <!-- Zone info -->
       <div v-if="deliveryZone && deliveryZone.isAvailable" class="map-picker__zone-info">
-        <BaseIcon name="info" size="16" />
+        <BaseIcon name="info" :size="16" />
         <span>{{ deliveryZone.name }} - Delivery Fee: {{ deliveryZone.deliveryFee }} som</span>
       </div>
     </div>
@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import L from 'leaflet'
+import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useMap } from '../../composables/useMap'
 import type { Coordinates } from '../../types/delivery'
@@ -87,7 +87,7 @@ onMounted(() => {
   if (!mapContainer.value) return
 
   // Create map instance
-  map.value = L.map(mapContainer.value, {
+  map.value = (L as any).map(mapContainer.value, {
     center: [props.center.lat, props.center.lng],
     zoom: props.zoom,
     zoomControl: true
@@ -95,17 +95,17 @@ onMounted(() => {
 
   // Add tile layer - using OpenStreetMap as default
   // In production, you would use 2GIS or Yandex tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  (L as any).tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 19
-  }).addTo(map.value)
+  }).addTo(map.value as L.Map)
 
   // Handle map movement
-  map.value.on('moveend', handleMapMove)
+  (map.value as L.Map).on('moveend', handleMapMove)
 
   // Set initial position if provided
   if (props.initialCoordinates) {
-    map.value.setView([props.initialCoordinates.lat, props.initialCoordinates.lng], props.zoom)
+    (map.value as L.Map).setView([props.initialCoordinates.lat, props.initialCoordinates.lng], props.zoom)
     handleMapMove()
   }
 })

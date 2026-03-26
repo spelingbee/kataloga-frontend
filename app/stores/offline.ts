@@ -24,11 +24,12 @@ export const useOfflineStore = defineStore('offline', () => {
     if (typeof navigator !== 'undefined' && 'onLine' in navigator) {
       const online = navigator.onLine
       setOfflineMode(!online)
+      return online
     } else {
       // Assume online in SSR environment
       setOfflineMode(false)
+      return true
     }
-    return online
   }
 
   /**

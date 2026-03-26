@@ -223,7 +223,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { Order, OrderStatus } from '~/types'
+import type { OrderUI } from '~/types'
+import { OrderStatus } from '~/types'
 
 // Define page meta
 definePageMeta({
@@ -239,7 +240,7 @@ const stats = ref({
   activeCustomers: 0
 })
 
-const recentOrders = ref<Order[]>([])
+const recentOrders = ref<OrderUI[]>([])
 const loading = ref(true)
 
 // Methods
@@ -250,8 +251,21 @@ const loadDashboardData = async () => {
     // Load dashboard stats
     const { $apiClient } = useNuxtApp()
     const [statsResponse, ordersResponse] = await Promise.all([
-      $apiClient.get('/admin/dashboard/stats'),
-      $apiClient.get('/admin/orders', { params: { limit: 5, sort: 'createdAt:desc' } })
+      $apiClient.get<{
+        success: boolean;
+        data: {
+          todayOrders: number;
+          todayRevenue: number;
+          pendingOrders: number;
+          activeCustomers: number;
+        }
+      }>('/admin/dashboard/stats'),
+      $apiClient.get<{
+        success: boolean;
+        data: {
+          items: OrderUI[];
+        }
+      }>('/admin/orders', { params: { limit: 5, sort: 'createdAt:desc' } })
     ])
 
     if (statsResponse.success) {
@@ -274,19 +288,39 @@ const loadDashboardData = async () => {
     recentOrders.value = [
       {
         id: '1',
+        orderNumber: 'ORD-001',
         status: 'PENDING' as OrderStatus,
         total: 45.99,
-        customerInfo: { name: 'John Doe', phone: '+1234567890' },
+        customerId: 'customer-1',
         createdAt: new Date().toISOString(),
-        items: []
+        updatedAt: new Date().toISOString(),
+        estimatedTime: 30,
+        deliveryAddress: '123 Main St',
+        orderType: 'delivery' as const,
+        items: [],
+        subtotal: 42.99,
+        deliveryFee: 3.00,
+        discount: 0,
+        tax: 0,
+        customerInfo: { name: 'John Doe', phone: '+1234567890' }
       },
       {
         id: '2',
+        orderNumber: 'ORD-002',
         status: 'PREPARING' as OrderStatus,
         total: 32.50,
-        customerInfo: { name: 'Jane Smith', phone: '+1234567891' },
+        customerId: 'customer-2',
         createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-        items: []
+        updatedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+        estimatedTime: 20,
+        deliveryAddress: null,
+        orderType: 'pickup' as const,
+        items: [],
+        subtotal: 29.50,
+        deliveryFee: 0,
+        discount: 0,
+        tax: 3.00,
+        customerInfo: { name: 'Jane Smith', phone: '+1234567891' }
       }
     ]
   } finally {

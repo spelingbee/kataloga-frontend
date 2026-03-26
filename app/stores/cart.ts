@@ -2,22 +2,16 @@ import { defineStore } from 'pinia'
 import { useOrderService } from '~/services/order.service'
 import { useOfflineCart } from '~/composables/useOfflineCart'
 import { useTelegramHaptic } from '~/composables/useTelegramHaptic'
-import type { CartItem, MenuItem, ApiError } from '~/types'
+import { useTenantStorage } from '~/composables/useStorage'
+import { isDefined } from '~/types/utils/type-guards'
+import { updateReadonlyObject } from '~/types/utils/readonly'
+import { CartService } from '~/services/api.service'
+import { useAuthStore } from '~/stores/auth'
+import type { CartItem, MenuItemUI, ApiError } from '~/types'
+import { debounce } from 'lodash-es'
 
 // Helper function to get tenant store (to avoid circular dependency)
-function getTenantSlug(): string {
-  try {
-    // Skip tenant store access in test environment
-    if (import.meta.env.MODE === 'test') {
-      return ''
-    }
-    const { useTenantStore } = require('./tenant')
-    const tenantStore = useTenantStore()
-    return tenantStore.tenantSlug || ''
-  } catch {
-    return ''
-  }
-}
+
 
 interface CartState {
   // Clean business data only
@@ -26,12 +20,19 @@ interface CartState {
   discount: number
   deliveryFee: number
   minimumOrderAmount: number
-  
+
   // State management
   loading: boolean
   syncing: boolean
   lastSyncAt: Date | null
   error: ApiError | null
+}
+
+interface CartStorageData {
+  items: CartItem[]
+  promoCode: string | null
+  discount: number
+  deliveryFee: number
 }
 
 export const useCartStore = defineStore('cart', {
@@ -42,7 +43,7 @@ export const useCartStore = defineStore('cart', {
     discount: 0,
     deliveryFee: 0,
     minimumOrderAmount: 0,
-    
+
     // State management
     loading: false,
     syncing: false,
@@ -80,11 +81,75 @@ export const useCartStore = defineStore('cart', {
   },
 
   actions: {
-    addItem(menuItem: MenuItem, quantity: number = 1, selectedModifiers: any[] = [], customizations?: Record<string, any>) {
+    /**
+     * Get storage instance for cart data
+     */
+    _getStorage() {
+      return useTenantStorage('cart', {
+        items: [],
+        promoCode: null,
+        discount: 0,
+        deliveryFee: 0
+      } as CartStorageData)
+    },
+
+    /**
+     * Persist cart data to storage
+     */
+    _persistToStorage() {
+      const { setValue } = this._getStorage()
+
+      try {
+        const cartData: CartStorageData = {
+          items: this.items,
+          promoCode: this.promoCode,
+          discount: this.discount,
+          deliveryFee: this.deliveryFee
+        }
+        setValue(cartData)
+
+        // Also save to offline cart for PWA functionality
+        const { saveCartOffline } = useOfflineCart()
+        saveCartOffline(this.items)
+
+        // Sync with server for authenticated users
+        this.syncCartWithServer()
+      } catch (error) {
+        console.error('Failed to persist cart to storage:', error)
+      }
+    },
+
+    /**
+     * Restore cart data from storage
+     */
+    _restoreFromStorage() {
+      const { value: cartData } = this._getStorage()
+
+      try {
+        const data = cartData.value
+        this.items = data.items || []
+        this.promoCode = data.promoCode || null
+        this.discount = typeof data.discount === 'number' ? data.discount : 0
+        this.deliveryFee = typeof data.deliveryFee === 'number' ? data.deliveryFee : 0
+      } catch (error) {
+        console.error('Failed to restore cart from storage:', error)
+
+        // Fallback to offline cart - skip for now since it's async
+        // TODO: Implement proper async cart restoration
+        console.warn('Offline cart loading skipped - requires async handling')
+        // Reset to empty cart
+        this.items = []
+        this.promoCode = null
+        this.discount = 0
+        this.deliveryFee = 0
+      }
+    },
+
+    addItem(menuItem: MenuItemUI, quantity: number = 1, selectedModifiers: import('~/types').Modifier[] = [], customizations?: Record<string, any>) {
       // Calculate price including modifiers
-      const modifierPrice = selectedModifiers.reduce((sum, mod) => sum + (mod.priceAdjustment || 0), 0)
+      const modifierPrice = selectedModifiers?.reduce((sum, mod) => sum + (mod.priceAdjustment || 0), 0) || 0
       const itemPrice = menuItem.price + modifierPrice
-      
+
       const existingItemIndex = this.items.findIndex(
         item =>
           item.menuItem.id === menuItem.id &&
@@ -94,15 +159,17 @@ export const useCartStore = defineStore('cart', {
 
       if (existingItemIndex >= 0) {
         // Update existing item
-        this.items[existingItemIndex].quantity += quantity
-        this.items[existingItemIndex].subtotal =
-          Math.round((this.items[existingItemIndex].quantity * itemPrice) * 100) / 100
+        const existingItem = this.items[existingItemIndex]
+        if (existingItem) {
+          existingItem.quantity += quantity
+          existingItem.subtotal = Math.round((existingItem.quantity * itemPrice) * 100) / 100
+        }
       } else {
         // Add new item
         const cartItem: CartItem = {
           menuItem,
           quantity,
-          selectedModifiers,
+          selectedModifiers: selectedModifiers || [],
           subtotal: Math.round((quantity * itemPrice) * 100) / 100,
           customizations,
         }
@@ -117,7 +184,7 @@ export const useCartStore = defineStore('cart', {
         // Silently fail if haptic feedback is not available
       }
 
-      this.persistCart()
+      this._persistToStorage()
     },
 
     removeItem(menuItemId: string, customizations?: Record<string, any>) {
@@ -129,7 +196,7 @@ export const useCartStore = defineStore('cart', {
 
       if (itemIndex >= 0) {
         this.items.splice(itemIndex, 1)
-        
+
         // Trigger haptic feedback for remove from cart action
         try {
           const { cartActions } = useTelegramHaptic()
@@ -137,29 +204,40 @@ export const useCartStore = defineStore('cart', {
         } catch (error) {
           // Silently fail if haptic feedback is not available
         }
-        
-        this.persistCart()
+
+        this._persistToStorage()
       }
     },
 
     updateQuantity(menuItemId: string, quantity: number, customizations?: Record<string, any>) {
-      const item = this.items.find(
+      const itemIndex = this.items.findIndex(
         item =>
           item.menuItem.id === menuItemId &&
           JSON.stringify(item.customizations) === JSON.stringify(customizations)
       )
 
-      if (item) {
+      if (itemIndex >= 0) {
+        const item = this.items[itemIndex]
+        if (!isDefined(item)) return
+
         if (quantity <= 0) {
           this.removeItem(menuItemId, customizations)
         } else {
-          item.quantity = quantity
           // Calculate price including modifiers
-          const modifierPrice = item.selectedModifiers.reduce((sum, mod) => sum + (mod.priceAdjustment || 0), 0)
+          const modifierPrice = item.selectedModifiers?.reduce((sum, mod) => sum + (mod.priceAdjustment || 0), 0) || 0
           const itemPrice = item.menuItem.price + modifierPrice
           // Allow negative subtotals (e.g., from large discounts)
-          item.subtotal = Math.round((quantity * itemPrice) * 100) / 100
-          
+          const newSubtotal = Math.round((quantity * itemPrice) * 100) / 100
+
+          // Create updated item using immutable operation
+          const updatedItem = updateReadonlyObject(item, {
+            quantity,
+            subtotal: newSubtotal
+          })
+
+          // Replace the item in the array
+          this.items[itemIndex] = updatedItem
+
           // Trigger haptic feedback for quantity update
           try {
             const { cartActions } = useTelegramHaptic()
@@ -167,8 +245,8 @@ export const useCartStore = defineStore('cart', {
           } catch (error) {
             // Silently fail if haptic feedback is not available
           }
-          
-          this.persistCart()
+
+          this._persistToStorage()
         }
       }
     },
@@ -179,7 +257,7 @@ export const useCartStore = defineStore('cart', {
       this.promoCode = null
       this.discount = 0
       this.deliveryFee = 0
-      
+
       // Trigger haptic feedback for clear cart action
       try {
         const { cartActions } = useTelegramHaptic()
@@ -187,29 +265,17 @@ export const useCartStore = defineStore('cart', {
       } catch (error) {
         // Silently fail if haptic feedback is not available
       }
-      
-      if (typeof localStorage !== 'undefined') {
-        // Clear tenant-specific cart from localStorage
-        const tenantSlug = getTenantSlug()
-        const storageKey = tenantSlug ? `cart_${tenantSlug}` : 'cart'
-        
-        try {
-          localStorage.removeItem(storageKey)
-          // Also try to clear the default key in case it exists
-          if (storageKey !== 'cart') {
-            localStorage.removeItem('cart')
-          }
-        } catch (error) {
-          console.error('Failed to clear cart from localStorage:', error)
-        }
-        
+
+      // Clear storage using new utilities
+      const { removeValue } = this._getStorage()
+      try {
+        removeValue()
+
         // Also clear offline cart
-        try {
-          const { saveCartOffline } = useOfflineCart()
-          saveCartOffline([])
-        } catch (error) {
-          console.error('Failed to clear offline cart:', error)
-        }
+        const { saveCartOffline } = useOfflineCart()
+        saveCartOffline([])
+      } catch (error) {
+        console.error('Failed to clear cart from storage:', error)
       }
     },
 
@@ -220,132 +286,54 @@ export const useCartStore = defineStore('cart', {
 
       this.loading = true
       this.error = null
-      
-      try {
-        const apiClient = (useNuxtApp() as any).$apiClient
-        const result = await apiClient.post<{ discount: number; message: string }>('/promo/validate', {
-          code: code.trim(),
-          subtotal: this.subtotal
-        })
 
+      const result = await CartService.validatePromoCode(code, this.subtotal)
+
+      if (result.success) {
         // Store clean data directly
         this.promoCode = code.trim()
-        this.discount = result.discount
-        this.persistCart()
-        
-        return { success: true, message: result.message || 'Promo code applied successfully' }
-        
-      } catch (error: any) {
-        console.error('Failed to apply promo code:', error)
-        
-        // Store typed error
-        this.error = error as ApiError
-        
-        const errorMessage = (error as ApiError)?.message || error.message || 'Failed to apply promo code'
-        return { success: false, message: errorMessage }
-      } finally {
+        this.discount = result.data.discount
+        this._persistToStorage()
+
         this.loading = false
+        return { success: true, message: result.data.message || 'Promo code applied successfully' }
+      } else {
+        console.error('Failed to apply promo code:', result.error)
+
+        // Store typed error
+        this.error = result.error
+
+        this.loading = false
+        return { success: false, message: result.error.message || 'Failed to apply promo code' }
       }
     },
 
     removePromoCode() {
       this.promoCode = null
       this.discount = 0
-      this.persistCart()
+      this._persistToStorage()
     },
 
     setDeliveryFee(fee: number) {
       this.deliveryFee = fee
-      this.persistCart()
+      this._persistToStorage()
     },
 
     setMinimumOrderAmount(amount: number) {
       this.minimumOrderAmount = amount
     },
 
-    persistCart() {
-      if (typeof localStorage !== 'undefined') {
-        // Get tenant context for tenant-specific storage
-        const tenantSlug = getTenantSlug()
-        
-        // Use tenant-specific key if tenant is set
-        const storageKey = tenantSlug ? `cart_${tenantSlug}` : 'cart'
-        const cartData = {
-          items: this.items,
-          promoCode: this.promoCode,
-          discount: this.discount,
-          deliveryFee: this.deliveryFee
-        }
-        localStorage.setItem(storageKey, JSON.stringify(cartData))
-        
-        // Also save to offline cart for PWA functionality
-        const { saveCartOffline } = useOfflineCart()
-        saveCartOffline(this.items)
-        
-        // Sync with server for authenticated users
-        this.syncCartWithServer()
-      }
-    },
 
-    restoreCart() {
-      if (typeof localStorage !== 'undefined') {
-        // Get tenant context for tenant-specific storage
-        const tenantSlug = getTenantSlug()
-        
-        // Try to restore from tenant-specific localStorage first
-        const storageKey = tenantSlug ? `cart_${tenantSlug}` : 'cart'
-        const savedCart = localStorage.getItem(storageKey)
-        if (savedCart) {
-          try {
-            const cartData = JSON.parse(savedCart)
-            // Handle both old format (array) and new format (object)
-            if (Array.isArray(cartData)) {
-              // Old format - just items array
-              this.items = cartData
-              // Reset other fields to defaults
-              this.promoCode = null
-              this.discount = 0
-              this.deliveryFee = 0
-            } else {
-              // New format - object with all cart data
-              this.items = cartData.items || []
-              this.promoCode = cartData.promoCode || null
-              this.discount = typeof cartData.discount === 'number' ? cartData.discount : 0
-              // Ensure deliveryFee is properly restored - handle all cases
-              this.deliveryFee = typeof cartData.deliveryFee === 'number' ? cartData.deliveryFee : 
-                                 (typeof cartData.deliveryFee === 'string' ? parseFloat(cartData.deliveryFee) : 0)
-            }
-            return
-          } catch (error) {
-            console.error('Failed to restore cart from localStorage:', error)
-          }
-        }
-
-        // Fallback to offline cart
-        const { loadCartOffline } = useOfflineCart()
-        try {
-          const offlineItems = loadCartOffline()
-          this.items = offlineItems
-          // Reset other fields when loading from offline cart
-          this.promoCode = null
-          this.discount = 0
-          this.deliveryFee = 0
-        } catch (error) {
-          console.error('Failed to restore cart from offline storage:', error)
-          this.clearCart()
-        }
-      }
-    },
 
     // Create order with offline support
-    async createOrder(customerInfo: any) {
+    async createOrder(customerInfo: import('~/types').CustomerInfo) {
       this.loading = true
       this.error = null
-      
+
       try {
         const orderService = useOrderService()
         const { isOnline, savePendingOrder } = useOfflineCart()
-        
+
         const orderData = {
           items: this.items.map(item => ({
             productId: item.menuItem.id,
@@ -354,12 +342,13 @@ export const useCartStore = defineStore('cart', {
             customizations: item.customizations,
           })),
           customerInfo,
+          paymentMethod: 'CASH' as const, // Default payment method
         }
 
         if (isOnline.value) {
           // Try to create order online - service returns unwrapped data directly
           const order = await orderService.createOrder(orderData)
-          
+
           // Trigger success haptic feedback
           try {
             const { cartActions } = useTelegramHaptic()
@@ -367,7 +356,7 @@ export const useCartStore = defineStore('cart', {
           } catch (error) {
             // Silently fail if haptic feedback is not available
           }
-          
+
           // Clear cart only on successful order creation
           this.clearCart()
           return {
@@ -383,7 +372,7 @@ export const useCartStore = defineStore('cart', {
           })
           // Clear cart after saving as pending (will be synced later)
           this.clearCart()
-          
+
           return {
             success: true,
             message: 'Order saved. It will be submitted when you\'re back online.',
@@ -392,10 +381,10 @@ export const useCartStore = defineStore('cart', {
         }
       } catch (error) {
         console.error('Failed to create order:', error)
-        
+
         // Store typed error
         this.error = error as ApiError
-        
+
         // Trigger error haptic feedback
         try {
           const { cartActions } = useTelegramHaptic()
@@ -403,7 +392,7 @@ export const useCartStore = defineStore('cart', {
         } catch (hapticError) {
           // Silently fail if haptic feedback is not available
         }
-        
+
         // Cart is preserved automatically since we don't clear it on error
         throw error
       } finally {
@@ -411,126 +400,158 @@ export const useCartStore = defineStore('cart', {
       }
     },
 
-    // Server synchronization methods
-    async syncCartWithServer() {
+    // Debounced version of server sync to prevent spamming the API
+    debouncedSyncWithServer: debounce(async function(this: any) {
       // Skip sync in test environment or if already syncing
       if (import.meta.env.MODE === 'test' || this.syncing) return
-      
-      try {
-        const { $auth } = useNuxtApp()
-        if (!$auth?.user) return
 
-        this.syncing = true
-        this.error = null
-        
-        const apiClient = (useNuxtApp() as any).$apiClient
-        
-        // Save cart to server - service returns unwrapped data
-        await apiClient.post<void>('/cart/sync', {
-          items: this.items.map(item => ({
-            menuItemId: item.menuItem.id,
-            quantity: item.quantity,
-            customizations: item.customizations,
-          }))
-        })
-        
+      const authStore = useAuthStore()
+      if (!authStore.user) return
+
+      this.syncing = true
+      this.error = null
+
+      // Optimistic UI: Snapshot current items for rollback
+      const previousItems = [...this.items]
+
+      const result = await CartService.syncCart(this.items)
+
+      if (result.success) {
         this.lastSyncAt = new Date()
-      } catch (error) {
-        console.error('Failed to sync cart with server:', error)
-        this.error = error as ApiError
-      } finally {
-        this.syncing = false
+      } else {
+        console.error('Failed to sync cart with server:', result.error)
+        this.error = result.error
+        this.items = previousItems
       }
+
+      this.syncing = false
+    }, 1500),
+
+    // Server synchronization methods
+    async syncCartWithServer() {
+      // We use the debounced function, passing 'this' context explicitly
+      (this as any).debouncedSyncWithServer.call(this)
     },
 
     async loadCartFromServer() {
-      const { $auth } = useNuxtApp()
-      if (!$auth?.user) return
+      const authStore = useAuthStore()
+      if (!authStore.user) return
 
       this.loading = true
       this.error = null
-      
-      try {
-        const apiClient = (useNuxtApp() as any).$apiClient
-        const result = await apiClient.get<{ items: any[] }>('/cart')
-        
+
+      const result = await CartService.loadCart()
+
+      if (result.success) {
         // Store clean data directly
-        if (result?.items) {
+        if (result.data?.items) {
           // Merge server cart with local cart
-          const serverItems = result.items
+          const serverItems = result.data.items
           const mergedItems = this.mergeCartItems(serverItems)
           this.items = mergedItems
-          this.persistCart()
+          this._persistToStorage()
           this.lastSyncAt = new Date()
         }
-      } catch (error) {
-        console.error('Failed to load cart from server:', error)
-        this.error = error as ApiError
-      } finally {
-        this.loading = false
+      } else {
+        console.error('Failed to load cart from server:', result.error)
+        this.error = result.error
       }
+
+      this.loading = false
     },
 
     mergeCartItems(serverItems: any[]): CartItem[] {
       const merged = [...this.items]
       
+      // Create maps for faster lookup by ID + customizations signature
+      const localMap = new Map()
+      merged.forEach((item, index) => {
+        const signature = `${item.menuItem.id}-${JSON.stringify(item.customizations)}`
+        localMap.set(signature, { item, index })
+      })
+
+      const serverSignatures = new Set()
+
       for (const serverItem of serverItems) {
-        const existingIndex = merged.findIndex(
-          item => 
-            item.menuItem.id === serverItem.menuItemId &&
-            JSON.stringify(item.customizations) === JSON.stringify(serverItem.customizations)
-        )
-        
-        if (existingIndex >= 0) {
-          // Use the higher quantity (server or local)
-          merged[existingIndex].quantity = Math.max(
-            merged[existingIndex].quantity,
-            serverItem.quantity
-          )
-          merged[existingIndex].subtotal = 
-            merged[existingIndex].quantity * merged[existingIndex].menuItem.price
+        // Skip invalid server items
+        if (!serverItem.menuItem) {
+          console.warn('Server cart item missing menu data:', serverItem)
+          continue
+        }
+
+        const signature = `${serverItem.menuItem.id}-${JSON.stringify(serverItem.customizations)}`
+        serverSignatures.add(signature)
+
+        if (localMap.has(signature)) {
+          // Item exists locally and on server
+          const localEntry = localMap.get(signature)
+          const localItem = localEntry.item
+          
+          if (serverItem.quantity !== localItem.quantity) {
+            // Take the max quantity to be safe against data loss
+            const maxQuantity = Math.max(serverItem.quantity, localItem.quantity)
+            const modifierPrice = localItem.selectedModifiers?.reduce((sum: number, mod: any) => sum + (mod.priceAdjustment || 0), 0) || 0
+            const newSubtotal = maxQuantity * (localItem.menuItem.price + modifierPrice)
+            
+            merged[localEntry.index] = updateReadonlyObject(localItem, {
+              quantity: maxQuantity,
+              subtotal: newSubtotal
+            })
+          }
         } else {
-          // Add server item if we have the menu item data
-          // Note: In a real implementation, you'd need to fetch menu item details
-          // For now, we'll skip items we don't have locally
-          console.warn('Server cart item not found in local menu data:', serverItem.menuItemId)
+          // Item exists on server but not locally
+          const newItem: CartItem = {
+            menuItem: serverItem.menuItem,
+            quantity: serverItem.quantity,
+            selectedModifiers: serverItem.selectedModifiers || [],
+            subtotal: serverItem.quantity * serverItem.menuItem.price,
+            customizations: serverItem.customizations
+          }
+          merged.push(newItem)
         }
       }
+
+      // Identify items that exist locally but were potentially removed on server
+      // To strictly prevent zombie items, we could remove items not in serverSignatures,
+      // but only if they were synced before. For now, since we only sync when logged in,
+      // if an item is local but not on server, the user probably just added it offline.
+      // So we KEEP local items that are not on the server.
       
       return merged
     },
 
     async clearServerCart() {
-      const { $auth } = useNuxtApp()
-      if (!$auth?.user) return
+      const authStore = useAuthStore()
+      if (!authStore.user) return
 
-      try {
-        this.error = null
-        const apiClient = (useNuxtApp() as any).$apiClient
-        await apiClient.delete<void>('/cart')
+      this.error = null
+
+      const result = await CartService.clearCart()
+
+      if (result.success) {
         this.lastSyncAt = new Date()
-      } catch (error) {
-        console.error('Failed to clear server cart:', error)
-        this.error = error as ApiError
+      } else {
+        console.error('Failed to clear server cart:', result.error)
+        this.error = result.error
       }
     },
 
     // Validation methods
     validateCartItems(): { isValid: boolean; errors: string[] } {
       const errors: string[] = []
-      
+
       // Check for inactive items
       const inactiveItems = this.items.filter(item => !item.menuItem.isActive)
       if (inactiveItems.length > 0) {
         errors.push(`${inactiveItems.length} item(s) in your cart are no longer available`)
       }
-      
+
       // Check for invalid quantities
       const invalidQuantities = this.items.filter(item => item.quantity <= 0)
       if (invalidQuantities.length > 0) {
         errors.push('Some items have invalid quantities')
       }
-      
+
       // Check for price mismatches (in case prices changed)
       const priceMismatches = this.items.filter(
         item => item.subtotal !== item.quantity * item.menuItem.price
@@ -542,7 +563,7 @@ export const useCartStore = defineStore('cart', {
           item.subtotal = item.quantity * item.menuItem.price
         })
       }
-      
+
       return {
         isValid: errors.length === 0,
         errors
@@ -551,7 +572,7 @@ export const useCartStore = defineStore('cart', {
 
     // Validate cart against current menu data (for reconnection)
     // This method is kept for backward compatibility but now uses the validation service
-    async validateCartAgainstMenu(): Promise<{ 
+    async validateCartAgainstMenu(): Promise<{
       isValid: boolean
       removedItems: CartItem[]
       priceChanges: Array<{ item: CartItem; oldPrice: number; newPrice: number }>
@@ -561,16 +582,16 @@ export const useCartStore = defineStore('cart', {
         // Use the cart validation service
         const { useCartValidationService } = await import('~/services/cart-validation.service')
         const validationService = useCartValidationService()
-        
+
         const result = await validationService.validateOnReconnection(this.items)
-        
+
         // Update cart with validated items
         if (result.removedItems.length > 0) {
           for (const item of result.removedItems) {
             this.removeItem(item.menuItem.id, item.customizations)
           }
         }
-        
+
         if (result.priceChanges.length > 0) {
           for (const change of result.priceChanges) {
             const cartItem = this.items.find(
@@ -578,7 +599,7 @@ export const useCartStore = defineStore('cart', {
                 item.menuItem.id === change.item.menuItem.id &&
                 JSON.stringify(item.customizations) === JSON.stringify(change.item.customizations)
             )
-            
+
             if (cartItem) {
               cartItem.menuItem = change.item.menuItem
               const modifierPrice = cartItem.selectedModifiers.reduce(
@@ -588,9 +609,9 @@ export const useCartStore = defineStore('cart', {
               cartItem.subtotal = cartItem.quantity * (change.newPrice + modifierPrice)
             }
           }
-          this.persistCart()
+          this._persistToStorage()
         }
-        
+
         return {
           isValid: result.isValid,
           removedItems: result.removedItems,
@@ -612,13 +633,13 @@ export const useCartStore = defineStore('cart', {
 
     // Initialize cart for authenticated users
     async initializeCart() {
-      const { $auth } = useNuxtApp()
-      
+      const authStore = useAuthStore()
+
       // Always restore from local storage first
-      this.restoreCart()
-      
+      this._restoreFromStorage()
+
       // If user is authenticated, try to sync with server
-      if ($auth?.user) {
+      if (authStore.user) {
         await this.loadCartFromServer()
       }
     },

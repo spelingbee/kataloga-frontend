@@ -6,7 +6,7 @@
         <AppText class="cart-summary__label">
           Subtotal
         </AppText>
-        <AppPrice :price="subtotal" class="cart-summary__value" />
+        <AppPrice :price="subtotal || 0" class="cart-summary__value" />
       </div>
 
       <!-- Delivery Fee -->
@@ -16,7 +16,7 @@
         </AppText>
         <AppPrice
           v-if="deliveryFee > 0"
-          :price="deliveryFee"
+          :price="deliveryFee || 0"
           class="cart-summary__value"
         />
         <AppText v-else class="cart-summary__value cart-summary__value--free">
@@ -35,8 +35,12 @@
         <AppPrice :price="total" size="lg" class="cart-summary__total-value" />
       </div>
     </div>
-    <BaseButton class="w-full">
-      Place Order (${{ total.toFixed(2) }})
+    <BaseButton 
+      class="w-full"
+      :disabled="total <= 0"
+      @click="$emit('checkout')"
+    >
+      Place Order ({{ formatPrice(total) }})
     </BaseButton>
   </div>
 </template>
@@ -65,8 +69,12 @@ const props = withDefaults(defineProps<Props>(), {
   showDeliveryFee: false
 })
 
+const emit = defineEmits<{
+  checkout: []
+}>()
+
 // Tenant context
-const { tenantSettings } = useTenant()
+const { formatCurrency } = useTenantSettings()
 
 // Computed properties
 const showMinimumNotice = computed(() => {
@@ -77,26 +85,9 @@ const remainingAmount = computed(() => {
   return Math.max(0, props.minOrderAmount - props.subtotal)
 })
 
-const currency = computed(() => tenantSettings.value?.currency || 'USD')
-const locale = computed(() => {
-  // Map currency to locale
-  const currencyLocaleMap: Record<string, string> = {
-    USD: 'en-US',
-    EUR: 'de-DE',
-    GBP: 'en-GB',
-    RUB: 'ru-RU'
-  }
-  return currencyLocaleMap[currency.value] || 'en-US'
-})
-
 // Helper methods
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat(locale.value, {
-    style: 'currency',
-    currency: currency.value,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  }).format(price)
+  return formatCurrency(price)
 }
 </script>
 

@@ -14,7 +14,7 @@
   >
     <!-- Main Image -->
     <BaseImage
-      :src="imageUrl"
+      :src="imageUrl || ''"
       :alt="alt"
       :class="[
         'w-full h-full object-cover transition-transform duration-300',

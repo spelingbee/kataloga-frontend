@@ -171,12 +171,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Order } from '~/types'
+import type { OrderUI } from '~/types'
 import { useTenant } from '~/composables/useTenant'
 
 // Props & Emits
 interface Props {
-  order: Order
+  order: OrderUI
   showRestaurantContact?: boolean
 }
 
@@ -190,22 +190,19 @@ defineEmits<{
 
 // Computed
 const subtotal = computed(() => {
-  return props.order.items.reduce((sum, item) => sum + item.subtotal, 0)
+  return props.order.subtotal
 })
 
 const deliveryFee = computed(() => {
-  // Extract from order total or use default
-  return 2.99
+  return props.order.deliveryFee
 })
 
 const tax = computed(() => {
-  // Calculate tax (8%)
-  return subtotal.value * 0.08
+  return props.order.tax
 })
 
 const discount = computed(() => {
-  // Calculate discount if any
-  return 0
+  return props.order.discount
 })
 
 // Tenant context

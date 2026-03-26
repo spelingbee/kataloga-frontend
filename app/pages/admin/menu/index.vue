@@ -146,7 +146,7 @@
                           {{ item.name }}
                         </div>
                         <div class="text-sm text-gray-500">
-                          {{ truncateText(item.description, 50) }}
+                          {{ truncateText(item.description || '', 50) }}
                         </div>
                       </div>
                     </div>
@@ -234,11 +234,8 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <BaseModal v-if="showDeleteModal" @close="showDeleteModal = false">
+    <BaseModal v-model="showDeleteModal" title="Delete Menu Item" :size="MODAL_SIZES.MD">
       <div class="p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
-          Delete Menu Item
-        </h3>
         <p class="text-sm text-gray-500 mb-6">
           Are you sure you want to delete "{{ itemToDelete?.name }}"? This action cannot be undone.
         </p>
@@ -263,8 +260,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { MODAL_SIZES } from '~/types/ui'
 import { debounce } from '~/utils/debounce'
-import type { MenuItem, Category } from '~/types'
+import { updateReadonlyObject } from '~/types/utils/readonly'
+import { MenuItemService, CategoryService } from '~/services/api.service'
+import type { MenuItemUI, CategoryUI } from '~/types'
 
 // Define page meta
 definePageMeta({
@@ -273,11 +273,11 @@ definePageMeta({
 })
 
 // Reactive state
-const menuItems = ref<MenuItem[]>([])
-const categories = ref<Category[]>([])
+const menuItems = ref<MenuItemUI[]>([])
+const categories = ref<CategoryUI[]>([])
 const loading = ref(true)
 const showDeleteModal = ref(false)
-const itemToDelete = ref<MenuItem | null>(null)
+const itemToDelete = ref<MenuItemUI | null>(null)
 
 const filters = ref({
   search: '',
@@ -307,32 +307,28 @@ const visiblePages = computed(() => {
 
 // Methods
 const loadMenuItems = async () => {
-  try {
-    loading.value = true
-    const { $apiClient } = useNuxtApp()
-    
-    const params: any = {
-      page: pagination.value.currentPage,
-      limit: pagination.value.limit
+  loading.value = true
+  
+  const filtersData = {
+    page: pagination.value.currentPage,
+    limit: pagination.value.limit,
+    search: filters.value.search || undefined,
+    categoryId: filters.value.categoryId || undefined,
+    isActive: filters.value.isActive !== '' ? filters.value.isActive === 'true' : undefined
+  }
+  
+  const result = await MenuItemService.getMenuItems(filtersData)
+  
+  if (result.success) {
+    menuItems.value = result.data.items || []
+    pagination.value = {
+      currentPage: result.data.page || 1,
+      totalPages: Math.ceil(result.data.total / result.data.limit) || 1,
+      total: result.data.total || 0,
+      limit: result.data.limit || 10
     }
-    
-    if (filters.value.search) params.search = filters.value.search
-    if (filters.value.categoryId) params.categoryId = filters.value.categoryId
-    if (filters.value.isActive !== '') params.isActive = filters.value.isActive === 'true'
-    
-    const response = await $apiClient.get('/admin/menu-items', { params })
-    
-    if (response.success) {
-      menuItems.value = response.data.items || []
-      pagination.value = {
-        currentPage: response.data.currentPage || 1,
-        totalPages: response.data.totalPages || 1,
-        total: response.data.total || 0,
-        limit: response.data.limit || 10
-      }
-    }
-  } catch (error) {
-    console.error('Failed to load menu items:', error)
+  } else {
+    console.error('Failed to load menu items:', result.error)
     // Use mock data for development
     menuItems.value = [
       {
@@ -342,11 +338,34 @@ const loadMenuItems = async () => {
         price: 18.99,
         imageUrl: '/images/pizza-margherita.jpg',
         categoryId: '1',
-        category: { id: '1', name: 'Pizza', description: '', sortOrder: 1 },
+        menuId: 'main-menu',
         isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isAvailable: true,
+        stockQuantity: 50,
         calories: 280,
         preparationTime: 15,
-        ingredients: ['Tomato sauce', 'Mozzarella', 'Basil']
+        cookingTime: 12,
+        ingredients: [
+          { id: '1', name: 'Tomato sauce', isDefault: true, isOptional: false },
+          { id: '2', name: 'Mozzarella', isDefault: true, isOptional: true },
+          { id: '3', name: 'Basil', isDefault: true, isOptional: true }
+        ],
+        allergens: ['Gluten', 'Dairy'],
+        nutritionInfo: {
+          calories: 280,
+          protein: 12,
+          carbs: 35,
+          fat: 8,
+          fiber: 2
+        },
+        dietary: ['vegetarian'],
+        badges: [{ type: 'popular' }],
+        modifierGroups: [],
+        isNew: false,
+        isPopular: true,
+        category: { id: '1', name: 'Pizza', slug: 'pizza', description: undefined, sortOrder: 1, imageUrl: undefined, icon: undefined, count: 0 }
       },
       {
         id: '2',
@@ -355,11 +374,35 @@ const loadMenuItems = async () => {
         price: 12.99,
         imageUrl: '/images/caesar-salad.jpg',
         categoryId: '2',
-        category: { id: '2', name: 'Salads', description: '', sortOrder: 2 },
+        menuId: 'main-menu',
         isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        isAvailable: true,
+        stockQuantity: 30,
         calories: 180,
         preparationTime: 5,
-        ingredients: ['Romaine lettuce', 'Caesar dressing', 'Croutons', 'Parmesan']
+        cookingTime: 0,
+        ingredients: [
+          { id: '4', name: 'Romaine lettuce', isDefault: true, isOptional: false },
+          { id: '5', name: 'Caesar dressing', isDefault: true, isOptional: true },
+          { id: '6', name: 'Croutons', isDefault: true, isOptional: true },
+          { id: '7', name: 'Parmesan', isDefault: true, isOptional: true }
+        ],
+        allergens: ['Dairy', 'Eggs'],
+        nutritionInfo: {
+          calories: 180,
+          protein: 8,
+          carbs: 12,
+          fat: 14,
+          fiber: 3
+        },
+        dietary: ['vegetarian'],
+        badges: [{ type: 'vegetarian' }],
+        modifierGroups: [],
+        isNew: false,
+        isPopular: false,
+        category: { id: '2', name: 'Salads', slug: 'salads', description: undefined, sortOrder: 2, imageUrl: undefined, icon: undefined, count: 0 }
       }
     ]
     
@@ -369,26 +412,23 @@ const loadMenuItems = async () => {
       total: 2,
       limit: 10
     }
-  } finally {
-    loading.value = false
   }
+  
+  loading.value = false
 }
 
 const loadCategories = async () => {
-  try {
-    const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.get('/admin/categories')
-    
-    if (response.success) {
-      categories.value = response.data || []
-    }
-  } catch (error) {
-    console.error('Failed to load categories:', error)
+  const result = await CategoryService.getCategories()
+  
+  if (result.success) {
+    categories.value = result.data || []
+  } else {
+    console.error('Failed to load categories:', result.error)
     // Use mock data for development
     categories.value = [
-      { id: '1', name: 'Pizza', description: '', sortOrder: 1 },
-      { id: '2', name: 'Salads', description: '', sortOrder: 2 },
-      { id: '3', name: 'Beverages', description: '', sortOrder: 3 }
+      { id: '1', name: 'Pizza', slug: 'pizza', description: undefined, sortOrder: 1, imageUrl: undefined, icon: undefined, count: 0 },
+      { id: '2', name: 'Salads', slug: 'salads', description: undefined, sortOrder: 2, imageUrl: undefined, icon: undefined, count: 0 },
+      { id: '3', name: 'Beverages', slug: 'beverages', description: undefined, sortOrder: 3, imageUrl: undefined, icon: undefined, count: 0 }
     ]
   }
 }
@@ -415,24 +455,32 @@ const changePage = (page: number) => {
   }
 }
 
-const toggleItemStatus = async (item: MenuItem) => {
-  try {
-    const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.patch(`/admin/menu-items/${item.id}`, {
-      isActive: !item.isActive
-    })
-    
-    if (response.success) {
-      item.isActive = !item.isActive
+const toggleItemStatus = async (item: MenuItemUI) => {
+  const result = await MenuItemService.toggleMenuItemStatus(item.id, !item.isActive)
+  
+  if (result.success) {
+    // Find the item in the array and replace it with an updated version
+    const itemIndex = menuItems.value.findIndex(i => i.id === item.id)
+    if (itemIndex >= 0) {
+      const updatedItem = updateReadonlyObject(item, {
+        isActive: !item.isActive
+      })
+      menuItems.value[itemIndex] = updatedItem
     }
-  } catch (error) {
-    console.error('Failed to toggle item status:', error)
-    // For development, just toggle locally
-    item.isActive = !item.isActive
+  } else {
+    console.error('Failed to toggle item status:', result.error)
+    // For development, just toggle locally using immutable operation
+    const itemIndex = menuItems.value.findIndex(i => i.id === item.id)
+    if (itemIndex >= 0) {
+      const updatedItem = updateReadonlyObject(item, {
+        isActive: !item.isActive
+      })
+      menuItems.value[itemIndex] = updatedItem
+    }
   }
 }
 
-const confirmDelete = (item: MenuItem) => {
+const confirmDelete = (item: MenuItemUI) => {
   itemToDelete.value = item
   showDeleteModal.value = true
 }
@@ -440,21 +488,18 @@ const confirmDelete = (item: MenuItem) => {
 const deleteItem = async () => {
   if (!itemToDelete.value) return
   
-  try {
-    const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.delete(`/admin/menu-items/${itemToDelete.value.id}`)
-    
-    if (response.success) {
-      menuItems.value = menuItems.value.filter(item => item.id !== itemToDelete.value!.id)
-    }
-  } catch (error) {
-    console.error('Failed to delete item:', error)
+  const result = await MenuItemService.deleteMenuItem(itemToDelete.value.id)
+  
+  if (result.success) {
+    menuItems.value = menuItems.value.filter(item => item.id !== itemToDelete.value!.id)
+  } else {
+    console.error('Failed to delete item:', result.error)
     // For development, just remove locally
     menuItems.value = menuItems.value.filter(item => item.id !== itemToDelete.value!.id)
-  } finally {
-    showDeleteModal.value = false
-    itemToDelete.value = null
   }
+  
+  showDeleteModal.value = false
+  itemToDelete.value = null
 }
 
 const truncateText = (text: string, maxLength: number) => {

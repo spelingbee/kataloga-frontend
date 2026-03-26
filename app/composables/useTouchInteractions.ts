@@ -4,6 +4,7 @@
  */
 
 import { ref, onMounted, onUnmounted } from 'vue'
+import { isDefined, safeArrayAccess } from '~/types/utils/type-guards'
 
 export interface SwipeDirection {
   left: boolean
@@ -45,14 +46,20 @@ export const useTouchInteractions = () => {
     let touchStartTime = 0
 
     const handleTouchStart = (e: TouchEvent) => {
-      const touch = e.touches[0]
+      if (e.touches.length === 0) return
+      const touch = e.touches.item(0)
+      if (!touch) return
+
       touchStartX = touch.clientX
       touchStartY = touch.clientY
       touchStartTime = Date.now()
     }
 
     const handleTouchEnd = (e: TouchEvent) => {
-      const touch = e.changedTouches[0]
+      if (e.changedTouches.length === 0) return
+      const touch = e.changedTouches.item(0)
+      if (!touch) return
+
       const touchEndX = touch.clientX
       const touchEndY = touch.clientY
       const touchEndTime = Date.now()
@@ -166,15 +173,23 @@ export const useTouchInteractions = () => {
     const handleTouchStart = (e: TouchEvent) => {
       // Only trigger if scrolled to top
       if (element && element.scrollTop === 0) {
-        startY = e.touches[0].clientY
-        isPulling = true
+        if (e.touches.length === 0) return
+        const touch = e.touches.item(0)
+        if (touch) {
+          startY = touch.clientY
+          isPulling = true
+        }
       }
     }
 
     const handleTouchMove = (e: TouchEvent) => {
       if (!isPulling || refreshing.value) return
 
-      currentY = e.touches[0].clientY
+      if (e.touches.length === 0) return
+      const touch = e.touches.item(0)
+      if (!touch) return
+
+      currentY = touch.clientY
       const pullDistance = currentY - startY
 
       if (pullDistance > 0 && element) {

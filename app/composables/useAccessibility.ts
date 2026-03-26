@@ -63,7 +63,7 @@ export function useAccessibility() {
    * Announce message to screen readers with enhanced options
    */
   const announceMessage = (
-    message: string, 
+    message: string,
     priority: 'polite' | 'assertive' = 'polite',
     delay: number = 0
   ) => {
@@ -77,9 +77,9 @@ export function useAccessibility() {
       liveRegion.setAttribute('aria-atomic', 'true')
       liveRegion.className = 'sr-only'
       liveRegion.textContent = message
-      
+
       document.body.appendChild(liveRegion)
-      
+
       // Remove after announcement
       setTimeout(() => {
         if (document.body.contains(liveRegion)) {
@@ -130,7 +130,7 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
 
   const getFocusableElements = (): HTMLElement[] => {
     if (!containerRef.value) return []
-    
+
     const focusableSelectors = [
       'a[href]:not([tabindex="-1"])',
       'button:not([disabled]):not([tabindex="-1"])',
@@ -145,7 +145,7 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
       'object:not([tabindex="-1"])',
       'embed:not([tabindex="-1"])',
     ].join(', ')
-    
+
     return Array.from(containerRef.value.querySelectorAll(focusableSelectors))
       .filter((el) => {
         const element = el as HTMLElement
@@ -161,7 +161,7 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
     sentinelStart.value.setAttribute('tabindex', '0')
     sentinelStart.value.className = 'sr-only'
     sentinelStart.value.setAttribute('aria-hidden', 'true')
-    
+
     // Create end sentinel
     sentinelEnd.value = document.createElement('div')
     sentinelEnd.value.setAttribute('tabindex', '0')
@@ -176,14 +176,14 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
     sentinelStart.value.addEventListener('focus', () => {
       const focusableElements = getFocusableElements()
       if (focusableElements.length > 0) {
-        focusableElements[focusableElements.length - 1].focus()
+        focusableElements[focusableElements.length - 1]?.focus()
       }
     })
 
     sentinelEnd.value.addEventListener('focus', () => {
       const focusableElements = getFocusableElements()
       if (focusableElements.length > 0) {
-        focusableElements[0].focus()
+        focusableElements[0]?.focus()
       }
     })
   }
@@ -208,40 +208,40 @@ export function useFocusTrap(containerRef: Ref<HTMLElement | null>, options: Foc
 
   const activate = () => {
     if (isActive.value) return
-    
+
     // Store currently focused element
     previouslyFocusedElement.value = document.activeElement as HTMLElement
-    
+
     // Create focus sentinels
     createSentinels()
-    
+
     // Focus initial element or first focusable element
     nextTick(() => {
       const focusableElements = getFocusableElements()
       if (options.initialFocus) {
         options.initialFocus.focus()
       } else if (focusableElements.length > 0) {
-        focusableElements[0].focus()
+        focusableElements[0]?.focus()
       } else if (containerRef.value) {
         // If no focusable elements, focus the container itself
         containerRef.value.setAttribute('tabindex', '-1')
         containerRef.value.focus()
       }
     })
-    
+
     isActive.value = true
     document.addEventListener('keydown', handleKeyDown)
   }
 
   const deactivate = () => {
     if (!isActive.value) return
-    
+
     isActive.value = false
     document.removeEventListener('keydown', handleKeyDown)
-    
+
     // Remove sentinels
     removeSentinels()
-    
+
     // Return focus to previously focused element
     if (options.returnFocus !== false && previouslyFocusedElement.value) {
       previouslyFocusedElement.value.focus()
@@ -267,7 +267,7 @@ export function useKeyboardNavigation(options: KeyboardNavigationOptions = {}) {
     // Don't interfere with form inputs unless specifically handled
     const target = event.target as HTMLElement
     const isFormInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
-    
+
     switch (event.key) {
       case 'Escape':
         if (options.onEscape) {
@@ -351,7 +351,7 @@ export function useSkipLinks() {
       }
       mainContent.focus()
       mainContent.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      
+
       // Remove tabindex after focus to restore natural tab order
       setTimeout(() => {
         if (mainContent.getAttribute('tabindex') === '-1') {
@@ -369,7 +369,7 @@ export function useSkipLinks() {
       }
       navigation.focus()
       navigation.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      
+
       setTimeout(() => {
         if (navigation.getAttribute('tabindex') === '-1') {
           navigation.removeAttribute('tabindex')
@@ -386,7 +386,7 @@ export function useSkipLinks() {
       }
       footer.focus()
       footer.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      
+
       setTimeout(() => {
         if (footer.getAttribute('tabindex') === '-1') {
           footer.removeAttribute('tabindex')
@@ -420,21 +420,21 @@ export function useAriaLiveRegion() {
     region.setAttribute('aria-atomic', 'true')
     region.className = 'sr-only'
     document.body.appendChild(region)
-    
+
     liveRegions.value.set(id, region)
     return region
   }
 
   const announce = (
-    message: string, 
+    message: string,
     priority: 'polite' | 'assertive' = 'polite',
     regionId: string = 'default'
   ) => {
     const region = createLiveRegion(regionId, priority)
-    
+
     // Clear previous message
     region.textContent = ''
-    
+
     // Add new message with slight delay to ensure screen readers pick it up
     setTimeout(() => {
       region.textContent = message
@@ -510,38 +510,38 @@ export function useFocusManagement() {
   const moveFocusToNext = () => {
     const focusableElements = getAllFocusableElements()
     const currentIndex = focusableElements.indexOf(document.activeElement as HTMLElement)
-    
+
     if (currentIndex !== -1 && currentIndex < focusableElements.length - 1) {
-      focusableElements[currentIndex + 1].focus()
+      focusableElements[currentIndex + 1]?.focus()
     } else if (focusableElements.length > 0) {
       // Wrap to first element
-      focusableElements[0].focus()
+      focusableElements[0]?.focus()
     }
   }
 
   const moveFocusToPrevious = () => {
     const focusableElements = getAllFocusableElements()
     const currentIndex = focusableElements.indexOf(document.activeElement as HTMLElement)
-    
+
     if (currentIndex > 0) {
-      focusableElements[currentIndex - 1].focus()
+      focusableElements[currentIndex - 1]?.focus()
     } else if (focusableElements.length > 0) {
       // Wrap to last element
-      focusableElements[focusableElements.length - 1].focus()
+      focusableElements[focusableElements.length - 1]?.focus()
     }
   }
 
   const moveFocusToFirst = () => {
     const focusableElements = getAllFocusableElements()
     if (focusableElements.length > 0) {
-      focusableElements[0].focus()
+      focusableElements[0]?.focus()
     }
   }
 
   const moveFocusToLast = () => {
     const focusableElements = getAllFocusableElements()
     if (focusableElements.length > 0) {
-      focusableElements[focusableElements.length - 1].focus()
+      focusableElements[focusableElements.length - 1]?.focus()
     }
   }
 

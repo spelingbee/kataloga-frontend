@@ -417,9 +417,9 @@ function rgbToHex(rgb: string): string | null {
   const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)
   if (!match) return null
 
-  const r = parseInt(match[1])
-  const g = parseInt(match[2])
-  const b = parseInt(match[3])
+  const r = parseInt(match[1] || '0')
+  const g = parseInt(match[2] || '0')
+  const b = parseInt(match[3] || '0')
 
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`
 }

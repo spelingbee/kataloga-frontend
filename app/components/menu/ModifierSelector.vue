@@ -18,7 +18,7 @@
             </AppText>
             <BaseBadge
               v-if="group.required"
-              variant="danger"
+              variant="error"
               size="sm"
             >
               Required

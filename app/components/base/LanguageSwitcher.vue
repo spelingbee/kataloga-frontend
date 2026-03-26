@@ -6,23 +6,12 @@
       @click="toggleDropdown"
     >
       <span class="language-switcher__current">{{ currentLocale.name }}</span>
-      <svg
+      <BaseIcon
+        name="chevron-down"
+        size="sm"
         class="language-switcher__icon"
         :class="{ 'language-switcher__icon--open': isOpen }"
-        width="16"
-        height="16"
-        viewBox="0 0 16 16"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M4 6L8 10L12 6"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
+      />
     </button>
 
     <transition name="dropdown">
@@ -42,12 +31,18 @@
 </template>
 
 <script setup lang="ts">
+interface LocaleObject {
+  code: string
+  name: string
+}
+
 const { locale, locales, t } = useI18n()
 const isOpen = ref(false)
 
-const availableLocales = computed(() => locales.value)
-const currentLocale = computed(() => {
-  return locales.value.find((l) => l.code === locale.value) || locales.value[0]
+const availableLocales = computed(() => locales.value as unknown as LocaleObject[])
+const currentLocale = computed<LocaleObject>(() => {
+  const allLocales = locales.value as unknown as LocaleObject[]
+  return allLocales.find((l) => l.code === locale.value) || allLocales[0] || { code: 'en', name: 'English' }
 })
 
 const toggleDropdown = () => {
@@ -55,7 +50,7 @@ const toggleDropdown = () => {
 }
 
 const changeLocale = (code: string) => {
-  locale.value = code
+  locale.value = code as any
   isOpen.value = false
 }
 
@@ -89,17 +84,18 @@ onMounted(() => {
   gap: $space-1;
   padding: $space-2 $space-4;
   background: var(--bg-primary);
-  border: 1px solid $border-color;
+  border: 1px solid var(--border-primary);
   border-radius: $radius-md;
   cursor: pointer;
   transition: all $transition-base;
+  color: var(--text-primary);
 
   &:hover {
-    border-color: var(--color-success);
+    border-color: var(--color-primary);
   }
 
   &:focus {
-    outline: 2px solid var(--color-success);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 }
@@ -107,11 +103,12 @@ onMounted(() => {
 .language-switcher__current {
   font-size: $text-sm;
   font-weight: $font-medium;
-  color: $text-primary;
+  color: var(--text-primary);
 }
 
 .language-switcher__icon {
   transition: transform $transition-base;
+  color: var(--text-secondary);
 
   &--open {
     transform: rotate(180deg);
@@ -124,7 +121,7 @@ onMounted(() => {
   right: 0;
   min-width: 150px;
   background: var(--bg-primary);
-  border: 1px solid $border-color;
+  border: 1px solid var(--border-primary);
   border-radius: $radius-md;
   box-shadow: $shadow-lg;
   overflow: hidden;
@@ -141,7 +138,7 @@ onMounted(() => {
   cursor: pointer;
   transition: background $transition-base;
   font-size: $text-sm;
-  color: $text-primary;
+  color: var(--text-primary);
 
   &:hover {
     background: var(--bg-secondary);
@@ -150,7 +147,7 @@ onMounted(() => {
   &--active {
     background: var(--bg-secondary);
     font-weight: $font-semibold;
-    color: var(--color-success);
+    color: var(--color-primary);
   }
 }
 

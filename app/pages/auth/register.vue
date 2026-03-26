@@ -1,54 +1,66 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Создать аккаунт
-        </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
+  <div class="auth-page">
+    <div class="auth-container">
+      <div class="auth-header">
+        <div class="auth-header__back">
+          <BaseButton
+            variant="ghost"
+            size="sm"
+            class="auth-header__back-btn"
+            @click="router.push('/')"
+          >
+            <BaseIcon name="arrow-left" size="sm" />
+            Back to Home
+          </BaseButton>
+        </div>
+        <h2 class="auth-header__title">Создать аккаунт</h2>
+        <p class="auth-header__subtitle">
           Или
-          <NuxtLink to="/auth/login" class="font-medium text-indigo-600 hover:text-indigo-500">
+          <NuxtLink to="/auth/login" class="auth-header__link">
             войдите в существующий аккаунт
           </NuxtLink>
         </p>
       </div>
-      
-      <form class="mt-8 space-y-6" @submit.prevent="handleRegister">
-        <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label for="firstName" class="block text-sm font-medium text-gray-700">Имя</label>
+
+      <form class="auth-form" @submit.prevent="handleRegister">
+        <div class="auth-form__fields">
+          <!-- Name Row -->
+          <div class="auth-form__row">
+            <div class="auth-form__field">
+              <label for="firstName" class="auth-form__label">Имя</label>
               <input
                 id="firstName"
                 v-model="form.firstName"
                 name="firstName"
                 type="text"
                 required
-                class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                :class="{ 'border-red-300': errors.firstName }"
+                class="auth-form__input"
+                :class="{ 'auth-form__input--error': errors.firstName }"
                 placeholder="Имя"
+                autocomplete="given-name"
               />
-              <p v-if="errors.firstName" class="mt-1 text-sm text-red-600">{{ errors.firstName }}</p>
+              <p v-if="errors.firstName" class="auth-form__error-text">{{ errors.firstName }}</p>
             </div>
-            
-            <div>
-              <label for="lastName" class="block text-sm font-medium text-gray-700">Фамилия</label>
+
+            <div class="auth-form__field">
+              <label for="lastName" class="auth-form__label">Фамилия</label>
               <input
                 id="lastName"
                 v-model="form.lastName"
                 name="lastName"
                 type="text"
                 required
-                class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                :class="{ 'border-red-300': errors.lastName }"
+                class="auth-form__input"
+                :class="{ 'auth-form__input--error': errors.lastName }"
                 placeholder="Фамилия"
+                autocomplete="family-name"
               />
-              <p v-if="errors.lastName" class="mt-1 text-sm text-red-600">{{ errors.lastName }}</p>
+              <p v-if="errors.lastName" class="auth-form__error-text">{{ errors.lastName }}</p>
             </div>
           </div>
-          
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email адрес</label>
+
+          <div class="auth-form__field">
+            <label for="email" class="auth-form__label">Email адрес</label>
             <input
               id="email"
               v-model="form.email"
@@ -56,30 +68,30 @@
               type="email"
               autocomplete="email"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              :class="{ 'border-red-300': errors.email }"
+              class="auth-form__input"
+              :class="{ 'auth-form__input--error': errors.email }"
               placeholder="Email адрес"
             />
-            <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
+            <p v-if="errors.email" class="auth-form__error-text">{{ errors.email }}</p>
           </div>
-          
-          <div>
-            <label for="phone" class="block text-sm font-medium text-gray-700">Телефон (необязательно)</label>
+
+          <div class="auth-form__field">
+            <label for="phone" class="auth-form__label">Телефон (необязательно)</label>
             <input
               id="phone"
               v-model="form.phone"
               name="phone"
               type="tel"
               autocomplete="tel"
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              :class="{ 'border-red-300': errors.phone }"
-              placeholder="+7 (999) 123-45-67"
+              class="auth-form__input"
+              :class="{ 'auth-form__input--error': errors.phone }"
+              placeholder="+996 555 123 456"
             />
-            <p v-if="errors.phone" class="mt-1 text-sm text-red-600">{{ errors.phone }}</p>
+            <p v-if="errors.phone" class="auth-form__error-text">{{ errors.phone }}</p>
           </div>
-          
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">Пароль</label>
+
+          <div class="auth-form__field">
+            <label for="password" class="auth-form__label">Пароль</label>
             <input
               id="password"
               v-model="form.password"
@@ -87,15 +99,15 @@
               type="password"
               autocomplete="new-password"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              :class="{ 'border-red-300': errors.password }"
+              class="auth-form__input"
+              :class="{ 'auth-form__input--error': errors.password }"
               placeholder="Пароль"
             />
-            <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
+            <p v-if="errors.password" class="auth-form__error-text">{{ errors.password }}</p>
           </div>
-          
-          <div>
-            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Подтвердите пароль</label>
+
+          <div class="auth-form__field">
+            <label for="confirmPassword" class="auth-form__label">Подтвердите пароль</label>
             <input
               id="confirmPassword"
               v-model="form.confirmPassword"
@@ -103,60 +115,53 @@
               type="password"
               autocomplete="new-password"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              :class="{ 'border-red-300': errors.confirmPassword }"
+              class="auth-form__input"
+              :class="{ 'auth-form__input--error': errors.confirmPassword }"
               placeholder="Подтвердите пароль"
             />
-            <p v-if="errors.confirmPassword" class="mt-1 text-sm text-red-600">{{ errors.confirmPassword }}</p>
+            <p v-if="errors.confirmPassword" class="auth-form__error-text">
+              {{ errors.confirmPassword }}
+            </p>
           </div>
         </div>
 
-        <div class="flex items-center">
-          <input
-            id="agree-terms"
-            v-model="form.agreeTerms"
-            name="agree-terms"
-            type="checkbox"
-            required
-            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-          />
-          <label for="agree-terms" class="ml-2 block text-sm text-gray-900">
-            Я согласен с 
-            <a href="#" class="text-indigo-600 hover:text-indigo-500">условиями использования</a>
-            и 
-            <a href="#" class="text-indigo-600 hover:text-indigo-500">политикой конфиденциальности</a>
-          </label>
-        </div>
-
-        <div v-if="error" class="rounded-md bg-red-50 p-4">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">
-                {{ error }}
-              </h3>
-            </div>
+        <div class="auth-form__options">
+          <div class="auth-form__checkbox-group">
+            <input
+              id="agree-terms"
+              v-model="form.agreeTerms"
+              name="agree-terms"
+              type="checkbox"
+              required
+              class="auth-form__checkbox"
+            />
+            <label for="agree-terms" class="auth-form__checkbox-label">
+              Я согласен с
+              <a href="#" class="auth-form__link">условиями использования</a>
+              и
+              <a href="#" class="auth-form__link">политикой конфиденциальности</a>
+            </label>
           </div>
         </div>
 
-        <div>
-          <button
+        <div v-if="error" class="auth-form__error-alert">
+          <div class="auth-form__error-content">
+            <BaseIcon name="alert-circle" size="sm" class="auth-form__error-icon" />
+            <span class="auth-form__error-message">{{ error }}</span>
+          </div>
+        </div>
+
+        <div class="auth-form__submit">
+          <BaseButton
             type="submit"
             :disabled="isLoading || !form.agreeTerms"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            :loading="isLoading"
+            class="auth-form__submit-btn"
+            variant="primary"
+            full-width
           >
-            <span v-if="isLoading" class="absolute left-0 inset-y-0 flex items-center pl-3">
-              <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-              </svg>
-            </span>
-            {{ isLoading ? 'Создание аккаунта...' : 'Создать аккаунт' }}
-          </button>
+            Создать аккаунт
+          </BaseButton>
         </div>
       </form>
     </div>
@@ -169,7 +174,7 @@ import { useAuthStore } from '~/stores/auth'
 // Meta
 definePageMeta({
   layout: false,
-  middleware: 'guest'
+  middleware: 'guest',
 })
 
 // Composables
@@ -184,7 +189,7 @@ const form = reactive({
   phone: '',
   password: '',
   confirmPassword: '',
-  agreeTerms: false
+  agreeTerms: false,
 })
 
 const errors = reactive({
@@ -193,7 +198,7 @@ const errors = reactive({
   email: '',
   phone: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
 
 const error = ref('')
@@ -202,12 +207,12 @@ const isLoading = ref(false)
 // Methods
 const validateForm = () => {
   let isValid = true
-  
+
   // Reset errors
   Object.keys(errors).forEach(key => {
     errors[key as keyof typeof errors] = ''
   })
-  
+
   // First name validation
   if (!form.firstName.trim()) {
     errors.firstName = 'Имя обязательно'
@@ -216,7 +221,7 @@ const validateForm = () => {
     errors.firstName = 'Имя должно содержать минимум 2 символа'
     isValid = false
   }
-  
+
   // Last name validation
   if (!form.lastName.trim()) {
     errors.lastName = 'Фамилия обязательна'
@@ -225,7 +230,7 @@ const validateForm = () => {
     errors.lastName = 'Фамилия должна содержать минимум 2 символа'
     isValid = false
   }
-  
+
   // Email validation
   if (!form.email) {
     errors.email = 'Email обязателен'
@@ -234,13 +239,13 @@ const validateForm = () => {
     errors.email = 'Введите корректный email'
     isValid = false
   }
-  
+
   // Phone validation (optional)
-  if (form.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/[\s\-\(\)]/g, ''))) {
+  if (form.phone && !/^[+]?[0-9\s-]{7,15}$/.test(form.phone)) {
     errors.phone = 'Введите корректный номер телефона'
     isValid = false
   }
-  
+
   // Password validation
   if (!form.password) {
     errors.password = 'Пароль обязателен'
@@ -248,11 +253,8 @@ const validateForm = () => {
   } else if (form.password.length < 8) {
     errors.password = 'Пароль должен содержать минимум 8 символов'
     isValid = false
-  } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(form.password)) {
-    errors.password = 'Пароль должен содержать строчные и заглавные буквы, а также цифры'
-    isValid = false
   }
-  
+
   // Confirm password validation
   if (!form.confirmPassword) {
     errors.confirmPassword = 'Подтверждение пароля обязательно'
@@ -261,25 +263,25 @@ const validateForm = () => {
     errors.confirmPassword = 'Пароли не совпадают'
     isValid = false
   }
-  
+
   return isValid
 }
 
 const handleRegister = async () => {
   if (!validateForm()) return
-  
+
   isLoading.value = true
   error.value = ''
-  
+
   try {
     await authStore.register({
       email: form.email,
       password: form.password,
       firstName: form.firstName,
       lastName: form.lastName,
-      phone: form.phone || undefined
+      phone: form.phone || undefined,
     })
-    
+
     // Redirect to home page after successful registration
     await router.push('/')
   } catch (err: any) {
@@ -297,3 +299,119 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped lang="scss">
+@use '~/assets/scss/tokens/colors' as *;
+@use '~/assets/scss/tokens/spacing' as *;
+@use '~/assets/scss/tokens/typography' as *;
+@use '~/assets/scss/tokens/radius' as *;
+@use '~/assets/scss/tokens/shadows' as *;
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-6 $space-4;
+  background-color: var(--bg-secondary); // Dark background
+
+  @media (min-width: 640px) {
+    padding: $space-12 $space-6;
+  }
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 480px; // Slightly wider for grid
+  background-color: var(--bg-primary); // Card background
+  padding: $space-8;
+  border-radius: $radius-xl;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-primary);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: $space-8;
+
+  &__back {
+    margin-bottom: $space-4;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  &__back-btn {
+    padding-left: 0;
+    gap: $space-2;
+    color: var(--text-secondary);
+  }
+  // ...
+  &__title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: $space-2;
+  }
+}
+// ...
+.auth-form {
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $space-4;
+
+    @media (min-width: 500px) {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: $space-1;
+  }
+  // ...
+  &__options {
+    margin-top: $space-6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-2;
+  }
+  // ...
+  &__error-alert {
+    margin-top: $space-6;
+    padding: $space-3;
+    background-color: rgba(var(--color-error-rgb), 0.1);
+    border-radius: $radius-md;
+    border: 1px solid rgba(var(--color-error-rgb), 0.2);
+  }
+
+  &__error-content {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    color: var(--color-error);
+    font-size: 14px;
+  }
+
+  &__submit {
+    margin-top: $space-6;
+  }
+
+  &__submit-btn {
+    width: 100%;
+  }
+}
+</style>

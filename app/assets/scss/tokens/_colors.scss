@@ -1,7 +1,8 @@
 // =============================================================================
 // Design Tokens - Colors
 // =============================================================================
-// New minimalist design system with warm orange primary color
+// Minimalist design system for Kataloga — SaaS for food/restaurant businesses
+// Warm orange primary, indigo accent, full semantic palette
 
 // Primary Palette - Warm Orange for Food Industry (WCAG AA Compliant)
 // -----------------------------------------------------------------------------
@@ -9,12 +10,37 @@ $color-primary: #FF6B00;
 $color-primary-light: #ff8120;
 $color-primary-dark: #e66000;
 
+// Accent Palette - Indigo for Auth/Admin (links, focus rings, active states)
+// -----------------------------------------------------------------------------
+$color-accent: #4f46e5;
+$color-accent-light: #6366f1;
+$color-accent-dark: #4338ca;
+
 // Semantic Colors (WCAG AA Compliant)
 // -----------------------------------------------------------------------------
 $color-success: #047857;        // Darker green for better contrast (4.5:1 on white)
+$color-success-light: #10b981;  // Lighter green for icons/badges
+$color-success-dark: #065f46;   // Darkest green for text on light bg
 $color-warning: #B45309;        // Darker amber for better contrast (4.5:1 on white)
+$color-warning-light: #f59e0b;  // Lighter amber for icons/badges
+$color-warning-dark: #92400e;   // Darkest amber for text on light bg
 $color-error: #DC2626;          // Red with good contrast (4.83:1 on white)
+$color-error-light: #ef4444;    // Lighter red for icons/badges
+$color-error-dark: #991b1b;     // Darkest red for text on light bg
 $color-info: #2563EB;           // Blue with good contrast (5.17:1 on white)
+$color-info-light: #3b82f6;     // Lighter blue for icons/badges
+$color-info-dark: #1d4ed8;      // Darkest blue for hover states
+
+// Semantic Status Backgrounds (tinted bg for alert/status cards)
+// -----------------------------------------------------------------------------
+$color-success-bg: #d1fae5;
+$color-success-border: #a7f3d0;
+$color-warning-bg: #fef3c7;
+$color-warning-border: #fde68a;
+$color-error-bg: #fee2e2;
+$color-error-border: #fecaca;
+$color-info-bg: #eff6ff;
+$color-info-border: #bfdbfe;
 
 // Neutral Palette - Complete grayscale
 // -----------------------------------------------------------------------------
@@ -35,16 +61,33 @@ $bg-primary: #FFFFFF; // Surface/Card Color
 $bg-secondary: #F9FAFB; // Background Color
 $bg-tertiary: $color-neutral-100;
 
+// Overlay & Backdrop
+// -----------------------------------------------------------------------------
+$color-overlay: rgba(0, 0, 0, 0.5);
+$color-overlay-heavy: rgba(0, 0, 0, 0.7);
+$color-overlay-light: rgba(0, 0, 0, 0.3);
+
 // Semantic Text Colors
 // -----------------------------------------------------------------------------
 $text-primary: #1F2937; // Text Main
 $text-secondary: $color-neutral-600;
 $text-tertiary: $color-neutral-400;
+$text-link: $color-accent;
+$text-link-hover: $color-accent-dark;
 
 // Semantic Border Colors
 // -----------------------------------------------------------------------------
 $border-primary: $color-neutral-200;
 $border-secondary: $color-neutral-300;
+$border-focus: $color-accent;
+
+// Gradient Palette - Modern & Premium
+// -----------------------------------------------------------------------------
+$gradient-primary: linear-gradient(135deg, #FF6B00 0%, #FF9500 100%);
+$gradient-primary-hover: linear-gradient(135deg, #e66000 0%, #ff8120 100%);
+$gradient-dark: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+$gradient-glass: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%);
+$gradient-glass-dark: linear-gradient(145deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.6) 100%);
 
 // CSS Custom Properties for Runtime Theme Switching
 // -----------------------------------------------------------------------------
@@ -54,12 +97,47 @@ $border-secondary: $color-neutral-300;
   --color-primary-light: #{$color-primary-light};
   --color-primary-dark: #{$color-primary-dark};
   --color-primary-rgb: 255, 107, 0;
+
+  // Accent Colors
+  --color-accent: #{$color-accent};
+  --color-accent-light: #{$color-accent-light};
+  --color-accent-dark: #{$color-accent-dark};
+  --color-accent-rgb: 79, 70, 229;
+
+  // Gradients
+  --gradient-primary: #{$gradient-primary};
+  --gradient-primary-hover: #{$gradient-primary-hover};
+  --gradient-dark: #{$gradient-dark};
+  --gradient-glass: #{$gradient-glass};
   
   // Semantic Colors
   --color-success: #{$color-success};
+  --color-success-light: #{$color-success-light};
+  --color-success-dark: #{$color-success-dark};
+  --color-success-rgb: 4, 120, 87;
+  --color-success-bg: #{$color-success-bg};
+  --color-success-border: #{$color-success-border};
+
   --color-warning: #{$color-warning};
+  --color-warning-light: #{$color-warning-light};
+  --color-warning-dark: #{$color-warning-dark};
+  --color-warning-rgb: 180, 83, 9;
+  --color-warning-bg: #{$color-warning-bg};
+  --color-warning-border: #{$color-warning-border};
+
   --color-error: #{$color-error};
+  --color-error-light: #{$color-error-light};
+  --color-error-dark: #{$color-error-dark};
+  --color-error-rgb: 220, 38, 38;
+  --color-error-bg: #{$color-error-bg};
+  --color-error-border: #{$color-error-border};
+
   --color-info: #{$color-info};
+  --color-info-light: #{$color-info-light};
+  --color-info-dark: #{$color-info-dark};
+  --color-info-rgb: 37, 99, 235;
+  --color-info-bg: #{$color-info-bg};
+  --color-info-border: #{$color-info-border};
   
   // Neutral Colors
   --color-neutral-50: #{$color-neutral-50};
@@ -77,16 +155,26 @@ $border-secondary: $color-neutral-300;
   --bg-primary: #{$bg-primary};
   --bg-secondary: #{$bg-secondary};
   --bg-tertiary: #{$bg-tertiary};
+  --bg-glass: rgba(255, 255, 255, 0.7);
   --bg-primary-rgb: 255, 255, 255;
+
+  // Overlays
+  --color-overlay: #{$color-overlay};
+  --color-overlay-heavy: #{$color-overlay-heavy};
+  --color-overlay-light: #{$color-overlay-light};
   
   // Semantic Text
   --text-primary: #{$text-primary};
   --text-secondary: #{$text-secondary};
   --text-tertiary: #{$text-tertiary};
+  --text-primary-rgb: 31, 41, 55;
+  --text-link: #{$text-link};
+  --text-link-hover: #{$text-link-hover};
   
   // Semantic Borders
   --border-primary: #{$border-primary};
   --border-secondary: #{$border-secondary};
+  --border-focus: #{$border-focus};
 }
 
 // Dark Theme CSS Custom Properties
@@ -96,16 +184,39 @@ $border-secondary: $color-neutral-300;
   --bg-primary: #{$color-neutral-900};
   --bg-secondary: #{$color-neutral-800};
   --bg-tertiary: #{$color-neutral-700};
+  --bg-glass: rgba(17, 24, 39, 0.7);
   --bg-primary-rgb: 17, 24, 39;
   
   // Text (inverted)
   --text-primary: #{$color-neutral-50};
   --text-secondary: #{$color-neutral-300};
   --text-tertiary: #{$color-neutral-500};
+  --text-primary-rgb: 249, 250, 251;
+  --text-link: #{$color-accent-light};
+  --text-link-hover: #{$color-accent};
   
   // Borders (adjusted for dark theme)
   --border-primary: #{$color-neutral-700};
   --border-secondary: #{$color-neutral-600};
+  --border-focus: #{$color-accent-light};
+
+  // Overlays (stronger in dark mode)
+  --color-overlay: rgba(0, 0, 0, 0.6);
+  --color-overlay-heavy: rgba(0, 0, 0, 0.8);
+  --color-overlay-light: rgba(0, 0, 0, 0.4);
+  
+  // Semantic status backgrounds (darker variants)
+  --color-success-bg: rgba(4, 120, 87, 0.15);
+  --color-success-border: rgba(4, 120, 87, 0.3);
+  --color-warning-bg: rgba(180, 83, 9, 0.15);
+  --color-warning-border: rgba(180, 83, 9, 0.3);
+  --color-error-bg: rgba(220, 38, 38, 0.15);
+  --color-error-border: rgba(220, 38, 38, 0.3);
+  --color-info-bg: rgba(37, 99, 235, 0.15);
+  --color-info-border: rgba(37, 99, 235, 0.3);
+
+  // Gradients
+  --gradient-glass: #{$gradient-glass-dark};
 }
 
 // System Theme Detection
@@ -116,11 +227,29 @@ $border-secondary: $color-neutral-300;
     --bg-primary: #{$color-neutral-900};
     --bg-secondary: #{$color-neutral-800};
     --bg-tertiary: #{$color-neutral-700};
+    --bg-glass: rgba(17, 24, 39, 0.7);
+    --bg-primary-rgb: 17, 24, 39;
     --text-primary: #{$color-neutral-50};
     --text-secondary: #{$color-neutral-300};
     --text-tertiary: #{$color-neutral-500};
+    --text-primary-rgb: 249, 250, 251;
+    --text-link: #{$color-accent-light};
+    --text-link-hover: #{$color-accent};
     --border-primary: #{$color-neutral-700};
     --border-secondary: #{$color-neutral-600};
+    --border-focus: #{$color-accent-light};
+    --color-overlay: rgba(0, 0, 0, 0.6);
+    --color-overlay-heavy: rgba(0, 0, 0, 0.8);
+    --color-overlay-light: rgba(0, 0, 0, 0.4);
+    --color-success-bg: rgba(4, 120, 87, 0.15);
+    --color-success-border: rgba(4, 120, 87, 0.3);
+    --color-warning-bg: rgba(180, 83, 9, 0.15);
+    --color-warning-border: rgba(180, 83, 9, 0.3);
+    --color-error-bg: rgba(220, 38, 38, 0.15);
+    --color-error-border: rgba(220, 38, 38, 0.3);
+    --color-info-bg: rgba(37, 99, 235, 0.15);
+    --color-info-border: rgba(37, 99, 235, 0.3);
+    --gradient-glass: #{$gradient-glass-dark};
   }
 }
 
@@ -129,6 +258,7 @@ $border-secondary: $color-neutral-300;
 @media (forced-colors: active) {
   :root {
     --color-primary: ButtonText;
+    --color-accent: ButtonText;
     --color-success: ButtonText;
     --color-warning: ButtonText;
     --color-error: ButtonText;
@@ -136,10 +266,15 @@ $border-secondary: $color-neutral-300;
     --bg-primary: ButtonFace;
     --bg-secondary: ButtonFace;
     --bg-tertiary: ButtonFace;
+    --bg-glass: ButtonFace;
     --text-primary: ButtonText;
     --text-secondary: ButtonText;
     --text-tertiary: ButtonText;
+    --text-link: ButtonText;
     --border-primary: ButtonText;
     --border-secondary: ButtonText;
+    --border-focus: ButtonText;
+    --gradient-primary: ButtonFace;
+    --gradient-glass: ButtonFace;
   }
 }

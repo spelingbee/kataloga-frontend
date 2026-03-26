@@ -1,12 +1,29 @@
+import { storeToRefs } from 'pinia'
+import { computed, ref, readonly } from 'vue'
 import { useUserStore } from '~/stores/user'
 import { useAuthStore } from '~/stores/auth'
 import { useUserService } from '~/services/user.service'
-import type { User, UserLocation, Notification, Promotion } from '~/types'
+import { isDefined, safePropertyAccess } from '~/types/utils/type-guards'
+import type { User, UserLocation, Notification, Promotion, UserAddressDto, UserPreferencesDto } from '~/types'
+
+interface NotificationParams {
+  type?: 'order' | 'promotion' | 'system'
+  unread?: boolean
+  page?: number
+  limit?: number
+}
+
+interface PromotionParams {
+  active?: boolean
+  category?: string
+  page?: number
+  limit?: number
+}
 
 export function useUserProfile() {
   const userStore = useUserStore()
   const authStore = useAuthStore()
-  
+
   const {
     user,
     notifications,
@@ -22,10 +39,10 @@ export function useUserProfile() {
   // Actions
   const updateProfile = (data: Partial<User>) => userStore.updateProfile(data)
   const updateLocation = (newLocation: UserLocation) => userStore.updateLocation(newLocation)
-  const fetchNotifications = (params?: any) => userStore.fetchNotifications(params)
+  const fetchNotifications = (params?: NotificationParams) => userStore.fetchNotifications(params)
   const markNotificationRead = (id: string) => userStore.markNotificationRead(id)
   const markAllNotificationsRead = () => userStore.markAllNotificationsRead()
-  const fetchPromotions = (params?: any) => userStore.fetchPromotions(params)
+  const fetchPromotions = (params?: PromotionParams) => userStore.fetchPromotions(params)
   const claimPromotion = (promotionId: string) => userStore.claimPromotion(promotionId)
   const fetchUserLocation = () => userStore.fetchUserLocation()
 
@@ -129,29 +146,17 @@ export function useUserProfile() {
   const getUserPreferences = async () => {
     try {
       const userService = useUserService()
-      const response = await userService.getPreferences()
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to get preferences')
+      return await userService.getPreferences()
     } catch (error) {
       console.error('Failed to get user preferences:', error)
       throw error
     }
   }
 
-  const updateUserPreferences = async (preferences: any) => {
+  const updateUserPreferences = async (preferences: UserPreferencesDto) => {
     try {
       const userService = useUserService()
-      const response = await userService.updatePreferences(preferences)
-      
-      if (response.success) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to update preferences')
+      return await userService.updatePreferences(preferences)
     } catch (error) {
       console.error('Failed to update user preferences:', error)
       throw error
@@ -162,13 +167,7 @@ export function useUserProfile() {
   const getLoyaltyPoints = async () => {
     try {
       const userService = useUserService()
-      const response = await userService.getLoyaltyPoints()
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to get loyalty points')
+      return await userService.getLoyaltyPoints()
     } catch (error) {
       console.error('Failed to get loyalty points:', error)
       throw error
@@ -178,13 +177,7 @@ export function useUserProfile() {
   const redeemLoyaltyReward = async (rewardId: string) => {
     try {
       const userService = useUserService()
-      const response = await userService.redeemLoyaltyReward(rewardId)
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to redeem reward')
+      return await userService.redeemLoyaltyReward(rewardId)
     } catch (error) {
       console.error('Failed to redeem loyalty reward:', error)
       throw error
@@ -195,29 +188,17 @@ export function useUserProfile() {
   const getUserAddresses = async () => {
     try {
       const userService = useUserService()
-      const response = await userService.getAddresses()
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to get addresses')
+      return await userService.getAddresses()
     } catch (error) {
       console.error('Failed to get user addresses:', error)
       throw error
     }
   }
 
-  const addUserAddress = async (address: any) => {
+  const addUserAddress = async (address: UserAddressDto) => {
     try {
       const userService = useUserService()
-      const response = await userService.addAddress(address)
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to add address')
+      return await userService.addAddress(address)
     } catch (error) {
       console.error('Failed to add user address:', error)
       throw error

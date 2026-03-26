@@ -1,8 +1,8 @@
-import type { 
-  TenantInfo, 
-  TenantBranding, 
+import type {
+  TenantInfo,
+  TenantBranding,
   TenantSettings,
-  TenantSwitchOptions 
+  TenantSwitchOptions
 } from '~/types/tenant'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -20,7 +20,7 @@ export interface UseTenantReturn {
   currentTenant: ComputedRef<TenantInfo | null>
   isLoading: ComputedRef<boolean>
   error: ComputedRef<string | null>
-  
+
   // Computed properties
   isMultiTenant: ComputedRef<boolean>
   tenantSlug: ComputedRef<string>
@@ -31,24 +31,24 @@ export interface UseTenantReturn {
   isTenantLoaded: ComputedRef<boolean>
   canSwitchTenant: ComputedRef<boolean>
   hasError: ComputedRef<boolean>
-  
+
   // Branding and settings
   tenantBranding: ComputedRef<TenantBranding>
   tenantSettings: ComputedRef<TenantSettings>
-  
+
   // Methods
   setTenant: (slug: string, options?: TenantSwitchOptions) => Promise<boolean>
   switchTenant: (slug: string, options?: TenantSwitchOptions) => Promise<boolean>
   refreshTenant: () => Promise<void>
   clearTenant: () => void
   validateTenant: (slug: string) => Promise<boolean>
-  
+
   // URL management
   updateTenantInUrl: () => Promise<void>
   removeTenantFromUrl: () => Promise<void>
   getTenantFromUrl: () => string | null
   navigateWithTenant: (path: string, tenantSlug?: string) => Promise<void>
-  
+
   // Utility methods
   isDataForCurrentTenant: (tenantId: string) => boolean
   getTenantContext: () => { tenantSlug: string; tenantId: string } | null
@@ -169,11 +169,11 @@ export function useTenant(): UseTenantReturn {
   const getTenantFromUrl = (): string | null => {
     const tenantParam = String(config.public.tenantQueryParam || 'tenant')
     const tenantValue = route.query[tenantParam]
-    
+
     if (typeof tenantValue === 'string' && tenantValue.trim() !== '') {
       return tenantValue
     }
-    
+
     return null
   }
 
@@ -186,7 +186,7 @@ export function useTenant(): UseTenantReturn {
    */
   const navigateWithTenant = async (path: string, tenantSlug?: string): Promise<void> => {
     const targetTenant = tenantSlug || tenantStore.tenantSlug
-    
+
     if (!targetTenant) {
       // No tenant available, navigate without tenant parameter
       await router.push(path)
@@ -200,11 +200,11 @@ export function useTenant(): UseTenantReturn {
     }
 
     const tenantParam = String(config.public.tenantQueryParam || 'tenant')
-    
+
     // Parse the path to handle existing query parameters
     const [pathname, queryString] = path.split('?')
     const existingQuery = queryString ? Object.fromEntries(new URLSearchParams(queryString)) : {}
-    
+
     // Add tenant parameter
     const query = {
       ...existingQuery,
@@ -246,7 +246,7 @@ export function useTenant(): UseTenantReturn {
     currentTenant,
     isLoading,
     error,
-    
+
     // Computed properties
     isMultiTenant,
     tenantSlug,
@@ -257,24 +257,24 @@ export function useTenant(): UseTenantReturn {
     isTenantLoaded,
     canSwitchTenant,
     hasError,
-    
+
     // Branding and settings
     tenantBranding,
     tenantSettings,
-    
+
     // Methods
     setTenant,
     switchTenant,
     refreshTenant,
     clearTenant,
     validateTenant,
-    
+
     // URL management
     updateTenantInUrl,
     removeTenantFromUrl,
     getTenantFromUrl,
     navigateWithTenant,
-    
+
     // Utility methods
     isDataForCurrentTenant,
     getTenantContext,
@@ -321,7 +321,7 @@ export function useTenantUrlWatcher(): void {
       } else if (!newTenant && tenantStore.currentTenant) {
         // Tenant removed from URL - decide what to do based on configuration
         const isMultiTenant = tenantStore.isMultiTenant
-        
+
         if (isMultiTenant) {
           // In multi-tenant mode, keep current tenant but don't clear it
           console.log('Tenant removed from URL, keeping current tenant')
@@ -491,7 +491,7 @@ export function useTenantBranding() {
     description,
     heroImage,
     socialLinks,
-    
+
     // Methods
     applyBrandingColors,
     updateDocumentTitle,
@@ -529,7 +529,7 @@ export function useTenantSettings() {
 
   // Settings properties with fallbacks
   const currency = computed(() => {
-    return tenantStore.tenantSettings.currency || 'USD'
+    return tenantStore.tenantSettings.currency || 'KGS'
   })
 
   const timezone = computed(() => {
@@ -618,21 +618,26 @@ export function useTenantSettings() {
    * Format currency value with tenant currency
    * Requirements: 2.4, 4.3
    */
+  /**
+   * Format currency value with tenant currency
+   * Requirements: 2.4, 4.3
+   */
   const formatCurrency = (amount: number, options?: Intl.NumberFormatOptions): string => {
     const defaultOptions: Intl.NumberFormatOptions = {
       style: 'currency',
-      currency: currency.value,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      currency: currency.value || 'KGS',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
       ...options
     }
 
     try {
-      return new Intl.NumberFormat(language.value, defaultOptions).format(amount)
+      // Force 'ru-RU' or 'ky-KG' to ensures symbol/code is at the end (e.g. 100 c)
+      // en-US puts it at start (KGS 100).
+      return new Intl.NumberFormat('ru-RU', defaultOptions).format(amount)
     } catch (error) {
       console.error('Error formatting currency:', error)
-      // Fallback to simple format
-      return `${currency.value} ${amount.toFixed(2)}`
+      return `${amount.toFixed(0)} ${currency.value === 'KGS' ? 'с' : currency.value}`
     }
   }
 
@@ -659,7 +664,7 @@ export function useTenantSettings() {
     }
 
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-    
+
     return currentTime >= todaySchedule.openTime && currentTime <= todaySchedule.closeTime
   }
 
@@ -675,7 +680,7 @@ export function useTenantSettings() {
     const now = new Date()
     const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
     const currentDay = dayNames[now.getDay()] as keyof typeof businessHours.value
-    
+
     return businessHours.value[currentDay]
   }
 
@@ -690,7 +695,7 @@ export function useTenantSettings() {
 
     // Check if order qualifies for free delivery
     if (
-      deliverySettings.value.freeDeliveryThreshold && 
+      deliverySettings.value.freeDeliveryThreshold &&
       orderAmount >= deliverySettings.value.freeDeliveryThreshold
     ) {
       return 0
@@ -744,7 +749,7 @@ export function useTenantSettings() {
     businessHours,
     contactInfo,
     deliverySettings,
-    
+
     // Feature flags
     isDeliveryEnabled,
     isPickupEnabled,
@@ -752,7 +757,7 @@ export function useTenantSettings() {
     isLoyaltyProgramEnabled,
     isTableReservationEnabled,
     isPushNotificationsEnabled,
-    
+
     // Methods
     isFeatureEnabled,
     isPaymentMethodSupported,
@@ -815,7 +820,7 @@ export function useTenantContact() {
    */
   const formatPhone = (): string => {
     if (!phone.value) return ''
-    
+
     // Simple formatting - can be enhanced based on locale
     return phone.value
   }
@@ -852,7 +857,7 @@ export function useTenantContact() {
     coordinates,
     hasContactInfo,
     hasLocation,
-    
+
     // Methods
     formatPhone,
     getPhoneLink,

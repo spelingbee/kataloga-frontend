@@ -1,3 +1,5 @@
+import { safeArrayAccess } from '~/types/utils/type-guards'
+
 export default defineNuxtPlugin(() => {
   // Only run on client side
   if (import.meta.server) return
@@ -28,8 +30,8 @@ export default defineNuxtPlugin(() => {
     document.addEventListener('touchstart', (e) => {
       if (e.touches.length > 1) return
       
-      const touch = e.touches[0]
-      if (touch.clientY <= 0) {
+      const touch = safeArrayAccess(Array.from(e.touches), 0)
+      if (touch && touch.clientY <= 0) {
         e.preventDefault()
       }
     }, { passive: false })
@@ -79,7 +81,7 @@ export default defineNuxtPlugin(() => {
     const offlineBanner = document.createElement('div')
     offlineBanner.id = 'offline-banner'
     offlineBanner.className = 'fixed top-0 left-0 right-0 bg-red-600 text-white p-2 text-center text-sm z-50'
-    offlineBanner.innerHTML = 'You are offline. Some features may not be available.'
+    offlineBanner.textContent = 'You are offline. Some features may not be available.'
 
     document.body.appendChild(offlineBanner)
   }

@@ -16,7 +16,10 @@
 <script setup lang="ts">
 import { useUserStore } from './stores/user'
 import { useMenuStore } from './stores/menu'
+import { useFavoritesStore } from './stores/favorites'
 import { useCartStore } from '~/stores/cart'
+import { useTenantStore } from '~/stores/tenant'
+import { useTenantUrlWatcher } from '~/composables/useTenant'
 import { useOfflineCart } from '~/composables/useOfflineCart'
 import { useAnimations } from '~/composables/useAnimations'
 import { useResponsive } from '~/composables/useResponsive'
@@ -27,6 +30,11 @@ import SkipLinks from '~/components/base/SkipLinks.vue'
 const userStore = useUserStore()
 const cartStore = useCartStore()
 const menuStore = useMenuStore()
+const favoritesStore = useFavoritesStore()
+const tenantStore = useTenantStore()
+
+// Initialize tenant system and URL watcher
+useTenantUrlWatcher()
 
 // Initialize offline functionality
 const { initializeOfflineCart } = useOfflineCart()
@@ -66,8 +74,8 @@ useHead({
 // Initialize user and restore cart on app start
 onMounted(async () => {
   await userStore.initializeUser()
-  cartStore.restoreCart()
-  menuStore.initializeFavourites()
+  cartStore._restoreFromStorage()
+  favoritesStore.initializeFavorites()
   
   // Initialize offline cart functionality
   initializeOfflineCart()

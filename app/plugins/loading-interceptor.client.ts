@@ -56,19 +56,3 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   })
 })
 
-// Extend the global $fetch type
-declare module '#app' {
-  interface NuxtApp {
-    $loading: {
-      start: (name: string, message?: string) => string
-      update: (id: string, updates: any) => void
-      finish: (id: string) => void
-      withLoading: <T>(asyncFn: () => Promise<T>, message?: string) => Promise<T>
-      withTask: <T>(
-        name: string,
-        asyncFn: (updateProgress: (progress: number, message?: string) => void) => Promise<T>,
-        initialMessage?: string
-      ) => Promise<T>
-    }
-  }
-}

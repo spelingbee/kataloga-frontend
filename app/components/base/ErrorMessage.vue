@@ -16,7 +16,7 @@
         <p class="error-description">{{ errorMessage }}</p>
         
         <!-- Error Details (collapsible) -->
-        <div v-if="showDetails && error?.details" class="error-details">
+        <div v-if="showDetails && hasDetails" class="error-details">
           <button 
             class="details-toggle"
             @click="detailsExpanded = !detailsExpanded"
@@ -29,7 +29,7 @@
           </button>
           
           <div v-if="detailsExpanded" class="details-content">
-            <pre>{{ JSON.stringify(error.details, null, 2) }}</pre>
+            <pre>{{ JSON.stringify(errorData?.details, null, 2) }}</pre>
           </div>
         </div>
       </div>
@@ -86,27 +86,35 @@ defineEmits<{
 const { $i18n } = useNuxtApp()
 const detailsExpanded = ref(false)
 
-const errorData = computed(() => {
+const errorData = computed<ApiError | null>(() => {
   if (!props.error) return null
   
   if (typeof props.error === 'string') {
     return {
+      name: 'ApiError',
       code: 'UNKNOWN_ERROR',
       message: props.error,
-      statusCode: undefined,
-    } as ApiError
+    }
   }
   
   if (props.error instanceof Error) {
+    const apiErr = props.error as any
     return {
-      code: 'code' in props.error ? (props.error as ApiError).code : 'UNKNOWN_ERROR',
+      name: props.error.name,
+      code: apiErr.code || 'UNKNOWN_ERROR',
       message: props.error.message,
-      statusCode: 'statusCode' in props.error ? (props.error as ApiError).statusCode : undefined,
-      details: 'details' in props.error ? (props.error as ApiError).details : undefined,
-    } as ApiError
+      status: apiErr.status || apiErr.statusCode,
+      details: apiErr.details,
+    }
   }
   
   return props.error as ApiError
+})
+
+const hasDetails = computed(() => {
+  if (!errorData.value?.details) return false
+  if (Array.isArray(errorData.value.details)) return errorData.value.details.length > 0
+  return Object.keys(errorData.value.details).length > 0
 })
 
 const errorType = computed(() => {
@@ -176,7 +184,7 @@ const errorTitle = computed(() => {
 })
 
 const errorMessage = computed(() => {
-  if (!errorData.value) return $i18n.t('errors.unknown.message')
+  if (!errorData.value?.code) return $i18n.t('errors.unknown.message')
   
   // Use localized messages based on error code
   const messageKey = `errors.${errorData.value.code.toLowerCase()}.message`
@@ -186,7 +194,7 @@ const errorMessage = computed(() => {
     ? $i18n.t(messageKey)
     : $i18n.te(fallbackKey)
     ? $i18n.t(fallbackKey)
-    : errorData.value.message || $i18n.t('errors.unknown.message')
+    : (errorData.value.message || $i18n.t('errors.unknown.message'))
 })
 </script>
 

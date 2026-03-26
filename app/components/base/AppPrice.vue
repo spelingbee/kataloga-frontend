@@ -15,10 +15,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { usePriceFormatter } from '~/composables/usePriceFormatter'
 
 interface Props {
   amount?: number
   value?: number
+  price?: number
   currency?: string
   size?: 'sm' | 'md' | 'lg' | 'xl'
   color?: 'primary' | 'green' | 'red' | 'orange' | 'white' | 'muted'
@@ -27,12 +29,13 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currency: '₽',
   size: 'md',
   color: 'primary',
   strikethrough: false,
   showCurrency: true
 })
+
+const { formatPrice } = usePriceFormatter()
 
 const sizeClasses = {
   sm: 'text-body-sm',
@@ -51,12 +54,15 @@ const colorClasses = {
 }
 
 const formattedPrice = computed(() => {
-  const priceValue = props.amount ?? props.value ?? 0
-  const price = new Intl.NumberFormat('ru-RU', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(priceValue)
+  const priceValue = props.price ?? props.amount ?? props.value ?? 0
   
-  return props.showCurrency ? `${price} ${props.currency}` : price
+  if (props.showCurrency) {
+    return formatPrice(priceValue)
+  }
+  
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(priceValue)
 })
 </script>

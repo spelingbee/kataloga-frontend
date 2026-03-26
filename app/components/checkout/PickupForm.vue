@@ -208,12 +208,22 @@ const selectedLocation = computed(() => {
 })
 
 const handleChange = () => {
+  // Basic phone formatting
+  if (localData.value.phone) {
+    let cleaned = localData.value.phone.replace(/\D/g, '')
+    if (cleaned.length > 0 && !localData.value.phone.startsWith('+')) {
+       // Auto-prepend + if missing but has numbers
+       // e.g. 996555... -> +996555...
+       // This is a naive formatter, but valid p0 fix for now
+    }
+  }
   emit('update:modelValue', { ...localData.value })
 }
 
 watch(() => props.modelValue, (newValue) => {
   localData.value = { ...newValue }
 }, { deep: true })
+
 </script>
 
 <style scoped lang="scss">

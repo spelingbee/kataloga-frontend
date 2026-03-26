@@ -1,25 +1,25 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="dish-detail">
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
+    <div v-if="loading" class="dish-detail__loading">
+      <div class="dish-detail__spinner">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
         <AppText class="text-neutral-20">Loading dish details...</AppText>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
+    <div v-else-if="error" class="dish-detail__error">
+      <div class="dish-detail__error-content">
         <BaseIcon name="alert-circle" size="4xl" class="text-primary-red mx-auto mb-6" />
-        <AppHeading level="h2" size="heading-lg" class="text-white mb-4">
+        <AppHeading level="h2" size="heading-lg" class="dish-detail__error-title">
           Dish Not Found
         </AppHeading>
-        <AppText class="text-neutral-20 mb-8">
+        <AppText class="dish-detail__error-text">
           {{ error }}
         </AppText>
-        <div class="flex gap-4 justify-center">
-          <BaseButton @click="$router.go(-1)">
+        <div class="dish-detail__error-actions">
+          <BaseButton @click="router.go(-1)">
             Go Back
           </BaseButton>
           <NuxtLink to="/menu">
@@ -32,22 +32,23 @@
     </div>
 
     <!-- Dish Details -->
-    <div v-else-if="dish" class="dish-details-wrapper pb-8">
+    <div v-else-if="dish" class="dish-detail__content-wrapper">
       <!-- Header with Navigation -->
-      <div class="px-6 py-4 flex items-center justify-between border-b border-neutral-80/20">
-        <div class="flex items-center gap-4">
+      <div class="dish-detail__header">
+        <div class="dish-detail__nav">
           <BaseButton 
             variant="ghost" 
-            @click="$router.go(-1)"
+            class="dish-detail__back-btn"
+            @click="router.go(-1)"
           >
             <BaseIcon name="arrow-left" size="md" />
           </BaseButton>
-          <AppHeading level="h1" size="heading-lg" class="text-white">
+          <AppHeading level="h1" size="heading-lg" class="dish-detail__title">
             {{ dish.name }}
           </AppHeading>
         </div>
         
-        <div class="flex items-center gap-2">
+        <div class="dish-detail__actions">
           <BaseButton
             variant="ghost"
             :class="isFavourite ? 'text-primary-red' : 'text-neutral-80'"
@@ -62,34 +63,37 @@
       </div>
 
       <!-- Main Content -->
-      <div class="content-sheet flex flex-col lg:flex-row">
+      <div class="dish-detail__sheet">
         <!-- Left Column - Images and Info -->
-        <div class="lg:w-2/3 px-6 py-8">
+        <div class="dish-detail__main">
           <!-- Dish Hero Section -->
-          <img :src="dish.imageUrl || '/images/placeholder-dish.svg'" :alt="dish.name" class="hero-image" />
+          <img :src="dish.imageUrl || '/images/placeholder-dish.svg'" :alt="dish.name" class="dish-detail__hero-image" />
 
           <!-- Dish Images Slider -->
-          <div class="mb-8">
+          <div class="dish-detail__section">
             <DishImageSlider 
               :images="dishImages"
               :dish-name="dish.name"
+              :current-index="currentIndex"
+              :alt="dish.name"
+              @update:current-index="currentIndex = $event"
             />
           </div>
 
           <!-- Description -->
-          <div class="mb-8">
-            <AppHeading level="h2" size="heading-md" class="text-white mb-4">
+          <div class="dish-detail__section">
+            <AppHeading level="h2" size="heading-md" class="dish-detail__section-title">
               Description
             </AppHeading>
-            <AppText class="text-neutral-20 leading-relaxed">
+            <AppText class="dish-detail__description">
               {{ dish.description }}
             </AppText>
           </div>
 
           <!-- Ingredients -->
-          <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-              <AppHeading level="h2" size="heading-md" class="text-white">
+          <div class="dish-detail__section">
+            <div class="dish-detail__section-header">
+              <AppHeading level="h2" size="heading-md" class="dish-detail__section-title">
                 Ingredients
               </AppHeading>
               <NuxtLink :to="`/dish/${dish.id}/ingredients`">
@@ -100,16 +104,17 @@
               </NuxtLink>
             </div>
             <DishIngredients 
-              :ingredients="dish.ingredients || []"
+              :ingredients="(dish.ingredients as any) || []"
+              :selected-ingredients="selectedIngredients"
               :show-all="false"
               :max-items="6"
             />
           </div>
 
           <!-- Nutrition Info -->
-          <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-              <AppHeading level="h2" size="heading-md" class="text-white">
+          <div class="dish-detail__section">
+            <div class="dish-detail__section-header">
+              <AppHeading level="h2" size="heading-md" class="dish-detail__section-title">
                 Nutrition Information
               </AppHeading>
               <NuxtLink :to="`/dish/${dish.id}/caloric-content`">
@@ -120,16 +125,17 @@
               </NuxtLink>
             </div>
             <DishNutrition 
-              :nutrition="dish.nutritionInfo"
+              v-if="dish.nutritionInfo"
+              :nutrition="(dish.nutritionInfo as any)"
               :calories="dish.calories"
               :compact="true"
             />
           </div>
 
           <!-- Preparation Time -->
-          <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-              <AppHeading level="h2" size="heading-md" class="text-white">
+          <div class="dish-detail__section">
+            <div class="dish-detail__section-header">
+              <AppHeading level="h2" size="heading-md" class="dish-detail__section-title">
                 Preparation Time
               </AppHeading>
               <NuxtLink :to="`/dish/${dish.id}/waiting-time`">
@@ -146,11 +152,11 @@
           </div>
 
           <!-- Allergens -->
-          <div v-if="dish.allergens && dish.allergens.length > 0" class="mb-8">
-            <AppHeading level="h2" size="heading-md" class="text-white mb-4">
+          <div v-if="dish.allergens && dish.allergens.length > 0" class="dish-detail__section">
+            <AppHeading level="h2" size="heading-md" class="dish-detail__section-title">
               Allergen Information
             </AppHeading>
-            <div class="flex flex-wrap gap-2">
+            <div class="dish-detail__tags">
               <BaseBadge
                 v-for="allergen in dish.allergens"
                 :key="allergen"
@@ -165,34 +171,32 @@
         </div>
 
         <!-- Right Column - Customization and Order -->
-        <div class="lg:w-1/3 lg:border-l border-neutral-80/20">
-          <div class="sticky top-0 px-6 py-8">
+        <div class="dish-detail__sidebar">
+          <div class="dish-detail__sidebar-content">
             <!-- Price and Basic Info -->
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-4">
-                <AppPrice :price="dish.price" size="xl" />
-                <div v-if="dish.calories" class="flex items-center gap-2">
-                  <FireIcon size="sm" />
-                  <AppText size="body-sm" class="text-neutral-20">
+            <div class="dish-detail__price-block">
+              <div class="dish-detail__price-row">
+                <AppPrice :price="dish.price" size="xl" color="primary" />
+                <div v-if="dish.calories" class="dish-detail__calories">
+                  <BaseIcon name="fire" size="sm" class="text-primary-orange" />
+                  <AppText size="body-sm" class="text-neutral-60">
                     {{ dish.calories }} cal
                   </AppText>
                 </div>
               </div>
               
               <!-- Rating and Reviews (Mock) -->
-              <div class="flex items-center gap-4 mb-4">
-                <div class="flex items-center gap-1">
-                  <BaseIcon name="star" size="sm" class="text-primary-orange" />
-                  <AppText size="body-sm" class="text-white">4.8</AppText>
-                  <AppText size="body-sm" class="text-neutral-20">(124 reviews)</AppText>
-                </div>
+              <div class="dish-detail__rating">
+                <BaseIcon name="star" size="sm" class="text-primary-orange" />
+                <AppText size="body-sm" class="text-neutral-90">4.8</AppText>
+                <AppText size="body-sm" class="text-neutral-60">(124 reviews)</AppText>
               </div>
             </div>
 
             <!-- Subcategory Selection -->
-            <div v-if="hasSubcategories" class="mb-6">
-              <div class="flex items-center justify-between mb-3">
-                <AppText size="body-sm" class="text-white font-medium">
+            <div v-if="hasSubcategories" class="dish-detail__option">
+              <div class="dish-detail__option-header">
+                <AppText size="body-sm" class="text-neutral-90 font-medium">
                   Choose Size/Type
                 </AppText>
                 <NuxtLink :to="`/dish/${dish.id}/subcategory`">
@@ -209,9 +213,9 @@
             </div>
 
             <!-- Customization Options -->
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-3">
-                <AppText size="body-sm" class="text-white font-medium">
+            <div class="dish-detail__option">
+              <div class="dish-detail__option-header">
+                <AppText size="body-sm" class="text-neutral-90 font-medium">
                   Customize
                 </AppText>
                 <NuxtLink :to="`/dish/${dish.id}/change-ingredients`">
@@ -221,16 +225,19 @@
                 </NuxtLink>
               </div>
               <DishCustomization 
-                v-model="customizations"
                 :dish="dish"
+                :selected-ingredients="selectedIngredients"
+                :customizations="customizations"
                 :compact="true"
+                @ingredients-changed="selectedIngredients = $event"
+                @customizations-changed="customizations = $event"
               />
             </div>
 
             <!-- Quantity Selection -->
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-3">
-                <AppText size="body-sm" class="text-white font-medium">
+            <div class="dish-detail__option">
+              <div class="dish-detail__option-header">
+                <AppText size="body-sm" class="text-neutral-90 font-medium">
                   Quantity
                 </AppText>
                 <NuxtLink :to="`/dish/${dish.id}/change-quantity`">
@@ -248,8 +255,8 @@
             </div>
 
             <!-- Special Instructions -->
-            <div class="mb-6">
-              <AppText size="body-sm" class="text-white font-medium mb-3">
+            <div class="dish-detail__option">
+              <AppText size="body-sm" class="text-neutral-90 font-medium mb-3">
                 Special Instructions (Optional)
               </AppText>
               <BaseInput
@@ -261,17 +268,17 @@
             </div>
 
             <!-- Total Price -->
-            <div class="mb-6 p-4 bg-background-card rounded-xl">
-              <div class="flex items-center justify-between">
-                <AppText size="body-md" class="text-white font-medium">
+            <div class="dish-detail__total">
+              <div class="dish-detail__total-row">
+                <AppText size="body-md" class="text-neutral-90 font-medium">
                   Total
                 </AppText>
                 <AppPrice :price="totalPrice" size="lg" />
               </div>
-              <AppText size="body-sm" class="text-neutral-20 mt-1">
-                {{ quantity }} × {{ formatPrice(dish.price) }}
+              <AppText size="body-sm" class="text-neutral-60 mt-1">
+                {{ quantity }} × <AppPrice :price="dish.price" size="sm" :show-currency="false" />
                 <span v-if="customizationPrice > 0">
-                  + {{ formatPrice(customizationPrice) }} extras
+                  + <AppPrice :price="customizationPrice" size="sm" :show-currency="false" /> extras
                 </span>
               </AppText>
             </div>
@@ -279,8 +286,9 @@
           </div>
         </div>
       </div>
-      <div class="sticky-footer">
-        <div class="flex gap-2 mb-4">
+      
+      <div class="dish-detail__sticky-footer">
+        <div class="dish-detail__footer-actions">
           <BaseButton
             variant="secondary"
             size="sm"
@@ -312,8 +320,8 @@
       </div>
 
       <!-- Related Dishes -->
-      <div class="px-6 py-8 border-t border-neutral-80/20">
-        <AppHeading level="h2" size="heading-lg" class="text-white mb-6">
+      <div class="dish-detail__related">
+        <AppHeading level="h2" size="heading-lg" class="dish-detail__section-title text-white">
           You Might Also Like
         </AppHeading>
         <MenuItemGrid 
@@ -327,9 +335,15 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem, NutritionInfo } from '~/types'
+import type { MenuItemUI, NutritionInfo } from '~/types/ui'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
+import { useFavoritesStore } from '~/stores/favorites'
+import AppPrice from '~/components/base/AppPrice.vue'
+import AppHeading from '~/components/base/AppHeading.vue' // Fixed path
+import { usePriceFormatter } from '~/composables/usePriceFormatter'
+import AppText from '~/components/base/AppText.vue'
+import QuantitySelector from '~/components/base/QuantitySelector.vue'
 
 // Page setup
 definePageMeta({
@@ -342,12 +356,16 @@ const router = useRouter()
 
 const menuStore = useMenuStore()
 const cartStore = useCartStore()
+const favoritesStore = useFavoritesStore()
+// const { formatPrice } = usePriceFormatter() // Unused
 
 // Reactive state
 const loading = ref(true)
 const error = ref<string | null>(null)
+const currentIndex = ref(0)
 const quantity = ref(1)
-const customizations = ref({})
+const selectedIngredients = ref<string[]>([])
+const customizations = ref<Record<string, any>>({})
 const specialInstructions = ref('')
 const selectedSubcategory = ref('')
 
@@ -355,26 +373,29 @@ const selectedSubcategory = ref('')
 const dishId = computed(() => route.params.id as string)
 
 // Mock dish data - will be replaced with real API call
-const dish = ref<MenuItem | null>(null)
+const dish = ref<MenuItemUI | null>(null)
 
 // Mock related data
-const dishImages = ref([
-  '/images/dish-1.jpg',
-  '/images/dish-2.jpg',
-  '/images/dish-3.jpg'
-])
+// Computed for dish images
+const dishImages = computed(() => {
+  if (dish.value?.images && dish.value.images.length > 0) {
+    return dish.value.images
+  }
+  if (dish.value?.imageUrl) {
+    return [dish.value.imageUrl]
+  }
+  return ['/images/placeholder-dish.svg']
+})
 
-const subcategoryOptions = ref([
-  { id: 'small', name: 'Small', price: 0 },
-  { id: 'medium', name: 'Medium', price: 2 },
-  { id: 'large', name: 'Large', price: 5 }
-])
+const subcategoryOptions = computed(() => {
+  return dish.value?.subcategories || []
+})
 
-const relatedDishes = ref<MenuItem[]>([])
+const relatedDishes = ref<MenuItemUI[]>([])
 
 // Computed
 const isFavourite = computed(() => {
-  return dish.value ? menuStore.favourites.some(fav => fav.id === dish.value!.id) : false
+  return dish.value ? favoritesStore.isFavorite(dish.value.id) : false
 })
 
 const hasSubcategories = computed(() => {
@@ -391,7 +412,7 @@ const customizationPrice = computed(() => {
 const totalPrice = computed(() => {
   if (!dish.value) return 0
   const basePrice = dish.value.price
-  const subcategoryPrice = selectedSubcategory.value ? 
+  const subcategoryPrice = selectedSubcategory.value ?
     subcategoryOptions.value.find(opt => opt.id === selectedSubcategory.value)?.price || 0 : 0
   return (basePrice + subcategoryPrice + customizationPrice.value) * quantity.value
 })
@@ -400,7 +421,7 @@ const totalPrice = computed(() => {
 const loadDish = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
     // Try to get dish from menu store first
     const existingDish = menuStore.getMenuItemById(dishId.value)
@@ -415,7 +436,7 @@ const loadDish = async () => {
         throw new Error('Dish not found')
       }
     }
-    
+
     // Load related dishes from the same category
     if (dish.value?.categoryId) {
       const categoryItems = menuStore.getItemsByCategory(dish.value.categoryId)
@@ -423,7 +444,7 @@ const loadDish = async () => {
         .filter(item => item.id !== dish.value!.id)
         .slice(0, 4)
     }
-    
+
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load dish details'
     console.error('Error loading dish:', err)
@@ -434,7 +455,7 @@ const loadDish = async () => {
 
 const toggleFavourite = () => {
   if (dish.value) {
-    menuStore.toggleFavourite(dish.value.id)
+    favoritesStore.toggleFavorite(dish.value.id)
   }
 }
 
@@ -458,24 +479,18 @@ const onAddedToCart = () => {
 
 const addToFavourites = () => {
   if (dish.value) {
-    menuStore.toggleFavourite(dish.value.id)
+    favoritesStore.toggleFavorite(dish.value.id)
   }
 }
 
 const compareDish = () => {
   // Add to comparison list (mock functionality)
-  console.log('Added to comparison')
+  // console.log('Added to comparison')
+  alert('Added to comparison list')
 }
 
-const onRelatedDishSelected = (selectedDish: MenuItem) => {
+const onRelatedDishSelected = (selectedDish: MenuItemUI) => {
   router.push(`/dish/${selectedDish.id}`)
-}
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(price)
 }
 
 // Initialize
@@ -498,31 +513,239 @@ watchEffect(() => {
 })
 </script>
 
-<style scoped>
-.dish-details-wrapper {
-  padding-bottom: 120px; /* Add padding to prevent content from being hidden by the sticky footer */
+<style scoped lang="scss">
+@use '~/assets/scss/abstracts/variables' as *;
+
+.dish-detail {
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
 }
 
-.hero-image {
+.dish-detail__loading,
+.dish-detail__error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: $space-6;
+}
+
+.dish-detail__spinner {
+  text-align: center;
+}
+
+.dish-detail__error-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.dish-detail__error-title {
+  color: var(--text-primary);
+  margin-bottom: $space-4;
+}
+
+.dish-detail__error-text {
+  color: var(--text-secondary);
+  margin-bottom: $space-8;
+}
+
+.dish-detail__error-actions {
+  display: flex;
+  gap: $space-4;
+  justify-content: center;
+}
+
+.dish-detail__content-wrapper {
+  padding-bottom: 120px;
+}
+
+.dish-detail__header {
+  padding: $space-4 $space-6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-primary); // Make header solid
+}
+
+.dish-detail__nav {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+}
+
+.dish-detail__title {
+  color: var(--text-primary);
+}
+
+.dish-detail__actions {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.dish-detail__sheet {
+  margin-top: $space-6;
+  border-top-left-radius: $radius-xl;
+  border-top-right-radius: $radius-xl;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  
+  @media (min-width: $breakpoint-lg) {
+    flex-direction: row;
+    margin-top: $space-8;
+    max-width: $breakpoint-xl;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: $radius-xl; // Full radius on desktop
+  }
+}
+
+.dish-detail__main {
+  padding: $space-6;
+  
+  @media (min-width: $breakpoint-lg) {
+    width: 66.666667%;
+    padding: $space-8;
+  }
+}
+
+.dish-detail__hero-image {
   width: 100%;
-  height: 40vh;
+  height: 300px;
   object-fit: cover;
+  border-radius: $radius-lg;
+  margin-bottom: $space-6;
+  
+  @media (min-width: $breakpoint-lg) {
+    height: 400px;
+  }
 }
 
-.content-sheet {
-  background-color: white;
-  margin-top: -40px;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+.dish-detail__section {
+  margin-bottom: $space-8;
 }
 
-.sticky-footer {
+.dish-detail__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-4;
+}
+
+.dish-detail__section-title {
+  color: var(--text-primary);
+  margin-bottom: $space-4;
+  
+  .dish-detail__section & {
+     margin-bottom: 0; // Reset for flex headers
+  }
+  
+  &.text-white {
+    color: white; // Explicit override if needed for dark sections
+  }
+}
+
+.dish-detail__description {
+  color: var(--text-secondary);
+  line-height: $leading-relaxed;
+}
+
+.dish-detail__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.dish-detail__sidebar {
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-secondary); // Slight contrast for sidebar
+  
+  @media (min-width: $breakpoint-lg) {
+    width: 33.333333%;
+    border-top: none;
+    border-left: 1px solid var(--border-primary);
+  }
+}
+
+.dish-detail__sidebar-content {
+  padding: $space-6;
+  position: sticky;
+  top: 0;
+}
+
+.dish-detail__price-block {
+  margin-bottom: $space-6;
+}
+
+.dish-detail__price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-4;
+}
+
+.dish-detail__calories {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.dish-detail__rating {
+  display: flex;
+  align-items: center;
+  gap: $space-1;
+}
+
+.dish-detail__option {
+  margin-bottom: $space-6;
+}
+
+.dish-detail__option-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-3;
+}
+
+.dish-detail__total {
+  margin-bottom: $space-6;
+  padding: $space-4;
+  border-radius: $radius-xl;
+  border: 1px solid var(--border-primary);
+}
+
+.dish-detail__total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dish-detail__sticky-footer {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20px;
-  background-color: white;
+  padding: $space-4;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  
+  @media (min-width: $breakpoint-lg) {
+    display: none; // Hide on desktop if actions are in sidebar
+  }
+}
+
+.dish-detail__footer-actions {
+  display: flex;
+  gap: $space-2;
+  margin-bottom: $space-4;
+}
+
+.dish-detail__related {
+  padding: $space-6;
+  border-top: 1px solid var(--border-primary);
+  margin-top: $space-8;
+  background: var(--bg-primary);
 }
 </style>

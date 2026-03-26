@@ -1,13 +1,13 @@
 import { computed, readonly } from 'vue'
 import { storeToRefs } from 'pinia'
-import type { CartItem, MenuItem, CreateOrderDto, CustomerInfo } from '~/types'
+import type { CartItem, MenuItemUI, CreateOrderDto, CustomerInfo } from '~/types'
 import { useCartStore } from '~/stores/cart'
 import { useOrderStore } from '~/stores/order'
 
 export function useCart() {
   const cartStore = useCartStore()
   const orderStore = useOrderStore()
-  
+
   const {
     items,
     loading,
@@ -19,8 +19,8 @@ export function useCart() {
   } = storeToRefs(cartStore)
 
   // Actions
-  const addItem = (menuItem: MenuItem, quantity: number = 1, customizations?: Record<string, any>) => {
-    cartStore.addItem(menuItem, quantity, customizations)
+  const addItem = (menuItem: MenuItemUI, quantity: number = 1, customizations?: Record<string, any>) => {
+    cartStore.addItem(menuItem, quantity, [], customizations)
   }
 
   const removeItem = (menuItemId: string, customizations?: Record<string, any>) => {
@@ -36,7 +36,7 @@ export function useCart() {
   }
 
   const restoreCart = () => {
-    cartStore.restoreCart()
+    cartStore._restoreFromStorage()
   }
 
   // Computed
@@ -85,6 +85,7 @@ export function useCart() {
         customizations: item.customizations,
       })),
       customerInfo,
+      paymentMethod: 'CASH', // Default or from UI
       notes,
     }
 
@@ -150,11 +151,7 @@ export function useCart() {
         deliveryAddress,
       })
 
-      if (response.success && response.data) {
-        return response.data
-      }
-
-      throw new Error(response.message || 'Failed to estimate delivery time')
+      return response
     } catch (error) {
       console.error('Failed to estimate delivery time:', error)
       throw error

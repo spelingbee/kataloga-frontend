@@ -127,12 +127,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Order, OrderStatus as OrderStatusEnum } from '~/types'
+import type { OrderUI } from '~/types'
+import { OrderStatus as OrderStatusEnum } from '~/types'
 import { useTenant } from '~/composables/useTenant'
 
 // Props & Emits
 interface Props {
-  order: Order
+  order: OrderUI
   showActions?: boolean
   loading?: boolean
 }
@@ -470,7 +471,7 @@ const formatEstimatedTime = (minutes: number): string => {
     background: var(--color-success);
     
     &:hover {
-      background: #16a34a;
+      background: $color-success-dark;
     }
   }
 }

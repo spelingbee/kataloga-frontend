@@ -112,16 +112,34 @@ export default defineNuxtPlugin(() => {
     // Show user-friendly error message
     const errorMessage = document.createElement('div')
     errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50'
-    errorMessage.innerHTML = `
-      <div class="flex items-center gap-2">
-        <span>⚠️</span>
-        <div>
-          <p class="font-medium">Map Error</p>
-          <p class="text-sm opacity-90">Unable to ${operation}. Please try again.</p>
-        </div>
-        <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white opacity-75 hover:opacity-100">✕</button>
-      </div>
-    `
+    
+    // Create elements securely without innerHTML
+    const flexContainer = document.createElement('div')
+    flexContainer.className = 'flex items-center gap-2'
+    
+    const iconSpan = document.createElement('span')
+    iconSpan.textContent = '⚠️'
+    flexContainer.appendChild(iconSpan)
+    
+    const textContainer = document.createElement('div')
+    const titleP = document.createElement('p')
+    titleP.className = 'font-medium'
+    titleP.textContent = 'Map Error'
+    textContainer.appendChild(titleP)
+    
+    const msgP = document.createElement('p')
+    msgP.className = 'text-sm opacity-90'
+    msgP.textContent = `Unable to ${operation}. Please try again.`
+    textContainer.appendChild(msgP)
+    flexContainer.appendChild(textContainer)
+    
+    const closeBtn = document.createElement('button')
+    closeBtn.className = 'ml-2 text-white opacity-75 hover:opacity-100'
+    closeBtn.textContent = '✕'
+    closeBtn.onclick = () => errorMessage.remove()
+    flexContainer.appendChild(closeBtn)
+    
+    errorMessage.appendChild(flexContainer)
     
     document.body.appendChild(errorMessage)
     

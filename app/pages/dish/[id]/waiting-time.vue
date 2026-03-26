@@ -5,7 +5,7 @@
       <div class="flex items-center gap-4">
         <BaseButton 
           variant="ghost" 
-          @click="$router.go(-1)"
+          @click="router.go(-1)"
         >
           <BaseIcon name="arrow-left" size="md" />
         </BaseButton>
@@ -277,7 +277,7 @@ class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
         <BaseButton 
           variant="ghost"
           size="lg"
-          @click="$router.push(`/dish/${dishId}`)"
+          @click="router.push(`/dish/${dishId}`)"
         >
           Back to Dish
         </BaseButton>
@@ -287,7 +287,8 @@ class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types/ui'
+import { createMenuItemUI } from '~/types/utils/converters'
 
 // Page setup
 definePageMeta({
@@ -302,11 +303,15 @@ const router = useRouter()
 const loading = ref(true)
 const selectedTimeOption = ref('standard')
 
+// Timer IDs for cleanup on unmount (prevent memory leaks)
+const kitchenStatusIntervalId = ref<number | null>(null)
+const reminderTimeoutId = ref<number | null>(null)
+
 // Get dish ID from route
 const dishId = computed(() => route.params.id as string)
 
 // Mock dish data
-const dish = ref<MenuItem | null>(null)
+const dish = ref<MenuItemUI | null>(null)
 
 // Mock preparation data
 const currentPrepTime = ref(18)
@@ -433,7 +438,7 @@ const loadDish = async () => {
     // Mock API call
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    dish.value = {
+    dish.value = createMenuItemUI({
       id: dishId.value,
       name: 'Delicious Burger',
       description: 'A mouth-watering burger',
@@ -441,7 +446,7 @@ const loadDish = async () => {
       categoryId: 'fastfood',
       isActive: true,
       preparationTime: currentPrepTime.value
-    }
+    })
     
     // Simulate real-time updates
     updateKitchenStatus()
@@ -454,8 +459,8 @@ const loadDish = async () => {
 }
 
 const updateKitchenStatus = () => {
-  // Simulate real-time kitchen status updates
-  setInterval(() => {
+  // Store interval ID for cleanup
+  kitchenStatusIntervalId.value = window.setInterval(() => {
     // Randomly update kitchen metrics
     queueLength.value = Math.max(0, queueLength.value + Math.floor(Math.random() * 3) - 1)
     kitchenLoad.value = Math.max(20, Math.min(100, kitchenLoad.value + Math.floor(Math.random() * 10) - 5))
@@ -488,7 +493,8 @@ const setReminder = () => {
   if ('Notification' in window) {
     Notification.requestPermission().then(permission => {
       if (permission === 'granted') {
-        setTimeout(() => {
+        // Store timeout ID for cleanup
+        reminderTimeoutId.value = window.setTimeout(() => {
           new Notification('Order Ready Soon!', {
             body: `Your ${dish.value?.name} will be ready in 5 minutes`,
             icon: '/icon-192x192.png'
@@ -511,9 +517,16 @@ onMounted(() => {
   loadDish()
 })
 
-// Cleanup interval on unmount
+// Cleanup interval and timeout on unmount to prevent memory leaks
 onUnmounted(() => {
-  // Clear any intervals if needed
+  if (kitchenStatusIntervalId.value !== null) {
+    window.clearInterval(kitchenStatusIntervalId.value)
+    kitchenStatusIntervalId.value = null
+  }
+  if (reminderTimeoutId.value !== null) {
+    window.clearTimeout(reminderTimeoutId.value)
+    reminderTimeoutId.value = null
+  }
 })
 
 // Update page title

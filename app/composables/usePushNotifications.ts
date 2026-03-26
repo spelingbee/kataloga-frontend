@@ -1,3 +1,6 @@
+import { ref, computed, watch, onMounted, readonly } from 'vue'
+import { useTenantStore } from '~/stores/tenant'
+
 export function usePushNotifications() {
   const isSupported = ref(false)
   const isSubscribed = ref(false)
@@ -63,13 +66,13 @@ export function usePushNotifications() {
 
       // Check if already subscribed
       let pushSubscription = await registration.pushManager.getSubscription()
-      
+
       if (!pushSubscription) {
         // Get VAPID public key from notification service
         const { useNotificationService } = await import('~/services/notification.service')
         const notificationService = useNotificationService()
         const vapidKey = await notificationService.getVapidPublicKey()
-        
+
         if (!vapidKey) {
           console.error('Failed to get VAPID public key')
           return false
@@ -86,7 +89,7 @@ export function usePushNotifications() {
       const { useNotificationService } = await import('~/services/notification.service')
       const notificationService = useNotificationService()
       const registered = await notificationService.registerPushSubscription(pushSubscription)
-      
+
       if (registered) {
         subscription.value = pushSubscription
         isSubscribed.value = true
@@ -116,12 +119,12 @@ export function usePushNotifications() {
 
       // Unsubscribe from browser
       const success = await subscription.value.unsubscribe()
-      
+
       if (success) {
         subscription.value = null
         isSubscribed.value = false
       }
-      
+
       return success
     } catch (error) {
       console.error('Failed to unsubscribe from push notifications:', error)
@@ -211,14 +214,14 @@ export function usePushNotifications() {
     try {
       const { useNotificationService } = await import('~/services/notification.service')
       const notificationService = useNotificationService()
-      
+
       // Re-register subscription with new tenant context
       const success = await notificationService.updatePushSubscriptionForTenant()
-      
+
       if (success) {
         console.log('Push subscription updated for tenant:', currentTenantId.value)
       }
-      
+
       return success
     } catch (error) {
       console.error('Failed to update subscription for tenant:', error)

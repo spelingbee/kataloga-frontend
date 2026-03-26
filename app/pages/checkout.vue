@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="checkout-page">
     <div class="checkout-page__container">
       <!-- Header -->
@@ -18,7 +18,7 @@
         <EmptyCart />
         <BaseButton
           variant="primary"
-          @click="navigateTo('/menu/browse')"
+          @click="router.push('/menu/browse')"
         >
           Browse Menu
         </BaseButton>
@@ -37,8 +37,12 @@
       <div v-else class="checkout-page__content">
         <CheckoutFlow
           :cart="cartStore.items"
+          :cart-total="cartStore.total"
           @complete="handleOrderComplete"
           @cancel="handleCancel"
+          @track-order="handleTrackOrder"
+          @continue-shopping="handleContinueShopping"
+          @view-orders="handleViewOrders"
         />
       </div>
     </div>
@@ -87,8 +91,9 @@ import { useNetworkStatus } from '~/composables/useNetworkStatus'
 import CheckoutFlow from '~/components/checkout/CheckoutFlow.vue'
 
 definePageMeta({
+  name: 'Checkout',
   layout: 'default',
-  middleware: ['cart-not-empty']
+  middleware: ['auth', 'cart-not-empty']
 })
 
 const cartStore = useCartStore()
@@ -103,9 +108,9 @@ const handleBack = () => {
 const creatingOrder = ref(false)
 const showErrorModal = ref(false)
 const errorMessage = ref('')
-const lastOrderData = ref<any>(null)
+const lastOrderData = ref<Record<string, unknown> | null>(null)
 
-const handleOrderComplete = async (orderData: any) => {
+const handleOrderComplete = async (orderData: Record<string, unknown>) => {
   // Validate network connection before proceeding
   const networkValid = await validateNetworkForCheckout()
   if (!networkValid) {
@@ -119,49 +124,22 @@ const handleOrderComplete = async (orderData: any) => {
   errorMessage.value = ''
 
   try {
-    // Prepare order DTO
-    const createOrderDto = {
-      items: orderData.items.map((item: any) => ({
-        productId: item.menuItem.id,
-        quantity: item.quantity,
-        price: item.menuItem.price,
-        customizations: {
-          modifiers: item.selectedModifiers,
-          notes: item.notes,
-          ...item.customizations
-        }
-      })),
-      customerInfo: {
-        name: '', // Will be filled from user profile or form
-        phone: orderData.deliveryDetails?.phone || orderData.pickupDetails?.phone || '',
-        email: '', // Optional
-        address: orderData.deliveryDetails?.address || '',
-        notes: orderData.deliveryDetails?.instructions || orderData.pickupDetails?.instructions || orderData.dineInDetails?.instructions || ''
-      },
-      deliveryAddress: orderData.deliveryDetails?.address || undefined,
-      notes: orderData.deliveryDetails?.instructions || orderData.pickupDetails?.instructions || orderData.dineInDetails?.instructions || undefined
-    }
+    // The order is already created by CheckoutFlow, so we just use the result
+    const createdOrder = orderData
 
-    // Create order through cart store
-    const response = await cartStore.createOrder(createOrderDto)
-    
-    if (response.success && response.data) {
-      // Order created successfully - cart is already cleared by cartStore.createOrder
-      
+    if (createdOrder && createdOrder.id) {
       // Navigate to order confirmation page
-      navigateTo({
+      await navigateTo({
         path: '/orders/confirmation',
-        query: { orderId: response.data.id }
+        query: { orderId: String(createdOrder.id) }
       })
     } else {
-      // Order creation failed - cart is preserved
-      throw new Error(response.message || 'Failed to create order')
+      throw new Error('Invalid order data received')
     }
-  } catch (error: any) {
-    console.error('Order creation error:', error)
-    
-    // Cart is preserved automatically (not cleared on error)
-    errorMessage.value = error.message || 'An unexpected error occurred while creating your order. Please try again.'
+  } catch (error: unknown) {
+    const err = error as Error
+    console.error('Order processing error:', err)
+    errorMessage.value = err.message || 'An unexpected error occurred. Please try again.'
     showErrorModal.value = true
   } finally {
     creatingOrder.value = false
@@ -182,6 +160,22 @@ const closeErrorModal = () => {
 
 const handleCancel = () => {
   router.push('/cart')
+}
+
+const handleTrackOrder = () => {
+  if (lastOrderData.value && lastOrderData.value.id) {
+    router.push(`/orders/${lastOrderData.value.id}`)
+  } else {
+    router.push('/orders')
+  }
+}
+
+const handleContinueShopping = () => {
+  router.push('/menu')
+}
+
+const handleViewOrders = () => {
+  router.push('/orders')
 }
 </script>
 
@@ -269,7 +263,7 @@ const handleCancel = () => {
 .checkout-page__loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: $color-overlay-heavy;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -318,7 +312,7 @@ const handleCancel = () => {
 .checkout-page__error-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: $color-overlay-heavy;
   display: flex;
   align-items: center;
   justify-content: center;

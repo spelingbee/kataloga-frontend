@@ -9,6 +9,13 @@
  */
 
 // =============================================================================
+// API RESPONSE TYPES (READONLY, BACKEND-ALIGNED)
+// =============================================================================
+
+// Export all API response types from the api directory
+export * from './api/index'
+
+// =============================================================================
 // CORE API RESPONSE TYPES (EXACT BACKEND ALIGNMENT)
 // =============================================================================
 
@@ -30,12 +37,18 @@ export interface ApiErrorDetail {
  * Matches ApiErrorDto from backend
  */
 export interface ApiError {
+  /** Error name (for Error compatibility) */
+  name?: string;
   /** Machine-readable error code (e.g., "USER_NOT_FOUND", "VALIDATION_ERROR") */
-  code: string;
+  code?: string;
   /** Human-readable error message */
   message: string;
+  /** HTTP status code (optional, may not be available in all error scenarios) */
+  status?: number;
   /** Additional error details (validation errors or supplementary information) */
   details?: ApiErrorDetail[] | Record<string, any>;
+  /** Stack trace (for Error compatibility) */
+  stack?: string;
 }
 
 /**
@@ -121,6 +134,8 @@ export interface RequestOptions {
   headers?: Record<string, string>;
   /** Query parameters */
   params?: Record<string, any>;
+  /** Request credentials (cookies) */
+  credentials?: RequestCredentials;
 }
 
 // =============================================================================

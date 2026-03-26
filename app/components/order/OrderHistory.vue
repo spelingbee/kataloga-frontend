@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="order-history">
     <!-- Loading State -->
     <div v-if="loading && !orders.length" class="order-history__loading">
@@ -164,12 +164,12 @@
 </template>
 
 <script setup lang="ts">
-import type { Order, MenuItem } from '~/types'
+import type { OrderUI, MenuItemUI } from '~/types'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 
 interface Props {
-  orders: Order[]
+  orders: OrderUI[]
   loading?: boolean
   currentPage?: number
   totalPages?: number
@@ -260,7 +260,7 @@ const goToPage = (page: number): void => {
   }
 }
 
-const handleReorder = async (order: Order): Promise<void> => {
+const handleReorder = async (order: OrderUI): Promise<void> => {
   reorderingOrderId.value = order.id
   
   try {
@@ -292,7 +292,7 @@ const handleReorder = async (order: Order): Promise<void> => {
   }
 }
 
-const validateOrderItems = async (order: Order) => {
+const validateOrderItems = async (order: OrderUI) => {
   const priceChanges: Array<{ itemName: string; oldPrice: number; newPrice: number }> = []
   const unavailableItems: string[] = []
   
@@ -322,7 +322,7 @@ const validateOrderItems = async (order: Order) => {
   }
 }
 
-const addOrderToCart = async (order: Order): Promise<void> => {
+const addOrderToCart = async (order: OrderUI): Promise<void> => {
   for (const orderItem of order.items) {
     // Get current menu item to ensure we have latest data
     const currentMenuItem = await menuStore.getMenuItemById(orderItem.menuItemId)
@@ -502,37 +502,37 @@ const closeReorderNotification = (): void => {
   text-transform: uppercase;
 
   &--pending {
-    background: rgba(255, 107, 53, 0.1);
+    background: rgba(var(--color-warning-rgb), 0.1);
     color: var(--color-warning);
   }
 
   &--confirmed {
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(var(--color-info-rgb), 0.1);
     color: var(--color-info);
   }
 
   &--preparing {
-    background: rgba(255, 107, 53, 0.1);
+    background: rgba(var(--color-warning-rgb), 0.1);
     color: var(--color-warning);
   }
 
   &--ready {
-    background: rgba(16, 185, 129, 0.1);
+    background: rgba(var(--color-success-rgb), 0.1);
     color: var(--color-success);
   }
 
   &--out_for_delivery {
-    background: rgba(59, 130, 246, 0.1);
+    background: rgba(var(--color-info-rgb), 0.1);
     color: var(--color-info);
   }
 
   &--delivered {
-    background: rgba(16, 185, 129, 0.1);
+    background: rgba(var(--color-success-rgb), 0.1);
     color: var(--color-success);
   }
 
   &--cancelled {
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(var(--color-error-rgb), 0.1);
     color: var(--color-error);
   }
 }
@@ -697,7 +697,7 @@ const closeReorderNotification = (): void => {
 .order-history__modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: $color-overlay;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -795,7 +795,7 @@ const closeReorderNotification = (): void => {
   }
 
   &--unavailable {
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(var(--color-error-rgb), 0.1);
     color: var(--color-error);
   }
 }

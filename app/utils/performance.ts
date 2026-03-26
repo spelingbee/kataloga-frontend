@@ -1,4 +1,5 @@
 // Performance utilities for bundle analysis and optimization
+import { safeArrayAccess } from '~/types/utils/type-guards'
 
 export interface BundleAnalysis {
   chunks: {
@@ -60,8 +61,10 @@ export class PerformanceAnalyzer {
 
     // Largest Contentful Paint
     this.createObserver(['largest-contentful-paint'], (entries) => {
-      const lastEntry = entries[entries.length - 1]
-      this.updateVital('lcp', lastEntry.startTime)
+      const lastEntry = safeArrayAccess(entries, entries.length - 1)
+      if (lastEntry) {
+        this.updateVital('lcp', lastEntry.startTime)
+      }
     })
 
     // Cumulative Layout Shift
@@ -121,7 +124,10 @@ export class PerformanceAnalyzer {
       return null
     }
 
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+    const navigationEntries = performance.getEntriesByType('navigation')
+    const navigation = safeArrayAccess(navigationEntries, 0) as PerformanceNavigationTiming | undefined
+    if (!navigation) return null
+    
     const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
 
     const chunks = resources
@@ -159,7 +165,10 @@ export class PerformanceAnalyzer {
       this.metrics = this.initializeMetrics()
     }
 
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+    const navigationEntries = performance.getEntriesByType('navigation')
+    const navigation = safeArrayAccess(navigationEntries, 0) as PerformanceNavigationTiming | undefined
+    if (!navigation) return null
+    
     const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
 
     // Update navigation metrics

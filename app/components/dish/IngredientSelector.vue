@@ -9,14 +9,14 @@
         <BaseBadge
           v-if="ingredient.isDefault"
           variant="success"
-          size="xs"
+          size="sm"
         >
           Default
         </BaseBadge>
         <BaseBadge
           v-if="ingredient.price && ingredient.price > 0"
           variant="secondary"
-          size="xs"
+          size="sm"
         >
           +{{ formatPrice(ingredient.price) }}
         </BaseBadge>

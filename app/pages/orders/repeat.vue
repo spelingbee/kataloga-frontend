@@ -319,7 +319,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Order, MenuItem, OrderItem } from '~/types'
+import type { OrderUI, MenuItemUI, OrderItemUI } from '~/types'
+import { createMenuItemUI } from '~/types/utils/converters'
 
 // Stores
 import { useOrderStore } from '~/stores/order'
@@ -340,11 +341,11 @@ const cartStore = useCartStore()
 const router = useRouter()
 
 // Reactive state
-const selectedOrder = ref<Order | null>(null)
-const customizableItems = ref<OrderItem[]>([])
+const selectedOrder = ref<OrderUI | null>(null)
+const customizableItems = ref<OrderItemUI[]>([])
 
 // Mock data
-const recentOrders = ref<Order[]>([
+const recentOrders = ref<OrderUI[]>([
   {
     id: '12345',
     orderNumber: 'ORD-12345',
@@ -353,23 +354,80 @@ const recentOrders = ref<Order[]>([
     customerId: 'customer-123',
     orderType: 'delivery' as const,
     createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    estimatedTime: 25,
+    deliveryAddress: '123 Main St, Apt 4B, New York, NY 10001',
+    subtotal: 20.98,
+    deliveryFee: 2.99,
+    discount: 0,
+    tax: 1.68,
     customerInfo: { name: 'John Doe', phone: '+1234567890' },
     items: [
       {
         id: '1',
         menuItemId: '1',
-        menuItem: { id: '1', name: 'Delicious Burger', description: 'Tasty burger', price: 15.99, categoryId: 'fastfood', isActive: true },
+        menuItem: createMenuItemUI({
+          id: '1',
+          name: 'Delicious Burger',
+          description: 'Tasty burger',
+          price: 15.99,
+          imageUrl: undefined,
+          categoryId: 'fastfood',
+          menuId: 'default-menu',
+          isActive: true,
+          isAvailable: true,
+          stockQuantity: 100,
+          calories: null,
+          preparationTime: null,
+          cookingTime: null,
+          ingredients: [],
+          allergens: [],
+          nutritionInfo: null,
+          dietary: [],
+          badges: [],
+          modifierGroups: [],
+          isNew: false,
+          isPopular: false,
+          category: null
+        }),
         quantity: 1,
         price: 15.99,
-        subtotal: 15.99
+        subtotal: 15.99,
+        customizations: null,
+        selectedModifiers: []
       },
       {
         id: '2',
         menuItemId: '2',
-        menuItem: { id: '2', name: 'Crispy Fries', description: 'Golden fries', price: 4.99, categoryId: 'fastfood', isActive: true },
+        menuItem: createMenuItemUI({
+          id: '2',
+          name: 'Crispy Fries',
+          description: 'Golden fries',
+          price: 4.99,
+          imageUrl: undefined,
+          categoryId: 'fastfood',
+          menuId: 'default-menu',
+          isActive: true,
+          isAvailable: true,
+          stockQuantity: 100,
+          calories: null,
+          preparationTime: null,
+          cookingTime: null,
+          ingredients: [],
+          allergens: [],
+          nutritionInfo: null,
+          dietary: [],
+          badges: [],
+          modifierGroups: [],
+          isNew: false,
+          isPopular: false,
+          category: null
+        }),
         quantity: 1,
         price: 4.99,
-        subtotal: 4.99
+        subtotal: 4.99,
+        customizations: null,
+        selectedModifiers: []
       }
     ]
   },
@@ -381,23 +439,80 @@ const recentOrders = ref<Order[]>([
     customerId: 'customer-123',
     orderType: 'delivery' as const,
     createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+    updatedAt: new Date(Date.now() - 172800000).toISOString(),
+    estimatedTime: 25,
+    deliveryAddress: '123 Main St, Apt 4B, New York, NY 10001',
+    subtotal: 18.98,
+    deliveryFee: 2.99,
+    discount: 0,
+    tax: 1.52,
     customerInfo: { name: 'John Doe', phone: '+1234567890' },
     items: [
       {
         id: '3',
         menuItemId: '3',
-        menuItem: { id: '3', name: 'Caesar Salad', description: 'Fresh salad', price: 12.99, categoryId: 'salads', isActive: true },
+        menuItem: createMenuItemUI({
+          id: '3',
+          name: 'Caesar Salad',
+          description: 'Fresh salad',
+          price: 12.99,
+          imageUrl: undefined,
+          categoryId: 'salads',
+          menuId: 'default-menu',
+          isActive: true,
+          isAvailable: true,
+          stockQuantity: 100,
+          calories: null,
+          preparationTime: null,
+          cookingTime: null,
+          ingredients: [],
+          allergens: [],
+          nutritionInfo: null,
+          dietary: [],
+          badges: [],
+          modifierGroups: [],
+          isNew: false,
+          isPopular: false,
+          category: null
+        }),
         quantity: 1,
         price: 12.99,
-        subtotal: 12.99
+        subtotal: 12.99,
+        customizations: null,
+        selectedModifiers: []
       },
       {
         id: '4',
         menuItemId: '4',
-        menuItem: { id: '4', name: 'Garlic Bread', description: 'Crispy bread', price: 5.99, categoryId: 'appetizers', isActive: true },
+        menuItem: createMenuItemUI({
+          id: '4',
+          name: 'Garlic Bread',
+          description: 'Crispy bread',
+          price: 5.99,
+          imageUrl: undefined,
+          categoryId: 'appetizers',
+          menuId: 'default-menu',
+          isActive: true,
+          isAvailable: true,
+          stockQuantity: 100,
+          calories: null,
+          preparationTime: null,
+          cookingTime: null,
+          ingredients: [],
+          allergens: [],
+          nutritionInfo: null,
+          dietary: [],
+          badges: [],
+          modifierGroups: [],
+          isNew: false,
+          isPopular: false,
+          category: null
+        }),
         quantity: 1,
         price: 5.99,
-        subtotal: 5.99
+        subtotal: 5.99,
+        customizations: null,
+        selectedModifiers: []
       }
     ]
   }
@@ -428,11 +543,103 @@ const favoriteCombos = ref([
   }
 ])
 
-const suggestions = ref<MenuItem[]>([
-  { id: '7', name: 'Chocolate Cake', description: 'Rich dessert', price: 6.99, categoryId: 'desserts', isActive: true },
-  { id: '8', name: 'Ice Cream', description: 'Vanilla ice cream', price: 4.99, categoryId: 'desserts', isActive: true },
-  { id: '9', name: 'Coffee', description: 'Fresh coffee', price: 2.99, categoryId: 'drinks', isActive: true },
-  { id: '10', name: 'Smoothie', description: 'Fruit smoothie', price: 5.99, categoryId: 'drinks', isActive: true }
+const suggestions = ref<MenuItemUI[]>([
+  createMenuItemUI({
+    id: '7',
+    name: 'Chocolate Cake',
+    description: 'Rich dessert',
+    price: 6.99,
+    imageUrl: undefined,
+    categoryId: 'desserts',
+    menuId: 'default-menu',
+    isActive: true,
+    isAvailable: true,
+    stockQuantity: 100,
+    calories: null,
+    preparationTime: null,
+    cookingTime: null,
+    ingredients: [],
+    allergens: [],
+    nutritionInfo: null,
+    dietary: [],
+    badges: [],
+    modifierGroups: [],
+    isNew: false,
+    isPopular: false,
+    category: null
+  }),
+  createMenuItemUI({
+    id: '8',
+    name: 'Ice Cream',
+    description: 'Vanilla ice cream',
+    price: 4.99,
+    imageUrl: undefined,
+    categoryId: 'desserts',
+    menuId: 'default-menu',
+    isActive: true,
+    isAvailable: true,
+    stockQuantity: 100,
+    calories: null,
+    preparationTime: null,
+    cookingTime: null,
+    ingredients: [],
+    allergens: [],
+    nutritionInfo: null,
+    dietary: [],
+    badges: [],
+    modifierGroups: [],
+    isNew: false,
+    isPopular: false,
+    category: null
+  }),
+  createMenuItemUI({
+    id: '9',
+    name: 'Coffee',
+    description: 'Fresh coffee',
+    price: 2.99,
+    imageUrl: undefined,
+    categoryId: 'drinks',
+    menuId: 'default-menu',
+    isActive: true,
+    isAvailable: true,
+    stockQuantity: 100,
+    calories: null,
+    preparationTime: null,
+    cookingTime: null,
+    ingredients: [],
+    allergens: [],
+    nutritionInfo: null,
+    dietary: [],
+    badges: [],
+    modifierGroups: [],
+    isNew: false,
+    isPopular: false,
+    category: null
+  }),
+  createMenuItemUI({
+    id: '10',
+    name: 'Smoothie',
+    description: 'Fruit smoothie',
+    price: 5.99,
+    imageUrl: undefined,
+    categoryId: 'drinks',
+    menuId: 'default-menu',
+    isActive: true,
+    isAvailable: true,
+    stockQuantity: 100,
+    calories: null,
+    preparationTime: null,
+    cookingTime: null,
+    ingredients: [],
+    allergens: [],
+    nutritionInfo: null,
+    dietary: [],
+    badges: [],
+    modifierGroups: [],
+    isNew: false,
+    isPopular: false,
+    category: null
+  })
 ])
 
 // Computed
@@ -472,9 +679,14 @@ const formatPrice = (price: number) => {
   }).format(price)
 }
 
-const selectOrder = (order: Order) => {
+const selectOrder = (order: OrderUI) => {
   selectedOrder.value = order
-  customizableItems.value = [...order.items]
+  // Create mutable copies of the items
+  customizableItems.value = order.items.map(item => ({
+    ...item,
+    menuItem: { ...item.menuItem },
+    selectedModifiers: [...item.selectedModifiers]
+  }))
 }
 
 const clearSelection = () => {
@@ -482,7 +694,7 @@ const clearSelection = () => {
   customizableItems.value = []
 }
 
-const reorderExact = (order: Order) => {
+const reorderExact = (order: OrderUI) => {
   // Add all items from the order to cart with exact quantities
   order.items.forEach(item => {
     cartStore.addItem(item.menuItem, item.quantity)
@@ -494,14 +706,30 @@ const reorderExact = (order: Order) => {
 const reorderCombo = (combo: any) => {
   // Mock adding combo items to cart
   combo.items.forEach((item: any) => {
-    const menuItem: MenuItem = {
+    const menuItem: MenuItemUI = createMenuItemUI({
       id: item.id,
       name: item.name,
       description: `${item.name} from favorite combo`,
       price: combo.totalPrice / combo.items.length, // Approximate price
+      imageUrl: undefined,
       categoryId: 'combo',
-      isActive: true
-    }
+      menuId: 'default-menu',
+      isActive: true,
+      isAvailable: true,
+      stockQuantity: 100,
+      calories: null,
+      preparationTime: null,
+      cookingTime: null,
+      ingredients: [],
+      allergens: [],
+      nutritionInfo: null,
+      dietary: [],
+      badges: [],
+      modifierGroups: [],
+      isNew: false,
+      isPopular: false,
+      category: null
+    })
     cartStore.addItem(menuItem, item.quantity)
   })
   
@@ -511,16 +739,24 @@ const reorderCombo = (combo: any) => {
 const increaseQuantity = (index: number) => {
   const item = customizableItems.value[index]
   if (item) {
-    item.quantity++
-    item.subtotal = item.price * item.quantity
+    // Create a new object to avoid readonly issues
+    customizableItems.value[index] = {
+      ...item,
+      quantity: item.quantity + 1,
+      subtotal: item.price * (item.quantity + 1)
+    }
   }
 }
 
 const decreaseQuantity = (index: number) => {
   const item = customizableItems.value[index]
   if (item && item.quantity > 0) {
-    item.quantity--
-    item.subtotal = item.price * item.quantity
+    // Create a new object to avoid readonly issues
+    customizableItems.value[index] = {
+      ...item,
+      quantity: item.quantity - 1,
+      subtotal: item.price * (item.quantity - 1)
+    }
   }
 }
 
@@ -530,7 +766,12 @@ const removeItem = (index: number) => {
 
 const resetCustomization = () => {
   if (selectedOrder.value) {
-    customizableItems.value = [...selectedOrder.value.items]
+    // Create mutable copies of the items
+    customizableItems.value = selectedOrder.value.items.map(item => ({
+      ...item,
+      menuItem: { ...item.menuItem },
+      selectedModifiers: [...item.selectedModifiers]
+    }))
   }
 }
 
@@ -544,7 +785,7 @@ const addCustomOrderToCart = () => {
   router.push('/cart')
 }
 
-const addSuggestionToCart = (item: MenuItem) => {
+const addSuggestionToCart = (item: MenuItemUI) => {
   cartStore.addItem(item, 1)
   // Show brief success message or animation
 }

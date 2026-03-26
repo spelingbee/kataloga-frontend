@@ -58,7 +58,7 @@ async function testApiConnectivity() {
     },
     {
       name: 'Menu endpoint',
-      url: `${API_BASE_URL}/api/menu`,
+      url: `${API_BASE_URL}/api/menus`,
       method: 'GET'
     },
     {

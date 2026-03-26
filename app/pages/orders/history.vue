@@ -61,7 +61,8 @@
 </template>
 
 <script setup lang="ts">
-import type { Order, OrderStatus } from '~/types'
+import type { OrderUI } from '~/types'
+import { OrderStatus } from '~/types'
 import { useOrderStore } from '~/stores/order'
 import { useAuthStore } from '~/stores/auth'
 import OrderHistory from '~/components/order/OrderHistory.vue'

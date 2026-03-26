@@ -73,6 +73,8 @@ const handleTouchStart = (event: TouchEvent) => {
   if (!props.swipeEnabled) return
   
   const touch = event.touches[0]
+  if (!touch) return
+
   touchStartX.value = touch.clientX
   touchStartY.value = touch.clientY
   touchStartTime.value = Date.now()
@@ -90,9 +92,12 @@ const handleTouchMove = (event: TouchEvent) => {
     const scrollHeight = element.scrollHeight
     const height = element.clientHeight
     
-    if (scrollTop === 0 && event.touches[0].clientY > touchStartY.value) {
+    const touch = event.touches[0]
+    if (!touch) return
+
+    if (scrollTop === 0 && touch.clientY > touchStartY.value) {
       event.preventDefault()
-    } else if (scrollTop + height >= scrollHeight && event.touches[0].clientY < touchStartY.value) {
+    } else if (scrollTop + height >= scrollHeight && touch.clientY < touchStartY.value) {
       event.preventDefault()
     }
   }
@@ -102,6 +107,7 @@ const handleTouchEnd = (event: TouchEvent) => {
   if (!props.swipeEnabled) return
   
   const touch = event.changedTouches[0]
+  if (!touch) return
   const deltaX = touch.clientX - touchStartX.value
   const deltaY = touch.clientY - touchStartY.value
   const deltaTime = Date.now() - touchStartTime.value
@@ -153,8 +159,6 @@ const handleTouchEnd = (event: TouchEvent) => {
 .touch-optimized-container {
   // Base touch optimizations
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  user-select: none;
   
   // Touch target sizing
   &--small {
@@ -196,9 +200,6 @@ const handleTouchEnd = (event: TouchEvent) => {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     
-    // Momentum scrolling for iOS
-    overflow-y: auto;
-    
     // Snap scrolling support
     &.scroll-snap {
       scroll-snap-type: y mandatory;
@@ -212,32 +213,6 @@ const handleTouchEnd = (event: TouchEvent) => {
   // Prevent scroll bouncing
   &--no-bounce {
     overscroll-behavior: contain;
-    
-    // iOS specific bounce prevention
-    @supports (-webkit-overflow-scrolling: touch) {
-      position: relative;
-      overflow: hidden;
-      
-      &::before {
-        content: '';
-        position: absolute;
-        top: -1px;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: transparent;
-      }
-      
-      &::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: transparent;
-      }
-    }
   }
   
   // Swipe gesture support

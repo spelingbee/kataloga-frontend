@@ -19,7 +19,7 @@
           {{ error }}
         </AppText>
         <div class="flex gap-4 justify-center">
-          <BaseButton @click="$router.go(-1)">
+          <BaseButton @click="router.go(-1)">
             Go Back
           </BaseButton>
           <NuxtLink to="/orders">
@@ -38,7 +38,7 @@
         <div class="flex items-center gap-4 mb-4">
           <BaseButton 
             variant="ghost" 
-            @click="$router.go(-1)"
+            @click="router.go(-1)"
           >
             <BaseIcon name="arrow-left" size="md" />
           </BaseButton>
@@ -433,14 +433,16 @@
 </template>
 
 <script setup lang="ts">
-import type { Order } from '~/types'
+import type { OrderUI } from '~/types'
+import { createMenuItemUI } from '~/types/utils/converters'
 import { useOrderStore } from '~/stores/order'
 import { useCartStore } from '~/stores/cart'
 import { OrderStatus } from '~/types'
 
 // Page setup
 definePageMeta({
-  title: 'Order Details - Menu Ordering App'
+  title: 'Order Details - Menu Ordering App',
+  middleware: ['auth']
 })
 
 // Route and stores
@@ -465,7 +467,7 @@ const issueForm = ref({
 const orderId = computed(() => route.params.id as string)
 
 // Mock order data
-const order = ref<Order | null>(null)
+const order = ref<OrderUI | null>(null)
 
 // Tab configuration
 const tabs = [
@@ -487,11 +489,11 @@ const commonIssues = [
 // Computed
 const subtotal = computed(() => {
   if (!order.value) return 0
-  return order.value.items.reduce((sum, item) => sum + item.subtotal, 0)
+  return order.value.subtotal
 })
 
-const deliveryFee = computed(() => 2.99)
-const tax = computed(() => subtotal.value * 0.08)
+const deliveryFee = computed(() => order.value?.deliveryFee ?? 0)
+const tax = computed(() => order.value?.tax ?? 0)
 
 const canCancelOrder = computed(() => {
   return order.value && ['PENDING', 'CONFIRMED'].includes(order.value.status)
@@ -506,8 +508,8 @@ const loadOrder = async () => {
     // Mock API call
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Create mock order data
-    order.value = {
+    // Create mock order data - cast to OrderUI to allow mutation
+    const mockOrder: OrderUI = {
       id: orderId.value,
       orderNumber: `ORD-${orderId.value.slice(-6).toUpperCase()}`,
       status: OrderStatus.DELIVERED,
@@ -515,8 +517,13 @@ const loadOrder = async () => {
       customerId: 'customer-123',
       orderType: 'delivery' as const,
       createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+      updatedAt: new Date(Date.now() - 86400000).toISOString(),
       estimatedTime: 25,
       deliveryAddress: '123 Main St, Apt 4B, New York, NY 10001',
+      subtotal: 20.98,
+      deliveryFee: 2.99,
+      discount: 0,
+      tax: 1.68,
       customerInfo: {
         name: 'John Doe',
         phone: '+1 (555) 123-4567',
@@ -527,35 +534,73 @@ const loadOrder = async () => {
         {
           id: '1',
           menuItemId: '1',
-          menuItem: {
+          menuItem: createMenuItemUI({
             id: '1',
             name: 'Delicious Burger',
             description: 'A mouth-watering burger with fresh ingredients',
             price: 15.99,
+            imageUrl: undefined,
             categoryId: 'fastfood',
-            isActive: true
-          },
+            menuId: 'default-menu',
+            isActive: true,
+            isAvailable: true,
+            stockQuantity: 100,
+            calories: null,
+            preparationTime: null,
+            cookingTime: null,
+            ingredients: [],
+            allergens: [],
+            nutritionInfo: null,
+            dietary: [],
+            badges: [],
+            modifierGroups: [],
+            isNew: false,
+            isPopular: false,
+            category: null
+          }),
           quantity: 1,
           price: 15.99,
-          subtotal: 15.99
+          subtotal: 15.99,
+          customizations: null,
+          selectedModifiers: []
         },
         {
           id: '2',
           menuItemId: '2',
-          menuItem: {
+          menuItem: createMenuItemUI({
             id: '2',
             name: 'Crispy Fries',
             description: 'Golden crispy french fries',
             price: 4.99,
+            imageUrl: undefined,
             categoryId: 'fastfood',
-            isActive: true
-          },
+            menuId: 'default-menu',
+            isActive: true,
+            isAvailable: true,
+            stockQuantity: 100,
+            calories: null,
+            preparationTime: null,
+            cookingTime: null,
+            ingredients: [],
+            allergens: [],
+            nutritionInfo: null,
+            dietary: [],
+            badges: [],
+            modifierGroups: [],
+            isNew: false,
+            isPopular: false,
+            category: null
+          }),
           quantity: 1,
           price: 4.99,
-          subtotal: 4.99
+          subtotal: 4.99,
+          customizations: null,
+          selectedModifiers: []
         }
       ]
     }
+    
+    order.value = mockOrder
     
   } catch (err) {
     error.value = 'Failed to load order details'
@@ -620,7 +665,10 @@ const cancelOrder = async () => {
   if (order.value && confirm('Are you sure you want to cancel this order?')) {
     try {
       await orderStore.cancelOrder(order.value.id)
-      order.value.status = OrderStatus.CANCELLED
+      // Update the order status locally
+      if (order.value) {
+        order.value = { ...order.value, status: OrderStatus.CANCELLED }
+      }
     } catch (error) {
       console.error('Failed to cancel order:', error)
     }

@@ -33,7 +33,7 @@
               <span class="order-confirmation__item-name">{{ item.menuItem.name }}</span>
               <span class="order-confirmation__item-quantity">x{{ item.quantity }}</span>
             </div>
-            <span class="order-confirmation__item-price">${{ item.subtotal.toFixed(2) }}</span>
+            <span class="order-confirmation__item-price">{{ formatCurrency(item.subtotal) }}</span>
           </div>
         </div>
 
@@ -41,19 +41,19 @@
         <div class="order-confirmation__totals">
           <div class="order-confirmation__total-row">
             <span>Subtotal</span>
-            <span>${{ order.subtotal?.toFixed(2) || calculateSubtotal(order).toFixed(2) }}</span>
+            <span>{{ formatCurrency(order.subtotal || calculateSubtotal(order)) }}</span>
           </div>
           <div v-if="order.deliveryFee" class="order-confirmation__total-row">
             <span>Delivery Fee</span>
-            <span>${{ order.deliveryFee.toFixed(2) }}</span>
+            <span>{{ formatCurrency(order.deliveryFee) }}</span>
           </div>
           <div v-if="order.discount" class="order-confirmation__total-row">
             <span>Discount</span>
-            <span class="order-confirmation__discount">-${{ order.discount.toFixed(2) }}</span>
+            <span class="order-confirmation__discount">-{{ formatCurrency(order.discount) }}</span>
           </div>
           <div class="order-confirmation__total-row order-confirmation__total-row--final">
             <span>Total</span>
-            <span>${{ order.total.toFixed(2) }}</span>
+            <span>{{ formatCurrency(order.total) }}</span>
           </div>
         </div>
 
@@ -64,10 +64,6 @@
             <BaseIcon name="map-pin" size="sm" />
             {{ order.deliveryDetails.address }}
           </p>
-          <p v-if="order.deliveryDetails.phone" class="order-confirmation__details-text">
-            <BaseIcon name="phone" size="sm" />
-            {{ order.deliveryDetails.phone }}
-          </p>
           <p v-if="order.deliveryDetails.instructions" class="order-confirmation__details-text">
             <BaseIcon name="message" size="sm" />
             {{ order.deliveryDetails.instructions }}
@@ -77,12 +73,8 @@
         <div v-if="order.pickupDetails" class="order-confirmation__details">
           <h3 class="order-confirmation__details-title">Pickup Details</h3>
           <p class="order-confirmation__details-text">
-            <BaseIcon name="clock" size="sm" />
-            Pickup Time: {{ formatPickupTime(order.pickupDetails.pickupTime) }}
-          </p>
-          <p v-if="order.pickupDetails.phone" class="order-confirmation__details-text">
-            <BaseIcon name="phone" size="sm" />
-            {{ order.pickupDetails.phone }}
+            <BaseIcon name="map-pin" size="sm" />
+            {{ order.pickupDetails.location }}
           </p>
         </div>
 
@@ -141,17 +133,18 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useOrders } from '~/composables/useOrders'
-import type { Order } from '~/types'
+import type { OrderUI } from '~/types'
 
 const route = useRoute()
 const router = useRouter()
 const { getOrder, currentOrder, setCurrentOrder } = useOrders()
+const { formatCurrency } = useTenantSettings()
 
 // Telegram integration
 const telegram = useTelegram()
 const telegramNotifications = useTelegramNotifications()
 
-const order = ref<Order | null>(null)
+const order = ref<OrderUI | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
@@ -174,8 +167,10 @@ const loadOrder = async () => {
   try {
     const fetchedOrder = await getOrder(orderId.value)
     if (fetchedOrder) {
-      order.value = fetchedOrder
-      setCurrentOrder(fetchedOrder)
+      // Cast to OrderUI since the composable returns the deprecated Order type
+      order.value = fetchedOrder as any as OrderUI
+      // Cast back to Order for the composable's setCurrentOrder
+      setCurrentOrder(fetchedOrder as any)
     } else {
       error.value = 'Order not found'
     }
@@ -192,11 +187,22 @@ const retryLoadOrder = () => {
 }
 
 // Helper functions
-const calculateSubtotal = (order: Order) => {
-  return order.items.reduce((sum, item) => sum + item.subtotal, 0)
+const calculateSubtotal = (order: OrderUI) => {
+  return order.subtotal
 }
 
-const formatPickupTime = (time: string | Date) => {
+const formatPickupTime = (time: string | Date | number) => {
+  if (typeof time === 'number') {
+    // If it's minutes from now
+    const date = new Date(Date.now() + time * 60000)
+    return date.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+  }
   const date = new Date(time)
   return date.toLocaleString('en-US', {
     weekday: 'short',
@@ -231,15 +237,18 @@ const goToMenu = () => {
 }
 
 // Send Telegram notification
-const sendTelegramNotification = async (orderData: Order) => {
+const sendTelegramNotification = async (orderData: OrderUI) => {
   if (!telegram.isTelegram.value) return
 
   try {
+    // Cast to Order type for backward compatibility with notification service
+    const orderForNotification = orderData as any
+    
     // Send order confirmation via Telegram
-    await telegramNotifications.sendOrderConfirmation(orderData)
+    await telegramNotifications.sendOrderConfirmation(orderForNotification)
     
     // Also show popup in Telegram
-    await telegramNotifications.showOrderConfirmationPopup(orderData)
+    await telegramNotifications.showOrderConfirmationPopup(orderForNotification)
   } catch (err) {
     console.error('Failed to send Telegram notification:', err)
     // Don't block the UI if notification fails
@@ -250,11 +259,12 @@ const sendTelegramNotification = async (orderData: Order) => {
 onMounted(async () => {
   // If we have current order from checkout, use it
   if (currentOrder.value && !orderId.value) {
-    order.value = currentOrder.value
+    // Cast to OrderUI since the composable returns the deprecated Order type
+    order.value = currentOrder.value as any as OrderUI
     loading.value = false
     
     // Send Telegram notification for new order
-    await sendTelegramNotification(currentOrder.value)
+    await sendTelegramNotification(order.value)
   } else {
     await loadOrder()
     

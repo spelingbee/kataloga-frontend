@@ -24,6 +24,7 @@ export const useDeliveryStore = defineStore('delivery', {
 
   getters: {
     hasActiveDelivery: (state) => state.currentDelivery !== null,
+    activeDelivery: (state) => state.currentDelivery,
     isDeliveryInProgress: (state) => {
       return state.currentDelivery?.status === 'in_transit'
     },
@@ -57,6 +58,18 @@ export const useDeliveryStore = defineStore('delivery', {
       this.currentDelivery = null
       this.courierInfo = null
       this.trackingUpdates = []
+    },
+
+    async getCourierContacts() {
+      if (!this.courierInfo) {
+        return null
+      }
+      
+      return {
+        name: this.courierInfo.name,
+        phone: this.courierInfo.phone,
+        photo: this.courierInfo.photo
+      }
     },
   },
 })

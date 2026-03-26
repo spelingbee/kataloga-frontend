@@ -11,21 +11,21 @@ export function useApi<T>(
   apiCall: () => Promise<ApiResponse<T>>,
   options: UseApiOptions = {}
 ) {
-  const { 
+  const {
     immediate = false,
     showError = true,
     errorMessage,
     retries = 0
   } = options
 
-  const { 
-    error, 
-    isError, 
-    isLoading, 
-    handleApiCall, 
+  const {
+    error,
+    isError,
+    isLoading,
+    handleApiCall,
     getErrorMessage,
     retry,
-    clearError 
+    clearError
   } = useApiError()
 
   const data = ref<T | null>(null)
@@ -39,7 +39,7 @@ export function useApi<T>(
           data.value = result.data
           return result.data
         } else {
-          throw new Error(result.message || 'API call failed')
+          throw new Error(result.error?.message || 'API call failed')
         }
       },
       { showError, errorMessage }
@@ -62,10 +62,10 @@ export function useApi<T>(
             data.value = result.data
             return result.data
           } else {
-            throw new Error(result.message || 'API call failed')
+            throw new Error(result.error?.message || 'API call failed')
           }
         },
-        { maxRetries: retries }
+        { retryConfig: { maxRetries: retries } }
       )
     } else {
       return execute()
@@ -95,20 +95,20 @@ export function useApi<T>(
 export function useApiData<T>(
   key: string,
   apiCall: () => Promise<ApiResponse<T>>,
-  options: UseApiOptions & { 
+  options: UseApiOptions & {
     default?: () => T
     server?: boolean
   } = {}
 ) {
   const { default: defaultValue, server = true } = options
-  
+
   // Use Nuxt's built-in caching with our API wrapper
   return useLazyAsyncData(key, async () => {
     const response = await apiCall()
     if (response.success && response.data !== undefined) {
       return response.data
     } else {
-      throw new Error(response.message || 'API call failed')
+      throw new Error(response.error?.message || 'API call failed')
     }
   }, {
     default: defaultValue,

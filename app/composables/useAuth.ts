@@ -1,4 +1,5 @@
 import { useAuthStore } from '~/stores/auth'
+import { useApiClient } from '~/utils/api'
 import type { User, UpdateProfileDto } from '~/types'
 
 export interface LoginCredentials {
@@ -19,7 +20,6 @@ export interface RegisterData {
 export interface AuthResponse {
   user: User
   accessToken: string
-  refreshToken: string
 }
 
 export const useAuth = () => {
@@ -42,11 +42,6 @@ export const useAuth = () => {
   // Get stored token
   const getToken = (): string | null => {
     return authStore.accessToken
-  }
-
-  // Get stored refresh token
-  const getRefreshToken = (): string | null => {
-    return authStore.refreshToken
   }
 
   // Login with email and password
@@ -110,9 +105,8 @@ export const useAuth = () => {
   // Refresh authentication token
   const refreshToken = async (): Promise<boolean> => {
     try {
-      const nuxtApp = useNuxtApp()
-      const $apiClient = (nuxtApp as any).$apiClient
-      return await $apiClient.handleTokenRefresh()
+      const apiClient = useApiClient()
+      return await apiClient.handleTokenRefresh()
     } catch (err) {
       console.error('Token refresh error:', err)
       return false
@@ -214,21 +208,20 @@ export const useAuth = () => {
   // Create authenticated fetch function
   const authenticatedFetch = async (url: string, options: any = {}) => {
     try {
-      const nuxtApp = useNuxtApp()
-      const $apiClient = (nuxtApp as any).$apiClient
+      const apiClient = useApiClient()
       
       if (options.method && options.method.toUpperCase() === 'GET') {
-        return await $apiClient.get(url, options)
+        return await apiClient.get(url, options)
       } else if (options.method && options.method.toUpperCase() === 'POST') {
-        return await $apiClient.post(url, options.body, options)
+        return await apiClient.post(url, options.body, options)
       } else if (options.method && options.method.toUpperCase() === 'PUT') {
-        return await $apiClient.put(url, options.body, options)
+        return await apiClient.put(url, options.body, options)
       } else if (options.method && options.method.toUpperCase() === 'PATCH') {
-        return await $apiClient.patch(url, options.body, options)
+        return await apiClient.patch(url, options.body, options)
       } else if (options.method && options.method.toUpperCase() === 'DELETE') {
-        return await $apiClient.delete(url, options)
+        return await apiClient.delete(url, options)
       } else {
-        return await $apiClient.get(url, options)
+        return await apiClient.get(url, options)
       }
     } catch (err: any) {
       throw err

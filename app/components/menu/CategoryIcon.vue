@@ -31,7 +31,7 @@
     <BaseIcon
       v-else-if="iconType === 'svg'"
       :name="svgIconName"
-      :size="iconSize"
+      :size="(iconSize as any)"
       class="text-white"
     />
     
@@ -39,7 +39,7 @@
     <BaseIcon
       v-else
       name="category"
-      :size="iconSize"
+      :size="(iconSize as any)"
       class="text-white opacity-60"
     />
   </div>

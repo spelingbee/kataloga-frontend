@@ -60,7 +60,7 @@ export function useCartValidation() {
             // Update menu item data and recalculate subtotal
             cartItem.menuItem = change.item.menuItem
             const modifierPrice = cartItem.selectedModifiers.reduce(
-              (sum, mod) => sum + (mod.priceAdjustment || 0),
+              (sum: number, mod: any) => sum + (mod.priceAdjustment || 0),
               0
             )
             cartItem.subtotal = cartItem.quantity * (change.newPrice + modifierPrice)
@@ -68,7 +68,7 @@ export function useCartValidation() {
         }
 
         // Persist updated cart
-        cartStore.persistCart()
+        cartStore._persistToStorage()
 
         // Show notification
         const priceIncreases = result.priceChanges.filter(c => c.newPrice > c.oldPrice).length
@@ -89,7 +89,7 @@ export function useCartValidation() {
 
       // Show general errors if any
       if (result.errors.length > 0 && result.removedItems.length === 0) {
-        notification.showError('Validation Error', result.errors[0])
+        notification.showError('Validation Error', result.errors[0] || 'Unknown error')
       }
 
       return {
@@ -157,13 +157,13 @@ export function useCartValidation() {
           if (cartItem) {
             cartItem.menuItem = change.item.menuItem
             const modifierPrice = cartItem.selectedModifiers.reduce(
-              (sum, mod) => sum + (mod.priceAdjustment || 0),
+              (sum: number, mod: any) => sum + (mod.priceAdjustment || 0),
               0
             )
             cartItem.subtotal = cartItem.quantity * (change.newPrice + modifierPrice)
           }
         }
-        cartStore.persistCart()
+        cartStore._persistToStorage()
         hasChanges = true
       }
 

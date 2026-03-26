@@ -169,7 +169,8 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import { ref, computed, onMounted } from 'vue'
+import type { MenuItemUI } from '~/types'
 
 // Stores
 import { useMenuStore } from '~/stores/menu'
@@ -192,10 +193,12 @@ const router = useRouter()
 const showGridView = ref(true)
 
 // Computed
-const favourites = computed(() => favoritesStore.getFavoriteItems())
+const favourites = computed(() => {
+  return menuStore.menuItems.filter(item => favoritesStore.isFavorite(item.id))
+})
 
 // Methods
-const onItemSelected = (item: MenuItem) => {
+const onItemSelected = (item: MenuItemUI) => {
   menuStore.setSelectedDish(item)
   router.push(`/dish/${item.id}`)
 }
@@ -240,5 +243,5 @@ onMounted(async () => {
 @use '~/assets/scss/abstracts/mixins' as *;
 
 // Import the favourites page styles
-@import '~/assets/scss/pages/favourites';
+@use '~/assets/scss/pages/favourites';
 </style>

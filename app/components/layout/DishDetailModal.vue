@@ -134,7 +134,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   close: []
 }>()
 
@@ -177,7 +177,7 @@ const onAddedToCart = () => {
   }
   
   // Close modal
-  $emit('close')
+  emit('close')
 }
 
 // Animation
@@ -190,7 +190,7 @@ onMounted(() => {
 
 // Handle escape key
 onKeyStroke('Escape', () => {
-  $emit('close')
+  emit('close')
 })
 
 // Watch for dish changes to reset state
@@ -204,11 +204,11 @@ let startY = 0
 let currentY = 0
 
 const handleTouchStart = (e: TouchEvent) => {
-  startY = e.touches[0].clientY
+  startY = (e.touches as any)[0].clientY
 }
 
 const handleTouchMove = (e: TouchEvent) => {
-  currentY = e.touches[0].clientY
+  currentY = (e.touches as any)[0].clientY
   const diff = currentY - startY
   
   // Only allow swipe down
@@ -222,7 +222,7 @@ const handleTouchEnd = () => {
   
   // Close if swiped down more than 100px
   if (diff > 100) {
-    $emit('close')
+    emit('close')
   }
 }
 </script>

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="payment-callback">
     <div class="payment-callback__container">
       <!-- Loading State -->
@@ -218,17 +218,17 @@ const goToHome = () => {
 }
 
 .payment-callback__icon--success {
-  background: rgba(16, 185, 129, 0.1);
+  background: rgba(var(--color-success-rgb), 0.1);
   color: var(--color-success);
 }
 
 .payment-callback__icon--error {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(var(--color-error-rgb), 0.1);
   color: var(--color-error);
 }
 
 .payment-callback__icon--warning {
-  background: rgba(245, 158, 11, 0.1);
+  background: rgba(var(--color-warning-rgb), 0.1);
   color: var(--color-warning);
 }
 

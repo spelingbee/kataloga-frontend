@@ -97,6 +97,8 @@
 
 <script setup lang="ts">
 import { usePushNotifications } from '~/composables/usePushNotifications'
+import { useWebSocket } from '~/services/websocket.service'
+import { useNotifications } from '~/composables/useNotifications'
 interface InAppNotification {
   id: string
   type: 'order' | 'promotion' | 'system'

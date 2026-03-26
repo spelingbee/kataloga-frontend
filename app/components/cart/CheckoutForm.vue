@@ -189,9 +189,9 @@ const isFormValid = computed(() => {
     Object.keys(errors.deliveryInfo).length === 0 &&
     Object.keys(errors.paymentInfo).length === 0 &&
     acceptTerms.value &&
-    customerInfo.value.name &&
-    customerInfo.value.phone &&
-    deliveryInfo.value.address
+    !!customerInfo.value.name &&
+    !!customerInfo.value.phone &&
+    !!deliveryInfo.value.address
   )
 })
 
@@ -233,11 +233,12 @@ const handleSubmit = async () => {
         productId: item.menuItem.id,
         quantity: item.quantity,
         price: item.menuItem.price,
-        customizations: item.customizations
+        customizations: item.customizations || undefined
       })),
       customerInfo: customerInfo.value,
       notes: orderNotes.value,
-      deliveryAddress: deliveryInfo.value.address
+      deliveryAddress: deliveryInfo.value.address,
+      paymentMethod: (paymentInfo.value.method.toUpperCase() as 'STRIPE' | 'CASH' | 'TRANSFER') || 'CASH'
     }
 
     emit('submit', orderData)
@@ -266,7 +267,6 @@ watch(acceptTerms, (value) => {
   emit('validation-change', isFormValid.value)
 })
 </script>
-</template>
 
 <style scoped>
 /* Form styling */

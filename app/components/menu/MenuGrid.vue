@@ -44,10 +44,10 @@
           <BaseIcon name="search" size="xl" />
         </div>
         <h3 class="menu-grid__empty-title">
-          {{ emptyTitle || $t('menu.noItemsFound') }}
+          {{ emptyTitle || t('menu.noItemsFound') }}
         </h3>
         <p class="menu-grid__empty-message">
-          {{ emptyMessage || $t('menu.tryAdjustingFilters') }}
+          {{ emptyMessage || t('menu.tryAdjustingFilters') }}
         </p>
       </div>
 
@@ -63,10 +63,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import type { MenuItem } from '~/types'
+import { useI18n } from 'vue-i18n'
+import type { MenuItemUI } from '~/types/ui'
 
 interface Props {
-  items: MenuItem[]
+  items: readonly MenuItemUI[]
   columns?: 2 | 3 | 4
   loading?: boolean
   showPopularIndicator?: boolean
@@ -89,13 +90,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  itemClick: [item: MenuItem]
-  addToCart: [item: MenuItem]
-  toggleFavorite: [item: MenuItem]
+  itemClick: [item: MenuItemUI]
+  addToCart: [item: MenuItemUI]
+  toggleFavorite: [item: MenuItemUI]
   loadMore: []
 }>()
 
-const { $i18n } = useNuxtApp()
+const { t } = useI18n()
 
 // Refs
 const gridContainer = ref<HTMLElement | null>(null)
@@ -113,15 +114,15 @@ const hasMore = computed(() => {
 })
 
 // Methods
-const handleItemClick = (item: MenuItem) => {
+const handleItemClick = (item: MenuItemUI) => {
   emit('itemClick', item)
 }
 
-const handleAddToCart = (item: MenuItem) => {
+const handleAddToCart = (item: MenuItemUI) => {
   emit('addToCart', item)
 }
 
-const handleToggleFavorite = (item: MenuItem) => {
+const handleToggleFavorite = (item: MenuItemUI) => {
   emit('toggleFavorite', item)
 }
 
@@ -150,7 +151,9 @@ const setupIntersectionObserver = () => {
     }
   )
 
-  observer.value.observe(loadMoreTrigger.value)
+  if (observer.value && loadMoreTrigger.value) {
+    observer.value.observe(loadMoreTrigger.value as unknown as Element)
+  }
 }
 
 const cleanupObserver = () => {

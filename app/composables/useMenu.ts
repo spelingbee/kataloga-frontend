@@ -1,14 +1,15 @@
-import type { MenuItem, Category, MenuFilters } from '~/types'
+import type { MenuItemUI, CategoryUI, MenuFilters } from '~/types'
 
 import { useMenuStore } from '~/stores/menu'
+import { useFavoritesStore } from '~/stores/favorites'
 
 export function useMenu() {
   const menuStore = useMenuStore()
+  const favoritesStore = useFavoritesStore()
   
   const {
     categories,
     menuItems,
-    favourites,
     currentCategory,
     searchQuery,
     filters,
@@ -19,24 +20,29 @@ export function useMenu() {
     popularItems,
   } = storeToRefs(menuStore)
 
+  // Custom implementation for favourites to avoid circular dependency in store
+  const favourites = computed(() => {
+    return menuStore.menuItems.filter(item => favoritesStore.isFavorite(item.id))
+  })
+
   // Actions
   const fetchMenu = () => menuStore.fetchMenu()
   const fetchCategory = (categoryId: string) => menuStore.fetchCategory(categoryId)
   const searchItems = (query: string) => menuStore.searchItems(query)
-  const toggleFavourite = (itemId: string) => menuStore.toggleFavourite(itemId)
+  const toggleFavourite = (itemId: string) => favoritesStore.toggleFavorite(itemId)
   const applyFilters = (newFilters: MenuFilters) => menuStore.applyFilters(newFilters)
   const clearFilters = () => menuStore.clearFilters()
   const setCurrentCategory = (categoryId: string | null) => menuStore.setCurrentCategory(categoryId)
-  const setSelectedDish = (dish: MenuItem) => menuStore.setSelectedDish(dish)
+  const setSelectedDish = (dish: MenuItemUI) => menuStore.setSelectedDish(dish)
   const clearSelectedDish = () => menuStore.clearSelectedDish()
   const fetchPopularItems = () => menuStore.fetchPopularItems()
-  const fetchFavourites = () => menuStore.fetchFavourites()
+  const fetchFavourites = () => favoritesStore.fetchFavoritesFromServer()
   const fetchMenuItem = (itemId: string) => menuStore.fetchMenuItem(itemId)
 
   // Computed
   const hasCategories = computed(() => categories.value.length > 0)
   const hasMenuItems = computed(() => menuItems.value.length > 0)
-  const hasFavourites = computed(() => favourites.value.length > 0)
+  const hasFavourites = computed(() => favoritesStore.hasFavorites)
   const isSearching = computed(() => searchQuery.value.length > 0)
   const hasFilters = computed(() => Object.keys(filters.value).length > 0)
 
@@ -50,7 +56,7 @@ export function useMenu() {
   }
 
   const isFavourite = (itemId: string) => {
-    return favourites.value.some(fav => fav.id === itemId)
+    return favoritesStore.isFavorite(itemId)
   }
 
   const getItemsByCategory = (categoryId: string) => {

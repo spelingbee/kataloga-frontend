@@ -42,7 +42,7 @@ defineEmits<{
 
 // Computed properties
 const iconSize = computed(() => {
-  const sizes = { sm: 'sm', md: 'md', lg: 'lg' }
+  const sizes: Record<'sm' | 'md' | 'lg', 'sm' | 'md' | 'lg'> = { sm: 'sm', md: 'md', lg: 'lg' }
   return sizes[props.size]
 })
 

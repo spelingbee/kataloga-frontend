@@ -239,7 +239,7 @@ export const useTelegram = () => {
       const tg = window.Telegram?.WebApp
       if (tg?.CloudStorage) {
         return await new Promise<string | null>((resolve) => {
-          tg.CloudStorage.getItem(key, (error: any, value: string) => {
+          tg.CloudStorage.getItem(key, (error: Error | null, value: string | null) => {
             if (error) resolve(null)
             else resolve(value || null)
           })
@@ -347,6 +347,7 @@ export const useTelegram = () => {
         return await new Promise<string | null>((resolve) => {
           tg.showScanQrPopup({ text: text || 'Scan QR Code' }, (qr: string) => {
             resolve(qr)
+            return true // Close the scanner after scanning
           })
         })
       } else {
@@ -368,13 +369,19 @@ export const useTelegram = () => {
       const tg = window.Telegram?.WebApp
       if (tg?.requestContact) {
         return await new Promise<{ phone: string; firstName: string; lastName?: string } | null>((resolve) => {
-          tg.requestContact((granted: boolean, contact: any) => {
-            if (granted && contact) {
-              resolve({
-                phone: contact.phone_number,
-                firstName: contact.first_name,
-                lastName: contact.last_name
-              })
+          tg.requestContact((granted: boolean) => {
+            if (granted) {
+              // Contact info would be available in initDataUnsafe after permission is granted
+              const user = tg.initDataUnsafe?.user
+              if (user) {
+                resolve({
+                  phone: '', // Phone number would need to be fetched separately
+                  firstName: user.first_name,
+                  lastName: user.last_name
+                })
+              } else {
+                resolve(null)
+              }
             } else {
               resolve(null)
             }
@@ -529,76 +536,5 @@ export const useTelegram = () => {
     expandViewport,
     closeApp,
     sendDataToBot
-  }
-}
-
-// Type declarations for global Telegram object (fallback)
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: {
-        ready(): void
-        close(): void
-        sendData(data: string): void
-        expand(): void
-        platform?: string
-        viewportHeight?: number
-        viewportStableHeight?: number
-        isExpanded?: boolean
-        initDataUnsafe?: {
-          user?: {
-            id: number
-            first_name: string
-            last_name?: string
-            username?: string
-            language_code?: string
-            is_premium?: boolean
-            photo_url?: string
-          }
-        }
-        themeParams?: {
-          bg_color?: string
-          text_color?: string
-          hint_color?: string
-          link_color?: string
-          button_color?: string
-          button_text_color?: string
-          secondary_bg_color?: string
-        }
-        MainButton?: {
-          setText(text: string): void
-          show(): void
-          hide(): void
-          enable(): void
-          disable(): void
-          showProgress(): void
-          hideProgress(): void
-          onClick(callback: () => void): void
-          offClick(callback: () => void): void
-        }
-        BackButton?: {
-          show(): void
-          hide(): void
-          onClick(callback: () => void): void
-          offClick(callback: () => void): void
-        }
-        HapticFeedback?: {
-          impactOccurred(style: string): void
-          notificationOccurred(type: string): void
-          selectionChanged(): void
-        }
-        CloudStorage?: {
-          setItem(key: string, value: string, callback: (error: any) => void): void
-          getItem(key: string, callback: (error: any, value: string) => void): void
-          removeItem(key: string, callback: (error: any) => void): void
-          getKeys(callback: (error: any, keys: string[]) => void): void
-        }
-        showPopup?(params: any, callback: (buttonId: string) => void): void
-        showScanQrPopup?(params: any, callback: (qr: string) => void): void
-        requestContact?(callback: (granted: boolean, contact: any) => void): void
-        requestWriteAccess?(callback: (granted: boolean) => void): void
-        initData?: string
-      }
-    }
   }
 }

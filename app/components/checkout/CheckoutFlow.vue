@@ -2,6 +2,14 @@
   <div class="checkout-flow">
     <!-- Progress Indicator -->
     <div class="checkout-flow__progress">
+      <button 
+        v-if="currentStep > 0"
+        class="checkout-flow__back-btn-mobile"
+        @click="previousStep"
+      >
+        <BaseIcon name="arrow-left" size="sm" />
+      </button>
+      
       <div
         v-for="(step, index) in steps"
         :key="step.id"
@@ -128,7 +136,7 @@
         <OrderConfirmation
           :order-number="orderNumber"
           :order-type="orderData.orderType"
-          :order-items="cart"
+          :order-items="orderItemsForConfirmation"
           :total-amount="cartTotal"
           :estimated-time="estimatedDeliveryTime"
           :delivery-info="getDeliveryInfo()"
@@ -151,9 +159,10 @@
       </BaseButton>
 
       <BaseButton
-        v-if="currentStep < steps.length - 1"
+        v-if="currentStep < steps.length - 2"
         variant="primary"
-        :disabled="!canProceed"
+        :disabled="!canProceed || isNavigating"
+        :loading="isNavigating"
         @click="nextStep"
       >
         Continue
@@ -179,7 +188,7 @@
 
     <!-- Transfer Payment Modal -->
     <TransferPaymentModal
-      :show="showTransferModal"
+      v-model="showTransferModal"
       :whatsapp-phone="tenantWhatsappPhone"
       :order-total="cartTotal"
       @confirm="handleTransferConfirm"
@@ -319,6 +328,15 @@ const tenantWhatsappPhone = ref('+996 555 123 456') // This should come from ten
 const orderNumber = ref('')
 const estimatedDeliveryTime = ref('25-35 min')
 
+const orderItemsForConfirmation = computed(() => {
+  return props.cart.map(item => ({
+    id: item.menuItem.id,
+    name: item.menuItem.name,
+    quantity: item.quantity,
+    price: item.menuItem.price
+  }))
+})
+
 // Steps configuration
 const steps = computed(() => [
   { id: 'type', label: 'Order Type' },
@@ -355,7 +373,9 @@ const canProceed = computed(() => {
   }
 
   if (currentStep.value === 1) {
-    return validateCurrentStep()
+    // Only check validity, don't show errors yet
+    const errors = getStepErrors()
+    return Object.keys(errors).length === 0
   }
 
   if (currentStep.value === 2) {
@@ -368,12 +388,12 @@ const canProceed = computed(() => {
 // Methods
 const handleOrderTypeChange = (type: OrderType) => {
   orderData.value.orderType = type
-  
+
   // Update delivery form type if needed
   if (type === 'delivery' || type === 'pickup') {
     orderData.value.deliveryDetails.type = type === 'delivery' ? 'delivery' : 'pickup'
   }
-  
+
   // Clear validation errors when changing type
   validationErrors.value = {}
   errorMessage.value = ''
@@ -388,51 +408,58 @@ const handleValidation = (errors: Record<string, string>) => {
   validationErrors.value = errors
 }
 
-const validateCurrentStep = (): boolean => {
-  validationErrors.value = {}
-  errorMessage.value = ''
+const getStepErrors = (): Record<string, string> => {
+  const errors: Record<string, string> = {}
 
   if (currentStep.value === 1) {
     if (orderData.value.orderType === 'delivery') {
       if (!orderData.value.deliveryDetails.address?.trim()) {
-        validationErrors.value.address = 'Delivery address is required'
-        return false
-      }
-      if (orderData.value.deliveryDetails.address.trim().length < 10) {
-        validationErrors.value.address = 'Please provide a more detailed address'
-        return false
+        errors.address = 'Delivery address is required'
+      } else if (orderData.value.deliveryDetails.address.trim().length < 10) {
+        errors.address = 'Please provide a more detailed address'
       }
     }
 
     if (orderData.value.orderType === 'pickup') {
       if (!orderData.value.pickupDetails.locationId) {
-        validationErrors.value.locationId = 'Please select a pickup location'
-        return false
+        errors.locationId = 'Please select a pickup location'
       }
       if (!orderData.value.pickupDetails.phone?.trim()) {
-        validationErrors.value.phone = 'Phone number is required'
-        return false
-      }
-      // Basic phone validation
-      const phoneRegex = /^\+?[\d\s\-()]+$/
-      if (!phoneRegex.test(orderData.value.pickupDetails.phone)) {
-        validationErrors.value.phone = 'Please enter a valid phone number'
-        return false
+        errors.phone = 'Phone number is required'
+      } else {
+        // Basic phone validation
+        const phoneRegex = /^\+?[\d\s\-()]+$/
+        if (!phoneRegex.test(orderData.value.pickupDetails.phone)) {
+          errors.phone = 'Please enter a valid phone number'
+        }
       }
     }
 
     if (orderData.value.orderType === 'dine-in') {
       if (!orderData.value.dineInDetails.tableNumber?.trim()) {
-        validationErrors.value.tableNumber = 'Table number is required'
-        return false
+        errors.tableNumber = 'Table number is required'
       }
     }
   }
 
-  return Object.keys(validationErrors.value).length === 0
+  return errors
 }
 
+const validateCurrentStep = (): boolean => {
+  const errors = getStepErrors()
+  validationErrors.value = errors
+  errorMessage.value = ''
+
+  return Object.keys(errors).length === 0
+}
+
+// isNavigating is defined below
+
+const isNavigating = ref(false)
+
 const nextStep = async () => {
+  if (isNavigating.value) return
+
   if (!validateCurrentStep()) {
     errorMessage.value = 'Please fill in all required fields'
     return
@@ -440,7 +467,12 @@ const nextStep = async () => {
 
   // If moving to payment step (step 2), validate cart first
   if (currentStep.value === 1) {
-    await validateCartBeforePayment()
+    isNavigating.value = true
+    try {
+      await validateCartBeforePayment()
+    } finally {
+      isNavigating.value = false
+    }
   }
 
   if (currentStep.value < steps.value.length - 1) {
@@ -452,7 +484,7 @@ const nextStep = async () => {
 const validateCartBeforePayment = async () => {
   try {
     const result = await validateBeforeCheckout()
-    
+
     if (!result.isValid) {
       // Cart validation failed - items were removed
       errorMessage.value = 'Some items in your cart are no longer available. Please review your cart.'
@@ -460,11 +492,11 @@ const validateCartBeforePayment = async () => {
       validationMessage.value = 'Some items were removed from your cart because they are no longer available.'
       return
     }
-    
+
     if (result.requiresAcknowledgment) {
       // Show warning about changes
       showValidationWarning.value = true
-      
+
       if (result.result.priceChanges.length > 0) {
         validationMessage.value = `Prices have changed for ${result.result.priceChanges.length} item(s) in your cart.`
       } else {
@@ -531,56 +563,9 @@ const handleSubmit = async () => {
   await submitOrder()
 }
 
-const submitOrder = async () => {
-  submitting.value = true
-  errorMessage.value = ''
 
-  try {
-    // Generate order number
-    orderNumber.value = `ORD${Date.now().toString().slice(-6)}`
-    
-    // Prepare order data according to CreateOrderDto interface
-    const createOrderDto: CreateOrderDto = {
-      items: props.cart.map(cartItem => ({
-        productId: cartItem.menuItem.id,
-        quantity: cartItem.quantity,
-        price: cartItem.menuItem.price,
-        customizations: cartItem.customizations
-      })),
-      customerInfo: {
-        name: 'Customer', // This should come from user input or auth
-        phone: '+996 555 000 000', // This should come from user input
-        email: 'customer@example.com' // This should come from user input or auth
-      },
-      paymentMethod: orderData.value.paymentMethod,
-      notes: orderData.value.deliveryDetails?.instructions || 
-             orderData.value.pickupDetails?.instructions || 
-             orderData.value.dineInDetails?.instructions,
-      deliveryAddress: orderData.value.orderType === 'delivery' ? 
-                      orderData.value.deliveryDetails.address : undefined
-    }
 
-    // Create the order using the order service
-    const { createOrder } = useOrders()
-    const createdOrder = await createOrder(createOrderDto)
-    
-    if (createdOrder) {
-      // Move to confirmation step
-      currentStep.value++
-      
-      // Emit complete event with the created order
-      emit('complete', createdOrder)
-    } else {
-      throw new Error('Failed to create order')
-    }
-  } catch (error: any) {
-    errorMessage.value = error.message || 'Failed to place order. Please try again.'
-  } finally {
-    submitting.value = false
-  }
-}
-
-const handleTransferConfirm = () => {
+  const handleTransferConfirm = () => {
   showTransferModal.value = false
   submitOrder()
 }
@@ -600,6 +585,109 @@ const handleContinueShopping = () => {
 
 const handleViewOrders = () => {
   emit('view-orders')
+}
+
+// --- Persistence & Idempotency ---
+import { useStorageState } from '~/composables/useStorage'
+
+// Persist Order Data (Survivable across reloads/auth redirects)
+const { value: storedOrderData, setValue: saveOrderData, removeValue: clearOrderData } = useStorageState('checkout_order_data', orderData.value)
+// Persist Idempotency Key
+const { value: storedIdempotencyKey, setValue: saveIdempotencyKey, removeValue: clearIdempotencyKey } = useStorageState('checkout_idempotency_key', '')
+
+// Initialize Persistence
+onMounted(() => {
+  // Restore order data if exists
+  if (storedOrderData.value && Object.keys(storedOrderData.value).length > 0) {
+    // Deep merge or just overwrite carefully
+    orderData.value = {
+      ...orderData.value,
+      ...storedOrderData.value,
+      // Ensure nested objects are merged correctly if needed, but simple overwrite is usually fine for this structure
+      deliveryDetails: { ...orderData.value.deliveryDetails, ...storedOrderData.value.deliveryDetails },
+      pickupDetails: { ...orderData.value.pickupDetails, ...storedOrderData.value.pickupDetails },
+      dineInDetails: { ...orderData.value.dineInDetails, ...storedOrderData.value.dineInDetails },
+    }
+  }
+
+  // Restore or Generate Idempotency Key
+  if (storedIdempotencyKey.value) {
+    // Keep existing key to prevent double charge on retry
+    console.log('Restored idempotency key:', storedIdempotencyKey.value)
+  } else {
+    // Generate new key
+    const newKey = crypto.randomUUID ? crypto.randomUUID() : `idemp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    saveIdempotencyKey(newKey)
+  }
+})
+
+// Watch for changes to save state
+watch(orderData, (newVal) => {
+  saveOrderData(newVal)
+}, { deep: true })
+
+const submitOrder = async () => {
+  submitting.value = true
+  errorMessage.value = ''
+
+  try {
+    // Generate order number
+    orderNumber.value = `ORD${Date.now().toString().slice(-6)}`
+
+    // Uses the PERSISTED idempotency key
+    const currentIdempotencyKey = storedIdempotencyKey.value || (() => {
+       const key = crypto.randomUUID ? crypto.randomUUID() : `idemp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+       saveIdempotencyKey(key)
+       return key
+    })()
+
+    // Prepare order data according to CreateOrderDto interface
+    const createOrderDto: CreateOrderDto & { idempotencyKey?: string } = {
+      items: props.cart.map(cartItem => ({
+        productId: cartItem.menuItem.id,
+        quantity: cartItem.quantity,
+        price: cartItem.menuItem.price,
+        customizations: cartItem.customizations
+      })),
+      customerInfo: {
+        name: 'Customer', // This should come from user input or auth
+        phone: '+996 555 000 000', // This should come from user input
+        email: 'customer@example.com' // This should come from user input or auth
+      },
+      paymentMethod: orderData.value.paymentMethod,
+      notes: orderData.value.deliveryDetails?.instructions ||
+             orderData.value.pickupDetails?.instructions ||
+             orderData.value.dineInDetails?.instructions,
+      deliveryAddress: orderData.value.orderType === 'delivery' ?
+                      orderData.value.deliveryDetails.address : undefined,
+      idempotencyKey: currentIdempotencyKey // Pass key to backend
+    }
+
+    // Create the order using the order service
+    const { createOrder } = useOrders()
+    const createdOrder = await createOrder(createOrderDto)
+
+    if (createdOrder) {
+      // CLEAR Persisted Data on Success
+      clearOrderData()
+      clearIdempotencyKey()
+
+      // Move to confirmation step
+      currentStep.value++
+
+      // Emit complete event with the created order
+      emit('complete', createdOrder)
+    } else {
+      throw new Error('Failed to create order')
+    }
+  } catch (error: any) {
+    errorMessage.value = error.message || 'Failed to place order. Please try again.'
+    // Do NOT clear idempotency key on error. 
+    // If it was a network timeout, the server might have processed it.
+    // Retrying with SAME key ensures we get the original order back.
+  } finally {
+    submitting.value = false
+  }
 }
 
 const getDeliveryInfo = () => {
@@ -656,7 +744,7 @@ const setupTelegramMainButton = () => {
 
   if (buttonText && buttonAction) {
     cleanupMainButton = telegram.showMainButton(buttonText, buttonAction)
-    
+
     // Disable button if can't proceed
     if (!canProceed.value) {
       telegram.setMainButtonLoading(false)
@@ -687,7 +775,7 @@ watch(submitting, (isSubmitting) => {
 onMounted(() => {
   if (telegram.isTelegram.value) {
     setupTelegramMainButton()
-    
+
     // Setup back button
     const cleanupBackButton = telegram.showBackButton(() => {
       if (currentStep.value > 0) {
@@ -711,12 +799,12 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens/colors' as *;
-@use '../../assets/scss/tokens/spacing' as *;
-@use '../../assets/scss/tokens/radius' as *;
-@use '../../assets/scss/tokens/shadows' as *;
-@use '../../assets/scss/tokens/transitions' as *;
-@use '../../assets/scss/tokens/typography' as *;
+@use '~/assets/scss/tokens/colors' as *;
+@use '~/assets/scss/tokens/spacing' as *;
+@use '~/assets/scss/tokens/radius' as *;
+@use '~/assets/scss/tokens/shadows' as *;
+@use '~/assets/scss/tokens/transitions' as *;
+@use '~/assets/scss/tokens/typography' as *;
 
 .checkout-flow {
   width: 100%;
@@ -729,18 +817,38 @@ onMounted(() => {
   justify-content: space-between;
   margin-bottom: $space-12;
   position: relative;
+  padding: 0 $space-4; // Add padding to ensure connection line doesn't visually overflow
 
   &::before {
     content: '';
     position: absolute;
     top: 20px;
-    left: 10%;
-    right: 10%;
+    left: 40px; // Adjust to start after the first circle center approx
+    right: 40px;
     height: 2px;
     background: var(--color-neutral-300);
     z-index: 0;
   }
 }
+
+.checkout-flow__back-btn-mobile {
+  position: absolute;
+  left: -40px; // Move outside the flow
+  top: 50%;
+  transform: translateY(-50%);
+  // styles for button
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  
+  @media (max-width: 640px) {
+    left: 0;
+    top: -40px; // Move above on mobile
+    transform: none;
+  }
+}
+
 
 .checkout-flow__progress-step {
   display: flex;
@@ -764,6 +872,31 @@ onMounted(() => {
   font-weight: $font-semibold;
   color: var(--color-neutral-600);
   transition: $transition-base-ease;
+}
+
+// ... existing styles ...
+
+.checkout-flow__back-btn-mobile {
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    color: var(--text-primary);
+  }
+  
+  @media (min-width: 768px) {
+    display: none; // Hide on desktop as they have the main back button
+  }
 }
 
 .checkout-flow__progress-step--active .checkout-flow__progress-circle {

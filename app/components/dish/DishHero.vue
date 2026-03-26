@@ -3,8 +3,9 @@
     <!-- Dish Image and Basic Info -->
     <div class="text-center space-y-4">
       <!-- Image Slider -->
-      <DishImageSlider
+      <ImageSlider
         v-if="dish.images && dish.images.length > 1"
+        v-model:current-index="currentImageIndex"
         :images="dish.images"
         :alt="dish.name"
         class="mx-auto"
@@ -54,10 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types'
 
 interface Props {
-  dish: MenuItem
+  dish: MenuItemUI
   selectedSubcategory?: string
 }
 
@@ -67,4 +68,6 @@ interface Emits {
 
 defineProps<Props>()
 defineEmits<Emits>()
+
+const currentImageIndex = ref(0)
 </script>

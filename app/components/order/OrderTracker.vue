@@ -231,13 +231,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { Order, Delivery } from '~/types'
+import type { OrderUI, Delivery } from '~/types'
 import { OrderStatus } from '~/types'
 import { useOrders } from '~/composables/useOrders'
 
 // Props & Emits
 interface Props {
-  order: Order
+  order: OrderUI
   deliveryInfo?: Delivery
   autoRefresh?: boolean
   refreshInterval?: number

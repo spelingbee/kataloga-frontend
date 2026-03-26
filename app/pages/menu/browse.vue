@@ -55,7 +55,7 @@
     <!-- Menu Grid -->
     <div class="menu-browse__content">
       <MenuGrid
-        :items="filteredMenuItems"
+        :items="(filteredMenuItems as any)"
         :loading="loading"
         :columns="3"
         :show-popular-indicator="true"
@@ -111,7 +111,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useMenu } from '~/composables/useMenu'
 import { useCart } from '~/composables/useCart'
-import type { MenuItem, MenuFilters } from '~/types'
+import type { MenuItemUI, MenuFilters } from '~/types/ui'
 
 // Composables
 const {
@@ -135,7 +135,7 @@ const router = useRouter()
 // Local state
 const showFiltersPanel = ref(false)
 const showDetailModal = ref(false)
-const selectedMenuItem = ref<MenuItem | null>(null)
+const selectedMenuItem = ref<MenuItemUI | null>(null)
 
 // Computed
 const categoriesWithCount = computed(() => {
@@ -168,12 +168,12 @@ const handleCategorySelect = (categoryId: string | null) => {
   setCurrentCategory(categoryId)
 }
 
-const handleItemClick = (item: MenuItem) => {
+const handleItemClick = (item: MenuItemUI) => {
   selectedMenuItem.value = item
   showDetailModal.value = true
 }
 
-const handleAddToCart = (item: MenuItem) => {
+const handleAddToCart = (item: MenuItemUI) => {
   // If item has modifiers, open detail modal
   if (item.modifierGroups && item.modifierGroups.length > 0) {
     handleItemClick(item)
@@ -185,7 +185,7 @@ const handleAddToCart = (item: MenuItem) => {
   // useToast().success(`${item.name} added to cart`)
 }
 
-const handleToggleFavorite = (item: MenuItem) => {
+const handleToggleFavorite = (item: MenuItemUI) => {
   toggleFavourite(item.id)
 }
 
@@ -194,21 +194,37 @@ const handleDetailClose = () => {
   selectedMenuItem.value = null
 }
 
-const handleDetailAddToCart = (item: MenuItem, quantity: number, modifiers: any[]) => {
+const handleDetailAddToCart = (item: MenuItemUI, quantity: number, modifiers: any[]) => {
   addItem(item, quantity, modifiers)
   // Show toast notification
   // useToast().success(`${item.name} added to cart`)
 }
 
 const handleFiltersUpdate = (newFilters: MenuFilters) => {
-  applyFilters(newFilters)
+  applyFilters(newFilters as any)
   showFiltersPanel.value = false
 }
 
 const removeFilter = (filterKey: string) => {
   const updatedFilters = { ...filters.value }
   delete updatedFilters[filterKey as keyof MenuFilters]
-  applyFilters(updatedFilters)
+  
+  // Convert readonly arrays to mutable arrays for compatibility
+  const mutableFilters: MenuFilters = {}
+  Object.keys(updatedFilters).forEach(key => {
+    const value = updatedFilters[key as keyof MenuFilters]
+    if (key === 'priceRange' && Array.isArray(value)) {
+      mutableFilters.priceRange = [value[0], value[1]]
+    } else if (key === 'calories' && Array.isArray(value)) {
+      mutableFilters.calories = [value[0], value[1]]
+    } else if (key === 'dietary' && Array.isArray(value)) {
+      mutableFilters.dietary = [...value]
+    } else {
+      (mutableFilters as any)[key] = value
+    }
+  })
+  
+  applyFilters(mutableFilters as any)
 }
 
 const clearAllFilters = () => {

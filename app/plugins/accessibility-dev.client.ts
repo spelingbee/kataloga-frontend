@@ -4,6 +4,7 @@
  */
 
 import { logAccessibilityIssues, runAccessibilityAudit } from '~/utils/accessibility-testing'
+import { safeArrayAccess } from '~/types/utils/type-guards'
 
 export default defineNuxtPlugin(() => {
   // Only run in development
@@ -242,13 +243,16 @@ export default defineNuxtPlugin(() => {
     const match = rgbString.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/)
     if (!match) return null
 
-    const [, r, g, b] = match.map(Number)
+    const r = parseInt(safeArrayAccess(match, 1) || '0')
+    const g = parseInt(safeArrayAccess(match, 2) || '0')
+    const b = parseInt(safeArrayAccess(match, 3) || '0')
+    
     const [rs, gs, bs] = [r, g, b].map((c) => {
       const sRGB = c / 255
       return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4)
     })
 
-    return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
+    return 0.2126 * (rs || 0) + 0.7152 * (gs || 0) + 0.0722 * (bs || 0)
   }
 
   // Set up keyboard shortcuts

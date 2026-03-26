@@ -3,7 +3,7 @@
     <!-- Ingredients Section -->
     <DishIngredients
       v-if="dish.ingredients && dish.ingredients.length > 0"
-      :ingredients="dish.ingredients"
+      :ingredients="(dish.ingredients as any)"
       :selected-ingredients="selectedIngredients"
       @toggle="toggleIngredient"
     />
@@ -59,33 +59,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { MenuItem } from '~/types'
-
-interface CustomizationGroup {
-  id: string
-  name: string
-  type: 'single' | 'multiple'
-  required: boolean
-  options: CustomizationOption[]
-}
-
-interface CustomizationOption {
-  id: string
-  name: string
-  price: number
-  description?: string
-}
-
-interface Size {
-  id: string
-  name: string
-  price: number
-  description?: string
-}
+import { ref, watch, onMounted } from 'vue'
+import type { MenuItemUI, ModifierGroupUI, ModifierUI, IngredientUI } from '~/types'
 
 interface Props {
-  dish: MenuItem
+  dish: MenuItemUI
   selectedIngredients: string[]
   customizations: Record<string, any>
 }
@@ -114,11 +92,11 @@ const toggleIngredient = (ingredientId: string) => {
   emit('ingredients-changed', newIngredients)
 }
 
-const updateCustomization = (groupId: string, optionId: string, option: CustomizationOption) => {
+const updateCustomization = (groupId: string, optionId: string, option: any) => {
   const newCustomizations = { ...props.customizations }
   
   // Find the group to determine if it's single or multiple selection
-  const group = props.dish.customizations?.find(g => g.id === groupId)
+  const group = props.dish.customizations?.find((g: ModifierGroupUI) => g.id === groupId)
   
   if (group?.type === 'single') {
     // Single selection - replace existing
@@ -152,7 +130,7 @@ const updateCustomization = (groupId: string, optionId: string, option: Customiz
 // Watch for size changes
 watch(selectedSize, (newSize) => {
   if (newSize && props.dish.sizes) {
-    const size = props.dish.sizes.find(s => s.id === newSize)
+    const size = props.dish.sizes.find((s: any) => s.id === newSize)
     if (size) {
       updateCustomization('size', newSize, {
         id: newSize,
@@ -177,8 +155,8 @@ watch(specialInstructions, (newInstructions) => {
 // Initialize with default size if available
 onMounted(() => {
   if (props.dish.sizes && props.dish.sizes.length > 0) {
-    const defaultSize = props.dish.sizes.find(s => s.name.toLowerCase().includes('regular')) || props.dish.sizes[0]
-    selectedSize.value = defaultSize.id
+    const defaultSize = props.dish.sizes.find((s: any) => s.name.toLowerCase().includes('regular')) || props.dish.sizes[0]
+    selectedSize.value = (defaultSize as any).id
   }
 })
 </script>

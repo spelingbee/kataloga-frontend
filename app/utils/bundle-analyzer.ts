@@ -13,6 +13,7 @@ interface BundleStats {
   largestChunks: Array<{
     name: string
     size: number
+    percentage: number
   }>
 }
 

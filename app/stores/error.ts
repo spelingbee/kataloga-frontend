@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import type { ApiError } from '~/types'
+import { isDefined, safePropertyAccess } from '~/types/utils/type-guards'
 
 export interface ErrorState {
   errors: ApiError[]
@@ -28,17 +29,19 @@ export const useErrorStore = defineStore('error', {
     
     criticalErrors: (state) => 
       state.errors.filter(error => 
-        error.status && error.status >= 500
+        isDefined(error.status) && error.status >= 500
       ),
     
     authErrors: (state) => 
       state.errors.filter(error => 
-        error.status === 401 || error.status === 403
+        isDefined(error.status) && (error.status === 401 || error.status === 403)
       ),
     
     networkErrors: (state) => 
       state.errors.filter(error => 
-        !error.status || error.message?.includes('fetch') || error.message?.includes('network')
+        !isDefined(error.status) || 
+        error.message?.includes('fetch') || 
+        error.message?.includes('network')
       ),
   },
 
@@ -49,7 +52,7 @@ export const useErrorStore = defineStore('error', {
       // Avoid duplicate errors
       const isDuplicate = this.errors.some(existing => 
         existing.message === normalizedError.message &&
-        existing.status === normalizedError.status
+        safePropertyAccess(existing, 'status') === safePropertyAccess(normalizedError, 'status')
       )
       
       if (!isDuplicate) {
@@ -69,7 +72,8 @@ export const useErrorStore = defineStore('error', {
 
     removeError(error: ApiError) {
       const index = this.errors.findIndex(e => 
-        e.message === error.message && e.status === error.status
+        e.message === error.message && 
+        safePropertyAccess(e, 'status') === safePropertyAccess(error, 'status')
       )
       if (index > -1) {
         this.errors.splice(index, 1)
@@ -139,18 +143,18 @@ export const useErrorStore = defineStore('error', {
     normalizeError(error: ApiError | Error | string): ApiError {
       if (typeof error === 'string') {
         return {
-          name: 'Error',
+          code: 'GENERIC_ERROR',
           message: error,
         }
       }
 
       if (error instanceof Error) {
+        const errorWithExtras = error as Error & Record<string, unknown>
         return {
-          name: error.name,
+          code: (typeof errorWithExtras.code === 'string') ? errorWithExtras.code : 'UNKNOWN_ERROR',
           message: error.message,
-          status: 'status' in error ? (error as ApiError).status : undefined,
-          code: 'code' in error ? (error as ApiError).code : undefined,
-          details: 'details' in error ? (error as ApiError).details : undefined,
+          status: (typeof errorWithExtras.status === 'number') ? errorWithExtras.status : undefined,
+          details: errorWithExtras.details as ApiError['details'],
         }
       }
 
@@ -159,20 +163,25 @@ export const useErrorStore = defineStore('error', {
 
     isCriticalError(error: ApiError): boolean {
       // Consider server errors and auth errors as critical
-      return !!(error.status && (error.status >= 500 || error.status === 401))
+      const status = safePropertyAccess(error, 'status')
+      return isDefined(status) && (status >= 500 || status === 401)
     },
 
     getErrorsByType(type: 'network' | 'auth' | 'validation' | 'server'): ApiError[] {
       return this.errors.filter(error => {
+        const status = safePropertyAccess(error, 'status')
+        const message = safePropertyAccess(error, 'message')
+        
         switch (type) {
           case 'network':
-            return !error.status || error.message?.includes('fetch') || error.message?.includes('network')
+            return !isDefined(status) || 
+                   (message && (message.includes('fetch') || message.includes('network')))
           case 'auth':
-            return error.status === 401 || error.status === 403
+            return isDefined(status) && (status === 401 || status === 403)
           case 'validation':
-            return error.status === 422
+            return isDefined(status) && status === 422
           case 'server':
-            return error.status && error.status >= 500
+            return isDefined(status) && status >= 500
           default:
             return false
         }
@@ -181,7 +190,14 @@ export const useErrorStore = defineStore('error', {
 
     // Utility method to handle common error scenarios
     handleCommonErrors(error: ApiError) {
-      switch (error.status) {
+      const status = safePropertyAccess(error, 'status')
+      
+      if (!isDefined(status)) {
+        this.addError(error)
+        return
+      }
+      
+      switch (status) {
         case 401:
           // Redirect to login
           navigateTo('/login')

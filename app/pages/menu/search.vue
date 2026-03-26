@@ -1,20 +1,20 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="search-page">
     <!-- Header Section -->
-    <div class="px-6 py-8">
-      <div class="flex items-center gap-4 mb-4">
+    <div class="search-page__header">
+      <div class="search-page__header-content">
         <NuxtLink 
           to="/menu"
-          class="text-neutral-20 hover:text-white transition-colors"
+          class="search-page__back-link"
         >
           <BaseIcon name="arrow-left" size="md" />
         </NuxtLink>
         
         <div>
-          <AppHeading level="h1" size="display-md" class="text-white">
+          <AppHeading level="h1" size="display-md" class="search-page__title">
             Search Menu
           </AppHeading>
-          <AppText size="body-md" class="text-neutral-20">
+          <AppText size="body-md" class="search-page__subtitle">
             Find exactly what you're looking for
           </AppText>
         </div>
@@ -22,13 +22,13 @@
     </div>
 
     <!-- Search Section -->
-    <div class="px-6 mb-8">
+    <div class="search-page__controls">
       <!-- Main Search Bar -->
-      <div class="mb-6">
+      <div class="search-page__input-wrapper">
         <BaseInput
           v-model="searchQuery"
           placeholder="Search for dishes, ingredients, or categories..."
-          class="w-full text-lg"
+          class="search-page__input"
           size="lg"
           @keyup.enter="performSearch"
         >
@@ -49,17 +49,17 @@
       </div>
 
       <!-- Search Suggestions -->
-      <div v-if="!searchQuery && searchSuggestions.length > 0" class="mb-6">
-        <AppText size="body-sm" class="text-neutral-20 mb-3">
+      <div v-if="!searchQuery && searchSuggestions.length > 0" class="search-page__suggestions">
+        <AppText size="body-sm" class="search-page__suggestions-label">
           Popular searches:
         </AppText>
-        <div class="flex flex-wrap gap-2">
+        <div class="search-page__tags">
           <BaseButton
             v-for="suggestion in searchSuggestions"
             :key="suggestion"
             variant="ghost"
             size="sm"
-            class="text-neutral-20 hover:text-white border border-neutral-80/30 hover:border-primary-green/50"
+            class="search-page__tag"
             @click="searchQuery = suggestion"
           >
             {{ suggestion }}
@@ -68,7 +68,7 @@
       </div>
 
       <!-- Quick Filters -->
-      <div class="flex flex-wrap gap-2 mb-4">
+      <div class="search-page__filters">
         <BaseButton
           v-for="filter in quickFilters"
           :key="filter.key"
@@ -82,7 +82,7 @@
       </div>
 
       <!-- Advanced Filters Toggle -->
-      <div class="flex items-center justify-between">
+      <div class="search-page__advanced-toggle">
         <AppText size="body-sm" class="text-neutral-20">
           {{ searchResults.length }} results found
         </AppText>
@@ -97,7 +97,7 @@
       </div>
 
       <!-- Advanced Filters Panel -->
-      <div v-if="showAdvancedFilters" class="mt-4">
+      <div v-if="showAdvancedFilters" class="search-page__advanced-panel">
         <MenuFilters 
           :show-category-filter="true"
           @close="showAdvancedFilters = false"
@@ -106,29 +106,29 @@
     </div>
 
     <!-- Search Results -->
-    <div class="px-6">
+    <div class="search-page__results">
       <!-- Loading State -->
-      <div v-if="isSearching" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
+      <div v-if="isSearching" class="search-page__loading">
+        <div class="search-page__spinner" />
         <AppText class="text-neutral-20">Searching...</AppText>
       </div>
 
       <!-- No Search Query -->
-      <div v-else-if="!searchQuery && !hasActiveFilters" class="text-center py-16">
-        <BaseIcon name="search" size="4xl" class="text-neutral-80 mx-auto mb-6" />
-        <AppHeading level="h3" size="heading-lg" class="text-white mb-4">
+      <div v-else-if="!searchQuery && !hasActiveFilters" class="search-page__empty-state">
+        <BaseIcon name="search" size="xl" class="search-page__empty-icon" />
+        <AppHeading level="h3" size="heading-lg" class="search-page__empty-title">
           Start Your Search
         </AppHeading>
-        <AppText class="text-neutral-20 mb-8 max-w-md mx-auto">
+        <AppText class="search-page__empty-text">
           Enter a dish name, ingredient, or use our filters to find exactly what you're craving
         </AppText>
         
         <!-- Browse Categories -->
-        <div class="mb-8">
-          <AppText size="body-sm" class="text-neutral-20 mb-4">
+        <div class="search-page__categories">
+          <AppText size="body-sm" class="search-page__categories-label">
             Or browse by category:
           </AppText>
-          <div class="flex flex-wrap gap-2 justify-center">
+          <div class="search-page__category-list">
             <NuxtLink
               v-for="category in popularCategories"
               :key="category.id"
@@ -146,9 +146,9 @@
       <!-- Search Results -->
       <div v-else-if="searchResults.length > 0">
         <!-- Results Header -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="search-page__results-header">
           <div>
-            <AppHeading level="h2" size="heading-lg" class="text-white mb-1">
+            <AppHeading level="h2" size="heading-lg" class="search-page__results-title">
               Search Results
             </AppHeading>
             <AppText class="text-neutral-20">
@@ -160,7 +160,7 @@
           <!-- Sort Options -->
           <select 
             v-model="sortBy"
-            class="bg-background-card border border-neutral-80/30 rounded-lg px-3 py-2 text-white text-sm"
+            class="search-page__sort-select"
           >
             <option value="relevance">Most Relevant</option>
             <option value="name">Name A-Z</option>
@@ -178,7 +178,7 @@
         />
 
         <!-- Load More -->
-        <div v-if="hasMoreResults" class="text-center mt-8">
+        <div v-if="hasMoreResults" class="search-page__load-more">
           <BaseButton 
             variant="secondary"
             :disabled="loadingMore"
@@ -196,16 +196,16 @@
       </div>
 
       <!-- No Results -->
-      <div v-else class="text-center py-16">
-        <BaseIcon name="search-x" size="4xl" class="text-neutral-80 mx-auto mb-6" />
-        <AppHeading level="h3" size="heading-lg" class="text-white mb-4">
+      <div v-else class="search-page__empty-state">
+        <BaseIcon name="search-x" size="xl" class="search-page__empty-icon" />
+        <AppHeading level="h3" size="heading-lg" class="search-page__empty-title">
           No Results Found
         </AppHeading>
-        <AppText class="text-neutral-20 mb-8 max-w-md mx-auto">
+        <AppText class="search-page__empty-text">
           We couldn't find any items matching your search. Try different keywords or adjust your filters.
         </AppText>
         
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <div class="search-page__empty-actions">
           <BaseButton 
             variant="secondary"
             @click="clearAllFilters"
@@ -220,17 +220,17 @@
         </div>
 
         <!-- Search Suggestions -->
-        <div v-if="searchSuggestions.length > 0" class="mt-8">
-          <AppText size="body-sm" class="text-neutral-20 mb-4">
+        <div v-if="searchSuggestions.length > 0" class="search-page__suggestions-large">
+          <AppText size="body-sm" class="search-page__suggestions-label">
             Try searching for:
           </AppText>
-          <div class="flex flex-wrap gap-2 justify-center">
+          <div class="search-page__tags">
             <BaseButton
               v-for="suggestion in searchSuggestions.slice(0, 5)"
               :key="suggestion"
               variant="ghost"
               size="sm"
-              class="text-neutral-20 hover:text-primary-green"
+              class="search-page__tag"
               @click="searchQuery = suggestion"
             >
               {{ suggestion }}
@@ -241,8 +241,8 @@
     </div>
 
     <!-- Recent Searches -->
-    <div v-if="recentSearches.length > 0" class="px-6 py-8 mt-12 border-t border-neutral-80/20">
-      <div class="flex items-center justify-between mb-4">
+    <div v-if="recentSearches.length > 0" class="search-page__recent">
+      <div class="search-page__recent-header">
         <AppHeading level="h3" size="heading-md" class="text-white">
           Recent Searches
         </AppHeading>
@@ -251,17 +251,18 @@
           size="sm"
           @click="clearRecentSearches"
         >
+          <BaseIcon name="clock" size="xs" class="mr-2" />
           Clear All
         </BaseButton>
       </div>
       
-      <div class="flex flex-wrap gap-2">
+      <div class="search-page__tags">
         <BaseButton
           v-for="recent in recentSearches"
           :key="recent"
           variant="ghost"
           size="sm"
-          class="text-neutral-20 hover:text-white border border-neutral-80/30 hover:border-primary-green/50"
+          class="search-page__tag"
           @click="searchQuery = recent"
         >
           <BaseIcon name="clock" size="xs" class="mr-2" />
@@ -273,7 +274,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types'
 
 // Stores
 import { useMenuStore } from '~/stores/menu'
@@ -322,7 +323,7 @@ const popularCategories = [
 ]
 
 // Reactive search results
-const searchResults = ref([])
+const searchResults = ref<MenuItemUI[]>([])
 
 // Watch for search query changes
 watch(searchQuery, async (newQuery) => {
@@ -409,7 +410,7 @@ const clearAllFilters = () => {
   showAdvancedFilters.value = false
 }
 
-const onItemSelected = (item: MenuItem) => {
+const onItemSelected = (item: MenuItemUI) => {
   menuStore.setSelectedDish(item)
   router.push(`/dish/${item.id}`)
 }
@@ -476,3 +477,216 @@ watch(searchQuery, (newQuery) => {
   }
 })
 </script>
+
+<style scoped lang="scss">
+@use '~/assets/scss/abstracts/variables' as *;
+
+.search-page {
+  min-height: 100vh;
+  background-color: var(--bg-background-dark);
+}
+
+.search-page__header {
+  padding: $space-8 $space-6;
+}
+
+.search-page__header-content {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  margin-bottom: $space-4;
+}
+
+.search-page__back-link {
+  color: var(--text-secondary);
+  transition: color $transition-base;
+  
+  &:hover {
+    color: white;
+  }
+}
+
+.search-page__title {
+  color: white;
+}
+
+.search-page__subtitle {
+  color: var(--text-secondary);
+}
+
+.search-page__controls {
+  padding: 0 $space-6 $space-8;
+}
+
+.search-page__input-wrapper {
+  margin-bottom: $space-6;
+}
+
+.search-page__input {
+  width: 100%;
+}
+
+.search-page__suggestions {
+  margin-bottom: $space-6;
+}
+
+.search-page__suggestions-label {
+  color: var(--text-secondary);
+  margin-bottom: $space-3;
+}
+
+.search-page__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.search-page__tag {
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  &:hover {
+    color: white;
+    border-color: var(--color-primary);
+  }
+}
+
+.search-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  margin-bottom: $space-4;
+}
+
+.search-page__advanced-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search-page__advanced-panel {
+  margin-top: $space-4;
+}
+
+.search-page__results {
+  padding: 0 $space-6;
+}
+
+.search-page__loading {
+  text-align: center;
+  padding: $space-12 0;
+}
+
+.search-page__spinner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border-bottom: 2px solid var(--color-primary);
+  animation: spin 1s linear infinite;
+  margin: 0 auto $space-4;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.search-page__empty-state {
+  text-align: center;
+  padding: $space-16 0;
+}
+
+.search-page__empty-icon {
+  color: var(--text-secondary);
+  margin: 0 auto $space-6;
+  opacity: 0.5;
+}
+
+.search-page__empty-title {
+  color: white;
+  margin-bottom: $space-4;
+}
+
+.search-page__empty-text {
+  color: var(--text-secondary);
+  margin-bottom: $space-8;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.search-page__categories {
+  margin-bottom: $space-8;
+}
+
+.search-page__categories-label {
+  color: var(--text-secondary);
+  margin-bottom: $space-4;
+}
+
+.search-page__category-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $space-2;
+}
+
+.search-page__empty-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  justify-content: center;
+  
+  @media (min-width: $breakpoint-sm) {
+    flex-direction: row;
+  }
+}
+
+.search-page__suggestions-large {
+  margin-top: $space-8;
+}
+
+.search-page__results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-6;
+}
+
+.search-page__results-title {
+  color: white;
+  margin-bottom: $space-1;
+}
+
+.search-page__sort-select {
+  background-color: var(--bg-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: $radius-lg;
+  padding: $space-2 $space-3;
+  color: white;
+  font-size: $text-sm;
+  outline: none;
+  
+  &:focus {
+    border-color: var(--color-primary);
+  }
+}
+
+.search-page__load-more {
+  text-align: center;
+  margin-top: $space-8;
+}
+
+.search-page__recent {
+  padding: $space-8 $space-6;
+  margin-top: $space-12;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-page__recent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-4;
+}
+</style>

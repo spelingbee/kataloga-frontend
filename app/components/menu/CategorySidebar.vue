@@ -71,7 +71,7 @@
           size="sm"
           class="category-sidebar__filter-badge"
         >
-          Price: ${{ filters.priceRange[0] }}-${{ filters.priceRange[1] }}
+          Price: ${{ safePriceRangeMin }}-${{ safePriceRangeMax }}
         </BaseBadge>
         
         <BaseBadge
@@ -80,7 +80,7 @@
           size="sm"
           class="category-sidebar__filter-badge"
         >
-          {{ filters.calories[0] }}-{{ filters.calories[1] }} cal
+          {{ safeCaloriesMin }}-{{ safeCaloriesMax }} cal
         </BaseBadge>
       </div>
     </div>
@@ -89,8 +89,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Category } from '~/types'
+import type { CategoryUI } from '~/types'
 import { useMenuStore } from '~/stores/menu'
+import { safeArrayAccess } from '~/types/utils/type-guards'
 import CategoryIcon from './CategoryIcon.vue'
 
 // Stores
@@ -122,12 +123,18 @@ const hasActiveFilters = computed(() => {
   )
 })
 
+// Safe array access for filters
+const safePriceRangeMin = computed(() => safeArrayAccess(filters.value.priceRange, 0) || 0)
+const safePriceRangeMax = computed(() => safeArrayAccess(filters.value.priceRange, 1) || 50)
+const safeCaloriesMin = computed(() => safeArrayAccess(filters.value.calories, 0) || 0)
+const safeCaloriesMax = computed(() => safeArrayAccess(filters.value.calories, 1) || 1000)
+
 // Methods
 const isActiveCategory = (categoryId: string) => {
   return currentCategory.value === categoryId
 }
 
-const selectCategory = (category: Category) => {
+const selectCategory = (category: CategoryUI) => {
   // Toggle category selection
   if (currentCategory.value === category.id) {
     menuStore.setCurrentCategory(null)

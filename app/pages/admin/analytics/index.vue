@@ -326,7 +326,10 @@ const loadAnalytics = async () => {
     loading.value = true
     const { $apiClient } = useNuxtApp()
     
-    const response = await $apiClient.get('/admin/analytics', {
+    const response = await $apiClient.get<{
+      success: boolean;
+      data: any; // Analytics data structure would need to be defined
+    }>('/admin/analytics', {
       params: { period: selectedPeriod.value }
     })
     
@@ -390,16 +393,15 @@ const loadAnalytics = async () => {
 const exportReport = async () => {
   try {
     const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.get('/admin/analytics/export', {
+    const response = await $apiClient.get<Blob>('/admin/analytics/export', {
       params: { 
         period: selectedPeriod.value,
         format: 'csv'
-      },
-      responseType: 'blob'
+      }
     })
     
     // Create download link
-    const blob = new Blob([response.data], { type: 'text/csv' })
+    const blob = new Blob([response], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url

@@ -22,7 +22,7 @@
       </div>
       <div class="order-summary__info-row">
         <span class="order-summary__label">Type</span>
-        <span class="order-summary__value">{{ order.type }}</span>
+        <span class="order-summary__value">{{ order.orderType }}</span>
       </div>
     </div>
 
@@ -36,7 +36,7 @@
           class="order-summary__item"
         >
           <div class="order-summary__item-info">
-            <span class="order-summary__item-name">{{ item.name }}</span>
+            <span class="order-summary__item-name">{{ item.menuItem.name }}</span>
             <span class="order-summary__item-quantity">×{{ item.quantity }}</span>
           </div>
           <span class="order-summary__item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
@@ -105,6 +105,8 @@
 </template>
 
 <script setup lang="ts">
+import type { OrderUI } from '~/types'
+
 interface OrderItem {
   id: string
   name: string
@@ -118,24 +120,8 @@ interface CustomerInfo {
   address?: string
 }
 
-interface Order {
-  id: string
-  status: string
-  type: string
-  date: string
-  items: OrderItem[]
-  subtotal: number
-  tax: number
-  deliveryFee: number
-  discount: number
-  total: number
-  customerInfo?: CustomerInfo
-  paymentMethod?: string
-  notes?: string
-}
-
 interface Props {
-  order: Order
+  order: OrderUI
 }
 
 const props = defineProps<Props>()
@@ -154,7 +140,7 @@ const statusVariant = computed(() => {
 })
 
 const formattedDate = computed(() => {
-  return new Date(props.order.date).toLocaleDateString('en-US', {
+  return new Date(props.order.createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

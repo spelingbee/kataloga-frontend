@@ -1,4 +1,4 @@
-import type { Order, CreateOrderDto, OrderStatus } from '~/types'
+import type { OrderUI, CreateOrderDto, OrderStatus } from '~/types'
 
 import { useOrderStore } from '~/stores/order'
 
@@ -25,7 +25,7 @@ export function useOrders() {
   const getOrder = (orderId: string) => orderStore.getOrder(orderId)
   const repeatOrder = (orderId: string) => orderStore.repeatOrder(orderId)
   const getActiveOrders = () => orderStore.getActiveOrders()
-  const setCurrentOrder = (order: Order | null) => orderStore.setCurrentOrder(order)
+  const setCurrentOrder = (order: OrderUI | null) => orderStore.setCurrentOrder(order)
   const clearCurrentOrder = () => orderStore.clearCurrentOrder()
 
   // Computed
@@ -44,11 +44,11 @@ export function useOrders() {
     return orderHistory.value.filter(order => order.status === status)
   }
 
-  const isOrderActive = (order: Order) => {
+  const isOrderActive = (order: OrderUI) => {
     return ['PENDING', 'CONFIRMED', 'PREPARING'].includes(order.status)
   }
 
-  const isOrderCompleted = (order: Order) => {
+  const isOrderCompleted = (order: OrderUI) => {
     return ['DELIVERED', 'CANCELLED'].includes(order.status)
   }
 
@@ -58,6 +58,7 @@ export function useOrders() {
       CONFIRMED: 'Confirmed',
       PREPARING: 'Preparing',
       READY: 'Ready',
+      OUT_FOR_DELIVERY: 'Out for Delivery',
       DELIVERED: 'Delivered',
       CANCELLED: 'Cancelled',
     }
@@ -70,6 +71,7 @@ export function useOrders() {
       CONFIRMED: 'blue',
       PREPARING: 'yellow',
       READY: 'green',
+      OUT_FOR_DELIVERY: 'blue',
       DELIVERED: 'green',
       CANCELLED: 'red',
     }
@@ -193,7 +195,11 @@ export function useOrders() {
     const { addItem } = useCart()
     
     for (const orderItem of order.items) {
-      addItem(orderItem.menuItem, orderItem.quantity, orderItem.customizations)
+      // Convert readonly customizations to mutable for cart
+      const customizations = orderItem.customizations 
+        ? { ...orderItem.customizations } 
+        : undefined
+      addItem(orderItem.menuItem, orderItem.quantity, customizations)
     }
 
     return true

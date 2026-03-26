@@ -52,8 +52,8 @@ const emit = defineEmits<{
 }>()
 
 const iconSize = computed(() => {
-  const sizes = { sm: 'sm', md: 'md', lg: 'lg' }
-  return sizes[props.size]
+  const sizes: Record<string, 'xs' | 'sm' | 'md' | 'lg' | 'xl'> = { sm: 'sm', md: 'md', lg: 'lg' }
+  return sizes[props.size] || 'md'
 })
 
 const formattedPrice = computed(() => {

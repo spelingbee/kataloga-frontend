@@ -2,7 +2,29 @@ export default defineI18nConfig(() => ({
   legacy: false,
   locale: 'en',
   fallbackLocale: 'en',
-  messages: {},
+  messages: {
+    en: {
+      common: {
+        loading: 'Loading...',
+        error: 'Error',
+        success: 'Success'
+      }
+    },
+    ru: {
+      common: {
+        loading: 'Загрузка...',
+        error: 'Ошибка',
+        success: 'Успех'
+      }
+    },
+    ky: {
+      common: {
+        loading: 'Жүктөлүүдө...',
+        error: 'Ката',
+        success: 'Ийгилик'
+      }
+    }
+  },
   datetimeFormats: {
     en: {
       short: {

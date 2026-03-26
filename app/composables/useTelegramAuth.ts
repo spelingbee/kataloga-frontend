@@ -53,8 +53,8 @@ export const useTelegramAuth = () => {
       })
 
       // Store authentication data
-      authStore.setUser(response.user)
-      authStore.setTokens(response.accessToken, response.refreshToken)
+      authStore.setUser(response.user as any)
+      authStore.setTokens(response.accessToken)
 
       // Show success feedback
       telegram.notificationFeedback('success')
@@ -156,7 +156,7 @@ export const useTelegramAuth = () => {
 
     try {
       const contact = await telegram.requestContact()
-      
+
       if (contact) {
         telegram.notificationFeedback('success')
         return contact.phone

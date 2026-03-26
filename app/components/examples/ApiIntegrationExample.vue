@@ -73,7 +73,7 @@
                 </button>
                 <button
                   class="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-                  @click="addToCart(item)"
+                  @click="addToCart(item as any)"
                 >
                   Add to Cart
                 </button>
@@ -309,7 +309,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem, CustomerInfo } from '~/types'
+import type { MenuItemUI, CustomerInfo } from '~/types'
 import { useCart } from '~/composables/useCart'
 import { useMenu } from '~/composables/useMenu'
 import { useOrders } from '~/composables/useOrders'
@@ -400,7 +400,7 @@ const toggleFavorite = async (itemId: string) => {
   await toggleFavourite(itemId)
 }
 
-const addToCart = (item: MenuItem) => {
+const addToCart = (item: MenuItemUI) => {
   addItem(item, 1)
 }
 

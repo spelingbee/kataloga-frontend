@@ -5,7 +5,7 @@
       <div class="flex items-center gap-4">
         <BaseButton 
           variant="ghost" 
-          @click="$router.go(-1)"
+          @click="router.go(-1)"
         >
           <BaseIcon name="arrow-left" size="md" />
         </BaseButton>
@@ -76,7 +76,7 @@
         <div class="flex items-center justify-center gap-6 mb-8">
           <BaseButton
             variant="secondary"
-            size="xl"
+            size="lg"
             :disabled="selectedQuantity <= 1"
             class="w-16 h-16 rounded-full"
             @click="decreaseQuantity"
@@ -95,7 +95,7 @@
           
           <BaseButton
             variant="secondary"
-            size="xl"
+            size="lg"
             :disabled="selectedQuantity >= maxQuantity"
             class="w-16 h-16 rounded-full"
             @click="increaseQuantity"
@@ -328,7 +328,8 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types/ui'
+import { createMenuItemUI } from '~/types/utils/converters'
 import { useCartStore } from '~/stores/cart'
 
 // Page setup
@@ -345,13 +346,13 @@ const cartStore = useCartStore()
 // Reactive state
 const loading = ref(true)
 const selectedQuantity = ref(1)
-const customQuantity = ref<number | null>(null)
+const customQuantity = ref<number | undefined>(undefined)
 
 // Get dish ID from route
 const dishId = computed(() => route.params.id as string)
 
 // Mock dish data
-const dish = ref<MenuItem | null>(null)
+const dish = ref<MenuItemUI | null>(null)
 const basePrice = ref(15.99)
 const baseCalories = ref(650)
 const baseProtein = ref(35)
@@ -422,7 +423,7 @@ const loadDish = async () => {
     // Mock API call
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    dish.value = {
+    dish.value = createMenuItemUI({
       id: dishId.value,
       name: 'Delicious Burger',
       description: 'A mouth-watering burger',
@@ -430,7 +431,7 @@ const loadDish = async () => {
       categoryId: 'fastfood',
       isActive: true,
       calories: baseCalories.value
-    }
+    })
     
   } catch (error) {
     console.error('Error loading dish:', error)
@@ -454,13 +455,13 @@ const decreaseQuantity = () => {
 const applyCustomQuantity = () => {
   if (isValidCustomQuantity.value) {
     selectedQuantity.value = customQuantity.value!
-    customQuantity.value = null
+    customQuantity.value = undefined
   }
 }
 
 const resetQuantity = () => {
   selectedQuantity.value = 1
-  customQuantity.value = null
+  customQuantity.value = undefined
 }
 
 const getRecommendationText = () => {

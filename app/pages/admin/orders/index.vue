@@ -317,11 +317,12 @@
     </div>
 
     <!-- Order Details Modal -->
-    <BaseModal v-if="selectedOrder" @close="selectedOrder = null">
+    <BaseModal v-model="showOrderDetails" title="Order Details" :size="MODAL_SIZES.LG">
       <div class="p-6 max-w-2xl">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
-          Order Details - #{{ selectedOrder.id.slice(-6) }}
-        </h3>
+        <div v-if="selectedOrder">
+          <h4 class="text-md font-medium text-gray-900 mb-4">
+            Order #{{ selectedOrder.id.slice(-6) }}
+          </h4>
         
         <div class="space-y-6">
           <!-- Customer Info -->
@@ -380,20 +381,18 @@
         <div class="mt-6 flex justify-end">
           <button
             class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-            @click="selectedOrder = null"
+            @click="showOrderDetails = false"
           >
             Close
           </button>
+        </div>
         </div>
       </div>
     </BaseModal>
 
     <!-- Cancel Order Confirmation Modal -->
-    <BaseModal v-if="showCancelModal" @close="showCancelModal = false">
+    <BaseModal v-model="showCancelModal" title="Cancel Order" :size="MODAL_SIZES.MD">
       <div class="p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">
-          Cancel Order
-        </h3>
         <p class="text-sm text-gray-500 mb-6">
           Are you sure you want to cancel order #{{ orderToCancel?.id.slice(-6) }}? This action cannot be undone.
         </p>
@@ -417,9 +416,14 @@
 </template>
 
 <script setup lang="ts">
+import { MODAL_SIZES } from '~/types/ui'
 import { ref, computed, onMounted } from 'vue'
 import { debounce } from '~/utils/debounce'
-import type { Order, OrderStatus, OrderItem } from '~/types'
+import { updateReadonlyObject } from '~/types/utils/readonly'
+import { OrderService } from '~/services/api.service'
+import type { OrderUI, OrderItemUI } from '~/types'
+import { OrderStatus } from '~/types'
+import { createMenuItemUI } from '~/types/utils/converters'
 
 // Define page meta
 definePageMeta({
@@ -428,11 +432,12 @@ definePageMeta({
 })
 
 // Reactive state
-const orders = ref<Order[]>([])
+const orders = ref<OrderUI[]>([])
 const loading = ref(true)
-const selectedOrder = ref<Order | null>(null)
+const selectedOrder = ref<OrderUI | null>(null)
+const showOrderDetails = ref(false)
 const showCancelModal = ref(false)
-const orderToCancel = ref<Order | null>(null)
+const orderToCancel = ref<OrderUI | null>(null)
 
 const orderStats = ref({
   pending: 0,
@@ -473,100 +478,118 @@ const visiblePages = computed(() => {
 
 // Methods
 const loadOrders = async () => {
-  try {
-    loading.value = true
-    const { $apiClient } = useNuxtApp()
-    
-    const params: any = {
-      page: pagination.value.currentPage,
-      limit: pagination.value.limit
+  loading.value = true
+  
+  const filtersData = {
+    page: pagination.value.currentPage,
+    limit: pagination.value.limit,
+    search: filters.value.search || undefined,
+    status: filters.value.status || undefined,
+    dateFrom: filters.value.dateFrom || undefined,
+    dateTo: filters.value.dateTo || undefined
+  }
+  
+  const result = await OrderService.getOrders(filtersData)
+  
+  if (result.success) {
+    orders.value = result.data.orders || []
+    pagination.value = {
+      currentPage: filtersData.page || 1,
+      totalPages: Math.ceil(result.data.total / filtersData.limit) || 1,
+      total: result.data.total || 0,
+      limit: filtersData.limit || 10
     }
-    
-    if (filters.value.search) params.search = filters.value.search
-    if (filters.value.status) params.status = filters.value.status
-    if (filters.value.dateFrom) params.dateFrom = filters.value.dateFrom
-    if (filters.value.dateTo) params.dateTo = filters.value.dateTo
-    
-    const response = await $apiClient.get('/admin/orders', { params })
-    
-    if (response.success) {
-      orders.value = response.data.items || []
-      pagination.value = {
-        currentPage: response.data.currentPage || 1,
-        totalPages: response.data.totalPages || 1,
-        total: response.data.total || 0,
-        limit: response.data.limit || 10
-      }
-    }
-  } catch (error) {
-    console.error('Failed to load orders:', error)
+  } else {
+    console.error('Failed to load orders:', result.error)
     // Use mock data for development
     orders.value = [
       {
         id: '1',
+        orderNumber: 'ORD-001',
         status: 'PENDING' as OrderStatus,
         total: 45.99,
+        customerId: 'customer-1',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        estimatedTime: 30,
+        deliveryAddress: '123 Main St, City, State 12345',
+        orderType: 'delivery' as const,
+        subtotal: 42.99,
+        deliveryFee: 3.00,
+        discount: 0,
+        tax: 0,
         customerInfo: { 
           name: 'John Doe', 
           phone: '+1234567890',
           email: 'john@example.com'
         },
-        deliveryAddress: '123 Main St, City, State 12345',
-        createdAt: new Date().toISOString(),
         items: [
           {
             id: '1',
             menuItemId: '1',
-            menuItem: {
+            menuItem: createMenuItemUI({
               id: '1',
               name: 'Margherita Pizza',
               description: 'Classic pizza',
-              price: 18.99,
-              isActive: true
-            },
+              price: 18.99
+            }),
             quantity: 2,
             price: 18.99,
-            subtotal: 37.98
+            subtotal: 37.98,
+            selectedModifiers: [],
+            customizations: {}
           },
           {
             id: '2',
             menuItemId: '2',
-            menuItem: {
+            menuItem: createMenuItemUI({
               id: '2',
               name: 'Caesar Salad',
               description: 'Fresh salad',
-              price: 8.01,
-              isActive: true
-            },
+              price: 12.99
+            }),
             quantity: 1,
-            price: 8.01,
-            subtotal: 8.01
+            price: 12.99,
+            subtotal: 12.99,
+            selectedModifiers: [],
+            customizations: {}
           }
         ]
       },
       {
         id: '2',
+        orderNumber: 'ORD-002',
         status: 'PREPARING' as OrderStatus,
         total: 32.50,
+        customerId: 'customer-2',
+        createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+        estimatedTime: 20,
+        deliveryAddress: null,
+        orderType: 'pickup' as const,
+        subtotal: 29.50,
+        deliveryFee: 0,
+        discount: 0,
+        tax: 3.00,
         customerInfo: { 
           name: 'Jane Smith', 
           phone: '+1234567891'
         },
-        createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
         items: [
           {
             id: '3',
             menuItemId: '1',
-            menuItem: {
+            menuItem: createMenuItemUI({
               id: '1',
               name: 'Margherita Pizza',
               description: 'Classic pizza',
-              price: 18.99,
-              isActive: true
-            },
+              price: 18.99
+            }),
             quantity: 1,
             price: 18.99,
-            subtotal: 18.99
+            subtotal: 18.99,
+            selectedModifiers: [],
+            customizations: {}
           }
         ]
       }
@@ -578,15 +601,26 @@ const loadOrders = async () => {
       total: 2,
       limit: 10
     }
-  } finally {
-    loading.value = false
   }
+  
+  loading.value = false
 }
 
 const loadOrderStats = async () => {
   try {
     const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.get('/admin/orders/stats')
+    const response = await $apiClient.get<{
+      success: boolean;
+      data: {
+        pending: number;
+        confirmed: number;
+        preparing: number;
+        ready: number;
+        outForDelivery: number;
+        delivered: number;
+        cancelled: number;
+      }
+    }>('/admin/orders/stats')
     
     if (response.success) {
       orderStats.value = response.data
@@ -629,30 +663,39 @@ const changePage = (page: number) => {
   }
 }
 
-const updateOrderStatus = async (order: Order, newStatus: string) => {
-  try {
-    const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.patch(`/admin/orders/${order.id}/status`, {
-      status: newStatus
-    })
-    
-    if (response.success) {
-      order.status = newStatus as OrderStatus
-      // Reload stats to reflect changes
-      loadOrderStats()
+const updateOrderStatus = async (order: OrderUI, newStatus: string) => {
+  const result = await OrderService.updateOrderStatus(order.id, newStatus)
+  
+  if (result.success) {
+    // Find the order in the array and replace it with an updated version
+    const orderIndex = orders.value.findIndex(o => o.id === order.id)
+    if (orderIndex >= 0) {
+      const updatedOrder = updateReadonlyObject(order, {
+        status: newStatus as OrderStatus
+      })
+      orders.value[orderIndex] = updatedOrder
     }
-  } catch (error) {
-    console.error('Failed to update order status:', error)
-    // For development, just update locally
-    order.status = newStatus as OrderStatus
+    // Reload stats to reflect changes
+    loadOrderStats()
+  } else {
+    console.error('Failed to update order status:', result.error)
+    // For development, just update locally using immutable operation
+    const orderIndex = orders.value.findIndex(o => o.id === order.id)
+    if (orderIndex >= 0) {
+      const updatedOrder = updateReadonlyObject(order, {
+        status: newStatus as OrderStatus
+      })
+      orders.value[orderIndex] = updatedOrder
+    }
   }
 }
 
-const viewOrderDetails = (order: Order) => {
+const viewOrderDetails = (order: OrderUI) => {
   selectedOrder.value = order
+  showOrderDetails.value = true
 }
 
-const confirmCancelOrder = (order: Order) => {
+const confirmCancelOrder = (order: OrderUI) => {
   orderToCancel.value = order
   showCancelModal.value = true
 }
@@ -660,26 +703,34 @@ const confirmCancelOrder = (order: Order) => {
 const cancelOrder = async () => {
   if (!orderToCancel.value) return
   
-  try {
-    const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.patch(`/admin/orders/${orderToCancel.value.id}/status`, {
-      status: 'CANCELLED'
-    })
-    
-    if (response.success) {
-      orderToCancel.value.status = 'CANCELLED'
-      loadOrderStats()
+  const result = await OrderService.cancelOrder(orderToCancel.value.id)
+  
+  if (result.success) {
+    // Find the order in the array and replace it with an updated version
+    const orderIndex = orders.value.findIndex(o => o.id === orderToCancel.value!.id)
+    if (orderIndex >= 0) {
+      const updatedOrder = updateReadonlyObject(orderToCancel.value, {
+        status: 'CANCELLED' as OrderStatus
+      })
+      orders.value[orderIndex] = updatedOrder
     }
-  } catch (error) {
-    console.error('Failed to cancel order:', error)
-    // For development, just update locally
+    loadOrderStats()
+  } else {
+    console.error('Failed to cancel order:', result.error)
+    // For development, just update locally using immutable operation
     if (orderToCancel.value) {
-      orderToCancel.value.status = 'CANCELLED'
+      const orderIndex = orders.value.findIndex(o => o.id === orderToCancel.value!.id)
+      if (orderIndex >= 0) {
+        const updatedOrder = updateReadonlyObject(orderToCancel.value, {
+          status: 'CANCELLED' as OrderStatus
+        })
+        orders.value[orderIndex] = updatedOrder
+      }
     }
-  } finally {
-    showCancelModal.value = false
-    orderToCancel.value = null
   }
+  
+  showCancelModal.value = false
+  orderToCancel.value = null
 }
 
 const getStatusColor = (status: OrderStatus) => {
@@ -695,11 +746,13 @@ const getStatusColor = (status: OrderStatus) => {
   return colors[status] || 'bg-gray-100 text-gray-800'
 }
 
-const getOrderItemsSummary = (items: OrderItem[]) => {
+const getOrderItemsSummary = (items: OrderItemUI[]) => {
   if (items.length <= 2) {
     return items.map(item => `${item.quantity}x ${item.menuItem.name}`).join(', ')
   }
-  return `${items[0].quantity}x ${items[0].menuItem.name} +${items.length - 1} more`
+  const firstItem = items[0]
+  if (!firstItem) return 'No items'
+  return `${firstItem.quantity}x ${firstItem.menuItem.name} +${items.length - 1} more`
 }
 
 const formatDate = (dateString: string) => {

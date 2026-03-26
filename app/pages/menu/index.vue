@@ -19,7 +19,7 @@
         <BaseButton 
           variant="secondary" 
           class="menu-controls__search-button"
-          @click="$router.push('/menu/search')"
+          @click="router.push('/menu/search')"
         >
           <BaseIcon name="search" size="sm" />
         </BaseButton>
@@ -46,6 +46,14 @@
     <section v-if="categories.length > 0" class="menu-categories">
       <div class="menu-categories__list">
         <button
+          class="menu-categories__chip"
+          :class="{ 'menu-categories__chip--active': activeCategory === 'all' || !activeCategory }"
+          @click="onCategorySelected(null)"
+        >
+          All Items
+          <span class="menu-categories__count">{{ filteredItems.length }}</span>
+        </button>
+        <button
           v-for="category in categories"
           :key="category.id"
           class="menu-categories__chip"
@@ -54,14 +62,6 @@
         >
           {{ category.name }}
           <span class="menu-categories__count">{{ category.count || 0 }}</span>
-        </button>
-        <button
-          class="menu-categories__chip"
-          :class="{ 'menu-categories__chip--active': activeCategory === 'all' || !activeCategory }"
-          @click="onCategorySelected(null)"
-        >
-          All Items
-          <span class="menu-categories__count">{{ filteredItems.length }}</span>
         </button>
       </div>
     </section>
@@ -107,31 +107,6 @@
       </LoadingWrapper>
     </section>
 
-    <!-- Debug Actions (Development Only) -->
-    <section v-if="$config.public.NODE_ENV === 'development'" class="menu-debug" style="background: #333; padding: 1rem; margin: 1rem 0; border-radius: 8px;">
-      <h3 style="color: white; margin-bottom: 1rem;">🔧 Debug Tools</h3>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <BaseButton variant="primary" @click="testApiConnection">
-          🌐 Test API Connection
-        </BaseButton>
-        <BaseButton variant="secondary" @click="testTenantConfig">
-          🏢 Test Tenant Config
-        </BaseButton>
-        <BaseButton variant="secondary" @click="manualFetchMenu">
-          🍽️ Manual Fetch Menu
-        </BaseButton>
-        <BaseButton variant="secondary" @click="clearCache">
-          🗑️ Clear Cache
-        </BaseButton>
-      </div>
-      <div style="margin-top: 1rem; color: white; font-size: 0.875rem;">
-        <div>Loading: {{ menuStore.loading }}</div>
-        <div>Error: {{ menuStore.error }}</div>
-        <div>Categories: {{ categories.length }}</div>
-        <div>Items: {{ filteredItems.length }}</div>
-      </div>
-    </section>
-
     <!-- Quick Actions -->
     <section class="menu-actions">
       <div class="menu-actions__content">
@@ -153,7 +128,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types/ui'
 
 // Stores
 import { useMenuStore } from '~/stores/menu'
@@ -197,12 +172,12 @@ const onCategorySelected = (categoryId: string | null) => {
   }
 }
 
-const onItemSelected = (item: MenuItem) => {
+const onItemSelected = (item: MenuItemUI) => {
   menuStore.setSelectedDish(item)
   router.push(`/dish/${item.id}`)
 }
 
-const onAddToCart = (item: MenuItem) => {
+const onAddToCart = (item: MenuItemUI) => {
   // The MenuItemCard component already handles adding to cart
   // This is just for additional handling if needed
   console.log('Item added to cart:', item.name)
@@ -224,56 +199,10 @@ const clearFilters = () => {
   showFilters.value = false
 }
 
-// Debug methods
-const testApiConnection = async () => {
-  console.log('🧪 Testing API Connection...')
-  try {
-    const response = await fetch('http://localhost:3001/health')
-    const text = await response.text()
-    console.log('✅ Health Check:', response.status, text)
-    alert(`Health Check: ${response.status} - ${text}`)
-  } catch (error) {
-    console.error('❌ Health Check Failed:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    alert(`Health Check Failed: ${errorMessage}`)
-  }
-}
-
-const testTenantConfig = () => {
-  console.log('🧪 Testing Tenant Config...')
-  const config = useRuntimeConfig()
-  console.log('🔧 Runtime Config:', config.public)
-  alert(`Tenant Slug: ${config.public.tenantSlug}\nAPI Base URL: ${config.public.apiBaseUrl}`)
-}
-
-const manualFetchMenu = async () => {
-  console.log('🧪 Manual Fetch Menu...')
-  try {
-    await menuStore.fetchMenu()
-    alert('Manual fetch completed! Check console for details.')
-  } catch (error) {
-    console.error('❌ Manual fetch failed:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    alert(`Manual fetch failed: ${errorMessage}`)
-  }
-}
-
-const clearCache = () => {
-  console.log('🧪 Clearing Cache...')
-  localStorage.clear()
-  if ('indexedDB' in window) {
-    indexedDB.deleteDatabase('MenuAppDB')
-  }
-  alert('Cache cleared! Refresh the page.')
-}
-
 // Initialize
 onMounted(async () => {
-  console.log('🎯 Menu Page - onMounted called')
-  
   // Set initial category from query params
   const categoryFromQuery = route.query.category as string
-  console.log('📋 Menu Page - Category from query:', categoryFromQuery)
   
   if (categoryFromQuery) {
     activeCategory.value = categoryFromQuery
@@ -283,15 +212,10 @@ onMounted(async () => {
     menuStore.setCurrentCategory(null)
   }
   
-  console.log('🏪 Menu Page - Active category set to:', activeCategory.value)
-  
   // Fetch menu data
-  console.log('🚀 Menu Page - Starting fetchMenu...')
   try {
     await menuStore.fetchMenu()
-    console.log('✅ Menu Page - fetchMenu completed successfully')
   } catch (error) {
-    console.error('❌ Menu Page - fetchMenu failed:', error)
     // Error is handled by the store
   }
 })

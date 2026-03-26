@@ -67,6 +67,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch, onMounted } from 'vue'
+import { useLazyLoading } from '~/composables/useLazyLoading'
+
 interface Props {
   src: string
   alt: string
@@ -93,12 +96,32 @@ const props = withDefaults(defineProps<Props>(), {
   rootMargin: '50px',
 })
 
-const { imageSrc, target, isVisible, isLoaded, hasError, onLoad, onError } = useLazyImage(
-  props.src,
-  {
-    threshold: props.threshold,
-    rootMargin: props.rootMargin,
-    once: true,
-  }
-)
+const isLoaded = ref(false)
+const hasError = ref(false)
+
+const { isVisible, target } = useLazyLoading({
+  threshold: props.threshold,
+  rootMargin: props.rootMargin,
+  once: true,
+})
+
+const imageRef = ref<HTMLImageElement | null>(null)
+
+const imageSrc = computed(() => (isVisible.value || props.eager) ? props.src : null)
+
+const onLoad = () => {
+  isLoaded.value = true
+  hasError.value = false
+}
+
+const onError = () => {
+  hasError.value = true
+  isLoaded.value = false
+}
+
+// Reset state when src changes
+watch(() => props.src, () => {
+  isLoaded.value = false
+  hasError.value = false
+})
 </script>

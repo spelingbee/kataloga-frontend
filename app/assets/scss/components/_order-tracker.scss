@@ -105,7 +105,7 @@
     transition: color 0.2s ease;
 
     &:hover {
-      color: #22c55e; // Lighter green
+      color: $color-success-light; // Lighter green
     }
   }
 
@@ -214,7 +214,7 @@
       background-color: $color-primary-green;
 
       &:hover {
-        background-color: #16a34a; // Darker green
+        background-color: $color-success-dark; // Darker green
       }
     }
   }

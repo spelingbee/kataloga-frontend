@@ -17,7 +17,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  cols: { mobile: 1, tablet: 2, desktop: 3, xl: 4 },
+  cols: () => ({ mobile: 1, tablet: 2, desktop: 3, xl: 4 }),
   gap: 'md',
   alignItems: 'stretch',
   justifyItems: 'stretch',

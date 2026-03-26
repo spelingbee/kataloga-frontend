@@ -3,8 +3,8 @@
     <SkeletonLoader
       v-if="isLoading"
       variant="image"
-      :width="width"
-      :height="height"
+      :width="String(width)"
+      :height="String(height)"
     />
     
     <NuxtImg

@@ -5,7 +5,7 @@
       <div class="flex items-center gap-4">
         <BaseButton 
           variant="ghost" 
-          @click="$router.go(-1)"
+          @click="router.go(-1)"
         >
           <BaseIcon name="arrow-left" size="md" />
         </BaseButton>
@@ -343,7 +343,7 @@
           variant="primary"
           size="lg"
           class="flex-1"
-          @click="$router.push(`/dish/${dishId}`)"
+          @click="router.push(`/dish/${dishId}`)"
         >
           <BaseIcon name="arrow-left" size="sm" class="mr-2" />
           Back to Dish
@@ -372,7 +372,8 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem, NutritionInfo } from '~/types'
+import type { MenuItemUI, NutritionInfo } from '~/types/ui'
+import { createMenuItemUI } from '~/types/utils/converters'
 
 // Page setup
 definePageMeta({
@@ -390,7 +391,7 @@ const loading = ref(true)
 const dishId = computed(() => route.params.id as string)
 
 // Mock dish data
-const dish = ref<MenuItem | null>(null)
+const dish = ref<MenuItemUI | null>(null)
 
 // Mock nutrition data
 const nutritionInfo = ref<NutritionInfo>({
@@ -415,7 +416,11 @@ const vitaminsAndMinerals = ref([
   { name: 'Magnesium', amount: 45, unit: 'mg', dailyValue: 11 }
 ])
 
-const dietaryLabels = ref([
+const dietaryLabels = ref<Array<{
+  name: string
+  icon: string
+  variant: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info'
+}>>([
   { name: 'High Protein', icon: 'activity', variant: 'success' },
   { name: 'Contains Gluten', icon: 'alert-triangle', variant: 'warning' },
   { name: 'Contains Dairy', icon: 'droplet', variant: 'warning' },
@@ -457,7 +462,7 @@ const loadDish = async () => {
     // Mock API call
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    dish.value = {
+    dish.value = createMenuItemUI({
       id: dishId.value,
       name: 'Delicious Burger',
       description: 'A mouth-watering burger',
@@ -466,7 +471,7 @@ const loadDish = async () => {
       isActive: true,
       calories: totalCalories.value,
       nutritionInfo: nutritionInfo.value
-    }
+    })
     
   } catch (error) {
     console.error('Error loading dish:', error)

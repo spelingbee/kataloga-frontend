@@ -91,7 +91,7 @@
 
     <!-- Sticky Cart Button (Mobile) -->
     <StickyCartButton
-      v-if="showStickyCart"
+      v-if="shouldShowStickyCart"
       @click="handleStickyCartClick"
     />
 
@@ -168,15 +168,31 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // Composables
-const { isDark, toggle: toggleTheme } = useTheme()
+const { isDark, toggleTheme } = useTheme()
 const cartStore = useCartStore()
+const route = useRoute()
 
 // Computed properties
+const shouldShowStickyCart = computed(() => {
+  if (!props.showStickyCart) return false
+  
+  // Hide on specific routes
+  const hiddenRoutes = ['/cart', '/checkout', '/orders']
+  const currentPath = route.path
+  
+  // check if current path starts with any of the hidden routes
+  if (hiddenRoutes.some(path => currentPath.startsWith(path))) {
+    return false
+  }
+  
+  return true
+})
+
 const layoutClasses = computed(() => [
   `app-layout--${props.variant}`,
   {
     'app-layout--with-sidebar': props.showSidebar,
-    'app-layout--with-mobile-nav': props.showMobileNav,
+    'app-layout--with-mobile-nav': props.showMobileNav && props.variant !== 'minimal',
     'app-layout--minimal': props.variant === 'minimal'
   }
 ])

@@ -1,3 +1,5 @@
+import { useCartStore } from '~/stores/cart'
+
 export default defineNuxtRouteMiddleware((to, from) => {
   const cartStore = useCartStore()
 

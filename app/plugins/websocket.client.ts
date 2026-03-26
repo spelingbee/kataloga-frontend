@@ -1,15 +1,24 @@
 export default defineNuxtPlugin({
-  name: 'websocket' as any,
-  dependsOn: ['tenant-resolver'] as any, // Ensure tenant is resolved before WebSocket connects
+  name: 'websocket',
   async setup() {
+    let wsService: any = null
+    let notificationService: any = null
+
     // Only run on client side
-    if (process.server) return
+    if (process.server) {
+      return {
+        provide: {
+          wsService,
+          notificationService
+        }
+      }
+    }
 
   const { useWebSocketService } = await import('~/services/websocket.service')
   const { useNotificationService } = await import('~/services/notification.service')
   
-  const wsService = useWebSocketService()
-  const notificationService = useNotificationService()
+  wsService = useWebSocketService()
+  notificationService = useNotificationService()
   
   // Initialize WebSocket connection when user is authenticated
   const { useAuthStore } = await import('~/stores/auth')
@@ -68,7 +77,7 @@ export default defineNuxtPlugin({
       if (document.visibilityState === 'visible' && authStore.isAuthenticated) {
         // Reconnect when page becomes visible
         if (!wsService.isConnected()) {
-          wsService.connect().catch(error => {
+          wsService.connect().catch((error: any) => {
             console.error('Failed to reconnect WebSocket:', error)
           })
         }
@@ -80,7 +89,7 @@ export default defineNuxtPlugin({
   if (typeof window !== 'undefined') {
     window.addEventListener('online', () => {
       if (authStore.isAuthenticated && !wsService.isConnected()) {
-        wsService.connect().catch(error => {
+        wsService.connect().catch((error: any) => {
           console.error('Failed to reconnect WebSocket when online:', error)
         })
       }

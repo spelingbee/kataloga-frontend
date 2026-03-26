@@ -41,7 +41,7 @@ export const useOfflineCheckout = () => {
 
     // Double-check with a network request
     try {
-      const response = await fetch('/api/health', {
+      const response = await fetch('/health', {
         method: 'HEAD',
         cache: 'no-cache',
         signal: AbortSignal.timeout(5000)

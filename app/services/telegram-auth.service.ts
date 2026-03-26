@@ -18,7 +18,6 @@ export interface TelegramAuthResponse {
     telegramId: number
   }
   accessToken: string
-  refreshToken: string
 }
 
 export class TelegramAuthService {

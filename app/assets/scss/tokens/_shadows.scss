@@ -12,10 +12,10 @@ $shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
 
 // Component-Specific Shadows
 // -----------------------------------------------------------------------------
-$shadow-card: $shadow-md;           // Cards and menu items
-$shadow-button: $shadow-sm;         // Buttons
-$shadow-modal: $shadow-xl;          // Modals and overlays
-$shadow-dropdown: $shadow-lg;       // Dropdowns and menus
+$shadow-card: $shadow-md; // Cards and menu items
+$shadow-button: $shadow-sm; // Buttons
+$shadow-modal: $shadow-xl; // Modals and overlays
+$shadow-dropdown: $shadow-lg; // Dropdowns and menus
 
 // CSS Custom Properties for Runtime Access
 // -----------------------------------------------------------------------------
@@ -24,7 +24,7 @@ $shadow-dropdown: $shadow-lg;       // Dropdowns and menus
   --shadow-md: #{$shadow-md};
   --shadow-lg: #{$shadow-lg};
   --shadow-xl: #{$shadow-xl};
-  
+
   --shadow-card: #{$shadow-card};
   --shadow-button: #{$shadow-button};
   --shadow-modal: #{$shadow-modal};
@@ -38,7 +38,7 @@ $shadow-dropdown: $shadow-lg;       // Dropdowns and menus
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5);
-  
+
   --shadow-card: var(--shadow-md);
   --shadow-button: var(--shadow-sm);
   --shadow-modal: var(--shadow-xl);
@@ -47,17 +47,41 @@ $shadow-dropdown: $shadow-lg;       // Dropdowns and menus
 
 // Shadow Utility Classes
 // -----------------------------------------------------------------------------
-.shadow-sm { box-shadow: var(--shadow-sm); }
-.shadow-md { box-shadow: var(--shadow-md); }
-.shadow-lg { box-shadow: var(--shadow-lg); }
-.shadow-xl { box-shadow: var(--shadow-xl); }
+.shadow-sm {
+  box-shadow: var(--shadow-sm);
+}
 
-.shadow-card { box-shadow: var(--shadow-card); }
-.shadow-button { box-shadow: var(--shadow-button); }
-.shadow-modal { box-shadow: var(--shadow-modal); }
-.shadow-dropdown { box-shadow: var(--shadow-dropdown); }
+.shadow-md {
+  box-shadow: var(--shadow-md);
+}
 
-.shadow-none { box-shadow: none; }
+.shadow-lg {
+  box-shadow: var(--shadow-lg);
+}
+
+.shadow-xl {
+  box-shadow: var(--shadow-xl);
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+.shadow-button {
+  box-shadow: var(--shadow-button);
+}
+
+.shadow-modal {
+  box-shadow: var(--shadow-modal);
+}
+
+.shadow-dropdown {
+  box-shadow: var(--shadow-dropdown);
+}
+
+.shadow-none {
+  box-shadow: none;
+}
 
 // Focus Shadows for Accessibility
 // -----------------------------------------------------------------------------
@@ -73,15 +97,41 @@ $focus-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1); // Primary color with opacity
 
 // Hover Shadows for Interactive Elements
 // -----------------------------------------------------------------------------
-$hover-shadow-card: 0 8px 12px rgba(0, 0, 0, 0.15);
-$hover-shadow-button: 0 2px 4px rgba(0, 0, 0, 0.1);
+// Hover Shadows for Interactive Elements
+// -----------------------------------------------------------------------------
+$hover-shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+$hover-shadow-button: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+// Glow Effects (Colored Shadows)
+// -----------------------------------------------------------------------------
+$shadow-glow-primary: 0 4px 14px 0 rgba(255, 107, 0, 0.39);
+$shadow-glow-primary-hover: 0 6px 20px rgba(255, 107, 0, 0.23);
+$shadow-glow-success: 0 4px 14px 0 rgba(4, 120, 87, 0.39);
 
 :root {
   --hover-shadow-card: #{$hover-shadow-card};
   --hover-shadow-button: #{$hover-shadow-button};
+
+  --shadow-glow-primary: #{$shadow-glow-primary};
+  --shadow-glow-primary-hover: #{$shadow-glow-primary-hover};
+  --shadow-glow-success: #{$shadow-glow-success};
 }
 
 [data-theme="dark"] {
-  --hover-shadow-card: 0 8px 12px rgba(0, 0, 0, 0.6);
-  --hover-shadow-button: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --hover-shadow-card: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --hover-shadow-button: 0 4px 12px rgba(0, 0, 0, 0.5);
+
+  // Stronger glows in dark mode
+  --shadow-glow-primary: 0 0 20px rgba(255, 107, 0, 0.3);
+  --shadow-glow-primary-hover: 0 0 25px rgba(255, 107, 0, 0.4);
+}
+
+// Glow Utility Classes
+// -----------------------------------------------------------------------------
+.shadow-glow-primary {
+  box-shadow: var(--shadow-glow-primary);
+}
+
+.hover-shadow-glow-primary:hover {
+  box-shadow: var(--shadow-glow-primary-hover);
 }

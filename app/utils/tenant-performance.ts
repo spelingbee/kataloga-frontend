@@ -10,6 +10,8 @@
  * Requirements: All (Performance optimization)
  */
 
+import { isDefined } from '~/types/utils/type-guards'
+
 /**
  * Request deduplication manager
  * Prevents duplicate API requests for the same resource
@@ -412,6 +414,11 @@ export class TenantPrefetchManager {
       this.prefetchInProgress.size < this.maxConcurrent
     ) {
       const slug = this.prefetchQueue.values().next().value
+      
+      if (!isDefined(slug)) {
+        break
+      }
+      
       this.prefetchQueue.delete(slug)
       this.prefetchInProgress.add(slug)
 

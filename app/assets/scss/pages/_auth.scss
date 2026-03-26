@@ -7,7 +7,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f9fafb;
   padding: $spacing-2xl $spacing-md;
 
   @include breakpoint($breakpoint-sm) {
@@ -34,22 +33,22 @@
     margin-top: $spacing-lg;
     font-size: $font-size-display-sm;
     font-weight: $font-weight-bold;
-    color: #111827;
+    color: $text-primary;
   }
 
   &__subtitle {
     margin-top: $spacing-sm;
     font-size: $font-size-body-sm;
-    color: #6b7280;
+    color: $text-secondary;
   }
 
   &__link {
     font-weight: $font-weight-medium;
-    color: #4f46e5;
+    color: $color-accent;
     text-decoration: none;
 
     &:hover {
-      color: #4338ca;
+      color: $color-accent-dark;
     }
   }
 }
@@ -78,18 +77,18 @@
     display: block;
     width: 100%;
     padding: $spacing-sm $spacing-md;
-    border: 1px solid #d1d5db;
-    color: #111827;
+    border: 1px solid $border-secondary;
+    color: $text-primary;
     font-size: $font-size-body-sm;
 
     &::placeholder {
-      color: #6b7280;
+      color: $text-secondary;
     }
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 0 2px #4f46e5;
-      border-color: #4f46e5;
+      box-shadow: 0 0 0 2px $color-accent;
+      border-color: $color-accent;
       z-index: 10;
     }
 
@@ -102,14 +101,14 @@
     }
 
     &--error {
-      border-color: #dc2626;
+      border-color: $color-error;
     }
   }
 
   &__error {
     margin-top: $spacing-xs;
     font-size: $font-size-body-sm;
-    color: #dc2626;
+    color: $color-error;
   }
 
   &__options {
@@ -126,12 +125,12 @@
   &__checkbox-input {
     height: 1rem;
     width: 1rem;
-    color: #4f46e5;
-    border: 1px solid #d1d5db;
+    color: $color-accent;
+    border: 1px solid $border-secondary;
     border-radius: $radius-sm;
 
     &:focus {
-      box-shadow: 0 0 0 2px #4f46e5;
+      box-shadow: 0 0 0 2px $color-accent;
     }
   }
 
@@ -139,7 +138,7 @@
     margin-left: $spacing-sm;
     display: block;
     font-size: $font-size-body-sm;
-    color: #111827;
+    color: $text-primary;
   }
 
   &__forgot {
@@ -148,17 +147,17 @@
 
   &__forgot-link {
     font-weight: $font-weight-medium;
-    color: #4f46e5;
+    color: $color-accent;
     text-decoration: none;
 
     &:hover {
-      color: #4338ca;
+      color: $color-accent-dark;
     }
   }
 
   &__error-alert {
     border-radius: $radius-md;
-    background-color: #fef2f2;
+    background-color: $color-error-bg;
     padding: $spacing-md;
   }
 
@@ -168,7 +167,7 @@
 
   &__error-icon {
     flex-shrink: 0;
-    color: #f87171;
+    color: $color-error-light;
   }
 
   &__error-message {
@@ -178,7 +177,7 @@
   &__error-title {
     font-size: $font-size-body-sm;
     font-weight: $font-weight-medium;
-    color: #991b1b;
+    color: $color-error-dark;
   }
 
   &__submit-btn {
@@ -192,17 +191,17 @@
     font-weight: $font-weight-medium;
     border-radius: $radius-md;
     color: white;
-    background-color: #4f46e5;
+    background-color: $color-accent;
     cursor: pointer;
     transition: background-color 0.2s ease;
 
     &:hover:not(:disabled) {
-      background-color: #4338ca;
+      background-color: $color-accent-dark;
     }
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 0 2px #4f46e5;
+      box-shadow: 0 0 0 2px $color-accent;
     }
 
     &:disabled {

@@ -79,7 +79,7 @@ export function useRoutePreload() {
       await Promise.all(
         components.filter(Boolean).map((component) => {
           if (typeof component === 'function') {
-            return component()
+            return (component as any)()
           }
           return Promise.resolve()
         })

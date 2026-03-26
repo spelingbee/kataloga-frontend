@@ -42,7 +42,7 @@ const emit = defineEmits<{
   click: [event: Event]
 }>()
 
-const variant = computed(() => 'circular')
+const variant = computed(() => 'primary' as const)
 
 const iconName = computed(() => {
   switch (props.type) {
@@ -58,8 +58,8 @@ const iconName = computed(() => {
 })
 
 const iconSize = computed(() => {
-  const sizes = { sm: 'sm', md: 'md', lg: 'lg' }
-  return sizes[props.size]
+  const sizes: Record<string, 'xs' | 'sm' | 'md' | 'lg' | 'xl'> = { sm: 'sm', md: 'md', lg: 'lg' }
+  return sizes[props.size] || 'md'
 })
 
 const handleClick = (event: Event) => {

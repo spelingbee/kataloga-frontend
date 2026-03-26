@@ -60,14 +60,14 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem, PaginationMeta, ApiError } from '~/types'
+import type { MenuItemUI, PaginationMeta, ApiError } from '~/types'
 import { useMenuService } from '~/services/menu.service'
 
 // Menu items example
 const menuService = useMenuService()
 const loading = ref(false)
 const error = ref<ApiError | null>(null)
-const items = ref<MenuItem[]>([])
+const items = ref<MenuItemUI[]>([])
 const pagination = ref<PaginationMeta | null>(null)
 
 const fetchItems = async (page: number = 1, limit: number = 10) => {
@@ -76,7 +76,7 @@ const fetchItems = async (page: number = 1, limit: number = 10) => {
   
   try {
     const result = await menuService.getMenuItems({ page, limit })
-    items.value = result.items
+    items.value = result.items as any
     pagination.value = result.pagination
   } catch (err) {
     error.value = err as ApiError

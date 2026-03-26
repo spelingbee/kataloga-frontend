@@ -224,7 +224,7 @@ onMounted(() => {
 .notification-center__button {
   position: relative;
   padding: $space-2;
-  color: #4b5563;
+  color: $text-secondary;
   background: none;
   border: none;
   border-radius: $radius-lg;
@@ -232,16 +232,16 @@ onMounted(() => {
   transition: all $transition-base;
 
   &:hover {
-    color: #111827;
+    color: $text-primary;
   }
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 2px #3b82f6;
+    box-shadow: 0 0 0 2px $color-accent;
   }
 
   &--active {
-    color: #2563eb;
+    color: $color-accent;
   }
 }
 
@@ -249,7 +249,7 @@ onMounted(() => {
   position: absolute;
   top: -0.25rem;
   right: -0.25rem;
-  background: #ef4444;
+  background: $color-error-light;
   color: white;
   font-size: $text-xs;
   border-radius: $radius-full;
@@ -265,10 +265,10 @@ onMounted(() => {
   right: 0;
   margin-top: $space-2;
   width: 20rem;
-  background: white;
+  background: $bg-primary;
   border-radius: $radius-lg;
   box-shadow: $shadow-lg;
-  border: 1px solid #e5e7eb;
+  border: 1px solid $border-primary;
   z-index: 50;
 }
 
@@ -277,13 +277,13 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: $space-6;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid $border-primary;
 }
 
 .notification-center__title {
   font-size: $text-lg;
   font-weight: $font-semibold;
-  color: #111827;
+  color: $text-primary;
 }
 
 .notification-center__header-actions {
@@ -299,18 +299,18 @@ onMounted(() => {
   transition: color $transition-base;
 
   &--primary {
-    color: #2563eb;
+    color: $color-accent;
 
     &:hover {
-      color: #1d4ed8;
+      color: $color-accent-dark;
     }
   }
 
   &--secondary {
-    color: #4b5563;
+    color: $text-secondary;
 
     &:hover {
-      color: #1f2937;
+      color: $text-primary;
     }
   }
 }
@@ -323,21 +323,21 @@ onMounted(() => {
 .notification-center__empty {
   padding: $space-6;
   text-align: center;
-  color: #6b7280;
+  color: $text-tertiary;
 }
 
 .notification-center__item {
   padding: $space-6;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid $color-neutral-100;
   cursor: pointer;
   transition: background $transition-base;
 
   &:hover {
-    background: #f9fafb;
+    background: $bg-secondary;
   }
 
   &--unread {
-    background: #eff6ff;
+    background: $color-info-bg;
   }
 }
 
@@ -360,18 +360,18 @@ onMounted(() => {
   justify-content: center;
 
   &--order {
-    background: #d1fae5;
-    color: #059669;
+    background: $color-success-bg;
+    color: $color-success;
   }
 
   &--promotion {
-    background: #fef3c7;
-    color: #d97706;
+    background: $color-warning-bg;
+    color: $color-warning;
   }
 
   &--system {
-    background: #dbeafe;
-    color: #2563eb;
+    background: $color-info-bg;
+    color: $color-info;
   }
 }
 
@@ -383,18 +383,18 @@ onMounted(() => {
 .notification-center__item-title {
   font-size: $text-sm;
   font-weight: $font-medium;
-  color: #111827;
+  color: $text-primary;
 }
 
 .notification-center__item-message {
   font-size: $text-sm;
-  color: #4b5563;
+  color: $text-secondary;
   margin-top: $space-1;
 }
 
 .notification-center__item-time {
   font-size: $text-xs;
-  color: #9ca3af;
+  color: $text-tertiary;
   margin-top: $space-2;
 }
 
@@ -405,25 +405,25 @@ onMounted(() => {
 .notification-center__item-dot {
   width: 0.5rem;
   height: 0.5rem;
-  background: #3b82f6;
+  background: $color-accent;
   border-radius: $radius-full;
 }
 
 .notification-center__footer {
   padding: $space-6;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid $border-primary;
 }
 
 .notification-center__view-all {
   display: block;
   text-align: center;
   font-size: $text-sm;
-  color: #2563eb;
+  color: $color-accent;
   text-decoration: none;
   transition: color $transition-base;
 
   &:hover {
-    color: #1d4ed8;
+    color: $color-accent-dark;
   }
 }
 

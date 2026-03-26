@@ -155,10 +155,10 @@ export function useErrorHandler() {
     try {
       const errorReport = {
         message: error.message,
-        stack: error.stack,
-        status: error.status,
-        code: error.code,
-        details: error.details,
+        stack: error.stack || undefined,
+        status: error.status || undefined,
+        code: error.code || 'GENERIC_ERROR',
+        details: error.details || undefined,
         timestamp: new Date().toISOString(),
         url: window.location.href,
         userAgent: navigator.userAgent,
@@ -192,6 +192,7 @@ export function useErrorHandler() {
       return {
         name: 'Error',
         message: error || fallback,
+        code: 'GENERIC_ERROR',
       }
     }
 
@@ -199,13 +200,17 @@ export function useErrorHandler() {
       return {
         name: error.name,
         message: error.message || fallback,
-        status: 'status' in error ? (error as ApiError).status : undefined,
-        code: 'code' in error ? (error as ApiError).code : undefined,
-        details: 'details' in error ? (error as ApiError).details : undefined,
+        status: 'status' in error ? (error as any).status : undefined,
+        code: 'code' in error ? (error as any).code : 'GENERIC_ERROR',
+        details: 'details' in error ? (error as any).details : undefined,
+        stack: error.stack,
       }
     }
 
-    return error
+    return {
+      ...error,
+      code: error.code || 'GENERIC_ERROR',
+    }
   }
 
   const isApiError = (error: any): error is ApiError => {

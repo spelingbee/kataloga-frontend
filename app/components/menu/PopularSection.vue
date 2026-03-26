@@ -79,13 +79,13 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useUserStore } from '~/stores/user'
 import AppText from '../base/AppText.vue'
 
 interface Props {
-  items?: MenuItem[]
+  items?: MenuItemUI[]
   loading?: boolean
   maxItems?: number
   gridColumns?: 1 | 2 | 3 | 4 | 5 | 6 | 7
@@ -105,9 +105,9 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  itemClick: [item: MenuItem]
-  addToCart: [item: MenuItem]
-  toggleFavorite: [item: MenuItem]
+  itemClick: [item: MenuItemUI]
+  addToCart: [item: MenuItemUI]
+  toggleFavorite: [item: MenuItemUI]
   viewAll: []
   refresh: []
   learnMore: []
@@ -159,21 +159,21 @@ const shouldShowRefresh = computed(() => {
 })
 
 // Methods
-const handleItemClick = (item: MenuItem) => {
+const handleItemClick = (item: MenuItemUI) => {
   emit('itemClick', item)
   
   // Track interaction for better recommendations
   trackInteraction('view', item)
 }
 
-const handleAddToCart = (item: MenuItem) => {
+const handleAddToCart = (item: MenuItemUI) => {
   emit('addToCart', item)
   
   // Track interaction for better recommendations
   trackInteraction('add_to_cart', item)
 }
 
-const handleToggleFavorite = (item: MenuItem) => {
+const handleToggleFavorite = (item: MenuItemUI) => {
   emit('toggleFavorite', item)
   
   // Track interaction for better recommendations
@@ -190,7 +190,7 @@ const refreshRecommendations = () => {
   }
 }
 
-const trackInteraction = (action: string, item: MenuItem) => {
+const trackInteraction = (action: string, item: MenuItemUI) => {
   // This would typically send analytics data to improve recommendations
   console.log(`Tracked ${action} for item:`, item.id)
   
@@ -223,7 +223,12 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/typography' as *;
+@use '../../assets/scss/tokens/radius' as *;
+
 /* Section animations */
 section {
   animation: fadeIn 0.6s ease-out;
@@ -243,20 +248,29 @@ section {
 /* Header fire icon animation */
 .flex.items-center.space-x-3 > :first-child {
   animation: fireGlow 3s ease-in-out infinite;
+  color: var(--color-primary); // Ensure icon uses primary color
 }
 
 @keyframes fireGlow {
   0%, 100% {
-    filter: drop-shadow(0 0 5px rgba(254, 165, 41, 0.3));
+    filter: drop-shadow(0 0 5px rgba(255, 107, 0, 0.3));
   }
   50% {
-    filter: drop-shadow(0 0 15px rgba(254, 165, 41, 0.6));
+    filter: drop-shadow(0 0 15px rgba(255, 107, 0, 0.6));
   }
 }
 
 /* Personalization notice */
-.bg-background-card\/50 {
+.personalization-notice {
+  margin-top: $space-6;
+  padding: $space-4;
+  background: var(--bg-glass);
   backdrop-filter: blur(8px);
+  border-radius: $radius-lg;
+  border: 1px solid var(--border-primary);
+  display: flex;
+  align-items: flex-start;
+  gap: $space-3;
 }
 
 /* Smooth transitions */
@@ -264,9 +278,18 @@ button {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* BaseButton overrides if needed to match context */
+.text-primary-green {
+  color: var(--color-primary) !important;
+  
+  &:hover {
+    color: var(--color-primary-dark) !important;
+  }
+}
+
 /* Focus styles */
 button:focus-visible {
-  outline: 2px solid var(--color-primary-green);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 </style>

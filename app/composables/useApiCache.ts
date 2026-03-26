@@ -24,17 +24,17 @@ export const useApiCache = () => {
     options: UseFetchOptions<T> & CacheOptions = {}
   ) => {
     const { ttl = 300, key, tags = [], ...fetchOptions } = options
-    
+
     const cacheKey = key || getCacheKey(url, fetchOptions.params as Record<string, any>)
-    
+
     return $fetch<T>(url, {
       ...fetchOptions,
-      // Add cache headers for better performance
       headers: {
         'Cache-Control': `max-age=${ttl}`,
-        ...fetchOptions.headers,
+        ...(fetchOptions.headers as any),
       },
-    })
+      method: fetchOptions.method as any,
+    } as any)
   }
 
   const cachedMenuFetch = <T>(url: string, options: CacheOptions = {}) => {

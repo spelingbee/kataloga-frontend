@@ -1,6 +1,7 @@
 /**
  * Color contrast utilities for WCAG 2.1 compliance
  */
+import { safeArrayAccess } from '~/types/utils/type-guards'
 
 /**
  * Convert hex color to RGB
@@ -9,9 +10,9 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   return result
     ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
+        r: parseInt(result[1] || '0', 16),
+        g: parseInt(result[2] || '0', 16),
+        b: parseInt(result[3] || '0', 16),
       }
     : null
 }
@@ -21,10 +22,15 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
  * https://www.w3.org/TR/WCAG20-TECHS/G17.html
  */
 export function getLuminance(r: number, g: number, b: number): number {
-  const [rs, gs, bs] = [r, g, b].map((c) => {
+  const rgbValues = [r, g, b].map((c) => {
     const sRGB = c / 255
     return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4)
   })
+  
+  const rs = safeArrayAccess(rgbValues, 0) || 0
+  const gs = safeArrayAccess(rgbValues, 1) || 0
+  const bs = safeArrayAccess(rgbValues, 2) || 0
+  
   return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
 }
 

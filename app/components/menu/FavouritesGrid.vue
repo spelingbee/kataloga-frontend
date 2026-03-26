@@ -153,7 +153,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types/ui'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 import { useFavoritesStore } from '~/stores/favorites'
@@ -177,13 +177,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  itemClick: [item: MenuItem]
-  addToCart: [item: MenuItem]
-  toggleFavorite: [item: MenuItem]
+  itemClick: [item: MenuItemUI]
+  addToCart: [item: MenuItemUI]
+  toggleFavorite: [item: MenuItemUI]
   browseMenu: []
   clearFilters: []
-  share: [items: MenuItem[]]
-  export: [items: MenuItem[]]
+  share: [items: MenuItemUI[]]
+  export: [items: MenuItemUI[]]
 }>()
 
 // Stores
@@ -196,7 +196,9 @@ const currentPage = ref(1)
 const itemsPerPage = 12
 
 // Computed properties
-const favouriteItems = computed(() => favoritesStore.getFavoriteItems())
+const favouriteItems = computed(() => {
+  return menuStore.menuItems.filter(item => favoritesStore.isFavorite(item.id))
+})
 
 const filteredFavorites = computed(() => {
   let items = favouriteItems.value
@@ -207,7 +209,7 @@ const filteredFavorites = computed(() => {
     items = items.filter(
       item =>
         item.name.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query)
+        (item.description && item.description.toLowerCase().includes(query))
     )
   }
 
@@ -284,15 +286,15 @@ const recommendedItems = computed(() => {
 })
 
 // Methods
-const handleItemClick = (item: MenuItem) => {
+const handleItemClick = (item: MenuItemUI) => {
   emit('itemClick', item)
 }
 
-const handleAddToCart = (item: MenuItem) => {
+const handleAddToCart = (item: MenuItemUI) => {
   emit('addToCart', item)
 }
 
-const handleToggleFavorite = (item: MenuItem) => {
+const handleToggleFavorite = (item: MenuItemUI) => {
   emit('toggleFavorite', item)
 }
 
@@ -354,7 +356,7 @@ const exportList = () => {
     name: item.name,
     description: item.description,
     price: item.price,
-    category: item.category.name
+    category: item.category?.name
   }))
   
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })

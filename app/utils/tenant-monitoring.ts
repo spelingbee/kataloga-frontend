@@ -470,7 +470,15 @@ export class TenantMonitoringService {
     events: TenantEvent[]
     metrics: PerformanceMetric[]
     errors: TenantErrorLog[]
-    stats: ReturnType<typeof this.getStats>
+    stats: {
+      totalEvents: number
+      totalMetrics: number
+      totalErrors: number
+      eventsByType: Record<string, number>
+      averageDurations: Record<string, number>
+      successRates: Record<string, number>
+      errorsByType: Record<string, number>
+    }
   } {
     return {
       events: [...this.events],

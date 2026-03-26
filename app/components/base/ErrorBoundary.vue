@@ -35,7 +35,7 @@ interface Props {
   showDetails?: boolean
   autoRecover?: boolean
   maxRetries?: number
-  onError?: (error: Error, errorInfo: any) => void
+  onError?: (error: Error | ApiError, errorInfo: any) => void
   onRecoverySuccess?: () => void
   onRecoveryFailure?: () => void
 }
@@ -97,8 +97,8 @@ const captureError = async (err: Error | ApiError, errorInfo?: any) => {
   
   // Report to error tracking service
   const { $reportError } = useNuxtApp()
-  if ($reportError) {
-    $reportError(err, {
+  if ($reportError && typeof $reportError === 'function') {
+    ($reportError as any)(err, {
       type: 'error-boundary',
       component: errorInfo?.instance?.$options?.name || 'Unknown',
       info: errorInfo,

@@ -5,7 +5,7 @@
       <div class="flex items-center gap-4">
         <BaseButton 
           variant="ghost" 
-          @click="$router.go(-1)"
+          @click="router.go(-1)"
         >
           <BaseIcon name="arrow-left" size="md" />
         </BaseButton>
@@ -283,7 +283,8 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types/ui'
+import { createMenuItemUI } from '~/types/utils/converters'
 
 // Page setup
 definePageMeta({
@@ -305,7 +306,7 @@ const specialInstructions = ref('')
 const dishId = computed(() => route.params.id as string)
 
 // Mock dish data
-const dish = ref<MenuItem | null>(null)
+const dish = ref<MenuItemUI | null>(null)
 const basePrice = ref(15.99)
 
 // Mock ingredients data
@@ -546,14 +547,14 @@ const loadDish = async () => {
     // Mock API call
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    dish.value = {
+    dish.value = createMenuItemUI({
       id: dishId.value,
       name: 'Delicious Burger',
       description: 'A mouth-watering burger',
       price: basePrice.value,
       categoryId: 'fastfood',
       isActive: true
-    }
+    })
     
     // Set default ingredient levels
     mainIngredients.value.forEach(ingredient => {

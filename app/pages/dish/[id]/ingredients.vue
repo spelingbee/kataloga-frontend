@@ -5,7 +5,7 @@
       <div class="flex items-center gap-4">
         <BaseButton 
           variant="ghost" 
-          @click="$router.go(-1)"
+          @click="router.go(-1)"
         >
           <BaseIcon name="arrow-left" size="md" />
         </BaseButton>
@@ -247,7 +247,7 @@
         <BaseButton 
           variant="secondary"
           size="lg"
-          @click="$router.push(`/dish/${dishId}`)"
+          @click="router.push(`/dish/${dishId}`)"
         >
           Back to Dish
         </BaseButton>
@@ -257,7 +257,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types/ui'
 
 // Page setup
 definePageMeta({
@@ -276,7 +276,7 @@ const activeFilter = ref('all')
 const dishId = computed(() => route.params.id as string)
 
 // Mock dish data
-const dish = ref<MenuItem | null>(null)
+const dish = ref<MenuItemUI | null>(null)
 
 // Mock ingredients data
 const ingredients = ref([
@@ -457,9 +457,26 @@ const loadDish = async () => {
       name: 'Delicious Burger',
       description: 'A mouth-watering burger',
       price: 15.99,
+      imageUrl: undefined,
       categoryId: 'fastfood',
+      menuId: 'default-menu',
       isActive: true,
-      calories: totalCalories.value
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isAvailable: true,
+      stockQuantity: 100,
+      calories: totalCalories.value,
+      preparationTime: null,
+      cookingTime: null,
+      ingredients: [],
+      allergens: [],
+      nutritionInfo: null,
+      dietary: [],
+      badges: [],
+      modifierGroups: [],
+      isNew: false,
+      isPopular: false,
+      category: null
     }
     
   } catch (error) {

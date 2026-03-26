@@ -35,8 +35,10 @@ export function usePerformanceMonitoring() {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries()
       const lastEntry = entries[entries.length - 1]
-      metrics.value.lcp = lastEntry.startTime
-      console.log('LCP:', lastEntry.startTime)
+      if (lastEntry) {
+        metrics.value.lcp = lastEntry.startTime
+        console.log('LCP:', lastEntry.startTime)
+      }
     })
     observer.observe({ entryTypes: ['largest-contentful-paint'] })
   }
@@ -79,10 +81,10 @@ export function usePerformanceMonitoring() {
   // Report metrics to analytics
   const reportMetrics = () => {
     // Send to analytics service (Google Analytics, custom endpoint, etc.)
-    if (process.client && window.gtag) {
+    if (process.client && 'gtag' in window) {
       Object.entries(metrics.value).forEach(([key, value]) => {
         if (value !== undefined) {
-          window.gtag('event', 'performance_metric', {
+          (window as any).gtag('event', 'performance_metric', {
             metric_name: key,
             metric_value: value,
           })

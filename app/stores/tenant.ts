@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
-import type { 
-  TenantInfo, 
-  TenantBranding, 
+import { useApiClient } from '~/utils/api'
+import type {
+  TenantInfo,
+  TenantBranding,
   TenantSettings,
   TenantStoreState,
   TenantSwitchOptions,
@@ -49,7 +50,8 @@ export const useTenantStore = defineStore('tenant', {
      */
     isMultiTenant(): boolean {
       const config = useRuntimeConfig()
-      return Boolean(config.public.multiTenantMode) || !config.public.tenantSlug
+      const tenantSlug = config.public.tenantSlug
+      return Boolean(config.public.multiTenantMode) || (tenantSlug == null || tenantSlug === '')
     },
 
     /**
@@ -60,7 +62,7 @@ export const useTenantStore = defineStore('tenant', {
       if (state.currentTenant?.branding) {
         return state.currentTenant.branding
       }
-      
+
       // Return default branding
       return getDefaultBranding()
     },
@@ -73,7 +75,7 @@ export const useTenantStore = defineStore('tenant', {
       if (state.currentTenant?.settings) {
         return state.currentTenant.settings
       }
-      
+
       // Return default settings
       return getDefaultSettings()
     },
@@ -92,8 +94,8 @@ export const useTenantStore = defineStore('tenant', {
      */
     canSwitchTenant(): boolean {
       const config = useRuntimeConfig()
-      return Boolean(config.public.allowTenantSwitching) && 
-             (Boolean(config.public.multiTenantMode) || !config.public.tenantSlug)
+      return Boolean(config.public.allowTenantSwitching) &&
+        (Boolean(config.public.multiTenantMode) || !config.public.tenantSlug)
     },
 
     /**
@@ -132,7 +134,7 @@ export const useTenantStore = defineStore('tenant', {
      * Initialize tenant system
      * Requirements: 1.1, 2.1, 3.1, 3.2
      */
-    async initializeTenant(): Promise<void> {
+    async initializeTenant(resolverParam?: any): Promise<void> {
       // Prevent multiple initializations
       if (this.isInitialized) {
         return
@@ -145,19 +147,20 @@ export const useTenantStore = defineStore('tenant', {
 
       try {
         const nuxtApp = useNuxtApp()
-        const tenantResolver = (nuxtApp as any).$tenantResolver
-        
+        const tenantResolver = resolverParam || nuxtApp.$tenantResolver
+
         if (!tenantResolver) {
           throw new Error('Tenant resolver service not available')
         }
 
         // Get tenant from various sources
         const route = useRoute()
-        const queryTenant = route.query.tenant as string | undefined
-        
+        const rawTenant = route.query.tenant
+        const queryTenant = Array.isArray(rawTenant) ? (rawTenant[0] as string | undefined) : (rawTenant as string | undefined)
+
         const options: TenantResolverOptions = {
           fromQuery: queryTenant,
-          fromLocalStorage: tenantResolver.getStoredTenant(),
+          fromLocalStorage: tenantResolver.getStoredTenant() ?? undefined,
         }
 
         // Resolve tenant with fallback
@@ -166,9 +169,9 @@ export const useTenantStore = defineStore('tenant', {
         if (result.tenant) {
           this.currentTenant = result.tenant
           this.isInitialized = true
-          
+
           const duration = performance.now() - startTime
-          
+
           // Log initialization event
           monitoring.logEvent({
             type: TenantEventType.INITIALIZED,
@@ -177,7 +180,7 @@ export const useTenantStore = defineStore('tenant', {
             source: result.source,
             duration
           })
-          
+
           monitoring.logMetric({
             operation: 'tenant.initialize',
             duration,
@@ -185,40 +188,53 @@ export const useTenantStore = defineStore('tenant', {
             success: true,
             metadata: { source: result.source }
           })
-          
+
           console.log(`Tenant initialized from ${result.source}:`, result.tenant.slug)
         } else if (result.requiresSelection) {
-          // No tenant found, user needs to select
+          // No tenant found from API, user needs to select
           this.isInitialized = true
-          
+
           // In multi-tenant mode, redirect to selection page
           if (this.isMultiTenant) {
             console.log('No tenant found, redirecting to selection page')
             await navigateTo('/select-restaurant')
           } else {
-            throw new Error('No tenant configured for single-tenant mode')
+            // Single-tenant mode: use configured slug as fallback when API is unavailable
+            const config = useRuntimeConfig()
+            const configuredSlug = config.public.tenantSlug
+            if (configuredSlug) {
+              console.log('Single-tenant fallback: using configured slug:', configuredSlug)
+              this.currentTenant = {
+                id: configuredSlug,
+                slug: configuredSlug,
+                name: String(config.public.appName || configuredSlug),
+                isActive: true,
+              } as TenantInfo
+            } else {
+              throw new Error('No tenant configured for single-tenant mode')
+            }
           }
         }
       } catch (err) {
         const duration = performance.now() - startTime
         this.error = err instanceof Error ? err.message : 'Failed to initialize tenant'
-        
+
         // Log error
         monitoring.logError({
           errorType: 'INITIALIZATION_ERROR',
           message: this.error,
           stack: err instanceof Error ? err.stack : undefined
         })
-        
+
         monitoring.logMetric({
           operation: 'tenant.initialize',
           duration,
           success: false,
           metadata: { error: this.error }
         })
-        
+
         console.error('Tenant initialization error:', err)
-        
+
         // Mark as initialized even on error to prevent infinite loops
         this.isInitialized = true
       } finally {
@@ -236,8 +252,8 @@ export const useTenantStore = defineStore('tenant', {
 
       try {
         const nuxtApp = useNuxtApp()
-        const tenantResolver = (nuxtApp as any).$tenantResolver
-        
+        const tenantResolver = nuxtApp.$tenantResolver
+
         if (!tenantResolver) {
           throw new Error('Tenant resolver service not available')
         }
@@ -245,7 +261,7 @@ export const useTenantStore = defineStore('tenant', {
         // Validate tenant if required
         if (options.validateAccess !== false) {
           const validationResult = await tenantResolver.validateTenant(slug)
-          
+
           if (!validationResult.isValid) {
             throw new Error(validationResult.error || `Invalid tenant: ${slug}`)
           }
@@ -261,7 +277,7 @@ export const useTenantStore = defineStore('tenant', {
 
         // Update current tenant
         this.currentTenant = tenantInfo
-        
+
         // Save to localStorage for future visits
         tenantResolver.saveStoredTenant(slug)
 
@@ -272,12 +288,12 @@ export const useTenantStore = defineStore('tenant', {
             const route = useRoute()
             const router = useRouter()
             const tenantParam = String(config.public.tenantQueryParam || 'tenant')
-            
+
             await router.push({
               ...route,
-              query: { 
-                ...route.query, 
-                [tenantParam]: slug 
+              query: {
+                ...route.query,
+                [tenantParam]: slug
               }
             })
           }
@@ -300,8 +316,8 @@ export const useTenantStore = defineStore('tenant', {
      */
     async fetchTenantInfo(slug: string): Promise<TenantInfo> {
       const nuxtApp = useNuxtApp()
-      const tenantResolver = (nuxtApp as any).$tenantResolver
-      
+      const tenantResolver = nuxtApp.$tenantResolver
+
       if (!tenantResolver) {
         throw new Error('Tenant resolver service not available')
       }
@@ -315,8 +331,8 @@ export const useTenantStore = defineStore('tenant', {
      */
     async validateTenant(slug: string): Promise<boolean> {
       const nuxtApp = useNuxtApp()
-      const tenantResolver = (nuxtApp as any).$tenantResolver
-      
+      const tenantResolver = nuxtApp.$tenantResolver
+
       if (!tenantResolver) {
         throw new Error('Tenant resolver service not available')
       }
@@ -332,12 +348,12 @@ export const useTenantStore = defineStore('tenant', {
     clearTenant(): void {
       this.currentTenant = null
       this.error = null
-      
+
       // Clear from localStorage
       if (import.meta.client) {
         const nuxtApp = useNuxtApp()
-        const tenantResolver = (nuxtApp as any).$tenantResolver
-        
+        const tenantResolver = nuxtApp.$tenantResolver
+
         if (tenantResolver) {
           tenantResolver.clearStoredTenant()
         }
@@ -358,8 +374,8 @@ export const useTenantStore = defineStore('tenant', {
 
       try {
         const nuxtApp = useNuxtApp()
-        const tenantResolver = (nuxtApp as any).$tenantResolver
-        
+        const tenantResolver = nuxtApp.$tenantResolver
+
         if (!tenantResolver) {
           throw new Error('Tenant resolver service not available')
         }
@@ -404,8 +420,8 @@ export const useTenantStore = defineStore('tenant', {
 
       try {
         const nuxtApp = useNuxtApp()
-        const tenantResolver = (nuxtApp as any).$tenantResolver
-        
+        const tenantResolver = nuxtApp.$tenantResolver
+
         if (!tenantResolver) {
           throw new Error('Tenant resolver service not available')
         }
@@ -415,7 +431,7 @@ export const useTenantStore = defineStore('tenant', {
 
         // Validate new tenant
         const validationResult = await tenantResolver.validateTenant(slug)
-        
+
         if (!validationResult.isValid) {
           throw new Error(validationResult.error || `Invalid tenant: ${slug}`)
         }
@@ -428,7 +444,7 @@ export const useTenantStore = defineStore('tenant', {
 
         // Update current tenant
         this.currentTenant = newTenant
-        
+
         // Save to localStorage
         tenantResolver.saveStoredTenant(slug)
 
@@ -438,18 +454,18 @@ export const useTenantStore = defineStore('tenant', {
           const route = useRoute()
           const router = useRouter()
           const tenantParam = String(config.public.tenantQueryParam || 'tenant')
-          
+
           await router.push({
             path: route.path,
-            query: { 
-              ...route.query, 
-              [tenantParam]: slug 
+            query: {
+              ...route.query,
+              [tenantParam]: slug
             }
           })
         }
 
         const duration = performance.now() - startTime
-        
+
         // Log tenant switch event
         monitoring.logEvent({
           type: TenantEventType.SWITCHED,
@@ -461,7 +477,7 @@ export const useTenantStore = defineStore('tenant', {
             toTenant: slug
           }
         })
-        
+
         monitoring.logMetric({
           operation: 'tenant.switch',
           duration,
@@ -473,14 +489,14 @@ export const useTenantStore = defineStore('tenant', {
         })
 
         console.log('Switched to tenant:', slug)
-        
+
         // Emit tenant change event
         if (import.meta.client) {
-          window.dispatchEvent(new CustomEvent('tenant-changed', { 
-            detail: { 
+          window.dispatchEvent(new CustomEvent('tenant-changed', {
+            detail: {
               previousTenant: previousTenant?.slug,
-              currentTenant: slug 
-            } 
+              currentTenant: slug
+            }
           }))
         }
 
@@ -488,7 +504,7 @@ export const useTenantStore = defineStore('tenant', {
       } catch (err) {
         const duration = performance.now() - startTime
         this.error = err instanceof Error ? err.message : 'Failed to switch tenant'
-        
+
         // Log error
         monitoring.logError({
           errorType: 'SWITCH_ERROR',
@@ -496,7 +512,7 @@ export const useTenantStore = defineStore('tenant', {
           tenantSlug: slug,
           stack: err instanceof Error ? err.stack : undefined
         })
-        
+
         monitoring.logMetric({
           operation: 'tenant.switch',
           duration,
@@ -504,7 +520,7 @@ export const useTenantStore = defineStore('tenant', {
           success: false,
           metadata: { error: this.error }
         })
-        
+
         console.error('Switch tenant error:', err)
         return false
       } finally {
@@ -548,7 +564,14 @@ export const useTenantStore = defineStore('tenant', {
         const menuStore = useMenuStore()
         menuStore.categories = []
         menuStore.menuItems = []
-        menuStore.favourites = []
+        // Clear favorites through the favorites store
+        try {
+          const { useFavoritesStore } = await import('./favorites')
+          const favoritesStore = useFavoritesStore()
+          favoritesStore.clearAllFavorites()
+        } catch (error) {
+          console.error('Failed to clear favorites:', error)
+        }
         menuStore.currentCategory = null
         menuStore.searchQuery = ''
         menuStore.filters = {}
@@ -609,7 +632,7 @@ export const useTenantStore = defineStore('tenant', {
             'recentSearches',
             'deliveryAddress',
           ]
-          
+
           keysToRemove.forEach(key => {
             try {
               localStorage.removeItem(key)
@@ -617,7 +640,7 @@ export const useTenantStore = defineStore('tenant', {
               console.debug(`Failed to remove ${key} from localStorage:`, error)
             }
           })
-          
+
           console.log('Tenant-specific localStorage cleared')
         }
 
@@ -637,18 +660,15 @@ export const useTenantStore = defineStore('tenant', {
       this.error = null
 
       try {
-        const nuxtApp = useNuxtApp()
-        const $apiClient = (nuxtApp as any).$apiClient
-        
-        const response = await $apiClient.get('/tenants', {
-          headers: { 
+        const apiClient = useApiClient()
+
+        const tenants = await apiClient.get<TenantInfo[]>('/tenants', {
+          headers: {
             'X-Bypass-Tenant': 'true' // System-wide request
           }
         })
 
-        if (response.success && response.data) {
-          this.availableTenants = response.data
-        }
+        this.availableTenants = tenants
       } catch (err) {
         this.error = err instanceof Error ? err.message : 'Failed to fetch tenants'
         console.error('Fetch tenants error:', err)
@@ -693,9 +713,9 @@ export const useTenantStore = defineStore('tenant', {
       if (route.query[tenantParam] !== this.currentTenant.slug) {
         await router.replace({
           ...route,
-          query: { 
-            ...route.query, 
-            [tenantParam]: this.currentTenant.slug 
+          query: {
+            ...route.query,
+            [tenantParam]: this.currentTenant.slug
           }
         })
       }
@@ -713,8 +733,9 @@ export const useTenantStore = defineStore('tenant', {
 
       if (route.query[tenantParam]) {
         const query = { ...route.query }
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete query[tenantParam]
-        
+
         await router.replace({
           ...route,
           query
@@ -735,9 +756,9 @@ export const useTenantStore = defineStore('tenant', {
         return false
       }
 
-      return await this.setTenant(defaultTenant, { 
+      return await this.setTenant(defaultTenant, {
         clearCache: true,
-        updateUrl: true 
+        updateUrl: true
       })
     },
 
@@ -755,9 +776,9 @@ export const useTenantStore = defineStore('tenant', {
 
       if (defaultTenant && this.currentTenant?.slug !== defaultTenant) {
         console.log('Attempting fallback to default tenant...')
-        const success = await this.setTenant(defaultTenant, { 
+        const success = await this.setTenant(defaultTenant, {
           clearCache: false,
-          updateUrl: true 
+          updateUrl: true
         })
 
         if (success) {
@@ -820,7 +841,7 @@ export const useTenantStore = defineStore('tenant', {
     async prefetchTenant(slug: string): Promise<void> {
       const nuxtApp = useNuxtApp()
       const tenantResolver = (nuxtApp as any).$tenantResolver
-      
+
       if (tenantResolver) {
         await tenantResolver.prefetchTenant(slug)
       }
@@ -833,7 +854,7 @@ export const useTenantStore = defineStore('tenant', {
  */
 function getDefaultBranding(): TenantBranding {
   const config = useRuntimeConfig()
-  
+
   return {
     logo: '/icon-192x192.png',
     primaryColor: '#1a1a1a',
@@ -849,7 +870,7 @@ function getDefaultBranding(): TenantBranding {
  */
 function getDefaultSettings(): TenantSettings {
   return {
-    currency: 'USD',
+    currency: 'KGS',
     timezone: 'UTC',
     language: 'en',
     features: {

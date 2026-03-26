@@ -65,28 +65,21 @@
 </template>
 
 <script setup lang="ts">
-interface Props {
-  modelValue: boolean
-  title?: string
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
-  closable?: boolean
-  closeOnBackdrop?: boolean
-  closeButtonLabel?: string
-}
+import type { BaseModalProps, BaseModalEmits, ModalSize } from '~/types/ui/modal.ui'
+import { MODAL_SIZES } from '~/types/ui/modal.ui'
+import BaseButton from '~/components/base/BaseButton.vue'
+
+interface Props extends BaseModalProps {}
 
 const props = withDefaults(defineProps<Props>(), {
   size: 'md',
   closable: true,
   closeOnBackdrop: true,
-  closeButtonLabel: 'Close modal'
+  closeButtonLabel: 'Close modal',
+  persistent: false
 })
 
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-  close: []
-  opened: []
-  closed: []
-}>()
+const emit = defineEmits<BaseModalEmits>()
 
 const modalRef = ref<HTMLElement>()
 const closeButtonRef = ref<InstanceType<typeof BaseButton>>()
@@ -105,18 +98,19 @@ const modalClasses = computed(() => {
 })
 
 const close = () => {
+  if (props.persistent) return
   emit('update:modelValue', false)
   emit('close')
 }
 
 const handleBackdropClick = () => {
-  if (props.closeOnBackdrop) {
+  if (props.closeOnBackdrop && !props.persistent) {
     close()
   }
 }
 
 const handleKeydown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && props.closable) {
+  if (event.key === 'Escape' && props.closable && !props.persistent) {
     close()
   } else if (event.key === 'Tab') {
     trapFocus(event)
@@ -190,7 +184,7 @@ const onLeave = () => {
 // Handle escape key globally
 onMounted(() => {
   const handleEscape = (event: KeyboardEvent) => {
-    if (event.key === 'Escape' && props.modelValue && props.closable) {
+    if (event.key === 'Escape' && props.modelValue && props.closable && !props.persistent) {
       close()
     }
   }

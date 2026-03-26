@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
 import { useUserService } from '~/services/user.service'
+import { updateReadonlyObject } from '~/types/utils/readonly'
 import type { User, UserLocation, Notification, UpdateProfileDto, Promotion, ApiError, PaginationMeta } from '~/types'
-import { Platform } from '~/types'
+import { Platform, UserRole } from '~/types'
 
-interface UserState {
+export interface UserState {
   // Clean business data only
   user: User | null
   notifications: Notification[]
@@ -11,7 +12,7 @@ interface UserState {
   location: UserLocation | null
   notificationsPagination: PaginationMeta | null
   promotionsPagination: PaginationMeta | null
-  
+
   // State management
   isAuthenticated: boolean
   platform: Platform
@@ -28,7 +29,7 @@ export const useUserStore = defineStore('user', {
     location: null,
     notificationsPagination: null,
     promotionsPagination: null,
-    
+
     // State management
     isAuthenticated: false,
     platform: Platform.WEB,
@@ -89,7 +90,7 @@ export const useUserStore = defineStore('user', {
             lastName: telegramUser.last_name || '',
             name: `${telegramUser.first_name} ${telegramUser.last_name || ''}`.trim(),
             email: '',
-            role: 'CUSTOMER' as any,
+            role: UserRole.CUSTOMER,
             tenantId: '',
             isActive: true,
             emailVerified: false,
@@ -109,7 +110,7 @@ export const useUserStore = defineStore('user', {
         lastName: telegramUser.lastName || '',
         name: telegramUser.firstName + (telegramUser.lastName ? ` ${telegramUser.lastName}` : ''),
         email: '',
-        role: 'CUSTOMER' as any,
+        role: UserRole.CUSTOMER,
         tenantId: '',
         isActive: true,
         emailVerified: false,
@@ -147,7 +148,7 @@ export const useUserStore = defineStore('user', {
 
         // Store clean data directly
         this.user = user
-        
+
       } catch (error) {
         this.error = error as ApiError
         console.error('Profile update error:', error)
@@ -163,7 +164,7 @@ export const useUserStore = defineStore('user', {
       try {
         const userService = useUserService()
         await userService.updateLocation(location)
-        
+
         // Store clean data directly
         this.location = location
 
@@ -195,12 +196,12 @@ export const useUserStore = defineStore('user', {
         // Store clean data directly
         if (params?.page && params.page > 1) {
           // Append for pagination
-          this.notifications.push(...result.items)
+          this.notifications.push(...result.notifications)
         } else {
-          this.notifications = result.items
+          this.notifications = result.notifications
         }
         this.notificationsPagination = result.pagination
-        
+
       } catch (error) {
         this.error = error as ApiError
         console.error('Notifications fetch error:', error)
@@ -213,10 +214,16 @@ export const useUserStore = defineStore('user', {
       try {
         const userService = useUserService()
         await userService.markNotificationRead(id)
-        
-        const notification = this.notifications.find(n => n.id === id)
-        if (notification) {
-          notification.isRead = true
+
+        const notificationIndex = this.notifications.findIndex(n => n.id === id)
+        if (notificationIndex >= 0) {
+          const notification = this.notifications[notificationIndex]
+          if (!notification) return
+
+          const updatedNotification = updateReadonlyObject(notification, {
+            isRead: true
+          })
+          this.notifications[notificationIndex] = updatedNotification
         }
       } catch (error) {
         console.error('Failed to mark notification as read:', error)
@@ -227,10 +234,12 @@ export const useUserStore = defineStore('user', {
       try {
         const userService = useUserService()
         await userService.markAllNotificationsRead()
-        
-        this.notifications.forEach(notification => {
-          notification.isRead = true
-        })
+
+        this.notifications = this.notifications.map(notification =>
+          updateReadonlyObject(notification, {
+            isRead: true
+          })
+        )
       } catch (error) {
         console.error('Failed to mark all notifications as read:', error)
       }
@@ -257,7 +266,7 @@ export const useUserStore = defineStore('user', {
           this.promotions = result.items
         }
         this.promotionsPagination = result.pagination
-        
+
       } catch (error) {
         this.error = error as ApiError
         console.error('Promotions fetch error:', error)
@@ -293,7 +302,7 @@ export const useUserStore = defineStore('user', {
 
         // Store clean data directly
         this.location = location
-        
+
         // Persist location
         if (import.meta.client) {
           localStorage.setItem('user_location', JSON.stringify(location))
@@ -301,7 +310,7 @@ export const useUserStore = defineStore('user', {
       } catch (error) {
         this.error = error as ApiError
         console.error('User location fetch error:', error)
-        
+
         // Fall back to localStorage
         if (import.meta.client) {
           const savedLocation = localStorage.getItem('user_location')
@@ -331,11 +340,3 @@ export const useUserStore = defineStore('user', {
   },
 })
 
-// Extend window interface for TypeScript
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: any
-    }
-  }
-}

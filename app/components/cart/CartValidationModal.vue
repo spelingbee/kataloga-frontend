@@ -1,6 +1,6 @@
 <template>
-  <Modal
-    :is-open="isOpen"
+  <BaseModal
+    v-model="isOpenInside"
     title="Cart Updated"
     @close="handleClose"
   >
@@ -8,9 +8,7 @@
       <!-- Removed Items Section -->
       <div v-if="removedItems.length > 0" class="cart-validation-modal__section">
         <div class="cart-validation-modal__icon cart-validation-modal__icon--error">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <BaseIcon name="alert-triangle" size="md" />
         </div>
         <h3 class="cart-validation-modal__heading">Items Removed</h3>
         <p class="cart-validation-modal__description">
@@ -26,9 +24,7 @@
       <!-- Price Changes Section -->
       <div v-if="priceChanges.length > 0" class="cart-validation-modal__section">
         <div class="cart-validation-modal__icon cart-validation-modal__icon--warning">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+          <BaseIcon name="alert-circle" size="md" />
         </div>
         <h3 class="cart-validation-modal__heading">Price Changes</h3>
         <p class="cart-validation-modal__description">
@@ -39,9 +35,7 @@
             <span class="cart-validation-modal__item-name">{{ change.item.menuItem.name }}</span>
             <span class="cart-validation-modal__price-change">
               <span class="cart-validation-modal__old-price">${{ change.oldPrice.toFixed(2) }}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="cart-validation-modal__arrow">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
+              <BaseIcon name="arrow-right" size="xs" class="cart-validation-modal__arrow" />
               <span class="cart-validation-modal__new-price" :class="{ 'cart-validation-modal__new-price--increase': change.newPrice > change.oldPrice }">
                 ${{ change.newPrice.toFixed(2) }}
               </span>
@@ -59,26 +53,27 @@
 
       <!-- Actions -->
       <div class="cart-validation-modal__actions">
-        <Button
+        <BaseButton
           variant="secondary"
           @click="handleClose"
         >
           Review Cart
-        </Button>
-        <Button
+        </BaseButton>
+        <BaseButton
           variant="primary"
           @click="handleAcknowledge"
         >
           Continue to Payment
-        </Button>
+        </BaseButton>
       </div>
     </div>
-  </Modal>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
-import Modal from '~/components/base/Modal.vue'
-import Button from '~/components/base/Button.vue'
+import { computed } from 'vue'
+import BaseModal from '~/components/base/BaseModal.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
 import type { CartItem } from '~/types'
 
 interface Props {
@@ -98,6 +93,13 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const isOpenInside = computed({
+  get: () => props.isOpen,
+  set: (value) => {
+    if (!value) emit('close')
+  }
+})
 
 const handleClose = () => {
   emit('close')

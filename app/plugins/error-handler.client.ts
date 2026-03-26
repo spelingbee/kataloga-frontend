@@ -44,7 +44,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       
       // Skip error reporting for error logging endpoint to prevent loops
       const url = typeof args[0] === 'string' ? args[0] : (args[0] instanceof Request ? args[0].url : String(args[0]))
-      const isErrorEndpoint = url.includes('/api/errors')
+      const isErrorEndpoint = url.includes('/errors')
       
       // Log failed HTTP requests (except for error reporting endpoint)
       if (!response.ok && !isErrorEndpoint) {
@@ -61,7 +61,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     } catch (error) {
       // Skip error reporting for error logging endpoint to prevent loops
       const url = typeof args[0] === 'string' ? args[0] : (args[0] instanceof Request ? args[0].url : String(args[0]))
-      const isErrorEndpoint = url.includes('/api/errors')
+      const isErrorEndpoint = url.includes('/errors')
       
       // Log network errors (except for error reporting endpoint)
       if (!isErrorEndpoint) {
@@ -155,7 +155,8 @@ async function sendErrorReportWithRetry(errorReport: any) {
   
   while (attempt <= retryConfig.maxRetries) {
     try {
-      await $fetch('/api/errors', {
+      const config = useRuntimeConfig()
+      await $fetch(`${config.public.apiBaseUrl}/errors`, {
         method: 'POST',
         body: errorReport,
       })

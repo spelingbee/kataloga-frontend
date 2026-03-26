@@ -10,6 +10,24 @@ interface LocationState {
     location: UserLocation
     isDefault: boolean
   }>
+  deliveryZones: Array<{
+    id: string
+    name: string
+    coordinates: UserLocation[]
+    isActive: boolean
+    minOrderAmount: string
+    deliveryFee: string
+  }>
+  restaurants: Array<{
+    id: string
+    name: string
+    address: string
+    location: UserLocation
+    phone?: string
+    deliveryTime?: number
+    isActive: boolean
+    deliveryRadius: number
+  }>
   loading: boolean
   error: string | null
   permissionStatus: 'granted' | 'denied' | 'prompt' | 'unknown'
@@ -19,6 +37,8 @@ export const useLocationStore = defineStore('location', {
   state: (): LocationState => ({
     currentLocation: null,
     savedAddresses: [],
+    deliveryZones: [],
+    restaurants: [],
     loading: false,
     error: null,
     permissionStatus: 'unknown',
@@ -26,6 +46,7 @@ export const useLocationStore = defineStore('location', {
 
   getters: {
     hasLocation: (state) => state.currentLocation !== null,
+    userLocation: (state) => state.currentLocation,
     defaultAddress: (state) => state.savedAddresses.find(addr => addr.isDefault),
   },
 
@@ -67,11 +88,11 @@ export const useLocationStore = defineStore('location', {
         return location
       } catch (error: any) {
         this.error = error.message || 'Failed to get current location'
-        
+
         if (error.code === 1) {
           this.permissionStatus = 'denied'
         }
-        
+
         console.error('Geolocation error:', error)
         return null
       } finally {
@@ -81,7 +102,7 @@ export const useLocationStore = defineStore('location', {
 
     setCurrentLocation(location: UserLocation) {
       this.currentLocation = location
-      
+
       // Save to localStorage
       if (import.meta.client) {
         localStorage.setItem('currentLocation', JSON.stringify(location))
@@ -103,7 +124,7 @@ export const useLocationStore = defineStore('location', {
 
     clearLocation() {
       this.currentLocation = null
-      
+
       if (import.meta.client) {
         localStorage.removeItem('currentLocation')
       }
@@ -121,6 +142,50 @@ export const useLocationStore = defineStore('location', {
       } catch (error) {
         console.error('Failed to check geolocation permission:', error)
         return 'unknown' as any
+      }
+    },
+
+    checkDeliveryAvailability(userLocation: UserLocation): boolean {
+      return this.deliveryZones.some(zone => {
+        // Simple distance check - in real app would use proper geofencing
+        const firstCoord = zone.coordinates[0]
+        if (!firstCoord) return false
+
+        const distance = Math.sqrt(
+          Math.pow(firstCoord.latitude - userLocation.latitude, 2) +
+          Math.pow(firstCoord.longitude - userLocation.longitude, 2)
+        )
+        return distance < 0.1 // Rough approximation
+      })
+    },
+
+    async findNearestRestaurants() {
+      const location = this.currentLocation
+      if (!location) {
+        return []
+      }
+
+      // Sort restaurants by distance
+      return this.restaurants
+        .filter(r => r.isActive)
+        .sort((a, b) => {
+          const distanceA = Math.sqrt(
+            Math.pow(a.location.latitude - location.latitude, 2) +
+            Math.pow(a.location.longitude - location.longitude, 2)
+          )
+          const distanceB = Math.sqrt(
+            Math.pow(b.location.latitude - location.latitude, 2) +
+            Math.pow(b.location.longitude - location.longitude, 2)
+          )
+          return distanceA - distanceB
+        })
+    },
+
+    selectRestaurant(restaurantId: string) {
+      const restaurant = this.restaurants.find(r => r.id === restaurantId)
+      if (restaurant) {
+        // Store selected restaurant logic here
+        console.log('Selected restaurant:', restaurant)
       }
     },
   },

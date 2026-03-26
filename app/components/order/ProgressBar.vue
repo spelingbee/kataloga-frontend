@@ -99,7 +99,7 @@ import { OrderStatus } from '~/types'
 // Props
 interface Props {
   currentStatus: OrderStatus
-  estimatedTimes?: Record<OrderStatus, string>
+  estimatedTimes?: Partial<Record<OrderStatus, string>>
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -337,7 +337,7 @@ const isCurrentStep = (stepIndex: number): boolean => {
 
 .progress-bar__fill {
   height: 100%;
-  background: linear-gradient(to right, var(--color-success), #4ade80);
+  background: linear-gradient(to right, var(--color-success), $color-success-light);
   border-radius: $radius-full;
   transition: width 500ms ease-out;
 }

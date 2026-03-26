@@ -20,6 +20,8 @@ export type AnimationType =
   | 'bounce'
   | 'pulse'
   | 'shake'
+  | 'wiggle'
+  | 'heartbeat'
 
 export type AnimationDuration = 'fast' | 'base' | 'slow'
 
@@ -264,13 +266,13 @@ export const useAnimations = () => {
     if (!animationsEnabled.value) return
 
     const items = container.querySelectorAll(itemSelector) as NodeListOf<HTMLElement>
-    
+
     items.forEach((item, index) => {
       item.style.opacity = '0'
       item.style.transform = 'translateY(20px)'
-      
+
       setTimeout(() => {
-        item.style.transition = `opacity ${$transition-base} ease-out, transform ${$transition-base} ease-out`
+        item.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out'
         item.style.opacity = '1'
         item.style.transform = 'translateY(0)'
       }, index * delay)
@@ -298,13 +300,13 @@ export const useAnimations = () => {
     const updateNumber = (currentTime: number) => {
       const elapsed = currentTime - startTime
       const progress = Math.min(elapsed / duration, 1)
-      
+
       // Easing function (ease-out)
       const easeOut = 1 - Math.pow(1 - progress, 3)
       const current = from + (difference * easeOut)
-      
+
       element.textContent = formatter ? formatter(Math.round(current)) : Math.round(current).toString()
-      
+
       if (progress < 1) {
         requestAnimationFrame(updateNumber)
       }

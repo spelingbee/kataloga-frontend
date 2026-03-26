@@ -2,6 +2,7 @@
  * Core Web Vitals monitoring and optimization
  * Tracks FCP, LCP, FID, CLS, TTFB and provides optimization recommendations
  */
+import { safeArrayAccess } from '~/types/utils/type-guards'
 
 interface WebVitalsMetrics {
   fcp?: number // First Contentful Paint
@@ -97,10 +98,12 @@ export class CoreWebVitalsMonitor {
     try {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
-        const lastEntry = entries[entries.length - 1]
-        this.metrics.lcp = lastEntry.startTime
-        this.notifyCallbacks()
-        console.log('LCP:', lastEntry.startTime)
+        const lastEntry = safeArrayAccess(entries, entries.length - 1)
+        if (lastEntry) {
+          this.metrics.lcp = lastEntry.startTime
+          this.notifyCallbacks()
+          console.log('LCP:', lastEntry.startTime)
+        }
       })
       
       observer.observe({ entryTypes: ['largest-contentful-paint'] })
@@ -162,7 +165,8 @@ export class CoreWebVitalsMonitor {
    */
   private measureTTFB(): void {
     try {
-      const navigationTiming = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+      const navigationEntries = performance.getEntriesByType('navigation')
+      const navigationTiming = safeArrayAccess(navigationEntries, 0) as PerformanceNavigationTiming | undefined
       if (navigationTiming) {
         this.metrics.ttfb = navigationTiming.responseStart - navigationTiming.requestStart
         this.notifyCallbacks()

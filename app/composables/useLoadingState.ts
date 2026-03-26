@@ -1,4 +1,4 @@
-export interface LoadingState {
+export interface UseLoadingState {
   isLoading: boolean
   isInitialLoading: boolean
   isRefreshing: boolean
@@ -57,7 +57,7 @@ export function useLoadingState(initialLoading = false) {
     type: 'initial' | 'refresh' | 'default' = 'default'
   ): Promise<T | null> => {
     setLoading(true, type)
-    
+
     try {
       const result = await asyncFn()
       setLoading(false, type)
@@ -68,7 +68,7 @@ export function useLoadingState(initialLoading = false) {
     }
   }
 
-  const state = computed<LoadingState>(() => ({
+  const state = computed<UseLoadingState>(() => ({
     isLoading: isLoading.value,
     isInitialLoading: isInitialLoading.value,
     isRefreshing: isRefreshing.value,
@@ -97,24 +97,24 @@ export function useLoadingState(initialLoading = false) {
 // Specialized loading states for common scenarios
 export function useMenuLoadingState() {
   const loadingState = useLoadingState(true)
-  
+
   const loadMenu = async (menuFn: () => Promise<any[]>) => {
     const result = await loadingState.withLoading(menuFn, 'initial')
-    
+
     if (result) {
       loadingState.setEmpty(result.length === 0)
     }
-    
+
     return result
   }
 
   const refreshMenu = async (menuFn: () => Promise<any[]>) => {
     const result = await loadingState.withLoading(menuFn, 'refresh')
-    
+
     if (result) {
       loadingState.setEmpty(result.length === 0)
     }
-    
+
     return result
   }
 
@@ -127,7 +127,7 @@ export function useMenuLoadingState() {
 
 export function useCartLoadingState() {
   const loadingState = useLoadingState()
-  
+
   const addToCart = async (addFn: () => Promise<void>) => {
     return loadingState.withLoading(addFn)
   }
@@ -150,18 +150,18 @@ export function useCartLoadingState() {
 
 export function useOrderLoadingState() {
   const loadingState = useLoadingState()
-  
+
   const createOrder = async (createFn: () => Promise<any>) => {
     return loadingState.withLoading(createFn)
   }
 
   const loadOrders = async (loadFn: () => Promise<any[]>) => {
     const result = await loadingState.withLoading(loadFn, 'initial')
-    
+
     if (result) {
       loadingState.setEmpty(result.length === 0)
     }
-    
+
     return result
   }
 

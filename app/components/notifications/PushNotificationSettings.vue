@@ -298,7 +298,7 @@ const getStatusText = (): string => {
 }
 
 .push-notification-settings__container {
-  background: white;
+  background: $bg-primary;
   border-radius: $radius-lg;
   box-shadow: $shadow-sm;
   border: 1px solid var(--border-primary);
@@ -318,18 +318,18 @@ const getStatusText = (): string => {
   margin-bottom: $space-6;
 
   &--warning {
-    background: #fef3c7;
-    border: 1px solid #fde68a;
+    background: $color-warning-bg;
+    border: 1px solid $color-warning-border;
   }
 
   &--error {
-    background: #fee2e2;
-    border: 1px solid #fecaca;
+    background: $color-error-bg;
+    border: 1px solid $color-error-border;
   }
 
   &--success {
-    background: #d1fae5;
-    border: 1px solid #a7f3d0;
+    background: $color-success-bg;
+    border: 1px solid $color-success-border;
   }
 }
 
@@ -345,15 +345,15 @@ const getStatusText = (): string => {
   margin-top: 0.125rem;
 
   .push-notification-settings__alert--warning & {
-    color: #f59e0b;
+    color: $color-warning-light;
   }
 
   .push-notification-settings__alert--error & {
-    color: #ef4444;
+    color: $color-error-light;
   }
 
   .push-notification-settings__alert--success & {
-    color: #10b981;
+    color: $color-success-light;
   }
 }
 
@@ -366,15 +366,15 @@ const getStatusText = (): string => {
   font-weight: $font-medium;
 
   .push-notification-settings__alert--warning & {
-    color: #92400e;
+    color: $color-warning-dark;
   }
 
   .push-notification-settings__alert--error & {
-    color: #991b1b;
+    color: $color-error-dark;
   }
 
   .push-notification-settings__alert--success & {
-    color: #065f46;
+    color: $color-success-dark;
   }
 }
 
@@ -383,15 +383,15 @@ const getStatusText = (): string => {
   margin-top: $space-1;
 
   .push-notification-settings__alert--warning & {
-    color: #78350f;
+    color: $color-warning-dark;
   }
 
   .push-notification-settings__alert--error & {
-    color: #7f1d1d;
+    color: $color-error-dark;
   }
 
   .push-notification-settings__alert--success & {
-    color: #064e3b;
+    color: $color-success-dark;
   }
 }
 
@@ -434,15 +434,15 @@ const getStatusText = (): string => {
   border-radius: $radius-full;
 
   &--success {
-    background: #10b981;
+    background: $color-success-light;
   }
 
   &--error {
-    background: #ef4444;
+    background: $color-error-light;
   }
 
   &--warning {
-    background: #f59e0b;
+    background: $color-warning-light;
   }
 }
 
@@ -451,15 +451,15 @@ const getStatusText = (): string => {
   font-weight: $font-medium;
 
   &--success {
-    color: #10b981;
+    color: $color-success-light;
   }
 
   &--error {
-    color: #ef4444;
+    color: $color-error-light;
   }
 
   &--warning {
-    color: #f59e0b;
+    color: $color-warning-light;
   }
 }
 
@@ -483,41 +483,41 @@ const getStatusText = (): string => {
   }
 
   &--primary {
-    background: #2563eb;
+    background: $color-info;
     color: white;
 
     &:hover {
-      background: #1d4ed8;
+      background: $color-info-dark;
     }
 
     &:focus {
-      ring-color: #3b82f6;
+      ring-color: $color-info-light;
     }
   }
 
   &--danger {
-    background: #dc2626;
+    background: $color-error;
     color: white;
 
     &:hover {
-      background: #b91c1c;
+      background: $color-error-dark;
     }
 
     &:focus {
-      ring-color: #ef4444;
+      ring-color: $color-error-light;
     }
   }
 
   &--secondary {
-    background: #4b5563;
+    background: $color-neutral-600;
     color: white;
 
     &:hover {
-      background: #374151;
+      background: $color-neutral-700;
     }
 
     &:focus {
-      ring-color: #6b7280;
+      ring-color: $color-neutral-500;
     }
   }
 
@@ -573,12 +573,12 @@ const getStatusText = (): string => {
 .push-notification-settings__preference-label {
   font-size: $text-sm;
   font-weight: $font-medium;
-  color: #374151;
+  color: $text-primary;
 }
 
 .push-notification-settings__preference-description {
   font-size: $text-sm;
-  color: #6b7280;
+  color: $text-secondary;
 }
 
 @keyframes spin {

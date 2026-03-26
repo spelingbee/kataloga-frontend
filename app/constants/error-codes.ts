@@ -55,7 +55,7 @@ export const ERROR_CODE_TO_STATUS: Record<string, number> = {
  */
 export function isClientError(errorCode: string): boolean {
   const status = ERROR_CODE_TO_STATUS[errorCode];
-  return status >= 400 && status < 500;
+  return status !== undefined && status >= 400 && status < 500;
 }
 
 /**
@@ -63,7 +63,7 @@ export function isClientError(errorCode: string): boolean {
  */
 export function isServerError(errorCode: string): boolean {
   const status = ERROR_CODE_TO_STATUS[errorCode];
-  return status >= 500;
+  return status !== undefined && status >= 500;
 }
 
 /**

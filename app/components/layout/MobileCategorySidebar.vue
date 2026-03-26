@@ -62,7 +62,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useMenuStore } from '~/stores/menu'
 
 // Props & Emits
-defineEmits<{
+const emit = defineEmits<{
   close: []
 }>()
 
@@ -91,13 +91,13 @@ const selectCategory = (category: any) => {
   }
   
   // Close sidebar after selection
-  $emit('close')
+  emit('close')
 }
 
 const clearFilters = () => {
   menuStore.clearFilters()
   menuStore.setCurrentCategory(null)
-  $emit('close')
+  emit('close')
 }
 
 // Animation
@@ -110,7 +110,7 @@ onMounted(() => {
 
 // Handle escape key
 onKeyStroke('Escape', () => {
-  $emit('close')
+  emit('close')
 })
 </script>
 

@@ -1,4 +1,4 @@
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted, readonly, watch } from 'vue'
 
 export interface LazyLoadOptions {
   threshold?: number
@@ -77,7 +77,7 @@ export function useLazyComponent<T = any>(
   options: { delay?: number; timeout?: number } = {}
 ) {
   const { delay = 0, timeout = 10000 } = options
-  
+
   const component = ref<T | null>(null)
   const loading = ref(false)
   const error = ref<Error | null>(null)
@@ -164,11 +164,11 @@ export function useBundleAnalyzer() {
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
       const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
 
-      const jsResources = resources.filter(resource => 
+      const jsResources = resources.filter(resource =>
         resource.name.includes('.js') && !resource.name.includes('hot-update')
       )
 
-      const cssResources = resources.filter(resource => 
+      const cssResources = resources.filter(resource =>
         resource.name.includes('.css')
       )
 

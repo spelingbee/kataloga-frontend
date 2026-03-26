@@ -246,8 +246,9 @@ const emit = defineEmits<{
 }>()
 
 // Local state
+// Local state
 const localPaymentInfo = ref<PaymentInfo>({ 
-  method: 'cash',
+  onlineService: 'apple',
   ...props.modelValue 
 })
 
@@ -299,17 +300,24 @@ const validateField = (field: keyof PaymentInfo) => {
         } else if (!/^\d{2}\/\d{2}$/.test(expiry)) {
           errors.expiryDate = 'Please enter a valid expiry date (MM/YY)'
         } else {
-          const [month, year] = expiry.split('/').map(Number)
-          const currentDate = new Date()
-          const currentYear = currentDate.getFullYear() % 100
-          const currentMonth = currentDate.getMonth() + 1
+          const parts = expiry.split('/').map(Number)
+          const month = parts[0]
+          const year = parts[1]
           
-          if (month < 1 || month > 12) {
-            errors.expiryDate = 'Please enter a valid month (01-12)'
-          } else if (year < currentYear || (year === currentYear && month < currentMonth)) {
-            errors.expiryDate = 'Card has expired'
+          if (month === undefined || year === undefined || isNaN(month) || isNaN(year)) {
+            errors.expiryDate = 'Please enter a valid expiry date (MM/YY)'
           } else {
-            delete errors.expiryDate
+            const currentDate = new Date()
+            const currentYear = currentDate.getFullYear() % 100
+            const currentMonth = currentDate.getMonth() + 1
+            
+            if (month < 1 || month > 12) {
+              errors.expiryDate = 'Please enter a valid month (01-12)'
+            } else if (year < currentYear || (year === currentYear && month < currentMonth)) {
+              errors.expiryDate = 'Card has expired'
+            } else {
+              delete errors.expiryDate
+            }
           }
         }
       }

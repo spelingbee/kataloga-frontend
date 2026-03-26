@@ -336,7 +336,7 @@ const findNearestRestaurant = async () => {
   
   const nearest = await locationStore.findNearestRestaurants()
   if (nearest.length > 0) {
-    selectedRestaurant.value = nearest[0]
+    selectedRestaurant.value = nearest[0] || null
   }
 }
 

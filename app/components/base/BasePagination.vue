@@ -1,8 +1,8 @@
 <template>
-  <nav class="pagination" :aria-label="$t('pagination.navigation')">
+  <nav class="pagination" :aria-label="t('pagination.navigation')">
     <div class="pagination__info">
       <span class="pagination__text">
-        {{ $t('pagination.showing', { 
+        {{ t('pagination.showing', { 
           start: startItem, 
           end: endItem, 
           total: pagination.totalItems 
@@ -19,11 +19,11 @@
           'pagination__button--prev',
           { 'pagination__button--disabled': !canGoPrevious }
         ]"
-        :aria-label="$t('pagination.previous')"
+        :aria-label="t('pagination.previous')"
         @click="goToPrevious"
       >
         <BaseIcon name="chevron-left" size="sm" />
-        <span class="pagination__button-text">{{ $t('pagination.previous') }}</span>
+        <span class="pagination__button-text">{{ t('pagination.previous') }}</span>
       </button>
 
       <!-- Page Numbers -->
@@ -35,7 +35,7 @@
             'pagination__page',
             { 'pagination__page--active': pagination.page === 1 }
           ]"
-          :aria-label="$t('pagination.goToPage', { page: 1 })"
+          :aria-label="t('pagination.goToPage', { page: 1 })"
           @click="goToPage(1)"
         >
           1
@@ -54,7 +54,7 @@
             'pagination__page',
             { 'pagination__page--active': pagination.page === page }
           ]"
-          :aria-label="$t('pagination.goToPage', { page })"
+          :aria-label="t('pagination.goToPage', { page })"
           :aria-current="pagination.page === page ? 'page' : undefined"
           @click="goToPage(page)"
         >
@@ -73,7 +73,7 @@
             'pagination__page',
             { 'pagination__page--active': pagination.page === pagination.totalPages }
           ]"
-          :aria-label="$t('pagination.goToPage', { page: pagination.totalPages })"
+          :aria-label="t('pagination.goToPage', { page: pagination.totalPages })"
           @click="goToPage(pagination.totalPages)"
         >
           {{ pagination.totalPages }}
@@ -88,10 +88,10 @@
           'pagination__button--next',
           { 'pagination__button--disabled': !canGoNext }
         ]"
-        :aria-label="$t('pagination.next')"
+        :aria-label="t('pagination.next')"
         @click="goToNext"
       >
-        <span class="pagination__button-text">{{ $t('pagination.next') }}</span>
+        <span class="pagination__button-text">{{ t('pagination.next') }}</span>
         <BaseIcon name="chevron-right" size="sm" />
       </button>
     </div>
@@ -99,12 +99,12 @@
     <!-- Page Size Selector (optional) -->
     <div v-if="showPageSize" class="pagination__page-size">
       <label class="pagination__page-size-label">
-        {{ $t('pagination.itemsPerPage') }}
+        {{ t('pagination.itemsPerPage') }}
         <BaseSelect
           :model-value="pagination.limit"
           :options="pageSizeOptions"
           size="sm"
-          @update:model-value="changePageSize"
+          @update:model-value="val => changePageSize(Number(val))"
         />
       </label>
     </div>
@@ -112,7 +112,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { PaginationMeta } from '~/types'
+
+const { t } = useI18n()
 
 interface Props {
   pagination: PaginationMeta
@@ -189,12 +192,12 @@ const showLastPage = computed(() => {
 })
 
 const showFirstEllipsis = computed(() => {
-  return showFirstPage.value && visiblePages.value.length > 0 && visiblePages.value[0] > 2
+  return showFirstPage.value && visiblePages.value.length > 0 && (visiblePages.value[0] ?? 0) > 2
 })
 
 const showLastEllipsis = computed(() => {
   return showLastPage.value && visiblePages.value.length > 0 && 
-         visiblePages.value[visiblePages.value.length - 1] < props.pagination.totalPages - 1
+         (visiblePages.value[visiblePages.value.length - 1] ?? 0) < props.pagination.totalPages - 1
 })
 
 // Methods

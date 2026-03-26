@@ -26,7 +26,7 @@
 <script setup lang="ts">
 interface Props {
   variant?: 'default' | 'elevated' | 'outlined'
-  padding?: 'sm' | 'md' | 'lg'
+  padding?: 'none' | 'compact' | 'sm' | 'md' | 'lg'
   hoverable?: boolean
 }
 
@@ -97,6 +97,18 @@ const handleClick = (event: Event) => {
   }
   
   // Padding variants
+  &--padding-none {
+    .base-card__content {
+      padding: 0;
+    }
+  }
+
+  &--padding-compact {
+    .base-card__content {
+      padding: $space-2;
+    }
+  }
+
   &--padding-sm {
     .base-card__content {
       padding: $space-3;

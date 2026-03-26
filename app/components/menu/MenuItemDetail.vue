@@ -3,7 +3,6 @@
     v-model="isOpen"
     size="lg"
     :closable="true"
-    @close="handleClose"
   >
     <div class="menu-item-detail">
       <!-- Image Gallery -->
@@ -164,13 +163,14 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem, ModifierGroup, Modifier } from '~/types'
+import type { MenuItemUI, ModifierGroupUI, ModifierUI } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
+import { useFavoritesStore } from '~/stores/favorites'
 
 interface Props {
   modelValue: boolean
-  menuItem: MenuItem
+  menuItem: MenuItemUI
 }
 
 const props = defineProps<Props>()
@@ -178,12 +178,13 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   close: []
-  addToCart: [item: MenuItem, quantity: number, modifiers: Modifier[]]
+  addToCart: [item: MenuItemUI, quantity: number, modifiers: ModifierUI[]]
 }>()
 
 // Stores
 const menuStore = useMenuStore()
 const cartStore = useCartStore()
+const favoritesStore = useFavoritesStore()
 
 // Telegram integration
 const telegram = useTelegram()
@@ -195,7 +196,7 @@ const isOpen = computed({
 })
 
 const quantity = ref(1)
-const selectedModifiers = ref<Modifier[]>([])
+const selectedModifiers = ref<ModifierUI[]>([])
 const hasValidationErrors = ref(false)
 const validationErrors = ref<string[]>([])
 
@@ -204,14 +205,14 @@ let cleanupMainButton: (() => void) | null = null
 
 // Computed properties
 const isFavorite = computed(() => {
-  return menuStore.favourites.some(item => item.id === props.menuItem.id)
+  return favoritesStore.isFavorite(props.menuItem.id)
 })
 
 // Extract modifier groups from menu item
 // In a real implementation, this would come from the API
-const modifierGroups = computed<ModifierGroup[]>(() => {
-  // For now, return empty array - will be populated from API
-  return []
+const modifierGroups = computed<readonly ModifierGroupUI[]>(() => {
+  // Use modifier groups from props if available
+  return props.menuItem.modifierGroups || []
 })
 
 const totalPrice = computed(() => {
@@ -231,7 +232,7 @@ const canAddToCart = computed(() => {
 })
 
 // Methods
-const handleModifierChange = (modifiers: Modifier[]) => {
+const handleModifierChange = (modifiers: ModifierUI[]) => {
   selectedModifiers.value = modifiers
   validateModifiers()
 }
@@ -288,7 +289,7 @@ const handleAddToCart = () => {
 }
 
 const toggleFavorite = () => {
-  menuStore.toggleFavourite(props.menuItem.id)
+  favoritesStore.toggleFavorite(props.menuItem.id)
   
   // Add haptic feedback
   if (telegram.isTelegram.value) {
@@ -304,6 +305,9 @@ const handleClose = () => {
   selectedModifiers.value = []
   hasValidationErrors.value = false
   validationErrors.value = []
+  
+  // Close modal using v-model
+  isOpen.value = false
   
   emit('close')
 }
@@ -353,7 +357,11 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/typography' as *;
+@use '../../assets/scss/tokens/shadows' as *;
 
 .menu-item-detail {
   display: flex;
@@ -367,7 +375,8 @@ onUnmounted(() => {
   height: 300px;
   border-radius: $radius-lg;
   overflow: hidden;
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-md);
   
   @media (min-width: 768px) {
     height: 400px;
@@ -406,25 +415,31 @@ onUnmounted(() => {
 .menu-item-detail__favorite-btn {
   flex-shrink: 0;
   color: var(--text-secondary);
-  transition: color $transition-base;
+  transition: all 0.2s ease;
+  z-index: 10;
   
   &:hover {
     color: var(--color-error);
+    background: rgba(var(--color-error), 0.1);
   }
 }
 
 .menu-item-detail__favorite-btn--active {
   color: var(--color-error);
+  
+  &:hover {
+     background: rgba(var(--color-error), 0.15);
+  }
 }
 
 .menu-item-detail__description {
-  line-height: $leading-relaxed;
+  line-height: 1.6;
 }
 
 .menu-item-detail__allergens {
   padding: $space-4;
   background: rgba($color-warning, 0.1);
-  border: 1px solid rgba($color-warning, 0.3);
+  border: 1px solid rgba($color-warning, 0.2);
   border-radius: $radius-md;
 }
 
@@ -437,8 +452,9 @@ onUnmounted(() => {
 
 .menu-item-detail__nutrition {
   padding: $space-4;
-  background: $color-background-sidebar;
+  background: var(--bg-secondary);
   border-radius: $radius-md;
+  border: 1px solid var(--border-primary);
 }
 
 .menu-item-detail__nutrition-grid {
@@ -446,7 +462,7 @@ onUnmounted(() => {
   grid-template-columns: repeat(2, 1fr);
   gap: $space-4;
   
-  @media (min-width: $breakpoint-sm) {
+  @media (min-width: 640px) {
     grid-template-columns: repeat(4, 1fr);
   }
 }
@@ -462,8 +478,9 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: $space-4;
-  background: $color-background-sidebar;
+  background: var(--bg-secondary);
   border-radius: $radius-md;
+  border: 1px solid var(--border-primary);
 }
 
 .menu-item-detail__footer {
@@ -471,9 +488,9 @@ onUnmounted(() => {
   flex-direction: column;
   gap: $space-4;
   padding-top: $space-6;
-  border-top: 1px solid $color-border-subtle;
+  border-top: 1px solid var(--border-primary);
   
-  @media (min-width: $breakpoint-sm) {
+  @media (min-width: 640px) {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
@@ -489,7 +506,7 @@ onUnmounted(() => {
 .menu-item-detail__add-btn {
   width: 100%;
   
-  @media (min-width: $breakpoint-sm) {
+  @media (min-width: 640px) {
     width: auto;
     min-width: 200px;
   }
@@ -498,7 +515,7 @@ onUnmounted(() => {
 .menu-item-detail__error {
   padding: $space-4;
   background: rgba($color-error, 0.1);
-  border: 1px solid rgba($color-error, 0.3);
+  border: 1px solid rgba($color-error, 0.2);
   border-radius: $radius-md;
   text-align: center;
 }

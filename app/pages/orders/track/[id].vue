@@ -158,7 +158,6 @@
     <BaseModal
       v-model="showCancelModal"
       title="Cancel Order"
-      @close="showCancelModal = false"
     >
       <div class="order-tracking-page__cancel-modal">
         <AppText class="order-tracking-page__cancel-message">
@@ -200,11 +199,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { Order } from '~/types'
+import type { OrderUI } from '~/types'
 import { OrderStatus } from '~/types'
 import { useOrders } from '~/composables/useOrders'
 import { useOrderTracking } from '~/composables/useOrderTracking'
 import { useNotification } from '~/composables/useNotification'
+import { updateReadonlyObject } from '~/types/utils/readonly'
 
 // Page setup
 definePageMeta({
@@ -236,7 +236,7 @@ const {
 } = useOrderTracking(orderId.value)
 
 // Local state
-const order = ref<Order | null>(null)
+const order = ref<OrderUI | null>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 const refreshing = ref(false)
@@ -326,8 +326,10 @@ const confirmCancelOrder = async () => {
         message: 'Your order has been cancelled successfully'
       })
       
-      // Update local order status
-      order.value.status = OrderStatus.CANCELLED
+      // Update local order status using immutable operation
+      order.value = updateReadonlyObject(order.value, {
+        status: OrderStatus.CANCELLED
+      })
       
       // Close modal
       showCancelModal.value = false

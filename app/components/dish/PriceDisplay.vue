@@ -18,7 +18,7 @@
     <BaseBadge
       v-if="originalPrice && originalPrice > price"
       variant="success"
-      size="xs"
+      size="sm"
       class="ml-2"
     >
       {{ discountPercentage }}% off

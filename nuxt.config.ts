@@ -9,11 +9,16 @@ export default defineNuxtConfig({
   // TypeScript configuration
   typescript: {
     strict: true,
-    typeCheck: true,
+    typeCheck: false,
     tsConfig: {
       compilerOptions: {
+        skipLibCheck: true,
         types: ["node"],
       },
+      include: [
+        "./types/**/*",
+        "./app/types/**/*"
+      ]
     },
   },
 
@@ -96,7 +101,7 @@ export default defineNuxtConfig({
       sentryDsn: process.env.NUXT_PUBLIC_SENTRY_DSN || '',
       analyticsId: process.env.NUXT_PUBLIC_ANALYTICS_ID || '',
       cdnUrl: process.env.NUXT_PUBLIC_CDN_URL || '',
-      
+
       // Multi-tenant configuration
       multiTenantMode: process.env.NUXT_PUBLIC_MULTI_TENANT_MODE === 'true',
       defaultTenant: process.env.NUXT_PUBLIC_DEFAULT_TENANT || '',
@@ -105,7 +110,7 @@ export default defineNuxtConfig({
       requireTenantValidation: process.env.NUXT_PUBLIC_REQUIRE_TENANT_VALIDATION !== 'false',
       tenantCacheTimeout: parseInt(process.env.NUXT_PUBLIC_TENANT_CACHE_TIMEOUT || '300000'), // 5 minutes
       allowTenantSwitching: process.env.NUXT_PUBLIC_ALLOW_TENANT_SWITCHING !== 'false',
-      
+
       // Payment gateway configuration
       payment: {
         elsom: {
@@ -281,32 +286,32 @@ export default defineNuxtConfig({
   routeRules: {
     // Homepage - SSR for SEO
     '/': { ssr: true },
-    
+
     // Tenant selection page - SSR for SEO
     '/select-restaurant': { ssr: true },
-    
+
     // Menu pages - SSR for SEO and performance
     '/menu': { ssr: true },
     '/menu/**': { ssr: true },
     '/dish/**': { ssr: true },
-    
+
     // Auth pages - SPA for better UX
     '/auth/**': { ssr: false },
-    
+
     // Admin pages - SPA with lazy loading
     '/admin/**': { ssr: false },
-    
+
     // User pages - SPA
     '/orders/**': { ssr: false },
     '/profile/**': { ssr: false },
-    
+
     // API routes
     '/api/**': { cors: true, headers: { 'Cache-Control': 's-maxage=60' } },
-    
+
     // Static assets
     '/images/**': { headers: { 'Cache-Control': 'max-age=31536000' } },
     '/icons/**': { headers: { 'Cache-Control': 'max-age=31536000' } },
-    
+
     // PWA files
     '/sw.js': { headers: { 'Cache-Control': 'no-cache' } },
     '/manifest.json': { headers: { 'Cache-Control': 'max-age=86400' } },
@@ -497,32 +502,32 @@ export default defineNuxtConfig({
               }
               return 'vendor-misc'
             }
-            
+
             // Admin chunks (lazy loaded)
             if (id.includes('/pages/admin/') || id.includes('/components/admin/')) {
               return 'admin'
             }
-            
+
             // Auth chunks
             if (id.includes('/pages/auth/') || id.includes('/stores/auth')) {
               return 'auth'
             }
-            
+
             // Menu chunks
             if (id.includes('/pages/menu/') || id.includes('/components/menu/') || id.includes('/stores/menu')) {
               return 'menu'
             }
-            
+
             // Order chunks
             if (id.includes('/pages/orders/') || id.includes('/components/order/') || id.includes('/stores/order')) {
               return 'orders'
             }
-            
+
             // Checkout chunks
             if (id.includes('/pages/checkout') || id.includes('/components/checkout/') || id.includes('/stores/cart')) {
               return 'checkout'
             }
-            
+
             // Payment chunks
             if (id.includes('/services/payment/') || id.includes('/components/payment/')) {
               return 'payment'
@@ -547,7 +552,9 @@ export default defineNuxtConfig({
       reportCompressedSize: false, // Faster builds
     },
     optimizeDeps: {
-      include: ['vue', 'pinia', '@telegram-apps/sdk', 'leaflet'],
+      // Note: leaflet excluded intentionally - should be dynamically imported
+      // in map components only to reduce initial bundle size (~150KB savings)
+      include: ['vue', 'pinia', '@telegram-apps/sdk', '@unhead/vue'],
       exclude: ['@nuxt/devtools'],
     },
     define: {

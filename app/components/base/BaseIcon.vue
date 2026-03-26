@@ -25,14 +25,14 @@
     <span v-else-if="name === 'fire'" class="icon__emoji icon__emoji--fire">🔥</span>
     
     <!-- Fallback -->
-    <span v-else class="icon__fallback">?</span>
+    <!-- <span v-else class="icon__fallback">?</span> -->
   </span>
 </template>
 
 <script setup lang="ts">
 interface Props {
   name: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '4xl' | 'category-icon' | number
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'category-icon' | number
   color?: 'current' | 'primary' | 'secondary' | 'muted' | 'white' | 'red' | 'green' | 'orange' | 'primary-red'
 }
 
@@ -113,7 +113,16 @@ const actionIcons: Record<string, string> = {
   location: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z',
   edit: 'M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z',
   truck: 'M16 3h4a2 2 0 012 2v13a2 2 0 01-2 2h-2M16 3v18M16 3H1v18h15M1 7h15M1 11h15M1 15h15',
-  store: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z M9 22V12h6v10'
+  store: 'M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z M9 22V12h6v10',
+  restaurant: 'M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3',
+  'credit-card': 'M21 4H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 14H3V10h18v8zm0-10H3V6h18v2z',
+  banknote: 'M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm0-14a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z', // Using a coin/dollar style for generic "cash" if banknote not available, or standard banknote path
+  smartphone: 'M5 2h14a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v16h14V4H5zm7 14a1 1 0 1 0 1 1 1 1 0 0 0-1-1z',
+  filter: 'M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z',
+  sun: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z',
+  moon: 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z',
+  receipt: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01',
+  trash: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
 }
 </script>
 
@@ -156,6 +165,18 @@ const actionIcons: Record<string, string> = {
     width: 2.5rem;
     height: 2.5rem;
     font-size: 2.5rem;
+  }
+  
+  &--2xl {
+    width: 3rem;
+    height: 3rem;
+    font-size: 3rem;
+  }
+  
+  &--3xl {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 3.5rem;
   }
   
   &--4xl {

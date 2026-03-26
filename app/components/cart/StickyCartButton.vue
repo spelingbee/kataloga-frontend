@@ -63,7 +63,13 @@ const itemCount = computed(() => cartStore.itemCount)
 const total = computed(() => cartStore.total)
 const isEmpty = computed(() => cartStore.isEmpty)
 
+const route = useRoute()
+
 const shouldShow = computed(() => {
+  // Respect explicit hidden routes as a safety net
+  const hiddenRoutes = ['/cart', '/checkout', '/orders']
+  if (hiddenRoutes.some(path => route.path.startsWith(path))) return false
+
   if (isEmpty.value) return false
   if (props.mobileOnly && !isMobile.value) return false
   return scrollY.value > props.scrollThreshold

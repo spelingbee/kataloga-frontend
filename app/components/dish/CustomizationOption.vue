@@ -17,14 +17,14 @@
         <BaseBadge
           v-if="option.price > 0"
           variant="secondary"
-          size="xs"
+          size="sm"
         >
           +{{ formatPrice(option.price) }}
         </BaseBadge>
         <BaseBadge
           v-else-if="option.price < 0"
           variant="success"
-          size="xs"
+          size="sm"
         >
           {{ formatPrice(option.price) }}
         </BaseBadge>

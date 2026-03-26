@@ -27,7 +27,7 @@
           <BaseBadge
             v-if="subcategory.isDefault"
             variant="success"
-            size="xs"
+            size="sm"
           >
             Popular
           </BaseBadge>

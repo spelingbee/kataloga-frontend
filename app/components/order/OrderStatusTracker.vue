@@ -96,18 +96,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Order, OrderStatus as OrderStatusEnum } from '~/types'
+import type { OrderUI } from '~/types'
 import { OrderStatus } from '~/types'
 import { useTenant } from '~/composables/useTenant'
 
 // Props & Emits
 interface Props {
-  order: Order
+  order: OrderUI
   showActions?: boolean
   showTimeline?: boolean
   loading?: boolean
   timeline?: Array<{
-    status: OrderStatusEnum
+    status: OrderStatus
     timestamp: string
     message: string
   }>
@@ -158,7 +158,7 @@ const canTrackDelivery = computed(() => {
 })
 
 // Status helper methods
-const getStatusIcon = (status: OrderStatusEnum): string => {
+const getStatusIcon = (status: OrderStatus): string => {
   const icons = {
     [OrderStatus.PENDING]: 'clock',
     [OrderStatus.CONFIRMED]: 'check-circle',
@@ -171,7 +171,7 @@ const getStatusIcon = (status: OrderStatusEnum): string => {
   return icons[status] || 'info'
 }
 
-const getStatusIconColor = (status: OrderStatusEnum): string => {
+const getStatusIconColor = (status: OrderStatus): string => {
   const colors = {
     [OrderStatus.PENDING]: 'text-primary-orange',
     [OrderStatus.CONFIRMED]: 'text-primary-green',
@@ -184,7 +184,7 @@ const getStatusIconColor = (status: OrderStatusEnum): string => {
   return colors[status] || 'text-neutral-20'
 }
 
-const getStatusTitle = (status: OrderStatusEnum): string => {
+const getStatusTitle = (status: OrderStatus): string => {
   const titles = {
     [OrderStatus.PENDING]: 'Order Received',
     [OrderStatus.CONFIRMED]: 'Order Confirmed',
@@ -197,7 +197,7 @@ const getStatusTitle = (status: OrderStatusEnum): string => {
   return titles[status] || 'Unknown Status'
 }
 
-const getStatusDescription = (status: OrderStatusEnum): string => {
+const getStatusDescription = (status: OrderStatus): string => {
   const descriptions = {
     [OrderStatus.PENDING]: 'We have received your order and are processing it.',
     [OrderStatus.CONFIRMED]: 'Your order has been confirmed and will be prepared soon.',

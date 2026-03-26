@@ -265,7 +265,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { Category } from '~/types'
+import { isDefined, safePropertyAccess } from '~/types/utils/type-guards'
+import { MenuItemService, CategoryService, extractValidationErrors } from '~/services/api.service'
+import type { CategoryUI } from '~/types'
 
 // Define page meta
 definePageMeta({
@@ -275,7 +277,7 @@ definePageMeta({
 
 // Reactive state
 const loading = ref(false)
-const categories = ref<Category[]>([])
+const categories = ref<CategoryUI[]>([])
 const imageInput = ref<HTMLInputElement>()
 const imagePreview = ref<string>('')
 
@@ -284,8 +286,8 @@ const form = ref({
   description: '',
   price: 0,
   categoryId: '',
-  calories: null as number | null,
-  preparationTime: null as number | null,
+  calories: undefined as number | undefined,
+  preparationTime: undefined as number | undefined,
   imageUrl: '',
   ingredients: [''],
   isActive: true
@@ -295,20 +297,17 @@ const errors = ref<Record<string, string>>({})
 
 // Methods
 const loadCategories = async () => {
-  try {
-    const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.get('/admin/categories')
-    
-    if (response.success) {
-      categories.value = response.data || []
-    }
-  } catch (error) {
-    console.error('Failed to load categories:', error)
+  const result = await CategoryService.getCategories()
+  
+  if (result.success) {
+    categories.value = Array.isArray(result.data) ? result.data : []
+  } else {
+    console.error('Failed to load categories:', result.error)
     // Use mock data for development
     categories.value = [
-      { id: '1', name: 'Pizza', description: '', sortOrder: 1 },
-      { id: '2', name: 'Salads', description: '', sortOrder: 2 },
-      { id: '3', name: 'Beverages', description: '', sortOrder: 3 }
+      { id: '1', name: 'Pizza', slug: 'pizza', description: undefined, sortOrder: 1, imageUrl: undefined, icon: undefined, count: 0 },
+      { id: '2', name: 'Salads', slug: 'salads', description: undefined, sortOrder: 2, imageUrl: undefined, icon: undefined, count: 0 },
+      { id: '3', name: 'Beverages', slug: 'beverages', description: undefined, sortOrder: 3, imageUrl: undefined, icon: undefined, count: 0 }
     ]
   }
 }
@@ -382,42 +381,43 @@ const validateForm = () => {
 }
 
 const handleSubmit = async () => {
+const submitForm = async () => {
   if (!validateForm()) return
   
   loading.value = true
   
-  try {
-    const { $apiClient } = useNuxtApp()
-    
-    // Filter out empty ingredients
-    const ingredients = form.value.ingredients.filter(ingredient => ingredient.trim())
-    
-    const menuItemData = {
-      ...form.value,
-      ingredients,
-      calories: form.value.calories || undefined,
-      preparationTime: form.value.preparationTime || undefined
-    }
-    
-    const response = await $apiClient.post('/admin/menu-items', menuItemData)
-    
-    if (response.success) {
-      await navigateTo('/admin/menu')
-    } else {
-      throw new Error(response.message || 'Failed to create menu item')
-    }
-  } catch (error: any) {
-    console.error('Failed to create menu item:', error)
+  // Filter out empty ingredients
+  const ingredients = form.value.ingredients.filter(ingredient => ingredient.trim())
+  
+  const menuItemData = {
+    ...form.value,
+    ingredients: ingredients.map(name => ({
+      id: Math.random().toString(36).substring(2, 9),
+      name,
+      isDefault: true,
+      isOptional: true
+    })),
+    calories: form.value.calories || undefined,
+    preparationTime: form.value.preparationTime || undefined
+  }
+  
+  const result = await MenuItemService.createMenuItem(menuItemData)
+  
+  if (result.success) {
+    await navigateTo('/admin/menu')
+  } else {
+    console.error('Failed to create menu item:', result.error)
     
     // Handle validation errors from server
-    if (error.status === 400 && error.data?.errors) {
-      errors.value = error.data.errors
+    if (result.error.code === 'VALIDATION_ERROR') {
+      errors.value = extractValidationErrors(result.error)
     } else {
-      alert('Failed to create menu item. Please try again.')
+      alert(result.error.message || 'Failed to create menu item. Please try again.')
     }
-  } finally {
-    loading.value = false
   }
+  
+  loading.value = false
+}
 }
 
 // Lifecycle

@@ -26,7 +26,10 @@
         </NuxtLink>
       </div>
       
-      <PopularSection />
+      <div v-if="menuStore.loading" class="flex justify-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-green"/>
+      </div>
+      <PopularSection v-else />
     </section>
 
     <!-- Categories Preview -->
@@ -35,7 +38,10 @@
         Browse Categories
       </h2>
       
-      <div class="home-categories">
+      <div v-if="menuStore.loading" class="flex justify-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-green"/>
+      </div>
+      <div v-else class="home-categories">
         <NuxtLink
           v-for="category in categories" 
           :key="category.id"
@@ -55,7 +61,7 @@
 
     <!-- Quick Actions -->
     <section class="home-actions">
-      <BaseCard class="home-action-card" hoverable>
+      <BaseCard class="home-action-card" padding="sm" hoverable>
         <BaseIcon name="heart" size="xl" class="home-action-card__icon home-action-card__icon--red" />
         <h3 class="home-action-card__title">
           Your Favourites
@@ -63,12 +69,12 @@
         <p class="home-action-card__description">
           Quick access to your favorite dishes
         </p>
-        <BaseButton variant="secondary" @click="$router.push('/favourites')">
+        <BaseButton variant="secondary" @click="router.push('/favourites')">
           View Favourites
         </BaseButton>
       </BaseCard>
 
-      <BaseCard class="home-action-card" hoverable>
+      <BaseCard class="home-action-card" padding="none" hoverable>
         <BaseIcon name="receipt" size="xl" class="home-action-card__icon home-action-card__icon--green" />
         <h3 class="home-action-card__title">
           Order History
@@ -76,12 +82,12 @@
         <p class="home-action-card__description">
           Track and reorder from your history
         </p>
-        <BaseButton variant="secondary" @click="$router.push('/orders')">
+        <BaseButton variant="secondary" @click="router.push('/orders')">
           View Orders
         </BaseButton>
       </BaseCard>
 
-      <BaseCard class="home-action-card" hoverable>
+      <BaseCard class="home-action-card" padding="sm" hoverable>
         <BaseIcon name="map" size="xl" class="home-action-card__icon home-action-card__icon--orange" />
         <h3 class="home-action-card__title">
           Find Locations
@@ -89,7 +95,7 @@
         <p class="home-action-card__description">
           Find restaurants near you
         </p>
-        <BaseButton variant="secondary" @click="$router.push('/map')">
+        <BaseButton variant="secondary" @click="router.push('/map')">
           View Map
         </BaseButton>
       </BaseCard>
@@ -101,12 +107,14 @@
 // Page setup
 // Stores
 import { useMenuStore } from '~/stores/menu'
+import PopularSection from '../components/menu/PopularSection.vue'
 
 definePageMeta({
   title: 'Home - Menu Ordering App'
 })
 
 const menuStore = useMenuStore()
+const router = useRouter()
 
 // Computed
 const categories = computed(() => menuStore.categories)
@@ -148,7 +156,7 @@ onMounted(() => {
 
 .home-hero {
   text-align: center;
-  padding: $space-16 $space-4 $space-12;
+  padding: $space-8 $space-4 $space-8;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -171,17 +179,18 @@ onMounted(() => {
 
 .home-section {
   max-width: 1200px;
-  margin: 0 auto $space-16;
+  margin: 0 auto $space-8;
 }
 
 .home-section__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $space-8;
+  margin-bottom: $space-4;
 }
 
 .home-section__title {
+  margin-bottom: $space-4;
   font-family: $font-secondary;
   font-size: $text-2xl;
   font-weight: $font-semibold;
@@ -261,8 +270,8 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: $space-8;
-  gap: $space-4;
+  padding: $space-4; // Restored padding as BaseCard content padding is now none
+  gap: $space-2;
 }
 
 .home-action-card__icon {
@@ -318,7 +327,8 @@ onMounted(() => {
   }
   
   .home-actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $space-2;
   }
 }
 

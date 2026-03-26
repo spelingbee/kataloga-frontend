@@ -145,9 +145,11 @@ export const useOfflineCart = () => {
       const transaction = db.transaction(['offlineCart'], 'readwrite')
       const store = transaction.objectStore('offlineCart')
       
+      const plainCartData = JSON.parse(JSON.stringify(cartData))
+      
       const record = {
-        userId: cartData.userId || 'anonymous',
-        ...cartData
+        userId: plainCartData.userId || 'anonymous',
+        ...plainCartData
       }
       
       await store.put(record)
@@ -193,9 +195,11 @@ export const useOfflineCart = () => {
       const transaction = db.transaction(['offlineData'], 'readwrite')
       const store = transaction.objectStore('offlineData')
       
+      const plainData = JSON.parse(JSON.stringify(data))
+      
       const record = {
         key,
-        data,
+        data: plainData,
         lastSync: Date.now()
       }
       
@@ -219,9 +223,9 @@ export const useOfflineCart = () => {
       return new Promise((resolve, reject) => {
         request.onsuccess = () => {
           const result = request.result
+          // Check if not too old (1 hour for menu data)
+          const maxAge = 60 * 60 * 1000
           if (result && result.data) {
-            // Check if not too old (1 hour for menu data)
-            const maxAge = 60 * 60 * 1000
             if (Date.now() - result.lastSync < maxAge) {
               resolve(result.data)
               return
@@ -255,13 +259,15 @@ export const useOfflineCart = () => {
   // Save pending order with enhanced data
   const savePendingOrder = async (orderData: Omit<PendingOrder, 'id' | 'timestamp' | 'retryCount'>): Promise<void> => {
     try {
+      const plainOrderData = JSON.parse(JSON.stringify(orderData))
+      
       const pendingOrder: PendingOrder = {
         id: `order_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
         timestamp: Date.now(),
         retryCount: 0,
-        authToken: authStore.accessToken,
+        authToken: authStore.accessToken || undefined,
         userId: authStore.user?.id,
-        ...orderData,
+        ...plainOrderData,
       }
 
       // Save to IndexedDB
@@ -280,7 +286,9 @@ export const useOfflineCart = () => {
       // Register background sync
       if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
         const registration = await navigator.serviceWorker.ready
-        await registration.sync.register('order-sync')
+        if ('sync' in registration) {
+          await (registration as any).sync.register('order-sync')
+        }
       }
     } catch (error) {
       console.error('Failed to save pending order:', error)
@@ -411,9 +419,10 @@ export const useOfflineCart = () => {
               price: item.menuItem.price,
             })),
             customerInfo: order.customerInfo,
+            paymentMethod: 'CASH', // Default payment method for offline orders
           })
 
-          if (response.success) {
+          if (response) {
             await removePendingOrder(order.id)
             
             // Show success notification
@@ -505,8 +514,10 @@ export const useOfflineCart = () => {
     if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
       try {
         const registration = await navigator.serviceWorker.ready
-        await registration.sync.register('cart-sync')
-        await registration.sync.register('order-sync')
+        if ('sync' in registration) {
+          await (registration as any).sync.register('cart-sync')
+          await (registration as any).sync.register('order-sync')
+        }
       } catch (error) {
         console.error('Failed to register background sync:', error)
       }

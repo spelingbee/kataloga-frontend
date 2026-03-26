@@ -66,7 +66,7 @@ export const usePerformance = () => {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         const lastEntry = entries[entries.length - 1]
-        if (import.meta.dev) {
+        if (lastEntry && import.meta.dev) {
           console.log('LCP:', lastEntry.startTime.toFixed(2), 'ms')
         }
       })
@@ -78,8 +78,8 @@ export const usePerformance = () => {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         entries.forEach((entry) => {
-          if (import.meta.dev) {
-            console.log('FID:', entry.processingStart - entry.startTime, 'ms')
+          if (import.meta.dev && 'processingStart' in entry) {
+            console.log('FID:', (entry as any).processingStart - entry.startTime, 'ms')
           }
         })
       })

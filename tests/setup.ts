@@ -1,50 +1,59 @@
-import { vi } from 'vitest'
+import { vi, beforeEach } from 'vitest'
 import { config } from '@vue/test-utils'
-import { createPinia, setActivePinia } from 'pinia'
-import { createApiClient } from '~/utils/api'
+import * as vue from 'vue'
 
-// Mock Vue composables properly
-vi.mock('vue', async () => {
-  const actual = await vi.importActual('vue')
+// Types
+interface StorageMock {
+  getItem: (key: string) => string | null
+  setItem: (key: string, value: string) => void
+  removeItem: (key: string) => void
+  clear: () => void
+  length: number
+  key: (index: number) => string | null
+}
+
+// 1. Better localStorage Mock
+const createStorageMock = (): StorageMock => {
+  let storage: Record<string, string> = {}
   return {
-    ...actual,
-    ref: (value: any) => {
-      const refObj = { value }
-      return refObj
-    },
-    computed: (fn: () => any) => {
-      const computedObj = { value: fn() }
-      return computedObj
-    },
-    reactive: (obj: any) => obj,
-    readonly: (obj: any) => obj,
-    watch: vi.fn(),
-    watchEffect: vi.fn(),
-    onMounted: vi.fn(),
-    onUnmounted: vi.fn(),
-    nextTick: vi.fn(() => Promise.resolve()),
-    getCurrentInstance: vi.fn(() => ({ type: { name: 'TestComponent' } })),
+    getItem: vi.fn((key: string) => storage[key] || null),
+    setItem: vi.fn((key: string, value: string) => { storage[key] = value.toString() }),
+    removeItem: vi.fn((key: string) => { delete storage[key] }),
+    clear: vi.fn(() => { storage = {} }),
+    get length() { return Object.keys(storage).length },
+    key: vi.fn((index: number) => Object.keys(storage)[index] || null)
   }
-})
+}
 
-// Mock Pinia composables properly
-vi.mock('pinia', async () => {
-  const actual = await vi.importActual('pinia')
-  return {
-    ...actual,
-    storeToRefs: (store: any) => {
-      const refs: any = {}
-      for (const key in store) {
-        if (typeof store[key] !== 'function') {
-          refs[key] = { value: store[key] }
-        }
-      }
-      return refs
-    },
+const mockLocalStorage = createStorageMock()
+const mockSessionStorage = createStorageMock()
+
+// 2. Setup globals
+if (typeof global !== 'undefined') {
+  // Use Object.defineProperty to avoid overwriting the entire window object if it exists
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, 'localStorage', { value: mockLocalStorage, writable: true })
+    Object.defineProperty(window, 'sessionStorage', { value: mockSessionStorage, writable: true })
+
+    // Fix for "SupportedEventInterface is not a constructor"
+    if (!window.Event) window.Event = global.Event
+    if (!window.MouseEvent) window.MouseEvent = global.MouseEvent
+    if (!window.KeyboardEvent) window.KeyboardEvent = global.KeyboardEvent
+  } else {
+    (global as any).localStorage = mockLocalStorage;
+    (global as any).sessionStorage = mockSessionStorage;
   }
-})
 
-// Mock Nuxt composables globally
+  // Auto-imports mock (make them available globally like Nuxt does)
+  const vueFuncs = ['ref', 'computed', 'reactive', 'onMounted', 'onUnmounted', 'watch', 'watchEffect', 'nextTick', 'defineProps', 'defineEmits', 'defineModel', 'defineExpose', 'defineSlots', 'toRef', 'toRefs', 'unref', 'shallowRef', 'markRaw', 'provide', 'inject']
+  vueFuncs.forEach(fn => {
+    if ((vue as any)[fn]) {
+      (global as any)[fn] = (vue as any)[fn]
+    }
+  })
+}
+
+// 3. Mock Nuxt and other modules
 vi.mock('#app', () => ({
   useNuxtApp: vi.fn(() => ({
     $config: {
@@ -65,7 +74,7 @@ vi.mock('#app', () => ({
   })),
   navigateTo: vi.fn(),
   useRoute: vi.fn(() => ({
-    params: { tenant: 'test-tenant' },
+    params: { id: 'test-id', tenant: 'test-tenant' },
     query: {},
     path: '/test-tenant',
   })),
@@ -74,45 +83,13 @@ vi.mock('#app', () => ({
     replace: vi.fn(),
     go: vi.fn(),
     back: vi.fn(),
-    forward: vi.fn(),
   })),
+  useHead: vi.fn(),
+  definePageMeta: vi.fn(),
 }))
 
-// Also mock the direct imports
-vi.mock('nuxt/app', () => ({
-  useNuxtApp: vi.fn(() => ({
-    $config: {
-      public: {
-        tenantSlug: 'test-tenant',
-        apiUrl: 'http://localhost:3001',
-        stripePublishableKey: 'pk_test_123',
-      },
-    },
-    $reportError: vi.fn(),
-  })),
-  useRuntimeConfig: vi.fn(() => ({
-    public: {
-      tenantSlug: 'test-tenant',
-      apiUrl: 'http://localhost:3001',
-      stripePublishableKey: 'pk_test_123',
-    },
-  })),
-  navigateTo: vi.fn(),
-  useRoute: vi.fn(() => ({
-    params: { tenant: 'test-tenant' },
-    query: {},
-    path: '/test-tenant',
-  })),
-  useRouter: vi.fn(() => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    go: vi.fn(),
-    back: vi.fn(),
-    forward: vi.fn(),
-  })),
-}))
+vi.mock('nuxt/app', () => (vi.importActual('#app')))
 
-// Mock i18n composables
 vi.mock('@nuxtjs/i18n', () => ({
   useI18n: vi.fn(() => ({
     locale: { value: 'en' },
@@ -122,210 +99,65 @@ vi.mock('@nuxtjs/i18n', () => ({
   })),
 }))
 
-// Mock API error composable
-vi.mock('~/composables/useApiError', () => ({
-  useApiError: vi.fn(() => ({
-    error: { value: null },
-    isError: { value: false },
-    clearError: vi.fn(),
-    setError: vi.fn(),
-    retry: vi.fn(),
-  })),
-}))
-
-// Setup global test configuration
-// Global storage for localStorage mock
-const globalStorage = new Map<string, string>()
-
+// 4. Global Test Configuration
 beforeEach(() => {
-  // Create fresh Pinia instance for each test
-  const pinia = createPinia()
-  setActivePinia(pinia)
-  
-  // Clear storage between tests
-  globalStorage.clear()
-  
-  // Mock localStorage with actual storage behavior
-  const localStorageMock = {
-    getItem: vi.fn((key: string) => globalStorage.get(key) || null),
-    setItem: vi.fn((key: string, value: string) => {
-      globalStorage.set(key, value)
-    }),
-    removeItem: vi.fn((key: string) => {
-      globalStorage.delete(key)
-    }),
-    clear: vi.fn(() => {
-      globalStorage.clear()
-    }),
-  }
-  vi.stubGlobal('localStorage', localStorageMock)
-  
-  // Initialize API client for tests
-  createApiClient({
-    baseURL: 'http://localhost:3001',
-    tenantSlug: 'test-tenant',
-  })
-  
-  // Mock fetch with proper Response objects
-  const mockFetch = vi.fn().mockImplementation((url, options) => {
-    const response = {
+  mockLocalStorage.clear()
+  mockSessionStorage.clear()
+  vi.clearAllMocks()
+
+  // Mock fetch
+  const mockFetch = vi.fn().mockImplementation(() =>
+    Promise.resolve({
       ok: true,
       status: 200,
-      statusText: 'OK',
-      headers: new Headers({
-        'content-type': 'application/json',
-      }),
-      json: () => Promise.resolve({
-        success: true,
-        statusCode: 200,
-        data: { message: 'Mock response' },
-        error: null,
-        meta: {
-          requestId: 'test-request-id',
-          timestamp: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        },
-      }),
-      text: () => Promise.resolve(JSON.stringify({
-        success: true,
-        statusCode: 200,
-        data: { message: 'Mock response' },
-        error: null,
-        meta: {
-          requestId: 'test-request-id',
-          timestamp: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        },
-      })),
+      json: () => Promise.resolve({ success: true, data: {} }),
+      text: () => Promise.resolve(''),
       blob: () => Promise.resolve(new Blob()),
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      formData: () => Promise.resolve(new FormData()),
-      clone: () => response,
-    }
-    return Promise.resolve(response as Response)
-  })
+    })
+  )
   vi.stubGlobal('fetch', mockFetch)
-  
-  // Mock window.Telegram for Telegram Web App tests
-  vi.stubGlobal('window', {
-    Telegram: {
-      WebApp: {
-        initData: 'test-init-data',
-        initDataUnsafe: {
-          user: {
-            id: 123456789,
-            first_name: 'Test',
-            last_name: 'User',
-            username: 'testuser',
-            language_code: 'en',
-          },
-        },
-        themeParams: {
-          bg_color: '#ffffff',
-          text_color: '#000000',
-          hint_color: '#999999',
-          link_color: '#0088cc',
-          button_color: '#0088cc',
-          button_text_color: '#ffffff',
-        },
-        MainButton: {
-          text: '',
-          color: '#0088cc',
-          textColor: '#ffffff',
-          isVisible: false,
-          isActive: true,
-          isProgressVisible: false,
-          setText: vi.fn(),
-          onClick: vi.fn(),
-          offClick: vi.fn(),
-          show: vi.fn(),
-          hide: vi.fn(),
-          enable: vi.fn(),
-          disable: vi.fn(),
-          showProgress: vi.fn(),
-          hideProgress: vi.fn(),
-        },
-        HapticFeedback: {
-          impactOccurred: vi.fn(),
-          notificationOccurred: vi.fn(),
-          selectionChanged: vi.fn(),
-        },
-        requestContact: vi.fn(),
-        ready: vi.fn(),
-        expand: vi.fn(),
-        close: vi.fn(),
+
+  // Mock Telegram
+  vi.stubGlobal('Telegram', {
+    WebApp: {
+      initData: 'test',
+      ready: vi.fn(),
+      expand: vi.fn(),
+      close: vi.fn(),
+      MainButton: {
+        show: vi.fn(),
+        hide: vi.fn(),
+        setText: vi.fn(),
+        onClick: vi.fn(),
+        offClick: vi.fn(),
       },
-    },
-    navigator: {
-      onLine: true,
-    },
-    matchMedia: vi.fn(() => ({
-      matches: false,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-    })),
-    getComputedStyle: vi.fn(() => ({
-      getPropertyValue: vi.fn(() => 'none'),
-      outline: 'none',
-      outlineWidth: '0px',
-      outlineStyle: 'none',
-      outlineColor: 'transparent',
-    })),
-    localStorage: localStorageMock,
-  })
-  
-  // Mock fetch
-  vi.stubGlobal('fetch', vi.fn())
-})
-
-// Configure Vue Test Utils
-config.global.plugins = []
-
-// Add global mocks for Vue composables
-vi.stubGlobal('ref', (value: any) => ({ value }))
-vi.stubGlobal('computed', (fn: () => any) => ({ value: fn() }))
-vi.stubGlobal('reactive', (obj: any) => obj)
-vi.stubGlobal('readonly', (obj: any) => obj)
-vi.stubGlobal('watch', vi.fn())
-vi.stubGlobal('watchEffect', vi.fn())
-vi.stubGlobal('onMounted', vi.fn())
-vi.stubGlobal('onUnmounted', vi.fn())
-vi.stubGlobal('nextTick', vi.fn(() => Promise.resolve()))
-vi.stubGlobal('getCurrentInstance', vi.fn(() => ({ type: { name: 'TestComponent' } })))
-vi.stubGlobal('storeToRefs', (store: any) => {
-  const refs: any = {}
-  for (const key in store) {
-    if (typeof store[key] !== 'function') {
-      refs[key] = { value: store[key] }
+      HapticFeedback: {
+        impactOccurred: vi.fn(),
+        notificationOccurred: vi.fn(),
+      }
     }
-  }
-  return refs
+  })
+
+  // Re-stub Nuxt globals in case they were cleared
+  vi.stubGlobal('useNuxtApp', vi.fn(() => ({
+    $config: { public: { tenantSlug: 'test-tenant', apiUrl: 'http://localhost:3001' } }
+  })))
+  vi.stubGlobal('useRuntimeConfig', vi.fn(() => ({
+    public: { tenantSlug: 'test-tenant', apiUrl: 'http://localhost:3001' }
+  })))
+  vi.stubGlobal('useRoute', vi.fn(() => ({ params: { id: 'test-id' } })))
+  vi.stubGlobal('useRouter', vi.fn(() => ({ push: vi.fn() })))
 })
 
-// Add global mocks for Nuxt composables
-vi.stubGlobal('useNuxtApp', () => ({
-  $config: {
-    public: {
-      tenantSlug: 'test-tenant',
-      apiUrl: 'http://localhost:3001',
-      stripePublishableKey: 'pk_test_123',
-    },
-  },
-  $reportError: vi.fn(),
-}))
+// 5. Configure Vue Test Utils
+config.global.stubs = {
+  'NuxtLink': true,
+  'ClientOnly': true,
+  'Teleport': true
+}
 
-vi.stubGlobal('useRuntimeConfig', () => ({
-  public: {
-    tenantSlug: 'test-tenant',
-    apiUrl: 'http://localhost:3001',
-    stripePublishableKey: 'pk_test_123',
-  },
-}))
-
-vi.stubGlobal('useApiError', () => ({
-  error: { value: null },
-  isError: { value: false },
-  clearError: vi.fn(),
-  setError: vi.fn(),
-  retry: vi.fn(),
-}))
+config.global.mocks = {
+  $t: (key: string) => key,
+  $d: (date: Date) => date.toLocaleDateString(),
+  $n: (num: number) => num.toString(),
+}

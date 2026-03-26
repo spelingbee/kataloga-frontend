@@ -115,7 +115,7 @@ export class TelegramGateway extends BasePaymentGateway {
     return true
   }
 
-  isAvailable(): boolean {
+  override isAvailable(): boolean {
     return super.isAvailable() && process.client && !!window.Telegram?.WebApp
   }
 

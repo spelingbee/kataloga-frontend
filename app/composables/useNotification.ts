@@ -10,7 +10,26 @@ export interface NotificationOptions {
 export function useNotification() {
   const notificationStore = useNotificationStore()
 
-  const showNotification = (options: NotificationOptions) => {
+  // Function overloads for backward compatibility
+  function showNotification(options: NotificationOptions): void
+  function showNotification(message: string, type: 'success' | 'error' | 'warning' | 'info'): void
+  function showNotification(
+    optionsOrMessage: NotificationOptions | string, 
+    type?: 'success' | 'error' | 'warning' | 'info'
+  ): void {
+    let options: NotificationOptions
+
+    // Handle both signatures
+    if (typeof optionsOrMessage === 'string') {
+      options = {
+        type: type || 'info',
+        title: type === 'error' ? 'Error' : type === 'success' ? 'Success' : type === 'warning' ? 'Warning' : 'Info',
+        message: optionsOrMessage
+      }
+    } else {
+      options = optionsOrMessage
+    }
+
     notificationStore.addNotification({
       id: Date.now().toString(),
       type: options.type === 'success' ? 'order' : 'system',

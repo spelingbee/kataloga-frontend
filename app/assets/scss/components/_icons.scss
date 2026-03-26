@@ -53,18 +53,18 @@
 }
 
 .icon--secondary {
-  color: #6b7280;
+  color: $color-neutral-500;
   
   .dark & {
-    color: #d1d5db;
+    color: $color-neutral-300;
   }
 }
 
 .icon--muted {
-  color: #9ca3af;
+  color: $color-neutral-400;
   
   .dark & {
-    color: #6b7280;
+    color: $color-neutral-500;
   }
 }
 
@@ -100,6 +100,6 @@
 }
 
 .icon__fallback {
-  color: #9ca3af;
+  color: $color-neutral-400;
   font-weight: $font-weight-bold;
 }

@@ -31,7 +31,7 @@
             <div class="category-scroller__item-icon">
               <BaseIcon name="grid" size="md" />
             </div>
-            <span class="category-scroller__item-text">{{ $t('menu.allCategories') }}</span>
+            <span class="category-scroller__item-text">{{ t('menu.allCategories') }}</span>
           </button>
 
           <!-- Category Items -->
@@ -75,10 +75,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { Category } from '~/types'
+import type { CategoryUI } from '~/types'
 
 interface Props {
-  categories: Category[]
+  categories: CategoryUI[]
   activeCategory?: string | null
   showScrollButtons?: boolean
 }
@@ -88,11 +88,13 @@ const props = withDefaults(defineProps<Props>(), {
   showScrollButtons: true
 })
 
+import { useI18n } from 'vue-i18n'
+
 const emit = defineEmits<{
   categorySelect: [categoryId: string | null]
 }>()
 
-const { $i18n } = useNuxtApp()
+const { t } = useI18n()
 
 // Refs
 const scrollContainer = ref<HTMLElement | null>(null)

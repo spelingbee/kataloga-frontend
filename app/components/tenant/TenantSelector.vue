@@ -88,12 +88,12 @@ const loadTenants = async () => {
 
   try {
     const { $api } = useNuxtApp()
-    const response = await $api.get<TenantInfo[]>('/tenants', {
+    const response = await ($api as any).get('/tenants', {
       bypassTenant: true
     })
 
-    if (response.success) {
-      tenants.value = response.data.filter(t => t.isActive)
+    if (response) {
+      tenants.value = (response as any[]).filter((t: any) => t.isActive)
     } else {
       throw new Error('Failed to load restaurants')
     }

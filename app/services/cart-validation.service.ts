@@ -1,4 +1,5 @@
-import type { CartItem, MenuItem, ApiResponse } from '~/types'
+import { useApiClient } from '~/utils/api'
+import type { CartItem, MenuItemUI, ApiResponse } from '~/types'
 
 export interface ValidationResult {
   isValid: boolean
@@ -20,9 +21,8 @@ export interface ValidationOptions {
 }
 
 export class CartValidationService {
-  private getApiClient(): any {
-    const nuxtApp = useNuxtApp()
-    return (nuxtApp as any).$apiClient
+  private getApiClient() {
+    return useApiClient()
   }
 
   private getTenantSlug(): string | null {
@@ -69,7 +69,7 @@ export class CartValidationService {
       }
 
       // Create a map for quick lookup
-      const menuItemsMap = new Map<string, MenuItem>(
+      const menuItemsMap = new Map<string, MenuItemUI>(
         currentMenuItems.map(item => [item.id, item])
       )
 
@@ -192,7 +192,7 @@ export class CartValidationService {
   /**
    * Fetch current menu data from API
    */
-  private async fetchCurrentMenuData(): Promise<MenuItem[] | null> {
+  private async fetchCurrentMenuData(): Promise<MenuItemUI[] | null> {
     try {
       const tenantSlug = this.getTenantSlug()
       if (!tenantSlug) {
@@ -200,55 +200,37 @@ export class CartValidationService {
         return null
       }
 
-      const response = await this.getApiClient().get(`/public/menu/${tenantSlug}`)
+      const menus = await this.getApiClient().get<any[]>(`/public/menu/${tenantSlug}`)
 
-      // Check if response is in ApiResponse format or direct data
-      let menus: any[] = []
-      
-      if (response && typeof response === 'object') {
-        if ('success' in response && 'data' in response && response.success) {
-          // Standard ApiResponse format
-          menus = response.data
-        } else if (Array.isArray(response)) {
-          // Direct array response from public endpoints
-          menus = response
-        } else {
-          console.error('❌ Cart Validation - Menu response not in expected format:', response)
-          return null
+      // Extract menu items from menus
+      const items: MenuItemUI[] = []
+
+      menus.forEach((menu: any) => {
+        if (menu.items) {
+          menu.items.forEach((item: any) => {
+            items.push({
+              id: item.id,
+              name: item.name,
+              description: item.description,
+              price: item.price,
+              imageUrl: item.imageUrl,
+              isActive: item.isActive,
+              categoryId: item.category?.id,
+              category: item.category,
+              calories: item.calories,
+              nutritionInfo: item.nutritionInfo,
+              cookingTime: item.cookingTime,
+              dietary: item.dietary || [],
+              // Check for stop list status
+              // This might come from different fields depending on backend implementation
+              isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
+              stockQuantity: item.stockQuantity,
+            } as MenuItemUI)
+          })
         }
-        
-        // Extract menu items from menus
-        const items: MenuItem[] = []
+      })
 
-        menus.forEach((menu: any) => {
-          if (menu.items) {
-            menu.items.forEach((item: any) => {
-              items.push({
-                id: item.id,
-                name: item.name,
-                description: item.description,
-                price: item.price,
-                imageUrl: item.imageUrl,
-                isActive: item.isActive,
-                categoryId: item.category?.id,
-                category: item.category,
-                calories: item.calories,
-                nutritionInfo: item.nutritionInfo,
-                cookingTime: item.cookingTime,
-                dietary: item.dietary || [],
-                // Check for stop list status
-                // This might come from different fields depending on backend implementation
-                isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
-                stockQuantity: item.stockQuantity,
-              } as MenuItem)
-            })
-          }
-        })
-
-        return items
-      }
-
-      return null
+      return items
     } catch (error) {
       console.error('Failed to fetch menu data:', error)
       return null
@@ -259,7 +241,7 @@ export class CartValidationService {
    * Check if an item is available (not in stop list)
    * This checks multiple possible fields that might indicate stop list status
    */
-  private checkItemAvailability(menuItem: MenuItem): boolean {
+  private checkItemAvailability(menuItem: MenuItemUI): boolean {
     // Check isAvailable field if it exists
     if ('isAvailable' in menuItem && menuItem.isAvailable === false) {
       return false

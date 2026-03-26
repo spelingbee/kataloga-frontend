@@ -47,8 +47,8 @@
           <div v-else class="space-y-4">
             <CartItem
               v-for="item in items"
-              :key="item.id"
-              :item="item"
+              :key="item.menuItem.id"
+              :cart-item="item"
               @update-quantity="updateQuantity"
               @remove="removeItem"
             />
@@ -92,11 +92,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useTenant } from '~/composables/useTenant'
-
-// Props & Emits
-defineEmits<{
-  close: []
-}>()
 
 // Props & Emits
 interface Props {

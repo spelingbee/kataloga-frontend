@@ -1,8 +1,8 @@
 <template>
   <BaseModal
-    :show="show"
+    v-model="show"
     title="Bank Transfer Payment"
-    @close="$emit('close')"
+    :size="MODAL_SIZES.MD"
   >
     <div class="transfer-payment-modal">
       <!-- WhatsApp Phone Display -->
@@ -77,19 +77,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { MODAL_SIZES } from '~/types/ui'
 
 interface Props {
-  show: boolean
+  modelValue: boolean
   whatsappPhone?: string
   orderTotal: number
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
-  close: []
+  'update:modelValue': [value: boolean]
   confirm: []
+  close: []
 }>()
+
+const show = computed({
+  get: () => props.modelValue,
+  set: (value: boolean) => emit('update:modelValue', value)
+})
 
 const showCopySuccess = ref(false)
 

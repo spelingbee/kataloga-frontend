@@ -175,8 +175,9 @@ const handleNavClick = (item: NavigationItem) => {
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center; // Ensure vertical centering
       gap: var(--space-1);
-      padding: var(--space-2);
+      padding: var(--space-1); // Reduce padding slightly to fitting content better
       min-width: 48px; // Improved touch target
       min-height: 48px;
       border-radius: var(--radius-lg);
@@ -218,10 +219,9 @@ const handleNavClick = (item: NavigationItem) => {
     }
 
     .app-navigation__label {
-      font-size: var(--text-xs);
-      font-weight: var(--font-medium);
       text-align: center;
-      line-height: 1.2;
+      line-height: 1.25; // Standard tight line-height
+      margin-top: auto; // Push label to bottom if icon needs space, or center if using flex gap
       transition: all var(--transition-base);
     }
 

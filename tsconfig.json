@@ -1,5 +1,14 @@
 {
   // https://nuxt.com/docs/guide/concepts/typescript
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@unhead/vue": [
+        "node_modules/@unhead/vue"
+      ]
+    }
+  },
   "files": [],
   "references": [
     {

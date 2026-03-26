@@ -1,27 +1,12 @@
 import { defineStore } from 'pinia'
 import { useMenuService } from '~/services/menu.service'
-import type { MenuItem, ApiError } from '~/types'
-
-// Helper function to get tenant store (to avoid circular dependency)
-function getTenantSlug(): string {
-  try {
-    const { useTenantStore } = require('./tenant')
-    const tenantStore = useTenantStore()
-    return tenantStore.tenantSlug || ''
-  } catch {
-    return ''
-  }
-}
-
-// Helper function to get auth store
-function getAuthStore() {
-  try {
-    const { useAuthStore } = require('./auth')
-    return useAuthStore()
-  } catch {
-    return null
-  }
-}
+import { useAuthStore } from './auth'
+import { useTenantStorage } from '~/composables/useStorage'
+import { 
+  menuItemAPIToUI, 
+  convertArrayAPIToUI 
+} from '~/types/utils/converters'
+import type { MenuItemUI, ApiError } from '~/types'
 
 interface FavoritesState {
   favoriteIds: string[]
@@ -50,21 +35,22 @@ export const useFavoritesStore = defineStore('favorites', {
 
   actions: {
     /**
-     * Initialize favorites from localStorage
+     * Get storage instance for favorites
+     */
+    _getStorage() {
+      return useTenantStorage('favorites', [] as string[])
+    },
+
+    /**
+     * Initialize favorites from storage
      * This is called on app startup
      */
     initializeFavorites() {
-      if (!import.meta.client) return
-
+      const { value: storedFavorites } = this._getStorage()
+      
       try {
-        const tenantSlug = getTenantSlug()
-        const storageKey = tenantSlug ? `favorites_${tenantSlug}` : 'favorites'
-        const savedFavorites = localStorage.getItem(storageKey)
-        
-        if (savedFavorites) {
-          this.favoriteIds = JSON.parse(savedFavorites)
-          console.log('Favorites initialized from localStorage:', this.favoriteIds.length)
-        }
+        this.favoriteIds = storedFavorites.value
+        console.log('Favorites initialized from storage:', this.favoriteIds.length)
       } catch (error) {
         console.error('Failed to initialize favorites:', error)
         this.favoriteIds = []
@@ -82,10 +68,10 @@ export const useFavoritesStore = defineStore('favorites', {
 
       // Optimistically update UI
       this.favoriteIds.push(itemId)
-      this.persistToLocalStorage()
+      this._persistToStorage()
 
       // Sync with server if authenticated
-      const authStore = getAuthStore()
+      const authStore = useAuthStore()
       if (authStore?.isAuthenticated) {
         try {
           const menuService = useMenuService()
@@ -110,10 +96,10 @@ export const useFavoritesStore = defineStore('favorites', {
 
       // Optimistically update UI
       this.favoriteIds.splice(index, 1)
-      this.persistToLocalStorage()
+      this._persistToStorage()
 
       // Sync with server if authenticated
-      const authStore = getAuthStore()
+      const authStore = useAuthStore()
       if (authStore?.isAuthenticated) {
         try {
           const menuService = useMenuService()
@@ -142,10 +128,10 @@ export const useFavoritesStore = defineStore('favorites', {
      */
     async clearAllFavorites() {
       this.favoriteIds = []
-      this.persistToLocalStorage()
+      this._persistToStorage()
 
       // Sync with server if authenticated
-      const authStore = getAuthStore()
+      const authStore = useAuthStore()
       if (authStore?.isAuthenticated) {
         try {
           // Clear all favorites on server
@@ -162,7 +148,7 @@ export const useFavoritesStore = defineStore('favorites', {
      * This syncs server favorites to local storage
      */
     async fetchFavoritesFromServer() {
-      const authStore = getAuthStore()
+      const authStore = useAuthStore()
       if (!authStore?.isAuthenticated) {
         return
       }
@@ -172,12 +158,13 @@ export const useFavoritesStore = defineStore('favorites', {
 
       try {
         const menuService = useMenuService()
-        // API client now returns unwrapped data directly
-        const favoriteItems = await menuService.getFavoriteItems()
+        // Service now returns API types, convert to UI types
+        const favoriteItemsAPI = await menuService.getFavoriteItems()
+        const favoriteItemsUI = convertArrayAPIToUI(favoriteItemsAPI, menuItemAPIToUI)
 
         // Extract IDs from favorite items
-        this.favoriteIds = favoriteItems.map((item: MenuItem) => item.id)
-        this.persistToLocalStorage()
+        this.favoriteIds = favoriteItemsUI.map((item: MenuItemUI) => item.id)
+        this._persistToStorage()
         this.lastSyncedAt = new Date()
         console.log('Favorites synced from server:', this.favoriteIds.length)
       } catch (error) {
@@ -192,7 +179,7 @@ export const useFavoritesStore = defineStore('favorites', {
      * Sync local favorites to server when user logs in
      */
     async syncFavoritesToServer() {
-      const authStore = getAuthStore()
+      const authStore = useAuthStore()
       if (!authStore?.isAuthenticated || this.favoriteIds.length === 0) {
         return
       }
@@ -213,35 +200,15 @@ export const useFavoritesStore = defineStore('favorites', {
     },
 
     /**
-     * Persist favorites to localStorage with tenant context
+     * Persist favorites to storage with tenant context
      */
-    persistToLocalStorage() {
-      if (!import.meta.client) return
-
+    _persistToStorage() {
+      const { setValue } = this._getStorage()
+      
       try {
-        const tenantSlug = getTenantSlug()
-        const storageKey = tenantSlug ? `favorites_${tenantSlug}` : 'favorites'
-        localStorage.setItem(storageKey, JSON.stringify(this.favoriteIds))
+        setValue(this.favoriteIds)
       } catch (error) {
-        console.error('Failed to persist favorites to localStorage:', error)
-      }
-    },
-
-    /**
-     * Get favorite menu items
-     * This requires the menu store to be loaded
-     */
-    getFavoriteItems(): MenuItem[] {
-      try {
-        const { useMenuStore } = require('./menu')
-        const menuStore = useMenuStore()
-        
-        return menuStore.menuItems.filter((item: MenuItem) => 
-          this.favoriteIds.includes(item.id)
-        )
-      } catch (error) {
-        console.error('Failed to get favorite items:', error)
-        return []
+        console.error('Failed to persist favorites to storage:', error)
       }
     },
   },

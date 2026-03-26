@@ -110,8 +110,8 @@ const handleInstall = async () => {
     if (installed) {
       showPrompt.value = false
       // Track successful installation
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'pwa_install', {
+      if (typeof (window as any).gtag !== 'undefined') {
+        (window as any).gtag('event', 'pwa_install', {
           event_category: 'engagement',
           event_label: 'install_prompt',
         })
@@ -137,8 +137,8 @@ const handleDismiss = () => {
   }
 
   // Track dismissal
-  if (typeof gtag !== 'undefined') {
-    gtag('event', 'pwa_install_dismissed', {
+  if (typeof (window as any).gtag !== 'undefined') {
+    (window as any).gtag('event', 'pwa_install_dismissed', {
       event_category: 'engagement',
       event_label: 'install_prompt',
     })

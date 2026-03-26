@@ -1,19 +1,23 @@
 import type { ApiResponse, ApiError, RequestOptions, ApiMeta } from '~/types'
 import type { TenantInfo } from '~/types/tenant'
-
-export interface ApiClientConfig {
-  baseURL: string
-  tenantSlug?: string
-  timeout?: number
-  retries?: number
-  retryDelay?: number
-}
+import type { ApiClient as IApiClient, ApiClientConfig, QueryParams } from '~/types/api-client'
+import {
+  isDefined,
+  hasElements,
+  safeArrayAccess,
+  safePropertyAccess,
+  isNonEmptyString,
+  isValidNumber,
+  hasProperty
+} from '~/types/utils/type-guards'
+import { isApiResponse } from '~/utils/type-guards'
+import { createErrorResponse } from '~/utils/response-normalizer'
 
 // Enhanced request configuration with unwrapping support
 export interface EnhancedRequestConfig extends Omit<RequestOptions, 'params'> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   body?: any
-  params?: Record<string, any>
+  params?: QueryParams
 }
 
 /**
@@ -48,7 +52,7 @@ export interface EnhancedRequestConfig extends Omit<RequestOptions, 'params'> {
  * @see {@link https://docs.example.com/api-client} API Client Documentation
  * @since 2.0.0
  */
-export class ApiClient {
+export class ApiClient implements IApiClient {
   private config: Required<ApiClientConfig>
   private tokenStore: any
   private errorStore: any
@@ -130,14 +134,21 @@ export class ApiClient {
 
   /**
    * Get current tenant slug
-   * Requirements: 1.1, 4.1
+   * Enhanced with type guards for null safety
+   * Requirements: 1.1, 4.1, 6.1, 6.2, 6.3
    */
   getCurrentTenant(): string {
-    // Try to get from tenant store first
-    if (this.tenantStore && 'tenantSlug' in this.tenantStore) {
-      return this.tenantStore.tenantSlug || this.config.tenantSlug
+    // Try to get from tenant store first with type guards
+    if (isDefined(this.tenantStore) && hasProperty(this.tenantStore, 'tenantSlug')) {
+      const tenantSlug = safePropertyAccess(this.tenantStore, 'tenantSlug')
+      if (isDefined(tenantSlug) && isNonEmptyString(tenantSlug)) {
+        return tenantSlug
+      }
     }
-    return this.config.tenantSlug
+
+    // Fallback to config tenant slug
+    const configTenantSlug = safePropertyAccess(this.config, 'tenantSlug')
+    return (isDefined(configTenantSlug) && isNonEmptyString(configTenantSlug)) ? configTenantSlug : ''
   }
 
   /**
@@ -151,6 +162,7 @@ export class ApiClient {
 
   /**
    * Unwraps data from ApiResponse for clean component consumption
+   * Enhanced with type guards for null safety
    * 
    * @template T The type of data being unwrapped
    * @param response - The ApiResponse to unwrap
@@ -163,17 +175,35 @@ export class ApiClient {
    * const users = this.unwrapResponse(response) // Returns User[]
    * ```
    * 
-   * Requirements: 1.1
+   * Requirements: 1.1, 6.1, 6.2, 6.3
    */
   private unwrapResponse<T>(response: ApiResponse<T>): T {
-    if (!response.success) {
-      throw this.createTypedApiError(response.error!, response.meta)
+    // Use type guard to validate response structure
+    if (!isApiResponse(response)) {
+      throw new Error('Invalid API response format')
     }
-    return response.data as T
+
+    if (!response.success) {
+      // Use safe property access for error field
+      const error = safePropertyAccess(response, 'error')
+      if (!isDefined(error)) {
+        throw new Error('Response indicates failure but no error details provided')
+      }
+      throw this.createTypedApiError(error, response.meta)
+    }
+
+    // Use safe property access for data field
+    const data = safePropertyAccess(response, 'data')
+    if (!isDefined(data)) {
+      throw new Error('Successful response missing data field')
+    }
+
+    return data
   }
 
   /**
    * Creates a typed API error with metadata for better error handling
+   * Enhanced with type guards for null safety
    * 
    * @param error - The API error object from the response
    * @param meta - API metadata containing requestId and other context
@@ -188,28 +218,48 @@ export class ApiClient {
    * console.log(apiError.requestId) // 'req-123'
    * ```
    * 
-   * Requirements: 1.2, 1.5
+   * Requirements: 1.2, 1.5, 6.1, 6.2, 6.3
    */
   private createTypedApiError(error: ApiError, meta: ApiMeta): ApiError & Error {
-    const typedError = new Error(error.message) as ApiError & Error
+    // Use type guards to safely access error properties
+    const errorCode = safePropertyAccess(error, 'code') || 'UNKNOWN_ERROR'
+    const errorMessage = safePropertyAccess(error, 'message') || 'An unknown error occurred'
+
+    const typedError = new Error(errorMessage) as ApiError & Error
     typedError.name = 'ApiError'
-    typedError.code = error.code
-    typedError.message = error.message
-    typedError.details = error.details
-    
-    // Add metadata for tracing and debugging
-    if (meta) {
-      (typedError as any).requestId = meta.requestId;
-      (typedError as any).tenantId = meta.tenantId;
-      (typedError as any).timestamp = meta.timestamp;
+    typedError.code = errorCode
+    typedError.message = errorMessage
+
+    // Use safe property access for optional details
+    const details = safePropertyAccess(error, 'details')
+    if (isDefined(details)) {
+      typedError.details = details
     }
-    
+
+    // Add metadata for tracing and debugging with type guards
+    if (isDefined(meta)) {
+      const requestId = safePropertyAccess(meta, 'requestId')
+      const tenantId = safePropertyAccess(meta, 'tenantId')
+      const timestamp = safePropertyAccess(meta, 'timestamp')
+
+      if (isDefined(requestId)) {
+        (typedError as any).requestId = requestId
+      }
+      if (isDefined(tenantId)) {
+        (typedError as any).tenantId = tenantId
+      }
+      if (isDefined(timestamp)) {
+        (typedError as any).timestamp = timestamp
+      }
+    }
+
     return typedError
   }
 
   /**
    * Enhanced error logging with requestId and context
-   * Requirements: 1.5
+   * Enhanced with type guards for null safety
+   * Requirements: 1.5, 6.1, 6.2, 6.3
    */
   private logError(error: ApiError, context: {
     url: string
@@ -217,11 +267,16 @@ export class ApiClient {
     requestId?: string
     tenantId?: string
   }): void {
+    // Use type guards to safely access error properties
+    const errorCode = safePropertyAccess(error, 'code') || 'UNKNOWN_ERROR'
+    const errorMessage = safePropertyAccess(error, 'message') || 'Unknown error'
+    const errorDetails = safePropertyAccess(error, 'details')
+
     const logData = {
       error: {
-        code: error.code,
-        message: error.message,
-        details: error.details
+        code: errorCode,
+        message: errorMessage,
+        details: isDefined(errorDetails) ? errorDetails : undefined
       },
       context,
       timestamp: new Date().toISOString()
@@ -229,9 +284,12 @@ export class ApiClient {
 
     console.error('🚨 API Client - Error:', logData)
 
-    // Send to external logging service if available
-    if (typeof window !== 'undefined' && (window as any).__ERROR_LOGGER__) {
-      (window as any).__ERROR_LOGGER__.logError(logData)
+    // Send to external logging service if available with type guards
+    if (typeof window !== 'undefined') {
+      const errorLogger = safePropertyAccess(window as any, '__ERROR_LOGGER__')
+      if (isDefined(errorLogger) && typeof errorLogger.logError === 'function') {
+        errorLogger.logError(logData)
+      }
     }
   }
 
@@ -254,7 +312,7 @@ export class ApiClient {
         return await operation()
       } catch (error) {
         lastError = error as Error
-        
+
         // Don't retry on the last attempt
         if (attempt === config.maxRetries) {
           break
@@ -277,32 +335,39 @@ export class ApiClient {
 
   /**
    * Determines if an error should be retried
-   * Requirements: 1.2, 1.5
+   * Enhanced with type guards for null safety
+   * Requirements: 1.2, 1.5, 6.1, 6.2, 6.3
    */
   private shouldRetryError(error: any, attempt: number): boolean {
     // Don't retry if we've exceeded reasonable attempts
-    if (attempt >= 3) {
+    if (!isValidNumber(attempt) || attempt >= 3) {
       return false
     }
 
+    // Use safe property access for error properties
+    const errorName = safePropertyAccess(error, 'name')
+    const errorMessage = safePropertyAccess(error, 'message')
+
     // Retry network errors
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    if (isDefined(errorName) && errorName === 'TypeError' &&
+      isDefined(errorMessage) && errorMessage.includes('fetch')) {
       return true
     }
 
     // Retry timeout errors
-    if (error.name === 'AbortError' || error.message.includes('timeout')) {
+    if ((isDefined(errorName) && errorName === 'AbortError') ||
+      (isDefined(errorMessage) && errorMessage.includes('timeout'))) {
       return true
     }
 
     // Check for HTTP status codes that are retryable
-    const status = (error as any).status || (error as any).statusCode
-    if (status) {
+    const status = safePropertyAccess(error, 'status') || safePropertyAccess(error, 'statusCode')
+    if (isDefined(status) && isValidNumber(status)) {
       // Retry 5xx server errors
       if (status >= 500) {
         return true
       }
-      
+
       // Retry specific 4xx errors
       if (status === 408 || status === 429) { // Timeout or Rate Limited
         return true
@@ -314,15 +379,19 @@ export class ApiClient {
 
   /**
    * Creates network error for failed requests
-   * Requirements: 1.2, 1.5
+   * Enhanced with type guards for null safety
+   * Requirements: 1.2, 1.5, 6.1, 6.2, 6.3
    */
   private createNetworkError(originalError: Error, requestUrl: string): ApiError & Error {
+    // Use safe property access for error properties
+    const originalMessage = safePropertyAccess(originalError, 'message') || 'Unknown network error'
+
     const networkError = new Error('Network request failed') as ApiError & Error
     networkError.name = 'NetworkError'
     networkError.code = 'NETWORK_ERROR'
-    networkError.message = `Network request to ${requestUrl} failed: ${originalError.message}`
+    networkError.message = `Network request to ${requestUrl} failed: ${originalMessage}`
     networkError.details = {
-      originalError: originalError.message,
+      originalError: originalMessage,
       url: requestUrl,
       timestamp: new Date().toISOString()
     }
@@ -332,7 +401,8 @@ export class ApiClient {
 
   /**
    * Get base headers for requests
-   * Requirements: 1.1, 1.5, 4.1
+   * Enhanced with type guards for null safety
+   * Requirements: 1.1, 1.5, 4.1, 6.1, 6.2, 6.3
    */
   private async getBaseHeaders(config?: RequestOptions): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
@@ -340,9 +410,12 @@ export class ApiClient {
     }
 
     // Add tenant slug header if not bypassed
-    if (!config?.bypassTenant) {
-      const tenantSlug = config?.targetTenant || this.getCurrentTenant()
-      if (tenantSlug) {
+    const bypassTenant = safePropertyAccess(config, 'bypassTenant')
+    if (!bypassTenant) {
+      const targetTenant = safePropertyAccess(config, 'targetTenant')
+      const tenantSlug = isDefined(targetTenant) ? targetTenant : this.getCurrentTenant()
+
+      if (isDefined(tenantSlug) && isNonEmptyString(tenantSlug)) {
         headers['X-Tenant-Slug'] = tenantSlug
       }
     } else {
@@ -350,25 +423,36 @@ export class ApiClient {
       headers['X-Bypass-Tenant'] = 'true'
     }
 
+    // Add Guest ID header for tracking unauthenticated users
+    if (typeof window !== 'undefined') {
+      let guestId = localStorage.getItem('guest_id')
+      if (!guestId) {
+        guestId = crypto.randomUUID()
+        localStorage.setItem('guest_id', guestId)
+      }
+      headers['X-Guest-ID'] = guestId
+    }
+
     return headers
   }
 
   /**
    * Validates and processes API response
-   * Requirements: 1.3
+   * Enhanced with type guards for response validation
+   * Requirements: 1.3, 6.1, 6.2, 6.3
    */
   private async processResponse<T>(
-    response: any, 
-    statusCode: number, 
+    response: any,
+    statusCode: number,
     requestUrl: string
   ): Promise<ApiResponse<T>> {
-    // Check if response is already in standard format
+    // Use type guard to check if response is already in standard format
     if (isApiResponse(response)) {
       return response as ApiResponse<T>
     }
 
     // All responses should now be in standard format
-    // If not, create an error response
+    // If not, create an error response with safe property access
     const error: ApiError = {
       code: 'INVALID_RESPONSE_FORMAT',
       message: `Invalid response format from ${requestUrl}`,
@@ -380,7 +464,8 @@ export class ApiClient {
 
   /**
    * Get authenticated headers for requests
-   * Requirements: 1.1, 1.5, 4.1
+   * Enhanced with type guards for null safety
+   * Requirements: 1.1, 1.5, 4.1, 6.1, 6.2, 6.3
    */
   private async getAuthHeaders(config?: RequestOptions): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
@@ -388,9 +473,12 @@ export class ApiClient {
     }
 
     // Add tenant slug header if not bypassed
-    if (!config?.bypassTenant) {
-      const tenantSlug = config?.targetTenant || this.getCurrentTenant()
-      if (tenantSlug) {
+    const bypassTenant = safePropertyAccess(config, 'bypassTenant')
+    if (!bypassTenant) {
+      const targetTenant = safePropertyAccess(config, 'targetTenant')
+      const tenantSlug = isDefined(targetTenant) ? targetTenant : this.getCurrentTenant()
+
+      if (isDefined(tenantSlug) && isNonEmptyString(tenantSlug)) {
         headers['X-Tenant-Slug'] = tenantSlug
       }
     } else {
@@ -398,12 +486,22 @@ export class ApiClient {
       headers['X-Bypass-Tenant'] = 'true'
     }
 
-    // Add authorization header if token is available
-    if (this.tokenStore && 'accessToken' in this.tokenStore) {
-      const tokenStore = this.tokenStore as any
-      if (tokenStore.accessToken) {
-        headers.Authorization = `Bearer ${tokenStore.accessToken}`
+    // Add authorization header if token is available with type guards
+    if (isDefined(this.tokenStore) && hasProperty(this.tokenStore, 'accessToken')) {
+      const accessToken = safePropertyAccess(this.tokenStore, 'accessToken')
+      if (isDefined(accessToken) && isNonEmptyString(accessToken)) {
+        headers.Authorization = `Bearer ${accessToken}`
       }
+    }
+
+    // Add Guest ID header for tracking unauthenticated users
+    if (typeof window !== 'undefined') {
+      let guestId = localStorage.getItem('guest_id')
+      if (!guestId) {
+        guestId = crypto.randomUUID()
+        localStorage.setItem('guest_id', guestId)
+      }
+      headers['X-Guest-ID'] = guestId
     }
 
     return headers
@@ -411,15 +509,17 @@ export class ApiClient {
 
   /**
    * Handle tenant-specific errors
-   * Requirements: 1.4, 4.5
+   * Enhanced with type guards for null safety
+   * Requirements: 1.4, 4.5, 6.1, 6.2, 6.3
    */
   private async handleTenantError(error: ApiError, config?: RequestOptions): Promise<void> {
     // Skip tenant error handling for bypass requests
-    if (config?.bypassTenant) {
+    const bypassTenant = safePropertyAccess(config, 'bypassTenant')
+    if (bypassTenant) {
       return
     }
 
-    // Check for tenant-related error codes
+    // Check for tenant-related error codes with safe property access
     const tenantErrorCodes = [
       'TENANT_NOT_FOUND',
       'TENANT_INACTIVE',
@@ -428,50 +528,73 @@ export class ApiClient {
       'INVALID_TENANT',
     ]
 
-    const isTenantError = tenantErrorCodes.includes(error.code || '') || 
-                          (error.message && error.message.toLowerCase().includes('tenant'))
+    const errorCode = safePropertyAccess(error, 'code')
+    const errorMessage = safePropertyAccess(error, 'message')
 
-    if (isTenantError && this.tenantStore) {
+    const isTenantError = (isDefined(errorCode) && tenantErrorCodes.includes(errorCode)) ||
+      (isDefined(errorMessage) && errorMessage.toLowerCase().includes('tenant'))
+
+    if (isTenantError && isDefined(this.tenantStore)) {
       console.error('Tenant-specific error detected:', error)
-      
-      // Notify tenant store about the error
-      if ('handleTenantError' in this.tenantStore && typeof this.tenantStore.handleTenantError === 'function') {
-        await this.tenantStore.handleTenantError(new Error(error.message))
-      } else if ('setError' in this.tenantStore && typeof this.tenantStore.setError === 'function') {
-        this.tenantStore.setError(error.message)
+
+      // Notify tenant store about the error with type guards
+      if (hasProperty(this.tenantStore, 'handleTenantError')) {
+        const handleTenantError = safePropertyAccess(this.tenantStore, 'handleTenantError')
+        if (isDefined(handleTenantError) && typeof handleTenantError === 'function') {
+          const message = isDefined(errorMessage) ? errorMessage : 'Unknown tenant error'
+          await handleTenantError(new Error(message))
+        }
+      } else if (hasProperty(this.tenantStore, 'setError')) {
+        const setError = safePropertyAccess(this.tenantStore, 'setError')
+        if (isDefined(setError) && typeof setError === 'function') {
+          const message = isDefined(errorMessage) ? errorMessage : 'Unknown tenant error'
+          setError(message)
+        }
       }
     }
   }
 
-  private async handleTokenRefresh(): Promise<boolean> {
-    if (!this.tokenStore || !('refreshToken' in this.tokenStore)) {
-      return false
-    }
-
-    const tokenStore = this.tokenStore as any
-    if (!tokenStore.refreshToken) {
+  async handleTokenRefresh(): Promise<boolean> {
+    // We no longer need to check for refreshToken in tokenStore as it's a cookie
+    if (!isDefined(this.tokenStore)) {
       return false
     }
 
     try {
       // Use NestJS auth refresh endpoint - get raw response for token refresh
-      const response = await this.makeRequest<{ accessToken: string; refreshToken: string }>('/auth/refresh', {
+      // We don't send refreshToken in body as it's an httpOnly cookie
+      const response = await this.makeRequest<{ accessToken: string }>('/auth/refresh', {
         method: 'POST',
-        body: { refreshToken: tokenStore.refreshToken },
+        body: {}, // Refresh token is in cookie
         unwrap: false // Get full response to check success
-      }, false) as ApiResponse<{ accessToken: string; refreshToken: string }>
+      }, false) as ApiResponse<{ accessToken: string }>
 
-      if (response.success && response.data) {
-        if ('setTokens' in this.tokenStore && typeof this.tokenStore.setTokens === 'function') {
-          const data = response.data
-          this.tokenStore.setTokens(data.accessToken, data.refreshToken)
+      // Use type guards to validate response
+      if (isApiResponse(response) && response.success && isDefined(response.data)) {
+        const responseData = response.data
+        const newAccessToken = safePropertyAccess(responseData, 'accessToken')
+
+        if (isDefined(newAccessToken) && hasProperty(this.tokenStore, 'setTokens')) {
+          const setTokens = safePropertyAccess(this.tokenStore, 'setTokens')
+          if (isDefined(setTokens) && typeof setTokens === 'function') {
+            setTokens(newAccessToken)
+            return true
+          }
         }
-        return true
       }
-    } catch (error) {
-      console.error('Token refresh failed:', error)
-      if ('clearTokens' in this.tokenStore && typeof this.tokenStore.clearTokens === 'function') {
-        this.tokenStore.clearTokens()
+    } catch (error: any) {
+      // Suppress logging for expected missing refresh tokens (e.g. guests)
+      const isExpectedGuestError = error?.code === 'TOKEN_NOT_FOUND' || (error?.message && error.message.includes('not found'));
+      if (!isExpectedGuestError) {
+        console.error('Token refresh failed:', error)
+      }
+
+      // Clear tokens on refresh failure with type guards
+      if (isDefined(this.tokenStore) && hasProperty(this.tokenStore, 'clearTokens')) {
+        const clearTokens = safePropertyAccess(this.tokenStore, 'clearTokens')
+        if (isDefined(clearTokens) && typeof clearTokens === 'function') {
+          clearTokens()
+        }
       }
     }
 
@@ -480,26 +603,31 @@ export class ApiClient {
 
   /**
    * Enhanced HTTP request method with unwrapping support and improved error handling
-   * Requirements: 1.1, 1.2, 1.5, 4.1
+   * Enhanced with comprehensive type guards for null safety
+   * Requirements: 1.1, 1.2, 1.5, 4.1, 6.1, 6.2, 6.3
    */
   private async makeRequest<T>(
     endpoint: string,
     config: EnhancedRequestConfig = {},
     useAuth: boolean = true
   ): Promise<T | ApiResponse<T>> {
-    const { unwrap = true, skipErrorHandling = false, params, ...requestConfig } = config
-    
-    // Build URL with query parameters
+    // Use safe property access for config options
+    const unwrap = safePropertyAccess(config, 'unwrap') !== false // Default to true
+    const skipErrorHandling = safePropertyAccess(config, 'skipErrorHandling') || false
+    const params = safePropertyAccess(config, 'params')
+    const { ...requestConfig } = config
+
+    // Build URL with query parameters using type guards
     let url = `${this.config.baseURL}${endpoint}`
-    if (params) {
+    if (isDefined(params) && typeof params === 'object') {
       const searchParams = new URLSearchParams()
       Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
+        if (isDefined(value)) {
           searchParams.append(key, value.toString())
         }
       })
       const queryString = searchParams.toString()
-      if (queryString) {
+      if (isNonEmptyString(queryString)) {
         url += `?${queryString}`
       }
     }
@@ -510,23 +638,35 @@ export class ApiClient {
         const headers = useAuth ? await this.getAuthHeaders(config) : await this.getBaseHeaders(config)
 
         console.log('🌐 API Client - Making request:', {
-          method: requestConfig.method || 'GET',
+          method: safePropertyAccess(requestConfig, 'method') || 'GET',
           url,
-          headers: { ...headers, Authorization: headers.Authorization ? '[REDACTED]' : undefined },
+          headers: {
+            ...headers,
+            Authorization: isDefined(headers.Authorization) ? '[REDACTED]' : undefined
+          },
           useAuth,
           unwrap,
           tenantSlug: this.getCurrentTenant()
         })
 
+        const requestMethod = safePropertyAccess(requestConfig, 'method') || 'GET'
+        const requestTimeout = safePropertyAccess(requestConfig, 'timeout') || this.config.timeout
+        const requestHeaders = safePropertyAccess(requestConfig, 'headers')
+
         const requestInit: RequestInit = {
-          method: requestConfig.method || 'GET',
-          headers: { ...headers, ...requestConfig.headers },
-          signal: AbortSignal.timeout(requestConfig.timeout || this.config.timeout),
+          method: requestMethod,
+          headers: {
+            ...headers,
+            ...(isDefined(requestHeaders) ? requestHeaders : {})
+          },
+          signal: AbortSignal.timeout(requestTimeout),
+          credentials: safePropertyAccess(config, 'credentials') || 'include',
         }
 
-        if (requestConfig.body && requestConfig.method !== 'GET') {
-          requestInit.body = JSON.stringify(requestConfig.body)
-          console.log('📤 API Client - Request body:', requestConfig.body)
+        const requestBody = safePropertyAccess(requestConfig, 'body')
+        if (isDefined(requestBody) && requestMethod !== 'GET') {
+          requestInit.body = JSON.stringify(requestBody)
+          console.log('📤 API Client - Request body:', requestBody)
         }
 
         let response: Response
@@ -537,27 +677,40 @@ export class ApiClient {
           const networkError = this.createNetworkError(fetchError as Error, url)
           this.logError(networkError, {
             url,
-            method: requestConfig.method || 'GET'
+            method: requestMethod
           })
           throw networkError
         }
-        
+
         console.log('📥 API Client - Response received:', {
-          status: response?.status || 'unknown',
-          statusText: response?.statusText || 'unknown',
-          headers: response?.headers ? Object.fromEntries(response.headers.entries()) : {}
+          status: isDefined(response) ? response.status : 'unknown',
+          statusText: isDefined(response) ? response.statusText : 'unknown',
+          headers: isDefined(response?.headers) ? Object.fromEntries(response.headers.entries()) : {}
         })
-        
+
         // Handle 401 Unauthorized - try token refresh
-        if (response.status === 401 && useAuth) {
+        if (isDefined(response) && response.status === 401 && useAuth) {
+          // If clearly unauthenticated, don't attempt a refresh loop
+          if (isDefined(this.tokenStore) && hasProperty(this.tokenStore, 'isAuthenticated') && !this.tokenStore.isAuthenticated) {
+            console.log('🔐 API Client - 401 on protected route but user is guest. Skipping refresh.')
+            const authError: ApiError = {
+              code: 'UNAUTHENTICATED',
+              message: 'Authentication required'
+            }
+            throw this.createTypedApiError(authError, { requestId: `auth-${Date.now()}`, timestamp: new Date().toISOString() })
+          }
+
           console.log('🔐 API Client - 401 received, attempting token refresh')
           const refreshed = await this.handleTokenRefresh()
           if (refreshed) {
             // Update headers with new token and retry
             const newHeaders = await this.getAuthHeaders()
-            requestInit.headers = { ...newHeaders, ...requestConfig.headers }
+            requestInit.headers = {
+              ...newHeaders,
+              ...(isDefined(requestHeaders) ? requestHeaders : {})
+            }
             console.log('✅ API Client - Token refreshed, retrying request')
-            
+
             // Retry the request with new token
             response = await fetch(url, requestInit)
           } else {
@@ -577,46 +730,81 @@ export class ApiClient {
         // Process and normalize the response
         const normalizedResponse = await this.processResponse<T>(responseData, response.status, url)
 
-        if (!response.ok || !normalizedResponse.success) {
-          const error = normalizedResponse.error || {
+        // Use type guards to check response validity
+        const isResponseOk = isDefined(response) && response.ok
+        const isNormalizedSuccess = isApiResponse(normalizedResponse) && normalizedResponse.success
+
+        if (!isResponseOk || !isNormalizedSuccess) {
+          const error = safePropertyAccess(normalizedResponse, 'error') || {
             code: 'HTTP_ERROR',
             message: `HTTP ${response.status}: ${response.statusText}`,
           }
-          
-          console.error('❌ API Client - API Error:', error)
-          
-          // Enhanced error logging
-          this.logError(error, {
-            url,
-            method: requestConfig.method || 'GET',
-            requestId: normalizedResponse.meta.requestId,
-            tenantId: normalizedResponse.meta.tenantId
-          })
-          
-          // Handle tenant-specific errors
-          await this.handleTenantError(error, config)
-          
-          // Report error to error store
-          if (this.errorStore && 'addError' in this.errorStore) {
-            this.errorStore.addError(error)
+
+          // Don't broadcast noisy expected errors for silent refreshes (guests)
+          const isExpectedRefreshFailure = url.includes('/auth/refresh') && 
+            (response.status === 401 || response.status === 400 || error.code === 'TOKEN_NOT_FOUND' || error.message?.includes('not found'))
+
+          if (!isExpectedRefreshFailure) {
+            console.error('❌ API Client - API Error:', error)
+
+            // Enhanced error logging with safe property access
+            const requestId = safePropertyAccess(normalizedResponse.meta, 'requestId')
+            const tenantId = safePropertyAccess(normalizedResponse.meta, 'tenantId')
+
+            this.logError(error, {
+              url,
+              method: requestMethod,
+              requestId: isDefined(requestId) ? requestId : undefined,
+              tenantId: isDefined(tenantId) ? tenantId : undefined
+            })
+
+            // Handle tenant-specific errors
+            await this.handleTenantError(error, config)
+
+            // Report error to error store
+            if (isDefined(this.errorStore) && hasProperty(this.errorStore, 'addError')) {
+              const addError = safePropertyAccess(this.errorStore, 'addError')
+              if (isDefined(addError) && typeof addError === 'function') {
+                addError(error)
+              }
+            }
           }
 
-          // Handle global error processing if not skipped
+          // Handle global checks (Authentication)
           if (!skipErrorHandling) {
-            // Global error handling will be implemented in task 4
-            console.log('🔄 API Client - Global error handling (to be implemented in task 4)')
+            // Guard: Check if we are already on an auth page to prevent loop
+            const isAuthPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth')
+
+            // Guard: Check if this was a refresh token attempt (avoid infinite refresh)
+            const isRefreshRequest = url.includes('/auth/refresh')
+
+            if (response.status === 401 && !isAuthPage && !isRefreshRequest) {
+              console.warn('🔐 API Client - 401 Unauthenticated. Redirecting to login.')
+
+              // Clear tokens
+              if (isDefined(this.tokenStore) && hasProperty(this.tokenStore, 'clearTokens')) {
+                const clearTokens = safePropertyAccess(this.tokenStore, 'clearTokens');
+                if (typeof clearTokens === 'function') clearTokens();
+              }
+
+              // Redirect
+              if (typeof window !== 'undefined') {
+                const redirectUrl = encodeURIComponent(window.location.pathname + window.location.search);
+                window.location.href = `/auth/login?redirect=${redirectUrl}`;
+              }
+            }
           }
-          
+
           throw this.createTypedApiError(error, normalizedResponse.meta)
         }
 
         console.log('✅ API Client - Request successful')
-        
+
         // Return unwrapped data or full response based on config
         return unwrap ? this.unwrapResponse<T>(normalizedResponse) : normalizedResponse
       },
       {
-        maxRetries: requestConfig.retries ?? this.config.retries,
+        maxRetries: safePropertyAccess(requestConfig, 'retries') ?? this.config.retries,
         retryDelay: this.config.retryDelay,
         shouldRetry: this.shouldRetryError.bind(this)
       }
@@ -631,68 +819,68 @@ export class ApiClient {
    * GET request with automatic unwrapping (returns clean data by default)
    * Requirements: 1.1
    */
-  async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
+  async get<T>(url: string, options?: RequestOptions): Promise<T> {
+    const config: EnhancedRequestConfig = {
+      ...options,
       method: 'GET',
       unwrap: options?.unwrap !== false // Default to true
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<T>
+    return this.makeRequest<T>(url, config) as Promise<T>
   }
 
   /**
    * POST request with automatic unwrapping (returns clean data by default)
    * Requirements: 1.1
    */
-  async post<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
-      method: 'POST', 
-      body,
+  async post<T, TBody = unknown>(url: string, data?: TBody, options?: RequestOptions): Promise<T> {
+    const config: EnhancedRequestConfig = {
+      ...options,
+      method: 'POST',
+      body: data,
       unwrap: options?.unwrap !== false // Default to true
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<T>
+    return this.makeRequest<T>(url, config) as Promise<T>
   }
 
   /**
    * PUT request with automatic unwrapping (returns clean data by default)
    * Requirements: 1.1
    */
-  async put<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
-      method: 'PUT', 
-      body,
+  async put<T, TBody = unknown>(url: string, data?: TBody, options?: RequestOptions): Promise<T> {
+    const config: EnhancedRequestConfig = {
+      ...options,
+      method: 'PUT',
+      body: data,
       unwrap: options?.unwrap !== false // Default to true
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<T>
+    return this.makeRequest<T>(url, config) as Promise<T>
   }
 
   /**
    * PATCH request with automatic unwrapping (returns clean data by default)
    * Requirements: 1.1
    */
-  async patch<T>(endpoint: string, body?: any, options?: RequestOptions): Promise<T> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
-      method: 'PATCH', 
-      body,
+  async patch<T, TBody = unknown>(url: string, data?: TBody, options?: RequestOptions): Promise<T> {
+    const config: EnhancedRequestConfig = {
+      ...options,
+      method: 'PATCH',
+      body: data,
       unwrap: options?.unwrap !== false // Default to true
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<T>
+    return this.makeRequest<T>(url, config) as Promise<T>
   }
 
   /**
    * DELETE request with automatic unwrapping (returns clean data by default)
    * Requirements: 1.1
    */
-  async delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
+  async delete<T>(url: string, options?: RequestOptions): Promise<T> {
+    const config: EnhancedRequestConfig = {
+      ...options,
       method: 'DELETE',
       unwrap: options?.unwrap !== false // Default to true
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<T>
+    return this.makeRequest<T>(url, config) as Promise<T>
   }
 
   // =============================================================================
@@ -703,68 +891,68 @@ export class ApiClient {
    * GET request that returns full ApiResponse (for accessing metadata)
    * Requirements: 1.2
    */
-  async getRaw<T>(endpoint: string, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
+  async getRaw<T>(url: string, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
+    const config: EnhancedRequestConfig = {
+      ...options,
       method: 'GET',
       unwrap: false // Always return full response
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<ApiResponse<T>>
+    return this.makeRequest<T>(url, config) as Promise<ApiResponse<T>>
   }
 
   /**
    * POST request that returns full ApiResponse (for accessing metadata)
    * Requirements: 1.2
    */
-  async postRaw<T>(endpoint: string, body?: any, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
-      method: 'POST', 
-      body,
+  async postRaw<T, TBody = unknown>(url: string, data?: TBody, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
+    const config: EnhancedRequestConfig = {
+      ...options,
+      method: 'POST',
+      body: data,
       unwrap: false // Always return full response
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<ApiResponse<T>>
+    return this.makeRequest<T>(url, config) as Promise<ApiResponse<T>>
   }
 
   /**
    * PUT request that returns full ApiResponse (for accessing metadata)
    * Requirements: 1.2
    */
-  async putRaw<T>(endpoint: string, body?: any, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
-      method: 'PUT', 
-      body,
+  async putRaw<T, TBody = unknown>(url: string, data?: TBody, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
+    const config: EnhancedRequestConfig = {
+      ...options,
+      method: 'PUT',
+      body: data,
       unwrap: false // Always return full response
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<ApiResponse<T>>
+    return this.makeRequest<T>(url, config) as Promise<ApiResponse<T>>
   }
 
   /**
    * PATCH request that returns full ApiResponse (for accessing metadata)
    * Requirements: 1.2
    */
-  async patchRaw<T>(endpoint: string, body?: any, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
-      method: 'PATCH', 
-      body,
+  async patchRaw<T, TBody = unknown>(url: string, data?: TBody, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
+    const config: EnhancedRequestConfig = {
+      ...options,
+      method: 'PATCH',
+      body: data,
       unwrap: false // Always return full response
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<ApiResponse<T>>
+    return this.makeRequest<T>(url, config) as Promise<ApiResponse<T>>
   }
 
   /**
    * DELETE request that returns full ApiResponse (for accessing metadata)
    * Requirements: 1.2
    */
-  async deleteRaw<T>(endpoint: string, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
-    const config: EnhancedRequestConfig = { 
-      ...options, 
+  async deleteRaw<T>(url: string, options?: Omit<RequestOptions, 'unwrap'>): Promise<ApiResponse<T>> {
+    const config: EnhancedRequestConfig = {
+      ...options,
       method: 'DELETE',
       unwrap: false // Always return full response
     }
-    return this.makeRequest<T>(endpoint, config) as Promise<ApiResponse<T>>
+    return this.makeRequest<T>(url, config) as Promise<ApiResponse<T>>
   }
 
   // =============================================================================
@@ -787,15 +975,27 @@ export class ApiClient {
 
   /**
    * Validate tenant access
-   * Requirements: 1.2, 4.5
+   * Enhanced with type guards for null safety
+   * Requirements: 1.2, 4.5, 6.1, 6.2, 6.3
    */
   async validateTenantAccess(slug: string): Promise<boolean> {
+    // Validate input parameter
+    if (!isDefined(slug) || !isNonEmptyString(slug)) {
+      console.error('Invalid tenant slug provided for validation')
+      return false
+    }
+
     try {
       const result = await this.get<{ valid: boolean; isActive: boolean }>(`/tenants/${slug}/validate`, {
         bypassTenant: true, // System-wide request
       })
 
-      return result.valid === true && result.isActive === true
+      // Use type guards to safely access result properties
+      const isValid = safePropertyAccess(result, 'valid')
+      const isActive = safePropertyAccess(result, 'isActive')
+
+      return isDefined(isValid) && isValid === true &&
+        isDefined(isActive) && isActive === true
     } catch (error) {
       console.error('Tenant validation failed:', error)
       return false
@@ -804,13 +1004,22 @@ export class ApiClient {
 
   /**
    * Get list of available tenants
-   * Requirements: 1.2, 4.5
+   * Enhanced with type guards for null safety
+   * Requirements: 1.2, 4.5, 6.1, 6.2, 6.3
    */
   async getAvailableTenants(): Promise<TenantInfo[]> {
     try {
-      return await this.get<TenantInfo[]>('/tenants', {
+      const tenants = await this.get<TenantInfo[]>('/tenants', {
         bypassTenant: true, // System-wide request
       })
+
+      // Use type guard to ensure we return an array
+      if (hasElements(tenants)) {
+        return tenants
+      }
+
+      // Return empty array if no tenants or invalid response
+      return []
     } catch (error) {
       console.error('Failed to fetch available tenants:', error)
       return []
@@ -823,17 +1032,17 @@ export class ApiClient {
    */
   async withTenant<T>(
     tenantSlug: string,
-    requestFn: (client: ApiClient) => Promise<T>
+    requestFn: (client: IApiClient) => Promise<T>
   ): Promise<T> {
     const originalTenant = this.config.tenantSlug
-    
+
     try {
       // Temporarily set the target tenant
       this.config.tenantSlug = tenantSlug
-      
+
       // Execute the request
       const result = await requestFn(this)
-      
+
       return result
     } finally {
       // Restore original tenant
@@ -846,7 +1055,7 @@ export class ApiClient {
    * Requirements: 1.2, 4.5
    */
   async withoutTenant<T>(
-    requestFn: (client: ApiClient) => Promise<T>
+    requestFn: (client: IApiClient) => Promise<T>
   ): Promise<T> {
     // Execute request with bypass flag
     return requestFn(this)
@@ -854,14 +1063,14 @@ export class ApiClient {
 }
 
 // Create singleton instance
-let apiClient: ApiClient | null = null
+let apiClient: IApiClient | null = null
 
-export function createApiClient(config: ApiClientConfig): ApiClient {
+export function createApiClient(config: ApiClientConfig): IApiClient {
   apiClient = new ApiClient(config)
   return apiClient
 }
 
-export function useApiClient(): ApiClient {
+export function useApiClient(): IApiClient {
   if (!apiClient) {
     throw new Error('API client not initialized. Call createApiClient first.')
   }

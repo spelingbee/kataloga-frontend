@@ -18,7 +18,7 @@
       <div class="cart-item__info">
         <h3 class="cart-item__name">{{ cartItem.menuItem.name }}</h3>
         <div class="cart-item__price">
-          ${{ cartItem.subtotal.toFixed(2) }}
+          <AppPrice :price="cartItem.subtotal" />
         </div>
       </div>
 
@@ -47,6 +47,7 @@
       class="cart-item__remove"
       @click="removeItem"
       title="Remove item"
+      aria-label="Remove item"
     >
       <BaseIcon name="trash" size="sm" />
     </button>

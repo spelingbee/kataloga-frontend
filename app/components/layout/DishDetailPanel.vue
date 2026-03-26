@@ -41,7 +41,7 @@
         <!-- Dish Nutrition -->
         <DishNutrition
           v-if="dish.nutrition"
-          :nutrition="dish.nutrition"
+          :nutrition="(dish.nutrition as any)"
         />
       </div>
     </div>
@@ -86,13 +86,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
 
 // Props
 interface Props {
-  dish: MenuItem | null
+  dish: MenuItemUI | null
 }
 
 const props = defineProps<Props>()

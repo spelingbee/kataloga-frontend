@@ -92,10 +92,10 @@
           <div class="px-2">
             <div class="flex items-center justify-between mb-2">
               <AppText size="body-sm" class="text-neutral-20">
-                ${{ priceRange[0] }}
+                ${{ safePriceRangeMin }}
               </AppText>
               <AppText size="body-sm" class="text-neutral-20">
-                ${{ priceRange[1] }}
+                ${{ safePriceRangeMax }}
               </AppText>
             </div>
             <!-- Custom range slider would go here -->
@@ -103,8 +103,8 @@
               <div 
                 class="absolute h-2 bg-primary-green rounded-full"
                 :style="{ 
-                  left: `${(priceRange[0] / maxPrice) * 100}%`,
-                  width: `${((priceRange[1] - priceRange[0]) / maxPrice) * 100}%`
+                  left: `${(safePriceRangeMin / maxPrice) * 100}%`,
+                  width: `${((safePriceRangeMax - safePriceRangeMin) / maxPrice) * 100}%`
                 }"
               />
             </div>
@@ -169,14 +169,14 @@
           </AppText>
           <div class="flex items-center gap-4">
             <BaseInput
-              v-model.number="caloriesRange[0]"
+              v-model.number="caloriesMin"
               type="number"
               placeholder="Min"
               class="w-24"
             />
             <AppText class="text-neutral-20">to</AppText>
             <BaseInput
-              v-model.number="caloriesRange[1]"
+              v-model.number="caloriesMax"
               type="number"
               placeholder="Max"
               class="w-24"
@@ -211,7 +211,7 @@
             :key="time.value"
             :variant="selectedCookingTime === time.value ? 'primary' : 'secondary'"
             size="sm"
-            @click="selectedCookingTime = selectedCookingTime === time.value ? null : time.value"
+            @click="selectedCookingTime = selectedCookingTime === time.value ? undefined : time.value"
           >
             <BaseIcon name="clock" size="sm" class="mr-2" />
             {{ time.label }}
@@ -287,6 +287,7 @@
 // Page setup
 // Stores
 import { useMenuStore } from '~/stores/menu'
+import { safeArrayAccess } from '~/types/utils/type-guards'
 
 definePageMeta({
   title: 'Menu Filters - Menu Ordering App'
@@ -301,7 +302,7 @@ const priceRange = ref([0, 50])
 const selectedDietary = ref<string[]>([])
 const caloriesRange = ref([0, 1000])
 const selectedNutritionPresets = ref<string[]>([])
-const selectedCookingTime = ref<number | null>(null)
+const selectedCookingTime = ref<number | undefined>(undefined)
 const showOnlyAvailable = ref(false)
 const showNewItems = ref(false)
 
@@ -353,11 +354,11 @@ const cookingTimes = [
 // Computed
 const hasActiveFilters = computed(() => {
   return selectedCategories.value.length > 0 ||
-         priceRange.value[0] > 0 || priceRange.value[1] < maxPrice ||
+         (safeArrayAccess(priceRange.value, 0) || 0) > 0 || (safeArrayAccess(priceRange.value, 1) || maxPrice) < maxPrice ||
          selectedDietary.value.length > 0 ||
-         caloriesRange.value[0] > 0 || caloriesRange.value[1] < 1000 ||
+         (safeArrayAccess(caloriesRange.value, 0) || 0) > 0 || (safeArrayAccess(caloriesRange.value, 1) || 1000) < 1000 ||
          selectedNutritionPresets.value.length > 0 ||
-         selectedCookingTime.value !== null ||
+         selectedCookingTime.value !== undefined ||
          showOnlyAvailable.value ||
          showNewItems.value
 })
@@ -365,11 +366,11 @@ const hasActiveFilters = computed(() => {
 const activeFilterCount = computed(() => {
   let count = 0
   if (selectedCategories.value.length > 0) count++
-  if (priceRange.value[0] > 0 || priceRange.value[1] < maxPrice) count++
+  if ((safeArrayAccess(priceRange.value, 0) || 0) > 0 || (safeArrayAccess(priceRange.value, 1) || maxPrice) < maxPrice) count++
   if (selectedDietary.value.length > 0) count++
-  if (caloriesRange.value[0] > 0 || caloriesRange.value[1] < 1000) count++
+  if ((safeArrayAccess(caloriesRange.value, 0) || 0) > 0 || (safeArrayAccess(caloriesRange.value, 1) || 1000) < 1000) count++
   if (selectedNutritionPresets.value.length > 0) count++
-  if (selectedCookingTime.value !== null) count++
+  if (selectedCookingTime.value !== undefined) count++
   if (showOnlyAvailable.value) count++
   if (showNewItems.value) count++
   return count
@@ -381,19 +382,19 @@ const activeFiltersList = computed(() => {
   if (selectedCategories.value.length > 0) {
     filters.push({ key: 'categories', label: `${selectedCategories.value.length} Categories` })
   }
-  if (priceRange.value[0] > 0 || priceRange.value[1] < maxPrice) {
-    filters.push({ key: 'price', label: `$${priceRange.value[0]}-$${priceRange.value[1]}` })
+  if ((safeArrayAccess(priceRange.value, 0) || 0) > 0 || (safeArrayAccess(priceRange.value, 1) || maxPrice) < maxPrice) {
+    filters.push({ key: 'price', label: `$${safeArrayAccess(priceRange.value, 0) || 0}-$${safeArrayAccess(priceRange.value, 1) || maxPrice}` })
   }
   if (selectedDietary.value.length > 0) {
     filters.push({ key: 'dietary', label: `${selectedDietary.value.length} Dietary` })
   }
-  if (caloriesRange.value[0] > 0 || caloriesRange.value[1] < 1000) {
-    filters.push({ key: 'calories', label: `${caloriesRange.value[0]}-${caloriesRange.value[1]} cal` })
+  if ((safeArrayAccess(caloriesRange.value, 0) || 0) > 0 || (safeArrayAccess(caloriesRange.value, 1) || 1000) < 1000) {
+    filters.push({ key: 'calories', label: `${safeArrayAccess(caloriesRange.value, 0) || 0}-${safeArrayAccess(caloriesRange.value, 1) || 1000} cal` })
   }
   if (selectedNutritionPresets.value.length > 0) {
     filters.push({ key: 'nutrition', label: `${selectedNutritionPresets.value.length} Nutrition` })
   }
-  if (selectedCookingTime.value !== null) {
+  if (selectedCookingTime.value !== undefined) {
     const timeLabel = cookingTimes.find(t => t.value === selectedCookingTime.value)?.label
     filters.push({ key: 'time', label: timeLabel || 'Cooking Time' })
   }
@@ -413,9 +414,34 @@ const filteredItemsCount = computed(() => {
   return Math.max(1, 48 - (activeFilterCount.value * 5))
 })
 
+// Safe array access computed properties for template
+const safePriceRangeMin = computed(() => safeArrayAccess(priceRange.value, 0) || 0)
+const safePriceRangeMax = computed(() => safeArrayAccess(priceRange.value, 1) || maxPrice)
+const safeCaloriesRangeMin = computed(() => safeArrayAccess(caloriesRange.value, 0) || 0)
+const safeCaloriesRangeMax = computed(() => safeArrayAccess(caloriesRange.value, 1) || 1000)
+
+// Computed properties for v-model bindings with safe array access
+const caloriesMin = computed({
+  get: () => safeArrayAccess(caloriesRange.value, 0) || 0,
+  set: (value: number) => {
+    const current = [...caloriesRange.value]
+    current[0] = value
+    caloriesRange.value = current
+  }
+})
+
+const caloriesMax = computed({
+  get: () => safeArrayAccess(caloriesRange.value, 1) || 1000,
+  set: (value: number) => {
+    const current = [...caloriesRange.value]
+    current[1] = value
+    caloriesRange.value = current
+  }
+})
+
 // Methods
 const isPricePresetActive = (preset: typeof pricePresets[0]) => {
-  return priceRange.value[0] === preset.min && priceRange.value[1] === preset.max
+  return (safeArrayAccess(priceRange.value, 0) || 0) === preset.min && (safeArrayAccess(priceRange.value, 1) || maxPrice) === preset.max
 }
 
 const setPricePreset = (preset: typeof pricePresets[0]) => {
@@ -449,7 +475,7 @@ const removeFilter = (filterKey: string) => {
       selectedNutritionPresets.value = []
       break
     case 'time':
-      selectedCookingTime.value = null
+      selectedCookingTime.value = undefined
       break
     case 'available':
       showOnlyAvailable.value = false
@@ -466,7 +492,7 @@ const clearAllFilters = () => {
   selectedDietary.value = []
   caloriesRange.value = [0, 1000]
   selectedNutritionPresets.value = []
-  selectedCookingTime.value = null
+  selectedCookingTime.value = undefined
   showOnlyAvailable.value = false
   showNewItems.value = false
 }

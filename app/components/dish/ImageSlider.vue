@@ -64,11 +64,17 @@ const touchEndX = ref(0)
 const minSwipeDistance = 50
 
 const handleTouchStart = (e: TouchEvent) => {
-  touchStartX.value = e.touches[0].clientX
+  const touch = e.touches[0]
+  if (touch) {
+    touchStartX.value = touch.clientX
+  }
 }
 
 const handleTouchMove = (e: TouchEvent) => {
-  touchEndX.value = e.touches[0].clientX
+  const touch = e.touches[0]
+  if (touch) {
+    touchEndX.value = touch.clientX
+  }
 }
 
 const handleTouchEnd = () => {

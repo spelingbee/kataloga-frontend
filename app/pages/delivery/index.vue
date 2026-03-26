@@ -287,15 +287,15 @@
 
     <!-- Tracking Details Modal -->
     <BaseModal 
-      v-if="showTrackingDetails" 
+      v-model="showTrackingDetails" 
       title="Live Tracking"
-      @close="showTrackingDetails = false"
+      :size="MODAL_SIZES.LG"
     >
       <div class="p-6">
         <OrderTracker 
-          v-if="activeDelivery"
-          :delivery="activeDelivery"
-          :courier="courierInfo"
+          v-if="activeOrder"
+          :order="activeOrder"
+          :delivery-info="activeDelivery || undefined"
         />
       </div>
     </BaseModal>
@@ -303,7 +303,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Delivery, CourierInfo, DeliveryZone } from '~/types'
+import { MODAL_SIZES } from '~/types/ui'
+import type { OrderUI, Delivery, CourierInfo, DeliveryZone } from '~/types'
+import { useOrders } from '~/composables/useOrders'
 
 // Stores
 import { useDeliveryStore } from '~/stores/delivery'
@@ -321,6 +323,9 @@ const locationStore = useLocationStore()
 const showTrackingDetails = ref(false)
 const addressToCheck = ref('')
 const deliveryCheckResult = ref<{ available: boolean; message: string } | null>(null)
+const activeOrder = ref<OrderUI | null>(null)
+
+const { getOrder } = useOrders()
 
 // Computed
 const activeDelivery = computed(() => deliveryStore.activeDelivery)
@@ -415,6 +420,15 @@ const formatDeliveryDate = (timestamp: string) => {
   if (diffDays <= 7) return `${diffDays} days ago`
   return date.toLocaleDateString()
 }
+
+// Watch for active delivery changes to fetch original order
+watch(activeDelivery, async (newDelivery) => {
+  if (newDelivery?.orderId) {
+    activeOrder.value = await getOrder(newDelivery.orderId)
+  } else {
+    activeOrder.value = null
+  }
+}, { immediate: true })
 
 // Initialize
 onMounted(() => {

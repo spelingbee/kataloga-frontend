@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
+import { useApiClient } from '~/utils/api'
+import { safeArrayAccess } from '~/types/utils/type-guards'
+import { AuthService } from '~/services/api.service'
 import type { User, UpdateProfileDto, ApiError } from '~/types'
 
 export interface AuthState {
   user: User | null
   accessToken: string | null
-  refreshToken: string | null
   isAuthenticated: boolean
   loading: boolean
   error: ApiError | null
@@ -14,7 +16,6 @@ export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
     accessToken: null,
-    refreshToken: null,
     isAuthenticated: false,
     loading: false,
     error: null,
@@ -26,15 +27,17 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    setTokens(accessToken: string, refreshToken: string) {
+    setTokens(accessToken: string) {
       this.accessToken = accessToken
-      this.refreshToken = refreshToken
       this.isAuthenticated = true
       
-      // Persist tokens to localStorage
+      // Persist ONLY accessToken to localStorage
       if (import.meta.client) {
         localStorage.setItem('accessToken', accessToken)
-        localStorage.setItem('refreshToken', refreshToken)
+        // Set a companion flag to know if silent refresh should be attempted
+        localStorage.setItem('hasSession', 'true')
+        // Ensure old refreshToken is removed if it exists
+        localStorage.removeItem('refreshToken')
       }
     },
 
@@ -49,13 +52,13 @@ export const useAuthStore = defineStore('auth', {
 
     clearTokens() {
       this.accessToken = null
-      this.refreshToken = null
       this.isAuthenticated = false
       this.user = null
       
       // Clear from localStorage
       if (import.meta.client) {
         localStorage.removeItem('accessToken')
+        localStorage.removeItem('hasSession')
         localStorage.removeItem('refreshToken')
         localStorage.removeItem('user')
       }
@@ -67,30 +70,28 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       
       try {
-        // Restore tokens from localStorage
+        // Restore accessToken and user from localStorage
         const accessToken = localStorage.getItem('accessToken')
-        const refreshToken = localStorage.getItem('refreshToken')
         const userStr = localStorage.getItem('user')
 
-        if (accessToken && refreshToken) {
-          this.accessToken = accessToken
-          this.refreshToken = refreshToken
-          this.isAuthenticated = true
+        if (userStr) {
+          this.user = JSON.parse(userStr)
+        }
 
-          if (userStr) {
-            this.user = JSON.parse(userStr)
-          }
+        if (accessToken) {
+          this.accessToken = accessToken
+          this.isAuthenticated = true
 
           // Check if token is expired
           if (this.isTokenExpired()) {
-            // Try to refresh the token
+            // Try to refresh the token using the httpOnly cookie
             try {
-              const nuxtApp = useNuxtApp()
-              const $apiClient = (nuxtApp as any).$apiClient
-              const refreshed = await $apiClient.handleTokenRefresh()
+              const apiClient = useApiClient()
+              const refreshed = await apiClient.handleTokenRefresh()
               
               if (!refreshed) {
-                throw new Error('Token refresh failed')
+                this.clearTokens()
+                return
               }
             } catch (refreshError) {
               console.error('Token refresh failed during initialization:', refreshError)
@@ -101,6 +102,19 @@ export const useAuthStore = defineStore('auth', {
 
           // Verify token validity by fetching user profile
           await this.fetchUserProfile()
+        } else {
+          // No access token, but might have a session cookie. Try silent refresh if we think a session exists.
+          if (import.meta.client && localStorage.getItem('hasSession') === 'true') {
+            try {
+              const apiClient = useApiClient()
+              const refreshed = await apiClient.handleTokenRefresh()
+              if (refreshed) {
+                await this.fetchUserProfile()
+              }
+            } catch (e) {
+              // No session
+            }
+          }
         }
       } catch (error) {
         console.error('Auth initialization failed:', error)
@@ -114,25 +128,20 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.error = null
       
-      try {
-        const nuxtApp = useNuxtApp()
-        const $apiClient = (nuxtApp as any).$apiClient
-        
-        // Include tenant slug in login request if provided
-        const loginData = {
-          ...credentials,
-          tenantSlug: credentials.tenantSlug || useRuntimeConfig().public.tenantSlug
-        }
-        
-        // API client now returns unwrapped data directly
-        const loginResult = await $apiClient.post('/auth/login', loginData)
-        
-        this.setTokens(loginResult.accessToken, loginResult.refreshToken)
-        this.setUser(loginResult.user)
+      const loginData = {
+        ...credentials,
+        tenantSlug: credentials.tenantSlug || useRuntimeConfig().public.tenantSlug
+      }
+      
+      const result = await AuthService.login(loginData)
+      
+      if (result.success) {
+        this.setTokens(result.data.accessToken)
+        this.setUser(result.data.user)
         
         // Sync favorites after successful login
         try {
-          const { useFavoritesStore } = require('./favorites')
+          const { useFavoritesStore } = await import('./favorites')
           const favoritesStore = useFavoritesStore()
           await favoritesStore.syncFavoritesToServer()
           await favoritesStore.fetchFavoritesFromServer()
@@ -140,13 +149,13 @@ export const useAuthStore = defineStore('auth', {
           console.error('Failed to sync favorites after login:', error)
         }
         
-        return loginResult
-      } catch (error) {
-        this.error = error as ApiError
-        this.clearTokens()
-        throw error
-      } finally {
         this.loading = false
+        return result.data
+      } else {
+        this.error = result.error
+        this.clearTokens()
+        this.loading = false
+        throw result.error
       }
     },
 
@@ -161,79 +170,70 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.error = null
       
-      try {
-        const nuxtApp = useNuxtApp()
-        const $apiClient = (nuxtApp as any).$apiClient
-        
-        // Include tenant slug in registration request
-        const registrationData = {
-          ...userData,
-          tenantSlug: userData.tenantSlug || useRuntimeConfig().public.tenantSlug
-        }
-        
-        // API client now returns unwrapped data directly
-        const registrationResult = await $apiClient.post('/auth/register', registrationData)
-        
-        this.setTokens(registrationResult.accessToken, registrationResult.refreshToken)
-        this.setUser(registrationResult.user)
+      const registrationData = {
+        email: userData.email,
+        password: userData.password,
+        name: `${userData.firstName} ${userData.lastName}`,
+        tenantSlug: userData.tenantSlug || useRuntimeConfig().public.tenantSlug
+      }
+      
+      const result = await AuthService.register(registrationData)
+      
+      if (result.success) {
+        this.setTokens(result.data.accessToken)
+        this.setUser(result.data.user)
         
         // Sync favorites after successful registration
         try {
-          const { useFavoritesStore } = require('./favorites')
+          const { useFavoritesStore } = await import('./favorites')
           const favoritesStore = useFavoritesStore()
           await favoritesStore.syncFavoritesToServer()
         } catch (error) {
           console.error('Failed to sync favorites after registration:', error)
         }
         
-        return registrationResult
-      } catch (error) {
-        this.error = error as ApiError
-        this.clearTokens()
-        throw error
-      } finally {
         this.loading = false
+        return result.data
+      } else {
+        this.error = result.error
+        this.clearTokens()
+        this.loading = false
+        throw result.error
       }
     },
 
     async logout() {
       this.loading = true
       
-      try {
-        const nuxtApp = useNuxtApp()
-        const $apiClient = (nuxtApp as any).$apiClient
-        await $apiClient.post('/auth/logout', { refreshToken: this.refreshToken })
-      } catch (error) {
-        console.error('Logout request failed:', error)
-      } finally {
-        this.clearTokens()
-        this.loading = false
+      const result = await AuthService.logout()
+      if (!result.success) {
+        console.error('Logout request failed:', result.error)
       }
+      
+      this.clearTokens()
+      this.loading = false
     },
 
     async fetchUserProfile() {
       if (!this.isAuthenticated) return
 
-      try {
-        const nuxtApp = useNuxtApp()
-        const $apiClient = (nuxtApp as any).$apiClient
-        // API client now returns unwrapped data directly
-        const userProfile = await $apiClient.get('/auth/profile')
-        
-        this.setUser(userProfile)
-        return userProfile
-      } catch (error: any) {
-        console.error('Failed to fetch user profile:', error)
+      const result = await AuthService.getProfile()
+      
+      if (result.success) {
+        this.setUser(result.data)
+        return result.data
+      } else {
+        console.error('Failed to fetch user profile:', result.error)
         
         // If it's an authentication error, clear tokens
-        if (error.status === 401 || error.name === 'AuthenticationError') {
+        if (result.error.code === 'AUTHENTICATION_ERROR') {
           this.clearTokens()
           // Redirect to login page
           if (import.meta.client) {
             await navigateTo('/auth/login')
           }
         }
-        throw error
+        throw result.error
       }
     },
 
@@ -243,19 +243,16 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true
       this.error = null
       
-      try {
-        const nuxtApp = useNuxtApp()
-        const $apiClient = (nuxtApp as any).$apiClient
-        // API client now returns unwrapped data directly
-        const updatedUser = await $apiClient.patch('/auth/profile', updates)
-        
-        this.setUser(updatedUser)
-        return updatedUser
-      } catch (error) {
-        this.error = error as ApiError
-        throw error
-      } finally {
+      const result = await AuthService.updateProfile(updates)
+      
+      if (result.success) {
+        this.setUser(result.data)
         this.loading = false
+        return result.data
+      } else {
+        this.error = result.error
+        this.loading = false
+        throw result.error
       }
     },
 
@@ -269,10 +266,9 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       
       try {
-        const nuxtApp = useNuxtApp()
-        const $apiClient = (nuxtApp as any).$apiClient
+        const apiClient = useApiClient()
         // API client now returns unwrapped data directly
-        const result = await $apiClient.post('/auth/change-password', data)
+        const result = await apiClient.post<{ success: boolean; message: string }>('/auth/change-password', data)
         
         return result
       } catch (error) {
@@ -288,10 +284,9 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       
       try {
-        const nuxtApp = useNuxtApp()
-        const $apiClient = (nuxtApp as any).$apiClient
+        const apiClient = useApiClient()
         // API client now returns unwrapped data directly
-        const result = await $apiClient.post('/auth/forgot-password', { email })
+        const result = await apiClient.post<{ success: boolean; message: string }>('/auth/forgot-password', { email })
         
         return result
       } catch (error) {
@@ -310,10 +305,9 @@ export const useAuthStore = defineStore('auth', {
       this.error = null
       
       try {
-        const nuxtApp = useNuxtApp()
-        const $apiClient = (nuxtApp as any).$apiClient
+        const apiClient = useApiClient()
         // API client now returns unwrapped data directly
-        const result = await $apiClient.post('/auth/reset-password', data)
+        const result = await apiClient.post<{ success: boolean; message: string }>('/auth/reset-password', data)
         
         return result
       } catch (error) {
@@ -337,9 +331,8 @@ export const useAuthStore = defineStore('auth', {
       } else if (error.code === 'TOKEN_EXPIRED') {
         // Try to refresh token
         try {
-          const nuxtApp = useNuxtApp()
-          const $apiClient = (nuxtApp as any).$apiClient
-          await $apiClient.handleTokenRefresh()
+          const apiClient = useApiClient()
+          await apiClient.handleTokenRefresh()
         } catch (refreshError) {
           this.clearTokens()
           if (import.meta.client) {
@@ -354,7 +347,11 @@ export const useAuthStore = defineStore('auth', {
       
       try {
         // Decode JWT token to check expiration
-        const payload = JSON.parse(atob(this.accessToken.split('.')[1]))
+        const tokenParts = this.accessToken.split('.')
+        const payloadPart = safeArrayAccess(tokenParts, 1)
+        if (!payloadPart) return true
+        
+        const payload = JSON.parse(atob(payloadPart))
         const currentTime = Math.floor(Date.now() / 1000)
         return payload.exp < currentTime
       } catch (error) {

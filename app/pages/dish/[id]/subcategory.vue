@@ -5,7 +5,7 @@
       <div class="flex items-center gap-4">
         <BaseButton 
           variant="ghost" 
-          @click="$router.go(-1)"
+          @click="router.go(-1)"
         >
           <BaseIcon name="arrow-left" size="md" />
         </BaseButton>
@@ -232,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types/ui'
 
 // Page setup
 definePageMeta({
@@ -252,7 +252,7 @@ const selectedTypeOption = ref<any>(null)
 const dishId = computed(() => route.params.id as string)
 
 // Mock dish data
-const dish = ref<MenuItem | null>(null)
+const dish = ref<MenuItemUI | null>(null)
 const basePrice = ref(15.99)
 
 // Size options
@@ -265,7 +265,7 @@ const sizeOptions = ref([
     calories: 450,
     servingSize: '200g',
     icon: 'circle',
-    iconSize: 'md',
+    iconSize: 'md' as const,
     popular: false
   },
   {
@@ -276,7 +276,7 @@ const sizeOptions = ref([
     calories: 650,
     servingSize: '300g',
     icon: 'circle',
-    iconSize: 'lg',
+    iconSize: 'lg' as const,
     popular: true
   },
   {
@@ -287,7 +287,7 @@ const sizeOptions = ref([
     calories: 850,
     servingSize: '400g',
     icon: 'circle',
-    iconSize: 'xl',
+    iconSize: 'xl' as const,
     popular: false
   },
   {
@@ -298,7 +298,7 @@ const sizeOptions = ref([
     calories: 1050,
     servingSize: '500g',
     icon: 'circle',
-    iconSize: '2xl',
+    iconSize: '4xl' as const,
     popular: false
   }
 ])
@@ -344,8 +344,26 @@ const loadDish = async () => {
       name: 'Delicious Burger',
       description: 'A mouth-watering burger',
       price: basePrice.value,
+      imageUrl: undefined,
       categoryId: 'fastfood',
-      isActive: true
+      menuId: 'default-menu',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      isAvailable: true,
+      stockQuantity: 100,
+      calories: null,
+      preparationTime: null,
+      cookingTime: null,
+      ingredients: [],
+      allergens: [],
+      nutritionInfo: null,
+      dietary: [],
+      badges: [],
+      modifierGroups: [],
+      isNew: false,
+      isPopular: false,
+      category: null
     }
     
     // Set default selection to most popular

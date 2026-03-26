@@ -87,6 +87,7 @@ const errorInfo = computed(() => {
   const apiError = {
     name: props.error.name || 'Error',
     message: props.error.message,
+    code: props.error.statusCode?.toString() || 'UNKNOWN_ERROR',
     status: props.error.statusCode,
     stack: props.error.stack,
   }
@@ -147,6 +148,7 @@ const handleAutoRecover = async () => {
     const apiError = {
       name: props.error.name || 'Error',
       message: props.error.message,
+      code: props.error.statusCode?.toString() || 'UNKNOWN_ERROR',
       status: props.error.statusCode,
     }
     
@@ -174,10 +176,10 @@ const handleAutoRecover = async () => {
 onMounted(() => {
   const { $reportError } = useNuxtApp()
   if ($reportError) {
-    $reportError(props.error, {
-      type: 'page-error',
+    ($reportError as any)(props.error, {
+      type: 'page-error' as any,
       statusCode: props.error.statusCode,
-      url: props.error.url,
+      url: (props.error as any).url,
     })
   }
 })

@@ -6,7 +6,9 @@
       :size="iconSize"
       :class="{ 'base-badge__icon--with-text': slots.default }"
     />
-    <slot />
+    <slot>
+      {{ count }}
+    </slot>
   </span>
 </template>
 
@@ -16,12 +18,14 @@ interface Props {
   size?: 'sm' | 'md' | 'lg'
   icon?: string
   pulse?: boolean
+  count?: number | string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'primary',
   size: 'md',
-  pulse: false
+  pulse: false,
+  count: 0
 })
 
 const slots = defineSlots<{
@@ -49,7 +53,7 @@ const iconSize = computed((): 'xs' | 'sm' | 'md' => {
     md: 'sm', 
     lg: 'md' 
   }
-  return sizes[props.size]
+  return sizes[props.size] || 'sm'
 })
 </script>
 

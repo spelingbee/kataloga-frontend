@@ -1,4 +1,4 @@
-import type { User, UserLocation, Notification, Promotion, UpdateProfileDto, PaginatedResult } from '~/types'
+import type { User, UserLocation, Notification, Promotion, UpdateProfileDto, PaginatedResult, UserAddressDto, UserPreferencesDto } from '~/types'
 import { useApiClient } from '~/utils/api'
 
 export class UserService {
@@ -97,7 +97,7 @@ export class UserService {
       total: number
       unreadCount: number
     }>(endpoint)
-    
+
     if (response.success && response.data) {
       return {
         notifications: response.data.notifications,
@@ -165,7 +165,7 @@ export class UserService {
 
     // Get full response to access pagination metadata
     const response = await this.getApiClient().getRaw<Promotion[]>(endpoint)
-    
+
     if (response.success && response.data) {
       return {
         items: response.data,
@@ -246,20 +246,7 @@ export class UserService {
    * Returns: void
    * Requirements: 2.3
    */
-  async updatePreferences(preferences: {
-    dietary?: string[]
-    allergies?: string[]
-    spiceLevel?: number
-    notifications?: {
-      orderUpdates?: boolean
-      promotions?: boolean
-      newsletter?: boolean
-    }
-    delivery?: {
-      defaultAddress?: string
-      preferredTimeSlots?: string[]
-    }
-  }): Promise<void> {
+  async updatePreferences(preferences: UserPreferencesDto): Promise<void> {
     return this.getApiClient().patch<void>('/users/preferences', preferences)
   }
 
@@ -355,14 +342,7 @@ export class UserService {
    * Returns: address ID
    * Requirements: 2.1
    */
-  async addAddress(address: {
-    name: string
-    address: string
-    latitude: number
-    longitude: number
-    type: 'home' | 'work' | 'other'
-    isDefault?: boolean
-  }): Promise<{ id: string }> {
+  async addAddress(address: UserAddressDto): Promise<{ id: string }> {
     return this.getApiClient().post<{ id: string }>('/users/addresses', address)
   }
 
@@ -406,9 +386,7 @@ export class UserService {
    * Requirements: 2.3
    */
   async deleteAccount(password: string): Promise<void> {
-    return this.getApiClient().delete<void>('/users/account', {
-      body: { password }
-    })
+    return this.getApiClient().post<void>('/users/account/delete', { password })
   }
 
   /**

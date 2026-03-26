@@ -12,17 +12,17 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem } from '~/types'
+import type { MenuItemUI } from '~/types/ui'
 
 interface Props {
-  items: MenuItem[]
+  items: MenuItemUI[]
 }
 
 defineProps<Props>()
 
 defineEmits<{
-  'item-selected': [item: MenuItem]
-  'add-to-cart': [item: MenuItem]
+  'item-selected': [item: MenuItemUI]
+  'add-to-cart': [item: MenuItemUI]
 }>()
 </script>
 
@@ -41,8 +41,8 @@ defineEmits<{
   }
 
   @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: $space-4;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $space-3;
   }
 }
 

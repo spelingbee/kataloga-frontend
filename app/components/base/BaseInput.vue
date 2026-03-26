@@ -10,11 +10,11 @@
         </slot>
       </div>
       
-      <input
+      <textarea
+        v-if="type === 'textarea'"
         :id="inputId"
         ref="inputRef"
-        :type="type"
-        :value="modelValue"
+        :value="String(modelValue || '')"
         :placeholder="floatingLabel ? ' ' : placeholder"
         :disabled="disabled"
         :readonly="readonly"
@@ -23,6 +23,30 @@
         :aria-invalid="!!error"
         :aria-describedby="error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
         :autocomplete="autocomplete"
+        :class="inputClasses"
+        @input="handleInput"
+        @blur="handleBlur"
+        @focus="handleFocus"
+      />
+      <input
+        v-else
+        :id="inputId"
+        ref="inputRef"
+        :type="type"
+        :value="type === 'file' ? undefined : String(modelValue || '')"
+        :placeholder="floatingLabel ? ' ' : placeholder"
+        :disabled="disabled"
+        :readonly="readonly"
+        :required="required"
+        :aria-required="required"
+        :aria-invalid="!!error"
+        :aria-describedby="error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
+        :autocomplete="autocomplete"
+        :min="min"
+        :max="max"
+        :step="step"
+        :accept="accept"
+        :multiple="multiple"
         :class="inputClasses"
         @input="handleInput"
         @blur="handleBlur"
@@ -93,8 +117,30 @@
 </template>
 
 <script setup lang="ts">
+// Define all supported HTML input types
+type InputType = 
+  | 'text' 
+  | 'email' 
+  | 'password' 
+  | 'number' 
+  | 'tel' 
+  | 'url' 
+  | 'search' 
+  | 'date'
+  | 'datetime-local'
+  | 'time'
+  | 'month'
+  | 'week'
+  | 'color'
+  | 'range'
+  | 'file'
+  | 'hidden'
+  | 'checkbox'
+  | 'radio'
+  | 'textarea' // Special case for textarea-like behavior
+
 interface Props {
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search' | 'textarea'
+  type?: InputType
   label?: string
   placeholder?: string
   size?: 'sm' | 'md' | 'lg'
@@ -109,6 +155,12 @@ interface Props {
   success?: string
   hint?: string
   autocomplete?: string
+  // Additional HTML input attributes for type safety
+  min?: string | number
+  max?: string | number
+  step?: string | number
+  accept?: string
+  multiple?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -121,7 +173,10 @@ const props = withDefaults(defineProps<Props>(), {
   floatingLabel: true
 })
 
-const modelValue = defineModel<string | number>()
+// Define model value type based on input type
+type ModelValue = string | number | File | File[] | null
+
+const modelValue = defineModel<ModelValue>()
 
 const emit = defineEmits<{
   blur: [event: FocusEvent]
@@ -133,13 +188,22 @@ const slots = defineSlots<{
   suffix?: () => any
 }>()
 
-const inputRef = ref<HTMLInputElement>()
+const inputRef = ref<HTMLInputElement | HTMLTextAreaElement | null>(null)
 const isFocused = ref(false)
 
 const inputId = computed(() => `input-${Math.random().toString(36).substring(2, 11)}`)
 
 const hasValue = computed(() => {
-  return modelValue.value !== undefined && modelValue.value !== null && modelValue.value !== ''
+  if (modelValue.value === null || modelValue.value === undefined) return false
+  
+  // Handle different types
+  if (props.type === 'file') {
+    return Array.isArray(modelValue.value) 
+      ? modelValue.value.length > 0 
+      : modelValue.value instanceof File
+  }
+  
+  return String(modelValue.value) !== ''
 })
 
 const inputClasses = computed(() => {
@@ -173,9 +237,30 @@ const labelClasses = computed(() => {
 })
 
 const handleInput = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const value = props.type === 'number' ? Number(target.value) : target.value
-  modelValue.value = value
+  const target = event.target as HTMLInputElement | HTMLTextAreaElement
+  
+  // Handle different input types appropriately
+  switch (props.type) {
+    case 'number':
+    case 'range':
+      modelValue.value = target.value === '' ? null : Number(target.value)
+      break
+    case 'file':
+      const fileTarget = target as HTMLInputElement
+      if (props.multiple) {
+        modelValue.value = fileTarget.files ? Array.from(fileTarget.files) : null
+      } else {
+        modelValue.value = fileTarget.files?.[0] || null
+      }
+      break
+    case 'checkbox':
+      const checkboxTarget = target as HTMLInputElement
+      modelValue.value = checkboxTarget.checked ? 'true' : 'false'
+      break
+    case 'textarea':
+    default:
+      modelValue.value = target.value
+  }
 }
 
 const handleBlur = (event: FocusEvent) => {
@@ -189,7 +274,17 @@ const handleFocus = (event: FocusEvent) => {
 }
 
 const clear = () => {
-  modelValue.value = ''
+  if (props.type === 'number' || props.type === 'range') {
+    modelValue.value = null
+  } else if (props.type === 'file') {
+    modelValue.value = null
+    // Clear the file input
+    if (inputRef.value && 'value' in inputRef.value) {
+      inputRef.value.value = ''
+    }
+  } else {
+    modelValue.value = ''
+  }
   inputRef.value?.focus()
 }
 </script>

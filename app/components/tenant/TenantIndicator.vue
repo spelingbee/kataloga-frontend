@@ -17,7 +17,7 @@
       <BaseButton
         v-if="showSwitchButton"
         variant="ghost"
-        size="xs"
+        size="sm"
         @click="handleSwitch"
         class="tenant-indicator__switch-btn"
         aria-label="Switch restaurant"

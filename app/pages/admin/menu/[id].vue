@@ -267,7 +267,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { MenuItem, Category } from '~/types'
+import type { MenuItemUI, CategoryUI } from '~/types'
 
 // Define page meta
 definePageMeta({
@@ -282,7 +282,7 @@ const itemId = route.params.id as string
 // Reactive state
 const loading = ref(false)
 const initialLoading = ref(true)
-const categories = ref<Category[]>([])
+const categories = ref<CategoryUI[]>([])
 const imageInput = ref<HTMLInputElement>()
 const imagePreview = ref<string>('')
 
@@ -291,8 +291,8 @@ const form = ref({
   description: '',
   price: 0,
   categoryId: '',
-  calories: null as number | null,
-  preparationTime: null as number | null,
+  calories: undefined as number | undefined,
+  preparationTime: undefined as number | undefined,
   imageUrl: '',
   ingredients: [''],
   isActive: true
@@ -304,19 +304,24 @@ const errors = ref<Record<string, string>>({})
 const loadMenuItem = async () => {
   try {
     const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.get(`/admin/menu-items/${itemId}`)
+    const response = await $apiClient.get<{
+      success: boolean;
+      data: MenuItemUI;
+    }>(`/admin/menu-items/${itemId}`)
     
     if (response.success && response.data) {
       const item = response.data
       form.value = {
         name: item.name,
-        description: item.description,
+        description: item.description || '',
         price: item.price,
         categoryId: item.categoryId || '',
-        calories: item.calories,
-        preparationTime: item.preparationTime,
+        calories: item.calories || undefined,
+        preparationTime: item.preparationTime || undefined,
         imageUrl: item.imageUrl || '',
-        ingredients: item.ingredients?.length ? item.ingredients : [''],
+        ingredients: (item.ingredients as any)?.length 
+          ? (item.ingredients as any).map((ing: any) => typeof ing === 'string' ? ing : ing.name) 
+          : [''],
         isActive: item.isActive
       }
     }
@@ -340,7 +345,10 @@ const loadMenuItem = async () => {
 const loadCategories = async () => {
   try {
     const { $apiClient } = useNuxtApp()
-    const response = await $apiClient.get('/admin/categories')
+    const response = await $apiClient.get<{
+      success: boolean;
+      data: CategoryUI[];
+    }>('/admin/categories')
     
     if (response.success) {
       categories.value = response.data || []
@@ -349,9 +357,9 @@ const loadCategories = async () => {
     console.error('Failed to load categories:', error)
     // Use mock data for development
     categories.value = [
-      { id: '1', name: 'Pizza', description: '', sortOrder: 1 },
-      { id: '2', name: 'Salads', description: '', sortOrder: 2 },
-      { id: '3', name: 'Beverages', description: '', sortOrder: 3 }
+      { id: '1', name: 'Pizza', slug: 'pizza', description: undefined, sortOrder: 1, imageUrl: undefined, icon: undefined, count: 0 },
+      { id: '2', name: 'Salads', slug: 'salads', description: undefined, sortOrder: 2, imageUrl: undefined, icon: undefined, count: 0 },
+      { id: '3', name: 'Beverages', slug: 'beverages', description: undefined, sortOrder: 3, imageUrl: undefined, icon: undefined, count: 0 }
     ]
   }
 }
@@ -437,12 +445,20 @@ const handleSubmit = async () => {
     
     const menuItemData = {
       ...form.value,
-      ingredients,
+      ingredients: ingredients.map(name => ({
+        id: Math.random().toString(36).substring(2, 9),
+        name,
+        isDefault: true,
+        isOptional: true
+      })),
       calories: form.value.calories || undefined,
       preparationTime: form.value.preparationTime || undefined
     }
     
-    const response = await $apiClient.patch(`/admin/menu-items/${itemId}`, menuItemData)
+    const response = await $apiClient.patch<{
+      success: boolean;
+      message?: string;
+    }>(`/admin/menu-items/${itemId}`, menuItemData)
     
     if (response.success) {
       await navigateTo('/admin/menu')

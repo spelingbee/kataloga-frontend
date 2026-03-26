@@ -34,11 +34,11 @@ export const useNetworkStatus = () => {
       downlink.value = connection.downlink || 10
       rtt.value = connection.rtt || 100
       saveData.value = connection.saveData || false
-      
+
       // Determine if connection is slow
-      isSlowConnection.value = 
-        effectiveType.value === 'slow-2g' || 
-        effectiveType.value === '2g' || 
+      isSlowConnection.value =
+        effectiveType.value === 'slow-2g' ||
+        effectiveType.value === '2g' ||
         downlink.value < 1.5
     }
   }
@@ -52,17 +52,19 @@ export const useNetworkStatus = () => {
 
     // Show notification when coming back online
     showNotification('Back Online', {
-      body: hasPendingOrders.value 
-        ? 'Connection restored. Syncing your data...' 
+      body: hasPendingOrders.value
+        ? 'Connection restored. Syncing your data...'
         : 'Connection restored.',
       tag: 'network-status',
       icon: '/icon-192x192.png',
-      actions: [
-        {
-          action: 'dismiss',
-          title: 'OK'
-        }
-      ]
+      ...(('actions' in Notification.prototype) && {
+        actions: [
+          {
+            action: 'dismiss',
+            title: 'OK'
+          }
+        ]
+      })
     })
   }
 
@@ -78,25 +80,7 @@ export const useNetworkStatus = () => {
       tag: 'network-status',
       icon: '/icon-192x192.png',
       requireInteraction: true,
-      actions: [
-        {
-          action: 'dismiss',
-          title: 'OK'
-        }
-      ]
-    })
-  }
-
-  // Handle connection change
-  const handleConnectionChange = () => {
-    updateNetworkInfo()
-    
-    // Warn about slow connection
-    if (isSlowConnection.value && isOnline.value) {
-      showNotification('Slow Connection', {
-        body: 'Your connection is slow. Some features may take longer to load.',
-        tag: 'slow-connection',
-        icon: '/icon-192x192.png',
+      ...(('actions' in Notification.prototype) && {
         actions: [
           {
             action: 'dismiss',
@@ -104,13 +88,35 @@ export const useNetworkStatus = () => {
           }
         ]
       })
+    })
+  }
+
+  // Handle connection change
+  const handleConnectionChange = () => {
+    updateNetworkInfo()
+
+    // Warn about slow connection
+    if (isSlowConnection.value && isOnline.value) {
+      showNotification('Slow Connection', {
+        body: 'Your connection is slow. Some features may take longer to load.',
+        tag: 'slow-connection',
+        icon: '/icon-192x192.png',
+        ...(('actions' in Notification.prototype) && {
+          actions: [
+            {
+              action: 'dismiss',
+              title: 'OK'
+            }
+          ]
+        })
+      })
     }
   }
 
   // Get connection quality description
   const getConnectionQuality = (): 'excellent' | 'good' | 'fair' | 'poor' | 'offline' => {
     if (!isOnline.value) return 'offline'
-    
+
     if (effectiveType.value === '4g' && downlink.value > 5) return 'excellent'
     if (effectiveType.value === '4g' || (effectiveType.value === '3g' && downlink.value > 2)) return 'good'
     if (effectiveType.value === '3g' || effectiveType.value === '2g') return 'fair'
@@ -122,15 +128,15 @@ export const useNetworkStatus = () => {
     if (!isOnline.value) {
       return 'You\'re offline. Some features are limited.'
     }
-    
+
     if (syncInProgress.value) {
       return 'Syncing your data...'
     }
-    
+
     if (hasPendingOrders.value) {
       return 'You have pending orders that will sync when online.'
     }
-    
+
     const quality = getConnectionQuality()
     switch (quality) {
       case 'excellent':
@@ -151,7 +157,7 @@ export const useNetworkStatus = () => {
     if (!isOnline.value) return 'red'
     if (syncInProgress.value) return 'yellow'
     if (hasPendingOrders.value) return 'orange'
-    
+
     const quality = getConnectionQuality()
     switch (quality) {
       case 'excellent':
@@ -186,7 +192,7 @@ export const useNetworkStatus = () => {
     onUnmounted(() => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
-      
+
       if ('connection' in navigator) {
         const connection = (navigator as any).connection
         connection.removeEventListener('change', handleConnectionChange)
@@ -202,13 +208,17 @@ export const useNetworkStatus = () => {
   // Force network check
   const checkNetworkStatus = async (): Promise<boolean> => {
     try {
-      // Try to fetch a small resource to verify connectivity
-      const response = await fetch('/api/health', {
+      // Use the backend API health endpoint, not the frontend server
+      const config = useRuntimeConfig()
+      const apiBaseUrl = config.public.apiBaseUrl || 'http://localhost:3001/api'
+      const healthUrl = apiBaseUrl + '/health'
+
+      const response = await fetch(healthUrl, {
         method: 'HEAD',
         cache: 'no-cache',
         signal: AbortSignal.timeout(5000)
       })
-      
+
       const online = response.ok
       if (online !== isOnline.value) {
         if (online) {
@@ -217,13 +227,19 @@ export const useNetworkStatus = () => {
           handleOffline()
         }
       }
-      
+
       return online
     } catch (error) {
-      if (isOnline.value) {
-        handleOffline()
+      // Fallback to navigator.onLine
+      const online = typeof navigator !== 'undefined' ? navigator.onLine : false
+      if (online !== isOnline.value) {
+        if (online) {
+          handleOnline()
+        } else {
+          handleOffline()
+        }
       }
-      return false
+      return online
     }
   }
 
@@ -243,14 +259,14 @@ export const useNetworkStatus = () => {
     showOfflineNotification: readonly(showOfflineNotification),
     lastOnlineTime: readonly(lastOnlineTime),
     lastOfflineTime: readonly(lastOfflineTime),
-    
+
     // Methods
     getConnectionQuality,
     getStatusMessage,
     getStatusColor,
     dismissOfflineNotification,
     checkNetworkStatus,
-    
+
     // Network info
     networkStatus: computed((): NetworkStatus => ({
       isOnline: isOnline.value,
