@@ -1,4 +1,7 @@
+import { useTenantStore } from '~/stores/tenant'
+
 export function usePushNotifications() {
+  const { $notificationService } = useNuxtApp()
   const isSupported = ref(false)
   const isSubscribed = ref(false)
   const subscription = ref<PushSubscription | null>(null)
@@ -6,7 +9,6 @@ export function usePushNotifications() {
   const tenantStore = import.meta.client ? useTenantStore() : null
   const currentTenantId = computed(() => tenantStore?.tenantId || null)
 
-  // Check if push notifications are supported
   const checkSupport = () => {
     if (import.meta.client) {
       isSupported.value = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
@@ -14,21 +16,10 @@ export function usePushNotifications() {
     }
   }
 
-  // Request notification permission
   const requestPermission = async (): Promise<boolean> => {
-    if (!isSupported.value) {
-      console.warn('Push notifications are not supported')
-      return false
-    }
-
-    if (permission.value === 'granted') {
-      return true
-    }
-
-    if (permission.value === 'denied') {
-      console.warn('Push notifications are denied')
-      return false
-    }
+    if (!isSupported.value) return false
+    if (permission.value === 'granted') return true
+    if (permission.value === 'denied') return false
 
     try {
       const result = await Notification.requestPermission()
@@ -40,59 +31,35 @@ export function usePushNotifications() {
     }
   }
 
-  // Subscribe to push notifications
   const subscribe = async (): Promise<boolean> => {
-    if (!isSupported.value) {
-      console.warn('Push notifications are not supported')
-      return false
-    }
+    if (!isSupported.value || !$notificationService) return false
 
     try {
-      // Request permission first
       const hasPermission = await requestPermission()
-      if (!hasPermission) {
-        return false
-      }
+      if (!hasPermission) return false
 
-      // Get service worker registration
       const registration = await navigator.serviceWorker.getRegistration()
-      if (!registration) {
-        console.error('Service worker not registered')
-        return false
-      }
+      if (!registration) return false
 
-      // Check if already subscribed
       let pushSubscription = await registration.pushManager.getSubscription()
       
       if (!pushSubscription) {
-        // Get VAPID public key from notification service
-        const { useNotificationService } = await import('~/services/notification.service')
-        const notificationService = useNotificationService()
-        const vapidKey = await notificationService.getVapidPublicKey()
-        
-        if (!vapidKey) {
-          console.error('Failed to get VAPID public key')
-          return false
-        }
+        const vapidKey = await ($notificationService as any).getVapidPublicKey()
+        if (!vapidKey) return false
 
-        // Subscribe to push notifications
         pushSubscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
         })
       }
 
-      // Register subscription with backend
-      const { useNotificationService } = await import('~/services/notification.service')
-      const notificationService = useNotificationService()
-      const registered = await notificationService.registerPushSubscription(pushSubscription)
+      const registered = await ($notificationService as any).registerPushSubscription(pushSubscription)
       
       if (registered) {
         subscription.value = pushSubscription
         isSubscribed.value = true
         return true
       } else {
-        // If registration failed, unsubscribe
         await pushSubscription.unsubscribe()
         return false
       }
@@ -102,26 +69,16 @@ export function usePushNotifications() {
     }
   }
 
-  // Unsubscribe from push notifications
   const unsubscribe = async (): Promise<boolean> => {
-    if (!subscription.value) {
-      return true
-    }
+    if (!subscription.value || !$notificationService) return true
 
     try {
-      // Unregister with backend first
-      const { useNotificationService } = await import('~/services/notification.service')
-      const notificationService = useNotificationService()
-      await notificationService.unregisterPushSubscription(subscription.value)
-
-      // Unsubscribe from browser
+      await ($notificationService as any).unregisterPushSubscription(subscription.value)
       const success = await subscription.value.unsubscribe()
-      
       if (success) {
         subscription.value = null
         isSubscribed.value = false
       }
-      
       return success
     } catch (error) {
       console.error('Failed to unsubscribe from push notifications:', error)
@@ -129,14 +86,11 @@ export function usePushNotifications() {
     }
   }
 
-  // Check current subscription status
   const checkSubscription = async () => {
     if (!isSupported.value) return
-
     try {
       const registration = await navigator.serviceWorker.getRegistration()
       if (!registration) return
-
       const pushSubscription = await registration.pushManager.getSubscription()
       subscription.value = pushSubscription
       isSubscribed.value = !!pushSubscription
@@ -145,52 +99,40 @@ export function usePushNotifications() {
     }
   }
 
-  // Send test notification
   const sendTestNotification = async (): Promise<boolean> => {
-    if (!isSubscribed.value) {
-      console.warn('Not subscribed to push notifications')
-      return false
-    }
-
+    if (!isSubscribed.value || !$notificationService) return false
     try {
-      const { useNotificationService } = await import('~/services/notification.service')
-      const notificationService = useNotificationService()
-      return await notificationService.sendTestNotification()
+      return await ($notificationService as any).sendTestNotification()
     } catch (error) {
       console.error('Failed to send test notification:', error)
       return false
     }
   }
 
-  // Update notification preferences
   const updatePreferences = async (preferences: {
     orderUpdates: boolean
     promotions: boolean
     reminders: boolean
   }): Promise<boolean> => {
+    if (!$notificationService) return false
     try {
-      const { useNotificationService } = await import('~/services/notification.service')
-      const notificationService = useNotificationService()
-      return await notificationService.updateNotificationPreferences(preferences)
+      return await ($notificationService as any).updateNotificationPreferences(preferences)
     } catch (error) {
       console.error('Failed to update notification preferences:', error)
       return false
     }
   }
 
-  // Get notification preferences
   const getPreferences = async () => {
+    if (!$notificationService) return null
     try {
-      const { useNotificationService } = await import('~/services/notification.service')
-      const notificationService = useNotificationService()
-      return await notificationService.getNotificationPreferences()
+      return await ($notificationService as any).getNotificationPreferences()
     } catch (error) {
       console.error('Failed to get notification preferences:', error)
       return null
     }
   }
 
-  // Utility function to convert VAPID key
   const urlBase64ToUint8Array = (base64String: string): Uint8Array => {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
     const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
@@ -202,23 +144,13 @@ export function usePushNotifications() {
     return outputArray
   }
 
-  // Update subscription when tenant changes
   const updateSubscriptionForTenant = async (): Promise<boolean> => {
-    if (!isSubscribed.value || !subscription.value) {
-      return false
-    }
-
+    if (!isSubscribed.value || !subscription.value || !$notificationService) return false
     try {
-      const { useNotificationService } = await import('~/services/notification.service')
-      const notificationService = useNotificationService()
-      
-      // Re-register subscription with new tenant context
-      const success = await notificationService.updatePushSubscriptionForTenant()
-      
+      const success = await ($notificationService as any).updatePushSubscriptionForTenant()
       if (success) {
         console.log('Push subscription updated for tenant:', currentTenantId.value)
       }
-      
       return success
     } catch (error) {
       console.error('Failed to update subscription for tenant:', error)
@@ -226,17 +158,14 @@ export function usePushNotifications() {
     }
   }
 
-  // Initialize on mount
   onMounted(() => {
     checkSupport()
     checkSubscription()
 
-    // Watch for tenant changes and update subscription
     if (tenantStore) {
       watch(
         () => tenantStore.tenantId,
         async (newTenantId, oldTenantId) => {
-          // Only update if tenant actually changed and we have a subscription
           if (newTenantId && oldTenantId && newTenantId !== oldTenantId && isSubscribed.value) {
             console.log('Tenant changed, updating push notification subscription...')
             await updateSubscriptionForTenant()

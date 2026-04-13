@@ -3,6 +3,24 @@ import { config } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createApiClient } from '~/utils/api'
 
+// Ensure localStorage is available before any module (e.g. @vue/devtools-kit)
+// tries to call it during import-time initialization.
+if (typeof globalThis.localStorage === 'undefined' || typeof globalThis.localStorage.getItem !== 'function') {
+  const _store = new Map<string, string>()
+  Object.defineProperty(globalThis, 'localStorage', {
+    configurable: true,
+    writable: true,
+    value: {
+      getItem: (key: string) => _store.get(key) ?? null,
+      setItem: (key: string, value: string) => { _store.set(key, value) },
+      removeItem: (key: string) => { _store.delete(key) },
+      clear: () => { _store.clear() },
+      get length() { return _store.size },
+      key: (index: number) => Array.from(_store.keys())[index] ?? null,
+    },
+  })
+}
+
 // Mock Vue composables properly
 vi.mock('vue', async () => {
   const actual = await vi.importActual('vue')

@@ -3,51 +3,37 @@
     <!-- Table Number -->
     <div class="dine-in-form__field">
       <label for="table-number" class="dine-in-form__label">
-        Table Number *
+        {{ $t('checkout.tableNumber', 'Номер стола') }} *
       </label>
       <BaseInput
         id="table-number"
         v-model="localData.tableNumber"
         type="text"
-        placeholder="Enter your table number"
+        :placeholder="$t('checkout.tableNumberPlaceholder', 'Введите номер стола')"
         :error="errors.tableNumber"
         @input="handleChange"
       />
       <p class="dine-in-form__hint">
-        You can find your table number on the table card
+        {{ $t('checkout.tableNumberHint', 'Вы можете найти номер на карточке столика') }}
       </p>
     </div>
 
     <!-- Location (if multiple locations) -->
     <div v-if="locations.length > 1" class="dine-in-form__field">
-      <label for="location" class="dine-in-form__label">
-        Location *
-      </label>
-      <select
+      <BaseSelect
         id="location"
         v-model="localData.locationId"
-        class="dine-in-form__select"
-        :class="{ 'dine-in-form__select--error': errors.locationId }"
+        :label="$t('delivery.selectLocation', 'Выберите филиал') + ' *'"
+        :options="locationOptions"
+        :error="errors.locationId"
         @change="handleChange"
-      >
-        <option value="">Select location</option>
-        <option
-          v-for="location in locations"
-          :key="location.id"
-          :value="location.id"
-        >
-          {{ location.name }}
-        </option>
-      </select>
-      <p v-if="errors.locationId" class="dine-in-form__error">
-        {{ errors.locationId }}
-      </p>
+      />
     </div>
 
     <!-- Number of Guests (Optional) -->
     <div class="dine-in-form__field">
       <label for="guest-count" class="dine-in-form__label">
-        Number of Guests (Optional)
+        {{ $t('checkout.guestCount', 'Количество гостей (опционально)') }}
       </label>
       <BaseInput
         id="guest-count"
@@ -55,7 +41,7 @@
         type="number"
         min="1"
         max="20"
-        placeholder="How many people?"
+        :placeholder="$t('checkout.guestCountPlaceholder', 'Сколько человек?')"
         @input="handleChange"
       />
     </div>
@@ -63,13 +49,13 @@
     <!-- Special Instructions -->
     <div class="dine-in-form__field">
       <label for="dine-in-instructions" class="dine-in-form__label">
-        Special Instructions (Optional)
+        {{ $t('delivery.instructions', 'Пожелания к заказу') }}
       </label>
       <BaseInput
         id="dine-in-instructions"
         v-model="localData.instructions"
         type="textarea"
-        placeholder="Any special requests or dietary requirements..."
+        :placeholder="$t('delivery.instructionsPlaceholder', 'Например: не добавлять лук')"
         :rows="3"
         @input="handleChange"
       />
@@ -78,7 +64,7 @@
     <!-- QR Code Scanner (Optional Feature) -->
     <div v-if="showQrScanner" class="dine-in-form__qr-section">
       <div class="dine-in-form__qr-divider">
-        <span class="dine-in-form__qr-divider-text">OR</span>
+        <span class="dine-in-form__qr-divider-text">{{ $t('common.or', 'ИЛИ') }}</span>
       </div>
       
       <BaseButton
@@ -87,7 +73,7 @@
         @click="openQrScanner"
       >
         <BaseIcon name="qrcode" size="md" />
-        Scan Table QR Code
+        {{ $t('checkout.scanQr', 'Сканировать QR-код стола') }}
       </BaseButton>
     </div>
 
@@ -96,8 +82,7 @@
       <BaseIcon name="info" size="sm" />
       <div class="dine-in-form__info-content">
         <p class="dine-in-form__info-text">
-          Your order will be prepared and served to your table. 
-          Please remain seated until your order arrives.
+          {{ $t('checkout.dineInInfoMsg', 'Ваш заказ будет приготовлен и подан к вашему столу. Пожалуйста, оставайтесь на месте.') }}
         </p>
       </div>
     </div>
@@ -136,6 +121,13 @@ const emit = defineEmits<{
   'update:modelValue': [value: DineInData]
   'scan-qr': []
 }>()
+
+const locationOptions = computed(() => {
+  return props.locations.map(loc => ({
+    label: loc.name,
+    value: loc.id
+  }))
+})
 
 const localData = ref<DineInData>({ ...props.modelValue })
 

@@ -102,7 +102,7 @@ const currentCategory = computed(() => menuStore.currentCategory)
 const searchQuery = computed(() => menuStore.searchQuery)
 const filters = computed(() => menuStore.filters)
 const itemsByCategory = computed(() => menuStore.itemsByCategory)
-const filteredItems = computed(() => menuStore.filteredItems.length)
+const filteredItems = computed(() => menuStore.filteredMenuItems.length)
 const totalItems = computed(() => menuStore.menuItems.length)
 
 // Categories with item counts

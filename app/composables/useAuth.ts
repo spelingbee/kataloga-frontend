@@ -1,4 +1,4 @@
-import { useAuthStore } from '~/stores/auth'
+import { useUserStore } from '~/stores/user'
 import type { User, UpdateProfileDto } from '~/types'
 
 export interface LoginCredentials {
@@ -23,7 +23,7 @@ export interface AuthResponse {
 }
 
 export const useAuth = () => {
-  const authStore = useAuthStore()
+  const authStore = useUserStore()
   const config = useRuntimeConfig()
 
   // Reactive state

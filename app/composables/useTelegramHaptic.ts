@@ -3,21 +3,6 @@
  * Provides safe access to Telegram's haptic feedback API with fallbacks
  */
 
-export interface TelegramWebApp {
-  HapticFeedback: {
-    impactOccurred: (style: 'light' | 'medium' | 'heavy') => void
-    notificationOccurred: (type: 'error' | 'success' | 'warning') => void
-    selectionChanged: () => void
-  }
-}
-
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: TelegramWebApp
-    }
-  }
-}
 
 export const useTelegramHaptic = () => {
   /**

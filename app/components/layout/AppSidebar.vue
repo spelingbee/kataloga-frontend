@@ -53,7 +53,7 @@ const menuStore = useMenuStore()
 // Computed properties
 const categories = computed(() => menuStore.categories)
 const currentCategory = computed(() => menuStore.currentCategory)
-const totalItems = computed(() => menuStore.filteredItems.length)
+const totalItems = computed(() => menuStore.filteredMenuItems.length)
 
 // Methods
 const isActiveCategory = (categoryId: string) => {

@@ -3,12 +3,11 @@
  * Provides notification functionality via Telegram
  */
 
-import { useTelegramNotificationsService } from '~/services/telegram-notifications.service'
 import type { Order } from '~/types'
 
 export const useTelegramNotifications = () => {
+  const { $telegramNotificationsService } = useNuxtApp()
   const telegram = useTelegram()
-  const notificationsService = useTelegramNotificationsService()
 
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -24,7 +23,7 @@ export const useTelegramNotifications = () => {
    * Send order confirmation via Telegram
    */
   const sendOrderConfirmation = async (order: Order): Promise<boolean> => {
-    if (!isAvailable.value) {
+    if (!isAvailable.value || !$telegramNotificationsService) {
       console.log('Telegram notifications not available, skipping')
       return false
     }
@@ -33,7 +32,7 @@ export const useTelegramNotifications = () => {
     error.value = null
 
     try {
-      const success = await notificationsService.sendOrderConfirmation(order)
+      const success = await ($telegramNotificationsService as any).sendOrderConfirmation(order)
       
       if (success) {
         telegram.notificationFeedback('success')
@@ -53,7 +52,7 @@ export const useTelegramNotifications = () => {
    * Send order status update via Telegram
    */
   const sendOrderStatusUpdate = async (orderId: string, status: string, message?: string): Promise<boolean> => {
-    if (!isAvailable.value) {
+    if (!isAvailable.value || !$telegramNotificationsService) {
       console.log('Telegram notifications not available, skipping')
       return false
     }
@@ -62,7 +61,7 @@ export const useTelegramNotifications = () => {
     error.value = null
 
     try {
-      const success = await notificationsService.sendOrderStatusUpdate(orderId, status, message)
+      const success = await ($telegramNotificationsService as any).sendOrderStatusUpdate(orderId, status, message)
       
       if (success) {
         telegram.notificationFeedback('success')
@@ -82,9 +81,9 @@ export const useTelegramNotifications = () => {
    * Show order confirmation in Telegram popup
    */
   const showOrderConfirmationPopup = async (order: Order): Promise<void> => {
-    if (!telegram.isTelegram.value) return
+    if (!telegram.isTelegram.value || !$telegramNotificationsService) return
 
-    const message = notificationsService.formatOrderMessage(order)
+    const message = ($telegramNotificationsService as any).formatOrderMessage(order)
 
     await telegram.showPopup({
       title: 'Order Confirmed!',

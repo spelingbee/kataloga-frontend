@@ -94,7 +94,7 @@
             <!-- Item Image -->
             <div class="favourites-item__image">
               <BaseImage 
-                :src="item.imageUrl || '/images/placeholder-dish.jpg'"
+                :src="item.imageUrl || '/images/placeholder-dish.svg'"
                 :alt="item.name"
                 class="favourites-item__image-element"
                 @click="onItemSelected(item)"
@@ -175,7 +175,7 @@ import type { MenuItem } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
 import { useFavoritesStore } from '~/stores/favorites'
-import { useAuthStore } from '~/stores/auth'
+import { useUserStore } from '~/stores/user'
 
 // Page setup
 definePageMeta({
@@ -185,7 +185,7 @@ definePageMeta({
 const menuStore = useMenuStore()
 const cartStore = useCartStore()
 const favoritesStore = useFavoritesStore()
-const authStore = useAuthStore()
+const authStore = useUserStore()
 const router = useRouter()
 
 // Reactive state
@@ -216,7 +216,7 @@ const addAllToCart = () => {
   })
   
   // Show success message or navigate to cart
-  router.push('/cart')
+  router.push('/checkout')
 }
 
 // Initialize

@@ -92,8 +92,8 @@ const modalRef = ref<HTMLElement>()
 const closeButtonRef = ref<InstanceType<typeof BaseButton>>()
 const previousActiveElement = ref<HTMLElement | null>(null)
 
-const titleId = computed(() => `modal-title-${Math.random().toString(36).substr(2, 9)}`)
-const contentId = computed(() => `modal-content-${Math.random().toString(36).substr(2, 9)}`)
+const titleId = useId()
+const contentId = useId()
 
 const modalClasses = computed(() => {
   const classes = ['base-modal']

@@ -1,134 +1,139 @@
 <template>
   <div class="home-page">
     <!-- Hero Section -->
-    <section class="home-hero">
-      <h1 class="home-hero__title">
-        Welcome to Menu Ordering
-      </h1>
-      <p class="home-hero__subtitle">
-        Discover delicious dishes and order your favorites with ease. 
-        Browse our menu, customize your order, and enjoy fast delivery.
-      </p>
-    </section>
-
-    <!-- Popular Dishes Section -->
-    <section class="home-section">
-      <div class="home-section__header">
-        <h2 class="home-section__title">
-          For You
-          <BaseIcon name="fire" size="md" class="home-section__icon" />
-        </h2>
-        <NuxtLink 
-          to="/menu" 
-          class="home-section__link"
-        >
-          View All
-        </NuxtLink>
+    <header class="home-hero">
+      <div v-if="tenantStore.isLoading" class="home-hero__skeleton">
+        <div class="skeleton-pulse skeleton-pulse--title" />
+        <div class="skeleton-pulse skeleton-pulse--subtitle" />
       </div>
-      
-      <PopularSection />
-    </section>
 
-    <!-- Categories Preview -->
-    <section class="home-section">
-      <h2 class="home-section__title">
-        Browse Categories
-      </h2>
-      
-      <div class="home-categories">
-        <NuxtLink
-          v-for="category in categories" 
+      <template v-else>
+        <img
+          v-if="tenantStore.isTenantLoaded && tenantStore.tenantBranding?.logo"
+          :src="tenantStore.tenantBranding.logo"
+          :alt="tenantStore.tenantName"
+          class="home-hero__logo"
+        />
+        <h1 class="home-hero__title">
+          {{ tenantStore.tenantName || $t('common.catalog', 'Каталог') }}
+        </h1>
+        <p class="home-hero__subtitle">
+          {{
+            tenantStore.tenantBranding?.description ||
+            $t('home.subtitle', 'Заказывайте с доставкой быстро и удобно')
+          }}
+        </p>
+      </template>
+    </header>
+
+    <!-- Categories Navigation -->
+    <nav class="home-categories-nav">
+      <div class="home-categories-nav__scroll">
+        <button
+          class="category-pill"
+          :class="{ 'category-pill--active': !selectedCategoryId }"
+          @click="selectCategory(null)"
+        >
+          {{ $t('common.all', 'Все') }}
+        </button>
+        <button
+          v-for="category in categories"
           :key="category.id"
-          :to="`/menu/categories/${category.id}`"
-          class="home-category"
+          class="category-pill"
+          :class="{ 'category-pill--active': selectedCategoryId === category.id }"
+          @click="selectCategory(category.id)"
         >
-          <BaseIcon :name="getCategoryIcon(category.id)" size="lg" class="home-category__icon" />
-          <span class="home-category__name">
-            {{ category.name }}
-          </span>
-          <span class="home-category__count">
-            {{ category.count }} items
-          </span>
-        </NuxtLink>
+          {{ category.name }}
+          <span v-if="category.count" class="category-pill__count">{{ category.count }}</span>
+        </button>
       </div>
-    </section>
+    </nav>
 
-    <!-- Quick Actions -->
-    <section class="home-actions">
-      <BaseCard class="home-action-card" hoverable>
-        <BaseIcon name="heart" size="xl" class="home-action-card__icon home-action-card__icon--red" />
-        <h3 class="home-action-card__title">
-          Your Favourites
-        </h3>
-        <p class="home-action-card__description">
-          Quick access to your favorite dishes
-        </p>
-        <BaseButton variant="secondary" @click="$router.push('/favourites')">
-          View Favourites
-        </BaseButton>
-      </BaseCard>
+    <!-- Menu Grid -->
+    <main class="home-menu">
+      <div class="home-menu__header">
+        <h2 class="home-menu__title">
+          {{ selectedCategoryName }}
+          <span class="home-menu__count">
+            {{ displayItems.length }} {{ $t('common.items_count', 'товаров') }}
+          </span>
+        </h2>
+      </div>
 
-      <BaseCard class="home-action-card" hoverable>
-        <BaseIcon name="receipt" size="xl" class="home-action-card__icon home-action-card__icon--green" />
-        <h3 class="home-action-card__title">
-          Order History
-        </h3>
-        <p class="home-action-card__description">
-          Track and reorder from your history
-        </p>
-        <BaseButton variant="secondary" @click="$router.push('/orders')">
-          View Orders
-        </BaseButton>
-      </BaseCard>
+      <!-- Loading/Error States -->
+      <div v-if="menuStore.loading && displayItems.length === 0" class="home-menu__state">
+        <div class="spinner" />
+        <p>{{ $t('common.loading', 'Загрузка меню...') }}</p>
+      </div>
 
-      <BaseCard class="home-action-card" hoverable>
-        <BaseIcon name="map" size="xl" class="home-action-card__icon home-action-card__icon--orange" />
-        <h3 class="home-action-card__title">
-          Find Locations
-        </h3>
-        <p class="home-action-card__description">
-          Find restaurants near you
-        </p>
-        <BaseButton variant="secondary" @click="$router.push('/map')">
-          View Map
+      <div
+        v-else-if="menuStore.error && displayItems.length === 0"
+        class="home-menu__state home-menu__state--error"
+      >
+        <BaseIcon name="alert-circle" size="xl" />
+        <p>{{ menuStore.error }}</p>
+        <BaseButton @click="menuStore.fetchMenu()">
+          {{ $t('common.retry', 'Повторить') }}
         </BaseButton>
-      </BaseCard>
-    </section>
+      </div>
+
+      <!-- The Grid -->
+      <MenuItemGrid v-else :items="displayItems" @item-selected="onItemSelected" />
+
+      <!-- Empty State -->
+      <div v-if="!menuStore.loading && displayItems.length === 0" class="home-menu__state">
+        <BaseIcon name="search" size="xl" />
+        <h3>{{ $t('common.not_found', 'Ничего не найдено') }}</h3>
+        <p>{{ $t('common.try_another_filter', 'Попробуйте сменить категорию или поиск') }}</p>
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-// Page setup
-// Stores
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useMenuStore } from '~/stores/menu'
+import { useTenantStore } from '~/stores/tenant'
 
 definePageMeta({
-  title: 'Home - Menu Ordering App'
+  title: 'Home',
 })
 
 const menuStore = useMenuStore()
+const tenantStore = useTenantStore()
+const router = useRouter()
+
+// UI State
+const selectedCategoryId = ref<string | null>(null)
 
 // Computed
 const categories = computed(() => menuStore.categories)
+const items = computed(() => menuStore.menuItems)
 
-// Helper function to get category icon
-const getCategoryIcon = (categoryId: string) => {
-  const iconMap: Record<string, string> = {
-    'appetizers': 'utensils',
-    'mains': 'chef-hat',
-    'desserts': 'cake',
-    'drinks': 'coffee',
-    'salads': 'leaf',
-    'pizza': 'pizza',
-    'burgers': 'burger',
-    'pasta': 'bowl'
-  }
-  return iconMap[categoryId] || 'utensils'
+const displayItems = computed(() => {
+  if (!selectedCategoryId.value) return items.value
+  return items.value.filter(item => item.categoryId === selectedCategoryId.value)
+})
+
+const selectedCategoryName = computed(() => {
+  if (!selectedCategoryId.value) return 'Меню'
+  return categories.value.find(c => c.id === selectedCategoryId.value)?.name || 'Категория'
+})
+
+// Methods
+const selectCategory = (id: string | null) => {
+  selectedCategoryId.value = id
 }
 
-// Initialize menu data
-onMounted(() => {
-  menuStore.fetchMenu()
+const onItemSelected = (item: any) => {
+  router.push(`/dish/${item.id}`)
+}
+
+onMounted(async () => {
+  if (menuStore.menuItems.length === 0) {
+    await menuStore.fetchMenu()
+  }
 })
 </script>
 
@@ -143,196 +148,181 @@ onMounted(() => {
 .home-page {
   min-height: 100vh;
   background: var(--bg-primary);
-  padding: $space-4;
 }
 
 .home-hero {
+  padding: $space-10 $space-6 $space-8;
   text-align: center;
-  padding: $space-16 $space-4 $space-12;
-  max-width: 800px;
-  margin: 0 auto;
+}
+
+.home-hero__logo {
+  height: 64px;
+  width: auto;
+  margin-bottom: $space-4;
 }
 
 .home-hero__title {
-  font-family: $font-secondary;
-  font-size: $text-4xl;
+  font-size: $text-3xl;
   font-weight: $font-bold;
   color: var(--text-primary);
-  margin-bottom: $space-6;
+  margin-bottom: $space-2;
   line-height: $leading-tight;
 }
 
 .home-hero__subtitle {
-  font-size: $text-lg;
+  font-size: $text-base;
   color: var(--text-secondary);
   line-height: $leading-relaxed;
-  margin: 0;
-}
-
-.home-section {
-  max-width: 1200px;
-  margin: 0 auto $space-16;
-}
-
-.home-section__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: $space-8;
-}
-
-.home-section__title {
-  font-family: $font-secondary;
-  font-size: $text-2xl;
-  font-weight: $font-semibold;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: $space-2;
-  margin: 0;
-}
-
-.home-section__icon {
-  color: var(--color-primary);
-}
-
-.home-section__link {
-  color: var(--color-primary);
-  text-decoration: none;
-  font-weight: $font-medium;
-  transition: $transition-base;
-  
-  &:hover {
-    color: var(--color-primary-light);
-  }
-}
-
-.home-categories {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: $space-4;
-}
-
-.home-category {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: $space-6;
-  background: var(--bg-secondary);
-  border-radius: $radius-lg;
-  text-decoration: none;
-  transition: $transition-base;
-  border: 1px solid var(--border-primary);
-  
-  &:hover {
-    background: var(--bg-tertiary);
-    transform: translateY(-2px);
-    box-shadow: $shadow-md;
-  }
-}
-
-.home-category__icon {
-  color: var(--color-primary);
-  margin-bottom: $space-3;
-}
-
-.home-category__name {
-  font-size: $text-base;
-  font-weight: $font-medium;
-  color: var(--text-primary);
-  margin-bottom: $space-1;
-}
-
-.home-category__count {
-  font-size: $text-sm;
-  color: var(--text-secondary);
-}
-
-.home-actions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: $space-6;
-  max-width: 1200px;
+  max-width: 480px;
   margin: 0 auto;
 }
 
-.home-action-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: $space-8;
-  gap: $space-4;
+.home-categories-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(var(--bg-primary-rgb), 0.8);
+  backdrop-filter: blur(12px);
+  padding: $space-3 0;
+  border-bottom: 1px solid var(--border-primary);
 }
 
-.home-action-card__icon {
-  &--red {
+.home-categories-nav__scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: $space-2;
+  padding: 0 $space-4;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.category-pill {
+  white-space: nowrap;
+  padding: $space-2 $space-4;
+  border-radius: $radius-full;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-secondary);
+  font-size: $text-sm;
+  font-weight: $font-semibold;
+  cursor: pointer;
+  transition: all $transition-base;
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+
+  &:hover {
+    border-color: var(--color-primary);
+    background: var(--bg-tertiary);
+  }
+
+  &--active {
+    background: var(--color-primary) !important;
+    border-color: var(--color-primary);
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+
+    .category-pill__count {
+      color: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+.category-pill__count {
+  font-size: 10px;
+  background: var(--bg-tertiary);
+  padding: 1px 5px;
+  border-radius: $radius-sm;
+}
+
+.home-menu {
+  padding: $space-6 $space-4 $space-24;
+}
+
+.home-menu__header {
+  margin-bottom: $space-6;
+}
+
+.home-menu__title {
+  font-size: $text-xl;
+  font-weight: $font-bold;
+  color: var(--text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.home-menu__count {
+  font-size: $text-sm;
+  font-weight: $font-regular;
+  color: var(--text-secondary);
+}
+
+.home-menu__state {
+  padding: $space-20 0;
+  text-align: center;
+  color: var(--text-secondary);
+
+  &--error {
     color: var(--color-error);
   }
-  
-  &--green {
-    color: var(--color-success);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--bg-secondary);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto $space-4;
+}
+
+.skeleton-pulse {
+  background: var(--bg-secondary);
+  border-radius: $radius-md;
+  animation: pulse 1.5s ease-in-out infinite;
+
+  &--title {
+    height: 32px;
+    width: 60%;
+    margin: 0 auto $space-4;
   }
-  
-  &--orange {
-    color: var(--color-primary);
+  &--subtitle {
+    height: 16px;
+    width: 80%;
+    margin: 0 auto;
   }
 }
 
-.home-action-card__title {
-  font-size: $text-xl;
-  font-weight: $font-semibold;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.home-action-card__description {
-  font-size: $text-base;
-  color: var(--text-secondary);
-  line-height: $leading-relaxed;
-  margin: 0;
-}
-
-// Responsive design
-@media (max-width: 768px) {
-  .home-page {
-    padding: $space-2;
+@keyframes pulse {
+  0% {
+    opacity: 1;
   }
-  
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
   .home-hero {
-    padding: $space-12 $space-2 $space-8;
+    padding: $space-8 $space-4;
   }
-  
-  .home-hero__title {
-    font-size: $text-3xl;
-  }
-  
-  .home-section__header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: $space-4;
-  }
-  
-  .home-categories {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
-  
-  .home-actions {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
   .home-hero__title {
     font-size: $text-2xl;
-  }
-  
-  .home-categories {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .home-category {
-    padding: $space-4;
   }
 }
 </style>

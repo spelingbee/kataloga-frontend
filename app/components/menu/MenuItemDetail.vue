@@ -9,7 +9,7 @@
       <!-- Image Gallery -->
       <div class="menu-item-detail__image-container">
         <LazyImage
-          :src="menuItem.imageUrl || '/images/placeholder-dish.webp'"
+          :src="menuItem.imageUrl || '/images/placeholder-dish.svg'"
           :alt="menuItem.name"
           :width="800"
           :height="600"

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="checkout-page">
     <div class="checkout-page__container">
       <!-- Header -->
@@ -8,37 +8,41 @@
           @click="handleBack"
         >
           <BaseIcon name="arrow-left" size="sm" />
-          Back to Cart
+          {{ $t('checkout.backToCart', 'Вернуться в корзину') }}
         </BaseButton>
-        <h1 class="checkout-page__title">Checkout</h1>
+        <h1 class="checkout-page__title">{{ $t('checkout.title', 'Оформление заказа') }}</h1>
       </div>
 
       <!-- Empty Cart State -->
-      <div v-if="cartStore.isEmpty" class="checkout-page__empty">
+      <div v-if="cartStore.isEmpty && !orderCompleted" class="checkout-page__empty">
         <EmptyCart />
         <BaseButton
           variant="primary"
-          @click="navigateTo('/menu/browse')"
+          @click="navigateTo('/menu')"
         >
           Browse Menu
         </BaseButton>
       </div>
 
       <!-- Offline Warning -->
-      <div v-if="!isOnline" class="checkout-page__offline-warning">
-        <BaseIcon name="wifi-off" size="md" />
-        <div class="checkout-page__offline-text">
-          <h3>You're Offline</h3>
-          <p>You need an internet connection to complete checkout. Your cart is saved and will be available when you're back online.</p>
-        </div>
-      </div>
+<!--      <div v-if="!isOnline" class="checkout-page__offline-warning">-->
+<!--        <BaseIcon name="wifi-off" size="md" />-->
+<!--        <div class="checkout-page__offline-text">-->
+<!--          <h3>You're Offline</h3>-->
+<!--          <p>You need an internet connection to complete checkout. Your cart is saved and will be available when you're back online.</p>-->
+<!--        </div>-->
+<!--      </div>-->
 
       <!-- Checkout Flow -->
       <div v-else class="checkout-page__content">
         <CheckoutFlow
-          :cart="cartStore.items"
+          :cart="checkoutCartItems"
+          :cart-total="cartStore.total"
           @complete="handleOrderComplete"
           @cancel="handleCancel"
+          @track-order="handleTrackOrder"
+          @continue-shopping="handleContinueShopping"
+          @view-orders="handleViewOrders"
         />
       </div>
     </div>
@@ -80,21 +84,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCartStore } from '~/stores/cart'
-import { useOfflineCheckout } from '~/composables/useOfflineCheckout'
-import { useNetworkStatus } from '~/composables/useNetworkStatus'
+import { useI18n } from 'vue-i18n'
 import CheckoutFlow from '~/components/checkout/CheckoutFlow.vue'
+import EmptyCart from '../components/base/EmptyCart.vue'
 
 definePageMeta({
   layout: 'default',
   middleware: ['cart-not-empty']
 })
 
+const { t } = useI18n()
 const cartStore = useCartStore()
 const router = useRouter()
-const { canCheckout, validateNetworkForCheckout } = useOfflineCheckout()
-const { isOnline } = useNetworkStatus()
+
+let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+function timeoutPromise(ms: number): Promise<never> {
+  return new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error('CHECKOUT_TIMEOUT')), ms)
+  })
+}
+
+const TIMEOUT_MS = 30_000
 
 const handleBack = () => {
   router.back()
@@ -105,67 +119,35 @@ const showErrorModal = ref(false)
 const errorMessage = ref('')
 const lastOrderData = ref<any>(null)
 
-const handleOrderComplete = async (orderData: any) => {
-  // Validate network connection before proceeding
-  const networkValid = await validateNetworkForCheckout()
-  if (!networkValid) {
-    return
-  }
+onUnmounted(() => {
+  if (timeoutId) clearTimeout(timeoutId)
+})
 
-  // Store order data for potential retry
-  lastOrderData.value = orderData
+const orderCompleted = ref(false)
+const checkoutCartItems = ref([...cartStore.items]) // freeze items so checkout doesn't unmount OrderConfirmation on clear cart
 
-  creatingOrder.value = true
-  errorMessage.value = ''
+const handleOrderComplete = async (createdOrder: any) => {
+  orderCompleted.value = true
+  lastOrderData.value = createdOrder
 
-  try {
-    // Prepare order DTO
-    const createOrderDto = {
-      items: orderData.items.map((item: any) => ({
-        productId: item.menuItem.id,
-        quantity: item.quantity,
-        price: item.menuItem.price,
-        customizations: {
-          modifiers: item.selectedModifiers,
-          notes: item.notes,
-          ...item.customizations
-        }
-      })),
-      customerInfo: {
-        name: '', // Will be filled from user profile or form
-        phone: orderData.deliveryDetails?.phone || orderData.pickupDetails?.phone || '',
-        email: '', // Optional
-        address: orderData.deliveryDetails?.address || '',
-        notes: orderData.deliveryDetails?.instructions || orderData.pickupDetails?.instructions || orderData.dineInDetails?.instructions || ''
-      },
-      deliveryAddress: orderData.deliveryDetails?.address || undefined,
-      notes: orderData.deliveryDetails?.instructions || orderData.pickupDetails?.instructions || orderData.dineInDetails?.instructions || undefined
-    }
+  // Order is already created by CheckoutFlow. 
+  // We just clear the cart and let the inline OrderConfirmation display.
+  cartStore.clearCart()
+}
 
-    // Create order through cart store
-    const response = await cartStore.createOrder(createOrderDto)
-    
-    if (response.success && response.data) {
-      // Order created successfully - cart is already cleared by cartStore.createOrder
-      
-      // Navigate to order confirmation page
-      navigateTo({
-        path: '/orders/confirmation',
-        query: { orderId: response.data.id }
-      })
-    } else {
-      // Order creation failed - cart is preserved
-      throw new Error(response.message || 'Failed to create order')
-    }
-  } catch (error: any) {
-    console.error('Order creation error:', error)
-    
-    // Cart is preserved automatically (not cleared on error)
-    errorMessage.value = error.message || 'An unexpected error occurred while creating your order. Please try again.'
-    showErrorModal.value = true
-  } finally {
-    creatingOrder.value = false
-  }
+const handleTrackOrder = () => {
+  navigateTo({
+    path: '/orders/confirmation',
+    query: { orderId: lastOrderData.value?.id }
+  })
+}
+
+const handleContinueShopping = () => {
+  navigateTo('/menu')
+}
+
+const handleViewOrders = () => {
+  navigateTo('/orders')
 }
 
 const retryOrderCreation = () => {
@@ -181,7 +163,7 @@ const closeErrorModal = () => {
 }
 
 const handleCancel = () => {
-  router.push('/cart')
+  router.push('/checkout')
 }
 </script>
 
@@ -374,12 +356,17 @@ const handleCancel = () => {
 // Responsive design
 @media (max-width: 768px) {
   .checkout-page {
-    padding: $space-4;
+    padding: 0; // Remove outer padding on mobile
+    background: var(--bg-primary); // Use primary bg for better mobile look
+  }
+
+  .checkout-page__container {
+    width: 100%;
   }
 
   .checkout-page__header {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: $space-4 $space-4 0;
+    margin-bottom: $space-4;
   }
 
   .checkout-page__title {
@@ -387,7 +374,10 @@ const handleCancel = () => {
   }
 
   .checkout-page__content {
-    padding: $space-6;
+    padding: $space-4;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
   }
 
   .checkout-page__error-actions {
@@ -410,3 +400,4 @@ const handleCancel = () => {
   }
 }
 </style>
+

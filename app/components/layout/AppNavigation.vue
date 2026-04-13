@@ -1,5 +1,5 @@
 <template>
-  <nav class="app-navigation" :class="navigationClasses">
+  <nav class="app-navigation bg-background-dark text-white" :class="navigationClasses">
     <div class="app-navigation__container">
       <NuxtLink
         v-for="item in navigationItems"
@@ -15,7 +15,8 @@
         <BaseBadge
           v-if="item.badge && item.badgeCount > 0"
           :count="item.badgeCount"
-          size="sm"
+          size="md"
+          variant="error"
           class="app-navigation__badge"
           :aria-label="`${item.badgeCount} ${item.label.toLowerCase()}`"
         />
@@ -28,6 +29,7 @@
 import { computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useNotificationStore } from '~/stores/notification'
+import { useTelegram } from '~/composables/useTelegram'
 
 interface NavigationItem {
   path: string
@@ -36,6 +38,7 @@ interface NavigationItem {
   badge?: boolean
   badgeCount?: number
   disabled?: boolean
+  hidden?: boolean
 }
 
 interface Props {
@@ -56,56 +59,45 @@ const notificationStore = useNotificationStore()
 const route = useRoute()
 const router = useRouter()
 
-// Default navigation items
-const defaultNavigationItems: NavigationItem[] = [
-  {
-    path: '/',
-    icon: 'home',
-    label: 'Home',
-    badge: false,
-    badgeCount: 0,
-  },
-  {
-    path: '/menu',
-    icon: 'menu-book',
-    label: 'Menu',
-    badge: false,
-    badgeCount: 0,
-  },
-  {
-    path: '/favourites',
-    icon: 'heart',
-    label: 'Favourites',
-    badge: false,
-    badgeCount: 0,
-  },
-  {
-    path: '/cart',
-    icon: 'shopping-cart',
-    label: 'Cart',
-    badge: true,
-    badgeCount: 0,
-  },
-  {
-    path: '/orders',
-    icon: 'receipt',
-    label: 'Orders',
-    badge: true,
-    badgeCount: 0,
-  },
-]
+const { t } = useI18n()
+const telegram = useTelegram()
+const isTelegramApp = computed(() => telegram.isTelegram.value)
 
 // Navigation items with dynamic badge counts
-const navigationItems = computed(() => {
-  const items = props.items.length > 0 ? props.items : defaultNavigationItems
+  const navigationItems = computed(() => {
+    const defaultItems: NavigationItem[] = [
+      {
+        path: '/',
+        icon: 'menu-book',
+        label: t('menu.title', 'Меню'),
+        badge: false,
+        badgeCount: 0,
+      },
+      {
+        path: '/orders',
+        icon: 'receipt',
+        label: t('orders.title', 'Заказы'),
+        badge: true,
+        badgeCount: 0,
+      },
+      {
+        path: '/checkout',
+        icon: 'shopping-cart',
+        label: t('cart.title', 'Корзина'),
+        badge: true,
+        badgeCount: 0,
+      },
+    ]
+
+  const items = props.items.length > 0 ? props.items : defaultItems.filter(i => !i.hidden)
 
   return items.map(item => ({
     ...item,
     badgeCount:
-      item.path === '/cart'
+      item.path === '/checkout'
         ? cartStore.itemCount
         : item.path === '/orders'
-          ? notificationStore.unreadCount
+          ? notificationStore.notifications.filter(n => n.type === 'order' && !n.isRead).length
           : item.badgeCount || 0,
   }))
 })
@@ -132,7 +124,7 @@ const handleNavClick = (item: NavigationItem) => {
   }
 
   // Handle special navigation cases
-  if (item.path === '/cart' && cartStore.itemCount === 0) {
+  if (item.path === '/checkout' && cartStore.itemCount === 0) {
     // Show empty cart message or redirect to menu
     router.push('/menu')
     return

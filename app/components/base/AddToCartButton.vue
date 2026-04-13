@@ -29,6 +29,7 @@
 
 <script setup lang="ts">
 import { useTelegramHaptic } from '~/composables/useTelegramHaptic'
+import { useTenantSettings } from '~/composables/useTenant'
 
 interface Props {
   price?: number
@@ -52,19 +53,16 @@ const emit = defineEmits<{
 }>()
 
 const iconSize = computed(() => {
-  const sizes = { sm: 'sm', md: 'md', lg: 'lg' }
-  return sizes[props.size]
+  const sizes = { sm: 'sm', md: 'md', lg: 'lg' } as const
+  return sizes[props.size || 'md'] || 'md'
 })
+
+const { formatCurrency } = useTenantSettings()
 
 const formattedPrice = computed(() => {
   if (!props.price) return ''
+  return formatCurrency(props.price)
   
-  const price = new Intl.NumberFormat('ru-RU', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(props.price)
-  
-  return `${price} ${props.currency}`
 })
 
 const handleClick = (event: Event) => {

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="payment-callback">
     <div class="payment-callback__container">
       <!-- Loading State -->
@@ -152,7 +152,7 @@ const retryPayment = () => {
 }
 
 const goToCart = () => {
-  router.push('/cart')
+  router.push('/checkout')
 }
 
 const goToHome = () => {
@@ -306,3 +306,4 @@ const goToHome = () => {
   }
 }
 </style>
+

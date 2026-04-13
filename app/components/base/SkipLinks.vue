@@ -10,9 +10,21 @@
 </template>
 
 <script setup lang="ts">
-import { useSkipLinks } from '~/composables/useAccessibility'
+const skipToContent = () => {
+  const main = document.getElementById('main-content')
+  if (main) {
+    main.focus()
+    main.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 
-const { skipToContent, skipToNavigation } = useSkipLinks()
+const skipToNavigation = () => {
+  const nav = document.getElementById('navigation')
+  if (nav) {
+    nav.focus()
+    nav.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 </script>
 
 <style scoped lang="scss">

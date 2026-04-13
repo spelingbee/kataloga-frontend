@@ -34,8 +34,12 @@ export interface ApiError {
   code: string;
   /** Human-readable error message */
   message: string;
+  /** HTTP status code (optional, often added by client-side interceptors) */
+  status?: number;
   /** Additional error details (validation errors or supplementary information) */
   details?: ApiErrorDetail[] | Record<string, any>;
+  /** Stack trace or additional info (optional) */
+  name?: string;
 }
 
 /**

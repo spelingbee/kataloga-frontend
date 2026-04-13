@@ -33,7 +33,7 @@
               <span class="order-confirmation__item-name">{{ item.menuItem.name }}</span>
               <span class="order-confirmation__item-quantity">x{{ item.quantity }}</span>
             </div>
-            <span class="order-confirmation__item-price">${{ item.subtotal.toFixed(2) }}</span>
+            <span class="order-confirmation__item-price"><AppPrice :amount="item.subtotal" /></span>
           </div>
         </div>
 
@@ -41,19 +41,19 @@
         <div class="order-confirmation__totals">
           <div class="order-confirmation__total-row">
             <span>Subtotal</span>
-            <span>${{ order.subtotal?.toFixed(2) || calculateSubtotal(order).toFixed(2) }}</span>
+            <span><AppPrice :amount="order.subtotal || calculateSubtotal(order)" /></span>
           </div>
           <div v-if="order.deliveryFee" class="order-confirmation__total-row">
             <span>Delivery Fee</span>
-            <span>${{ order.deliveryFee.toFixed(2) }}</span>
+            <span><AppPrice :amount="order.deliveryFee" /></span>
           </div>
           <div v-if="order.discount" class="order-confirmation__total-row">
             <span>Discount</span>
-            <span class="order-confirmation__discount">-${{ order.discount.toFixed(2) }}</span>
+            <span class="order-confirmation__discount">-<AppPrice :amount="order.discount" /></span>
           </div>
           <div class="order-confirmation__total-row order-confirmation__total-row--final">
             <span>Total</span>
-            <span>${{ order.total.toFixed(2) }}</span>
+            <span><AppPrice :amount="order.total" size="lg" /></span>
           </div>
         </div>
 
@@ -227,7 +227,7 @@ const goToOrderTracking = () => {
 }
 
 const goToMenu = () => {
-  router.push('/menu/browse')
+  router.push('/')
 }
 
 // Send Telegram notification

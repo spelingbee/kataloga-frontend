@@ -1,9 +1,9 @@
 <template>
-  <div class="flex items-center">
+  <div class="base-toggle">
     <label
       v-if="label && labelPosition === 'left'"
       :for="toggleId"
-      class="text-body-sm text-white mr-3 cursor-pointer"
+      class="base-toggle__label base-toggle__label--left"
     >
       {{ label }}
     </label>
@@ -11,46 +11,23 @@
     <button
       :id="toggleId"
       type="button"
+      role="switch"
+      :aria-checked="modelValue"
       :disabled="disabled"
+      class="base-toggle__btn"
       :class="[
-        'relative inline-flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-green',
-        'min-w-[44px] min-h-[44px] p-2', // Ensure proper touch target
-        {
-          'opacity-50 cursor-not-allowed': disabled,
-          'cursor-pointer': !disabled,
-        }
+        `base-toggle__btn--${size}`,
+        { 'base-toggle__btn--active': modelValue }
       ]"
       @click="toggle"
     >
-      <span
-        :class="[
-          'relative inline-flex items-center transition-all duration-200',
-          sizeClasses[size],
-          {
-            'bg-primary-green': modelValue,
-            'bg-gray-600': !modelValue,
-          }
-        ]"
-      >
-        <span
-          :class="[
-            'bg-white rounded-full shadow-md transform transition-transform duration-200',
-            thumbSizeClasses[size],
-            {
-              'translate-x-5': modelValue && size === 'sm',
-              'translate-x-6': modelValue && size === 'md',
-              'translate-x-7': modelValue && size === 'lg',
-              'translate-x-0': !modelValue,
-            }
-          ]"
-        />
-      </span>
+      <span class="base-toggle__thumb" />
     </button>
     
     <label
       v-if="label && labelPosition === 'right'"
       :for="toggleId"
-      class="text-body-sm text-white ml-3 cursor-pointer"
+      class="base-toggle__label base-toggle__label--right"
     >
       {{ label }}
     </label>
@@ -58,6 +35,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+
 interface Props {
   label?: string
   labelPosition?: 'left' | 'right'
@@ -77,21 +56,7 @@ const emit = defineEmits<{
   change: [value: boolean]
 }>()
 
-const slots = defineSlots<{}>()
-
-const toggleId = computed(() => `toggle-${Math.random().toString(36).substring(2, 11)}`)
-
-const sizeClasses = {
-  sm: 'w-9 h-5 rounded-full',
-  md: 'w-11 h-6 rounded-full',
-  lg: 'w-14 h-7 rounded-full'
-}
-
-const thumbSizeClasses = {
-  sm: 'w-4 h-4',
-  md: 'w-5 h-5',
-  lg: 'w-6 h-6'
-}
+const toggleId = useId()
 
 const toggle = () => {
   if (!props.disabled) {
@@ -101,3 +66,95 @@ const toggle = () => {
   }
 }
 </script>
+
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/transitions' as *;
+
+.base-toggle {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.base-toggle__label {
+  font-size: $text-sm;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+
+  &--left { margin-right: $space-3; }
+  &--right { margin-left: $space-3; }
+}
+
+.base-toggle__btn {
+  position: relative;
+  border-radius: $radius-full;
+  background: var(--bg-tertiary);
+  border: none;
+  padding: 0;
+  transition: all $transition-base;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--active {
+    background: var(--color-success);
+  }
+
+  // Sizes
+  &--sm {
+    width: 32px;
+    height: 18px;
+    .base-toggle__thumb {
+      width: 14px;
+      height: 14px;
+      transform: translateX(2px);
+    }
+    &.base-toggle__btn--active .base-toggle__thumb {
+      transform: translateX(16px);
+    }
+  }
+
+  &--md {
+    width: 44px;
+    height: 24px;
+    .base-toggle__thumb {
+      width: 20px;
+      height: 20px;
+      transform: translateX(2px);
+    }
+    &.base-toggle__btn--active .base-toggle__thumb {
+      transform: translateX(22px);
+    }
+  }
+
+  &--lg {
+    width: 56px;
+    height: 30px;
+    .base-toggle__thumb {
+      width: 26px;
+      height: 26px;
+      transform: translateX(2px);
+    }
+    &.base-toggle__btn--active .base-toggle__thumb {
+      transform: translateX(28px);
+    }
+  }
+}
+
+.base-toggle__thumb {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform $transition-base;
+}
+</style>

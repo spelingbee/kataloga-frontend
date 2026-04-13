@@ -4,31 +4,31 @@
       <div class="order-confirmation__icon">
         <BaseIcon name="check-circle" size="xl" />
       </div>
-      <h2 class="order-confirmation__title">Order Confirmed!</h2>
+      <h2 class="order-confirmation__title">{{ $t('checkout.confirmation.title', 'Заказ оформлен!') }}</h2>
       <p class="order-confirmation__subtitle">
-        Your order has been successfully placed
+        {{ $t('checkout.confirmation.subtitle', 'Ваш заказ успешно размещен') }}
       </p>
     </div>
 
     <div class="order-confirmation__details">
       <!-- Order Number -->
       <div class="order-confirmation__section">
-        <h3 class="order-confirmation__section-title">Order Details</h3>
+        <h3 class="order-confirmation__section-title">{{ $t('checkout.confirmation.details', 'Детали заказа') }}</h3>
         <div class="order-confirmation__info-grid">
           <div class="order-confirmation__info-item">
-            <span class="order-confirmation__info-label">Order Number</span>
+            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.order_number', 'Номер заказа') }}</span>
             <span class="order-confirmation__info-value">#{{ orderNumber }}</span>
           </div>
           <div class="order-confirmation__info-item">
-            <span class="order-confirmation__info-label">Order Type</span>
+            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.order_type', 'Тип заказа') }}</span>
             <span class="order-confirmation__info-value">{{ formatOrderType(orderType) }}</span>
           </div>
           <div class="order-confirmation__info-item">
-            <span class="order-confirmation__info-label">Estimated Time</span>
+            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.estimated_time', 'Ожидаемое время') }}</span>
             <span class="order-confirmation__info-value">{{ estimatedTime }}</span>
           </div>
           <div class="order-confirmation__info-item">
-            <span class="order-confirmation__info-label">Total Amount</span>
+            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.total', 'Итоговая сумма') }}</span>
             <span class="order-confirmation__info-value order-confirmation__total">
               {{ formatCurrency(totalAmount) }}
             </span>
@@ -38,7 +38,7 @@
 
       <!-- Order Summary -->
       <div class="order-confirmation__section">
-        <h3 class="order-confirmation__section-title">Order Summary</h3>
+        <h3 class="order-confirmation__section-title">{{ $t('checkout.confirmation.summary', 'Состав заказа') }}</h3>
         <div class="order-confirmation__items">
           <div
             v-for="item in orderItems"
@@ -59,23 +59,23 @@
       <!-- Delivery/Pickup Information -->
       <div v-if="deliveryInfo" class="order-confirmation__section">
         <h3 class="order-confirmation__section-title">
-          {{ orderType === 'delivery' ? 'Delivery' : orderType === 'pickup' ? 'Pickup' : 'Dine-in' }} Information
+          {{ orderType === 'delivery' ? $t('common.delivery', 'Доставка') : orderType === 'pickup' ? $t('common.pickup', 'Самовывоз') : $t('common.dine_in', 'В заведении') }} - {{ $t('common.information', 'информация') }}
         </h3>
         <div class="order-confirmation__delivery-info">
           <p v-if="deliveryInfo.address" class="order-confirmation__delivery-text">
-            <strong>Address:</strong> {{ deliveryInfo.address }}
+            <strong>{{ $t('common.address', 'Адрес') }}:</strong> {{ deliveryInfo.address }}
           </p>
           <p v-if="deliveryInfo.location" class="order-confirmation__delivery-text">
-            <strong>Location:</strong> {{ deliveryInfo.location }}
+            <strong>{{ $t('common.location', 'Место') }}:</strong> {{ deliveryInfo.location }}
           </p>
           <p v-if="deliveryInfo.tableNumber" class="order-confirmation__delivery-text">
-            <strong>Table:</strong> {{ deliveryInfo.tableNumber }}
+            <strong>{{ $t('common.table', 'Стол') }}:</strong> {{ deliveryInfo.tableNumber }}
           </p>
           <p v-if="deliveryInfo.phone" class="order-confirmation__delivery-text">
-            <strong>Phone:</strong> {{ deliveryInfo.phone }}
+            <strong>{{ $t('common.phone', 'Телефон') }}:</strong> {{ deliveryInfo.phone }}
           </p>
           <p v-if="deliveryInfo.instructions" class="order-confirmation__delivery-text">
-            <strong>Instructions:</strong> {{ deliveryInfo.instructions }}
+            <strong>{{ $t('common.instructions', 'Инструкции') }}:</strong> {{ deliveryInfo.instructions }}
           </p>
         </div>
       </div>
@@ -83,14 +83,14 @@
 
     <!-- Next Steps -->
     <div class="order-confirmation__next-steps">
-      <h3 class="order-confirmation__section-title">What's Next?</h3>
+      <h3 class="order-confirmation__section-title">{{ $t('checkout.confirmation.next_steps', 'Что дальше?') }}</h3>
       <div class="order-confirmation__steps">
         <div class="order-confirmation__step">
           <div class="order-confirmation__step-number">1</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">Order Preparation</h4>
+            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.preparation_title', 'Приготовление заказа') }}</h4>
             <p class="order-confirmation__step-description">
-              Your order is being prepared by our kitchen team
+              {{ $t('checkout.confirmation.preparation_desc', 'Ваш заказ уже готовится нашими поварами') }}
             </p>
           </div>
         </div>
@@ -98,9 +98,9 @@
         <div v-if="orderType === 'delivery'" class="order-confirmation__step">
           <div class="order-confirmation__step-number">2</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">Out for Delivery</h4>
+            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.delivery_title', 'Передача курьеру') }}</h4>
             <p class="order-confirmation__step-description">
-              Your order will be delivered to your address
+              {{ $t('checkout.confirmation.delivery_desc', 'Скоро курьер заберет ваш заказ и доставит его по адресу') }}
             </p>
           </div>
         </div>
@@ -108,9 +108,9 @@
         <div v-else-if="orderType === 'pickup'" class="order-confirmation__step">
           <div class="order-confirmation__step-number">2</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">Ready for Pickup</h4>
+            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.pickup_ready_title', 'Готовность к выдаче') }}</h4>
             <p class="order-confirmation__step-description">
-              We'll notify you when your order is ready for pickup
+              {{ $t('checkout.confirmation.pickup_ready_desc', 'Мы сообщим вам, когда заказ можно будет забрать') }}
             </p>
           </div>
         </div>
@@ -118,9 +118,9 @@
         <div v-else class="order-confirmation__step">
           <div class="order-confirmation__step-number">2</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">Served to Table</h4>
+            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.dinein_title', 'Подача на стол') }}</h4>
             <p class="order-confirmation__step-description">
-              Your order will be served directly to your table
+              {{ $t('checkout.confirmation.dinein_desc', 'Ваш заказ будет подан прямо к вашему столику') }}
             </p>
           </div>
         </div>
@@ -128,9 +128,9 @@
         <div class="order-confirmation__step">
           <div class="order-confirmation__step-number">3</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">Enjoy Your Meal!</h4>
+            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.enjoy_title', 'Приятного аппетита!') }}</h4>
             <p class="order-confirmation__step-description">
-              Thank you for choosing us. Enjoy your delicious meal!
+              {{ $t('checkout.confirmation.enjoy_desc', 'Спасибо, что выбрали нас. Наслаждайтесь вашим заказом!') }}
             </p>
           </div>
         </div>
@@ -139,32 +139,35 @@
 
     <!-- Actions -->
     <div class="order-confirmation__actions">
-      <BaseButton
+      <!-- Track Order button hidden as requested -->
+      <!-- <BaseButton
         variant="outline"
         @click="$emit('track-order')"
       >
         <BaseIcon name="map-pin" size="sm" />
-        Track Order
-      </BaseButton>
+        {{ $t('checkout.confirmation.track', 'Отследить заказ') }}
+      </BaseButton> -->
       
       <BaseButton
         variant="secondary"
         @click="$emit('continue-shopping')"
       >
-        Continue Shopping
+        {{ $t('checkout.confirmation.continue', 'За покупками') }}
       </BaseButton>
       
       <BaseButton
         variant="primary"
         @click="$emit('view-orders')"
       >
-        View All Orders
+        {{ $t('checkout.confirmation.view_all', 'Все заказы') }}
       </BaseButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useTenantSettings } from '~/composables/useTenant'
+
 interface OrderItem {
   id: string
   name: string
@@ -199,19 +202,14 @@ const emit = defineEmits<{
 
 const formatOrderType = (type: string): string => {
   const types: Record<string, string> = {
-    'delivery': 'Delivery',
-    'pickup': 'Pickup',
-    'dine-in': 'Dine-in'
+    'delivery': 'Доставка',
+    'pickup': 'Самовывоз',
+    'dine-in': 'В заведении'
   }
   return types[type] || type
 }
 
-const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'KGS'
-  }).format(amount)
-}
+const { formatCurrency } = useTenantSettings()
 </script>
 
 <style scoped lang="scss">

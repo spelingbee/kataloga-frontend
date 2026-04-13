@@ -488,7 +488,7 @@ const reorderExact = (order: Order) => {
     cartStore.addItem(item.menuItem, item.quantity)
   })
   
-  router.push('/cart')
+  router.push('/checkout')
 }
 
 const reorderCombo = (combo: any) => {
@@ -505,7 +505,7 @@ const reorderCombo = (combo: any) => {
     cartStore.addItem(menuItem, item.quantity)
   })
   
-  router.push('/cart')
+  router.push('/checkout')
 }
 
 const increaseQuantity = (index: number) => {
@@ -541,7 +541,7 @@ const addCustomOrderToCart = () => {
     }
   })
   
-  router.push('/cart')
+  router.push('/checkout')
 }
 
 const addSuggestionToCart = (item: MenuItem) => {

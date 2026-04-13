@@ -211,8 +211,7 @@ const handleTouchEnd = (event: TouchEvent) => {
   
   // Prevent scroll bouncing
   &--no-bounce {
-    overscroll-behavior: contain;
-    
+
     // iOS specific bounce prevention
     @supports (-webkit-overflow-scrolling: touch) {
       position: relative;

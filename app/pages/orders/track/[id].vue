@@ -55,10 +55,10 @@
         <div class="order-tracking-page__connection">
           <div 
             class="order-tracking-page__connection-indicator"
-            :class="{ 'order-tracking-page__connection-indicator--connected': isConnected }"
+            :class="{ 'order-tracking-page__connection-indicator--connected': isTracking }"
           />
           <AppText size="caption" class="order-tracking-page__connection-text">
-            {{ isConnected ? 'Live Updates' : 'Reconnecting...' }}
+            {{ isTracking ? 'Обновляется' : 'Остановлено' }}
           </AppText>
         </div>
       </div>
@@ -224,7 +224,6 @@ const { getOrder, cancelOrder: cancelOrderAction } = useOrders()
 const {
   isTracking,
   trackingData,
-  isConnected,
   currentStatus,
   estimatedTime,
   courierInfo,

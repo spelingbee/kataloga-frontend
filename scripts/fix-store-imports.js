@@ -29,13 +29,9 @@ const COMPOSABLE_PATTERNS = {
   'useApiError': '~/composables/useApiError',
   'useErrorHandler': '~/composables/useErrorHandler',
   'useLoadingState': '~/composables/useLoadingState',
-  'useNetworkStatus': '~/composables/useNetworkStatus',
-  'useOfflineCart': '~/composables/useOfflineCart',
-  'usePWA': '~/composables/usePWA',
   'usePushNotifications': '~/composables/usePushNotifications',
   'usePerformance': '~/composables/usePerformance',
   'useLazyLoading': '~/composables/useLazyLoading',
-  'useGracefulDegradation': '~/composables/useGracefulDegradation',
   'useTelegram': '~/composables/useTelegram',
   'useMap': '~/composables/useMap',
   'useGeolocation': '~/composables/useGeolocation'

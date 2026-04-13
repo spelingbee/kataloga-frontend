@@ -31,24 +31,19 @@ export const useNotificationStore = defineStore('notification', {
 
     activePromotions: (state) => {
       const now = new Date()
-      return state.promotions.filter(p => p.isActive && new Date(p.validTo) > now)
+      return state.promotions.filter(p => !p.isActive || new Date(p.validTo) > now)
     },
   },
 
   actions: {
-    /**
-     * Initialize notification store with WebSocket service
-     */
     async initialize() {
       if (this.initialized) return
 
       try {
-        // Import notification service dynamically
-        const { useNotificationService } = await import('~/services/notification.service')
-        const notificationService = useNotificationService()
+        const notificationService = (this as any).$services.notification
 
         // Subscribe to new notifications
-        notificationService.onNotification((notification) => {
+        notificationService.onNotification((notification: any) => {
           this.addNotification({
             id: notification.id,
             type: notification.type,
@@ -61,7 +56,7 @@ export const useNotificationStore = defineStore('notification', {
 
         // Load existing notifications
         const existingNotifications = notificationService.getInAppNotifications()
-        existingNotifications.forEach(notification => {
+        existingNotifications.forEach((notification: any) => {
           this.notifications.push({
             id: notification.id,
             type: notification.type,
@@ -80,27 +75,19 @@ export const useNotificationStore = defineStore('notification', {
       }
     },
 
-    /**
-     * Fetch notifications from API
-     */
     async fetchNotifications() {
       this.loading = true
       this.error = null
-
       try {
-        // In a real app, this would fetch from API
-        // For now, we rely on WebSocket notifications
         await this.initialize()
       } catch (error: any) {
         this.error = error.message || 'Failed to fetch notifications'
-        console.error('Fetch notifications error:', error)
       } finally {
         this.loading = false
       }
     },
 
     addNotification(notification: Notification) {
-      // Check if notification already exists
       const exists = this.notifications.some(n => n.id === notification.id)
       if (exists) return
 
@@ -115,13 +102,9 @@ export const useNotificationStore = defineStore('notification', {
       if (notification && !notification.isRead) {
         notification.isRead = true
         this.unreadCount = Math.max(0, this.unreadCount - 1)
-
-        // Also mark as read in notification service
+        
         if (import.meta.client) {
-          import('~/services/notification.service').then(({ useNotificationService }) => {
-            const notificationService = useNotificationService()
-            notificationService.markAsRead(notificationId)
-          })
+          (this as any).$services.notification.markAsRead(notificationId)
         }
       }
     },
@@ -132,12 +115,8 @@ export const useNotificationStore = defineStore('notification', {
       })
       this.unreadCount = 0
 
-      // Also mark all as read in notification service
       if (import.meta.client) {
-        import('~/services/notification.service').then(({ useNotificationService }) => {
-          const notificationService = useNotificationService()
-          notificationService.markAllAsRead()
-        })
+        (this as any).$services.notification.markAllAsRead()
       }
     },
 
@@ -145,7 +124,7 @@ export const useNotificationStore = defineStore('notification', {
       const index = this.notifications.findIndex(n => n.id === notificationId)
       if (index > -1) {
         const notification = this.notifications[index]
-        if (!notification.isRead) {
+        if (notification && !notification.isRead) {
           this.unreadCount = Math.max(0, this.unreadCount - 1)
         }
         this.notifications.splice(index, 1)
@@ -161,12 +140,8 @@ export const useNotificationStore = defineStore('notification', {
       this.promotions = []
       this.unreadCount = 0
 
-      // Also clear in notification service
       if (import.meta.client) {
-        import('~/services/notification.service').then(({ useNotificationService }) => {
-          const notificationService = useNotificationService()
-          notificationService.clearNotifications()
-        })
+        (this as any).$services.notification.clearNotifications()
       }
     },
   },

@@ -22,8 +22,22 @@ export const useTelegram = () => {
   // Check if running in Telegram environment
   const isTelegram = computed(() => {
     if (import.meta.server) return false
-    return typeof window !== 'undefined' && !!window.Telegram?.WebApp
+    const tg = typeof window !== 'undefined' ? window.Telegram?.WebApp : null
+    
+    // We check if WebApp exists AND if it has initData (which is non-empty only inside Telegram)
+    // or if we are in a dev environment mimicking Telegram.
+    return !!(tg && tg.initData)
   })
+
+  // Track the current listener to prevent duplicates
+  const currentClickHandler = ref<(() => void) | null>(null)
+  const isListenerAttached = ref(false)
+
+  const stableOnClickHandler = () => {
+    if (currentClickHandler.value) {
+      currentClickHandler.value()
+    }
+  }
 
   // Get user data from Telegram
   const user = computed((): TelegramUser | null => {
@@ -96,14 +110,21 @@ export const useTelegram = () => {
       const tg = window.Telegram?.WebApp
       if (!tg?.MainButton) return () => {}
 
+      currentClickHandler.value = onClick
+
       tg.MainButton.setText(text)
       tg.MainButton.show()
       tg.MainButton.enable()
-      tg.MainButton.onClick(onClick)
+
+      if (!isListenerAttached.value) {
+        tg.MainButton.onClick(stableOnClickHandler)
+        isListenerAttached.value = true
+      }
       
       return () => {
-        tg.MainButton.hide()
-        tg.MainButton.offClick(onClick)
+        // We don't hide or remove listener on every cleanup, just clear the specific action
+        // This is safer for rapid re-renders
+        currentClickHandler.value = null
       }
     } catch {
       return () => {}
@@ -116,6 +137,26 @@ export const useTelegram = () => {
     try {
       const tg = window.Telegram?.WebApp
       tg?.MainButton?.hide()
+    } catch {
+      // Ignore errors
+    }
+  }
+
+  const setMainButtonText = (text: string) => {
+    if (!isTelegram.value) return
+    try {
+      const tg = window.Telegram?.WebApp
+      tg?.MainButton?.setText(text)
+    } catch {
+      // Ignore errors
+    }
+  }
+
+  const setMainButtonParams = (params: any) => {
+    if (!isTelegram.value) return
+    try {
+      const tg = window.Telegram?.WebApp
+      tg?.MainButton?.setParams(params)
     } catch {
       // Ignore errors
     }
@@ -498,6 +539,8 @@ export const useTelegram = () => {
     showMainButton,
     hideMainButton,
     setMainButtonLoading,
+    setMainButtonText,
+    setMainButtonParams,
     
     // Back button
     showBackButton,
@@ -532,73 +575,4 @@ export const useTelegram = () => {
   }
 }
 
-// Type declarations for global Telegram object (fallback)
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: {
-        ready(): void
-        close(): void
-        sendData(data: string): void
-        expand(): void
-        platform?: string
-        viewportHeight?: number
-        viewportStableHeight?: number
-        isExpanded?: boolean
-        initDataUnsafe?: {
-          user?: {
-            id: number
-            first_name: string
-            last_name?: string
-            username?: string
-            language_code?: string
-            is_premium?: boolean
-            photo_url?: string
-          }
-        }
-        themeParams?: {
-          bg_color?: string
-          text_color?: string
-          hint_color?: string
-          link_color?: string
-          button_color?: string
-          button_text_color?: string
-          secondary_bg_color?: string
-        }
-        MainButton?: {
-          setText(text: string): void
-          show(): void
-          hide(): void
-          enable(): void
-          disable(): void
-          showProgress(): void
-          hideProgress(): void
-          onClick(callback: () => void): void
-          offClick(callback: () => void): void
-        }
-        BackButton?: {
-          show(): void
-          hide(): void
-          onClick(callback: () => void): void
-          offClick(callback: () => void): void
-        }
-        HapticFeedback?: {
-          impactOccurred(style: string): void
-          notificationOccurred(type: string): void
-          selectionChanged(): void
-        }
-        CloudStorage?: {
-          setItem(key: string, value: string, callback: (error: any) => void): void
-          getItem(key: string, callback: (error: any, value: string) => void): void
-          removeItem(key: string, callback: (error: any) => void): void
-          getKeys(callback: (error: any, keys: string[]) => void): void
-        }
-        showPopup?(params: any, callback: (buttonId: string) => void): void
-        showScanQrPopup?(params: any, callback: (qr: string) => void): void
-        requestContact?(callback: (granted: boolean, contact: any) => void): void
-        requestWriteAccess?(callback: (granted: boolean) => void): void
-        initData?: string
-      }
-    }
-  }
-}
+// useTelegram logic ends here

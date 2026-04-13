@@ -40,7 +40,7 @@
               <!-- Cart Button -->
               <NuxtLink
                 v-if="showCartButton"
-                to="/cart"
+                to="/checkout"
                 class="app-layout__cart-button"
                 :aria-label="`Cart with ${cartItemCount} items`"
               >
@@ -91,7 +91,7 @@
 
     <!-- Sticky Cart Button (Mobile) -->
     <StickyCartButton
-      v-if="showStickyCart"
+      v-if="showStickyCart && !isCartOrCheckoutPage"
       @click="handleStickyCartClick"
     />
 
@@ -120,6 +120,12 @@ import AppBreadcrumbs from './AppBreadcrumbs.vue'
 import ResponsiveContainer from './ResponsiveContainer.vue'
 import TouchOptimizedContainer from './TouchOptimizedContainer.vue'
 import SkipLinks from './SkipLinks.vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const isCartOrCheckoutPage = computed(() => {
+  return route.path.startsWith('/cart') || route.path.startsWith('/checkout')
+})
 
 interface BreadcrumbItem {
   label: string
@@ -168,7 +174,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // Composables
-const { isDark, toggle: toggleTheme } = useTheme()
+const { isDark, toggleTheme } = useTheme()
 const cartStore = useCartStore()
 
 // Computed properties
@@ -192,9 +198,9 @@ const themeToggleLabel = computed(() =>
 )
 
 // Methods
+const router = useRouter()
 const handleStickyCartClick = () => {
-  // Navigate to cart page or open cart drawer
-  navigateTo('/cart')
+  router.push('/checkout')
 }
 </script>
 

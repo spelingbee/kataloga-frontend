@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
-import { useUserService } from '~/services/user.service'
 import type { User, UserLocation, Notification, UpdateProfileDto, Promotion, ApiError, PaginationMeta } from '~/types'
+import { useTenantStore } from '~/stores/tenant'
 import { Platform } from '~/types'
 
 interface UserState {
-  // Clean business data only
+  // Clean business data
   user: User | null
   notifications: Notification[]
   promotions: Promotion[]
@@ -12,8 +12,12 @@ interface UserState {
   notificationsPagination: PaginationMeta | null
   promotionsPagination: PaginationMeta | null
   
-  // State management
+  // Auth state
+  accessToken: string | null
+  refreshToken: string | null
   isAuthenticated: boolean
+  
+  // App state
   platform: Platform
   loading: boolean
   error: ApiError | null
@@ -21,7 +25,7 @@ interface UserState {
 
 export const useUserStore = defineStore('user', {
   state: (): UserState => ({
-    // Clean business data only
+    // Data
     user: null,
     notifications: [],
     promotions: [],
@@ -29,8 +33,12 @@ export const useUserStore = defineStore('user', {
     notificationsPagination: null,
     promotionsPagination: null,
     
-    // State management
+    // Auth
+    accessToken: null,
+    refreshToken: null,
     isAuthenticated: false,
+    
+    // Environment
     platform: Platform.WEB,
     loading: false,
     error: null,
@@ -40,21 +48,204 @@ export const useUserStore = defineStore('user', {
     unreadNotificationsCount: state => {
       return state.notifications.filter(n => !n.isRead).length
     },
+    isLoggedIn: state => state.isAuthenticated && !!state.accessToken,
+    currentUser: state => state.user,
   },
 
   actions: {
+    // --- Auth Actions ---
+    
+    setTokens(accessToken: string, refreshToken: string) {
+      this.accessToken = accessToken
+      this.refreshToken = refreshToken
+      this.isAuthenticated = true
+      
+      if (import.meta.client) {
+        localStorage.setItem('accessToken', accessToken)
+        localStorage.setItem('refreshToken', refreshToken)
+      }
+    },
+
+    clearTokens() {
+      this.accessToken = null
+      this.refreshToken = null
+      this.isAuthenticated = false
+      this.user = null
+      
+      if (import.meta.client) {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('user')
+        localStorage.removeItem('user_location')
+      }
+    },
+
+    async initializeAuth() {
+      if (!import.meta.client) return
+      this.loading = true
+      
+      try {
+        const accessToken = localStorage.getItem('accessToken')
+        const refreshToken = localStorage.getItem('refreshToken')
+        const userStr = localStorage.getItem('user')
+
+        if (accessToken && refreshToken) {
+          this.accessToken = accessToken
+          this.refreshToken = refreshToken
+          this.isAuthenticated = true
+
+          if (userStr) {
+            try {
+              this.user = JSON.parse(userStr)
+            } catch (e) {}
+          }
+
+          if (this.isTokenExpired()) {
+            try {
+              const refreshed = await (this as any).$apiClient.handleTokenRefresh()
+              if (!refreshed) throw new Error('Token refresh failed')
+            } catch (refreshError) {
+              this.clearTokens()
+              return
+            }
+          }
+
+          await this.fetchUserProfile()
+        }
+      } catch (error) {
+        console.error('Auth initialization failed:', error)
+        this.clearTokens()
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async login(credentials: { email: string; password: string; tenantSlug?: string }) {
+      this.loading = true
+      this.error = null
+      try {
+        const config = useRuntimeConfig()
+        const loginData = {
+          ...credentials,
+          tenantSlug: credentials.tenantSlug || config.public.tenantSlug
+        }
+        
+        const result = await (this as any).$apiClient.post('/auth/login', loginData)
+        this.setTokens(result.accessToken, result.refreshToken)
+        this.user = result.user
+        
+        if (import.meta.client) {
+          localStorage.setItem('user', JSON.stringify(result.user))
+        }
+
+        return result
+      } catch (error) {
+        this.error = error as ApiError
+        this.clearTokens()
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async register(userData: any) {
+      this.loading = true
+      this.error = null
+      try {
+        const tenantStore = useTenantStore()
+        const config = useRuntimeConfig()
+        const slug = tenantStore.tenantSlug || config.public.tenantSlug
+        
+        if (!slug) {
+          throw new Error('Tenant context missing. Unable to register.')
+        }
+        
+        const endpoint = `/public/${slug}/auth/register`
+        const result = await (this as any).$apiClient.post(endpoint, userData)
+        this.setTokens(result.accessToken, result.refreshToken)
+        this.user = result.user
+        return result
+      } catch (error) {
+        this.error = error as ApiError
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async logout() {
+      this.loading = true
+      try {
+        if (this.refreshToken) {
+          await (this as any).$apiClient.post('/auth/logout', { refreshToken: this.refreshToken })
+        }
+      } catch (error) {
+        console.error('Logout request failed:', error)
+      } finally {
+        this.clearTokens()
+        this.loading = false
+      }
+    },
+
+    async fetchUserProfile() {
+      if (!this.isAuthenticated) return
+      try {
+        const profile = await (this as any).$apiClient.get('/auth/profile')
+        this.user = profile
+        if (import.meta.client) {
+          localStorage.setItem('user', JSON.stringify(profile))
+        }
+        return profile
+      } catch (error: any) {
+        if (error.status === 401) {
+          this.clearTokens()
+        }
+        throw error
+      }
+    },
+
+    async changePassword(data: any) {
+      return await (this as any).$apiClient.post('/auth/change-password', data)
+    },
+
+    async requestPasswordReset(email: string) {
+      return await (this as any).$apiClient.post('/auth/forgot-password', { email })
+    },
+
+    async resetPassword(data: any) {
+      return await (this as any).$apiClient.post('/auth/reset-password', data)
+    },
+
+    isTokenExpired(): boolean {
+      if (!this.accessToken) return true
+      try {
+        const parts = this.accessToken.split('.')
+        if (parts.length < 2 || !parts[1]) return true
+        const payload = JSON.parse(atob(parts[1]))
+        return payload.exp < Math.floor(Date.now() / 1000)
+      } catch (error) {
+        return true
+      }
+    },
+
+    // --- User Initialization & Platform ---
+
     async initializeUser() {
       this.loading = true
-
       try {
-        // Detect platform
         this.detectPlatform()
-
-        // Initialize user based on platform
         if (this.platform === Platform.TELEGRAM) {
           await this.initializeTelegramUser()
         } else {
-          await this.initializeWebUser()
+          await this.initializeAuth()
+        }
+        
+        if (this.isAuthenticated) {
+          await Promise.allSettled([
+            this.fetchNotifications(),
+            this.fetchPromotions(),
+            this.fetchUserLocation()
+          ])
         }
       } catch (error) {
         console.error('User initialization error:', error)
@@ -65,8 +256,8 @@ export const useUserStore = defineStore('user', {
 
     detectPlatform() {
       if (import.meta.client) {
-        // Check if running in Telegram Web App
-        if (window.Telegram?.WebApp) {
+        const win = window as any
+        if (win.Telegram?.WebApp?.initData) {
           this.platform = Platform.TELEGRAM
         } else {
           this.platform = Platform.WEB
@@ -75,19 +266,18 @@ export const useUserStore = defineStore('user', {
     },
 
     async initializeTelegramUser() {
-      // This will be implemented in Telegram integration task
-      if (import.meta.client && window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp
+      const win = window as any
+      if (import.meta.client && win.Telegram?.WebApp) {
+        const tg = win.Telegram.WebApp
         tg.ready()
 
-        // Extract user data from Telegram
         if (tg.initDataUnsafe?.user) {
-          const telegramUser = tg.initDataUnsafe.user
+          const tUser = tg.initDataUnsafe.user
           this.user = {
-            id: telegramUser.id.toString(),
-            firstName: telegramUser.first_name,
-            lastName: telegramUser.last_name || '',
-            name: `${telegramUser.first_name} ${telegramUser.last_name || ''}`.trim(),
+            id: tUser.id.toString(),
+            firstName: tUser.first_name,
+            lastName: tUser.last_name || '',
+            name: `${tUser.first_name} ${tUser.last_name || ''}`.trim(),
             email: '',
             role: 'CUSTOMER' as any,
             tenantId: '',
@@ -95,62 +285,27 @@ export const useUserStore = defineStore('user', {
             emailVerified: false,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            telegramId: telegramUser.id.toString(),
+            telegramId: tUser.id.toString(),
           }
           this.isAuthenticated = true
+          this.platform = Platform.TELEGRAM
         }
       }
     },
 
-    initializeFromTelegram(telegramUser: any) {
-      this.user = {
-        id: telegramUser.id.toString(),
-        firstName: telegramUser.firstName,
-        lastName: telegramUser.lastName || '',
-        name: telegramUser.firstName + (telegramUser.lastName ? ` ${telegramUser.lastName}` : ''),
-        email: '',
-        role: 'CUSTOMER' as any,
-        tenantId: '',
-        isActive: true,
-        emailVerified: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        telegramId: telegramUser.id.toString(),
-        preferences: {
-          favoriteItems: [],
-          dietaryRestrictions: []
-        }
-      }
-      this.isAuthenticated = true
-      this.platform = Platform.TELEGRAM
-    },
-
-    async initializeWebUser() {
-      // This will be implemented in web authentication task
-      // Check for stored authentication token
-      if (import.meta.client) {
-        const token = localStorage.getItem('auth_token')
-        if (token) {
-          // Validate token and fetch user data
-          // This will be implemented in API integration task
-        }
-      }
-    },
+    // --- Profile, Location, Notifications ---
 
     async updateProfile(data: UpdateProfileDto) {
       this.loading = true
       this.error = null
-
       try {
-        const userService = useUserService()
-        const user = await userService.updateProfile(data)
-
-        // Store clean data directly
+        const user = await (this as any).$services.user.updateProfile(data)
         this.user = user
-        
+        if (import.meta.client) {
+          localStorage.setItem('user', JSON.stringify(user))
+        }
       } catch (error) {
         this.error = error as ApiError
-        console.error('Profile update error:', error)
       } finally {
         this.loading = false
       }
@@ -159,183 +314,57 @@ export const useUserStore = defineStore('user', {
     async updateLocation(location: UserLocation) {
       this.loading = true
       this.error = null
-
       try {
-        const userService = useUserService()
-        await userService.updateLocation(location)
-        
-        // Store clean data directly
+        await (this as any).$services.user.updateLocation(location)
         this.location = location
-
-        // Persist location
         if (import.meta.client) {
           localStorage.setItem('user_location', JSON.stringify(location))
         }
       } catch (error) {
         this.error = error as ApiError
-        console.error('Location update error:', error)
       } finally {
         this.loading = false
       }
     },
 
-    async fetchNotifications(params?: {
-      type?: 'order' | 'promotion' | 'system'
-      unread?: boolean
-      page?: number
-      limit?: number
-    }) {
-      this.loading = true
-      this.error = null
-
+    async fetchNotifications(params?: any) {
       try {
-        const userService = useUserService()
-        const result = await userService.getNotifications(params)
-
-        // Store clean data directly
+        const result = await (this as any).$services.user.getNotifications(params)
         if (params?.page && params.page > 1) {
-          // Append for pagination
-          this.notifications.push(...result.items)
+          this.notifications.push(...result.notifications)
         } else {
-          this.notifications = result.items
+          this.notifications = result.notifications
         }
         this.notificationsPagination = result.pagination
-        
-      } catch (error) {
-        this.error = error as ApiError
-        console.error('Notifications fetch error:', error)
-      } finally {
-        this.loading = false
-      }
+      } catch (e) {}
     },
 
     async markNotificationRead(id: string) {
       try {
-        const userService = useUserService()
-        await userService.markNotificationRead(id)
-        
+        await (this as any).$services.user.markNotificationRead(id)
         const notification = this.notifications.find(n => n.id === id)
-        if (notification) {
-          notification.isRead = true
-        }
-      } catch (error) {
-        console.error('Failed to mark notification as read:', error)
-      }
+        if (notification) notification.isRead = true
+      } catch (e) {}
     },
 
-    async markAllNotificationsRead() {
+    async fetchPromotions(params?: any) {
       try {
-        const userService = useUserService()
-        await userService.markAllNotificationsRead()
-        
-        this.notifications.forEach(notification => {
-          notification.isRead = true
-        })
-      } catch (error) {
-        console.error('Failed to mark all notifications as read:', error)
-      }
-    },
-
-    async fetchPromotions(params?: {
-      active?: boolean
-      category?: string
-      page?: number
-      limit?: number
-    }) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const userService = useUserService()
-        const result = await userService.getPromotions(params)
-
-        // Store clean data directly
-        if (params?.page && params.page > 1) {
-          // Append for pagination
-          this.promotions.push(...result.items)
-        } else {
-          this.promotions = result.items
-        }
+        const result = await (this as any).$services.user.getPromotions(params)
+        this.promotions = result.items
         this.promotionsPagination = result.pagination
-        
-      } catch (error) {
-        this.error = error as ApiError
-        console.error('Promotions fetch error:', error)
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async claimPromotion(promotionId: string) {
-      this.loading = true
-      this.error = null
-
-      try {
-        const userService = useUserService()
-        const result = await userService.claimPromotion(promotionId)
-        return result
-      } catch (error) {
-        this.error = error as ApiError
-        console.error('Promotion claim error:', error)
-        return null
-      } finally {
-        this.loading = false
-      }
+      } catch (e) {}
     },
 
     async fetchUserLocation() {
-      this.loading = true
-      this.error = null
-
       try {
-        const userService = useUserService()
-        const location = await userService.getLocation()
-
-        // Store clean data directly
+        const location = await (this as any).$services.user.getLocation()
         this.location = location
-        
-        // Persist location
+      } catch (e) {
         if (import.meta.client) {
-          localStorage.setItem('user_location', JSON.stringify(location))
+          const saved = localStorage.getItem('user_location')
+          if (saved) this.location = JSON.parse(saved)
         }
-      } catch (error) {
-        this.error = error as ApiError
-        console.error('User location fetch error:', error)
-        
-        // Fall back to localStorage
-        if (import.meta.client) {
-          const savedLocation = localStorage.getItem('user_location')
-          if (savedLocation) {
-            try {
-              this.location = JSON.parse(savedLocation)
-            } catch (parseError) {
-              console.error('Failed to parse saved location:', parseError)
-            }
-          }
-        }
-      } finally {
-        this.loading = false
-      }
-    },
-
-    logout() {
-      this.user = null
-      this.isAuthenticated = false
-      this.notifications = []
-
-      if (import.meta.client) {
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('user_location')
       }
     },
   },
 })
-
-// Extend window interface for TypeScript
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp: any
-    }
-  }
-}

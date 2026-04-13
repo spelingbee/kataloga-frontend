@@ -1,12 +1,10 @@
 <template>
   <span
+    class="app-price"
     :class="[
-      'font-sans font-semibold',
-      sizeClasses[size],
-      colorClasses[color],
-      {
-        'line-through opacity-60': strikethrough,
-      }
+      `app-price--${size}`,
+      `app-price--${color}`,
+      { 'app-price--strikethrough': strikethrough }
     ]"
   >
     {{ formattedPrice }}
@@ -15,10 +13,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useTenantSettings } from '~/composables/useTenant'
 
 interface Props {
   amount?: number
   value?: number
+  price?: number
   currency?: string
   size?: 'sm' | 'md' | 'lg' | 'xl'
   color?: 'primary' | 'green' | 'red' | 'orange' | 'white' | 'muted'
@@ -27,36 +27,57 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currency: '₽',
+  currency: 'KGS',
   size: 'md',
   color: 'primary',
   strikethrough: false,
   showCurrency: true
 })
 
-const sizeClasses = {
-  sm: 'text-body-sm',
-  md: 'text-body-md',
-  lg: 'text-heading-sm',
-  xl: 'text-heading-md'
-}
-
-const colorClasses = {
-  primary: 'text-neutral-80 dark:text-white',
-  green: 'text-primary-green',
-  red: 'text-primary-red',
-  orange: 'text-primary-orange',
-  white: 'text-white',
-  muted: 'text-gray-500 dark:text-gray-400'
-}
+const { formatCurrency, language } = useTenantSettings()
 
 const formattedPrice = computed(() => {
-  const priceValue = props.amount ?? props.value ?? 0
-  const price = new Intl.NumberFormat('ru-RU', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(priceValue)
+  const priceValue = props.price ?? props.amount ?? props.value ?? 0
   
-  return props.showCurrency ? `${price} ${props.currency}` : price
+  if (!props.showCurrency) {
+    return new Intl.NumberFormat(language.value, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(priceValue)
+  }
+  
+  return formatCurrency(priceValue, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    currency: props.currency !== 'KGS' ? props.currency : undefined // Let formatCurrency use default if it's 'KGS' but user changed it. Actually, wait. Let's just pass props.currency if we really want to override.
+  })
 })
 </script>
+
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/typography' as *;
+
+.app-price {
+  font-family: var(--font-primary, sans-serif);
+  font-weight: var(--font-bold, 700);
+  display: inline-block;
+
+  &--sm { font-size: var(--text-sm); }
+  &--md { font-size: var(--text-base); }
+  &--lg { font-size: var(--text-lg); }
+  &--xl { font-size: var(--text-xl); }
+
+  &--primary { color: var(--text-primary); }
+  &--green { color: var(--color-success); }
+  &--red { color: var(--color-error); }
+  &--orange { color: var(--color-primary); }
+  &--white { color: #FFFFFF; }
+  &--muted { color: var(--text-tertiary); }
+
+  &--strikethrough {
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+}
+</style>

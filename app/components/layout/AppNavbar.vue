@@ -1,9 +1,29 @@
+<script setup lang="ts">
+import { useRoute } from 'vue-router'
+import { useUserStore } from '~/stores/user'
+
+const route = useRoute()
+const userStore = useUserStore()
+
+const menuItems = [
+  { path: '/', label: 'Меню', icon: 'menu-book' },
+  { path: '/orders', label: 'Заказы', icon: 'receipt' },
+]
+
+const isActive = (path: string) => {
+  if (path === '/') {
+    return route.path === '/'
+  }
+  return route.path.startsWith(path)
+}
+</script>
+
 <template>
   <nav class="app-navbar">
     <div class="app-navbar__header">
       <NuxtLink to="/" class="app-navbar__logo">
         <BaseIcon name="restaurant" size="lg" class="app-navbar__logo-icon" />
-        <span class="app-navbar__logo-text">Menu</span>
+        <span class="app-navbar__logo-text">Kataloga</span>
       </NuxtLink>
     </div>
 
@@ -21,37 +41,17 @@
     </div>
 
     <div class="app-navbar__footer">
-      <NuxtLink to="/favourites" class="app-navbar__item">
-        <BaseIcon name="heart" size="md" class="app-navbar__item-icon" />
-        <span class="app-navbar__item-text">Favourites</span>
-      </NuxtLink>
-      
-      <NuxtLink to="/auth/login" class="app-navbar__item">
+      <NuxtLink v-if="userStore.isAuthenticated" to="/profile" class="app-navbar__item">
         <BaseIcon name="user" size="md" class="app-navbar__item-icon" />
-        <span class="app-navbar__item-text">Account</span>
+        <span class="app-navbar__item-text">Профиль</span>
+      </NuxtLink>
+      <NuxtLink v-else to="/auth/login" class="app-navbar__item">
+        <BaseIcon name="user" size="md" class="app-navbar__item-icon" />
+        <span class="app-navbar__item-text">Войти</span>
       </NuxtLink>
     </div>
   </nav>
 </template>
-
-<script setup lang="ts">
-const route = useRoute()
-
-const menuItems = [
-  { path: '/', label: 'Home', icon: 'home' },
-  { path: '/menu', label: 'Menu', icon: 'book-open' },
-  { path: '/orders', label: 'Orders', icon: 'receipt' },
-  { path: '/map', label: 'Locations', icon: 'map' },
-  { path: '/promotions', label: 'Promotions', icon: 'tag' },
-]
-
-const isActive = (path: string) => {
-  if (path === '/') {
-    return route.path === '/'
-  }
-  return route.path.startsWith(path)
-}
-</script>
 
 <style lang="scss" scoped>
 @use '~/assets/scss/abstracts/variables' as *;

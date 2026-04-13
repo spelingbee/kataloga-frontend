@@ -1,11 +1,9 @@
 import { useUserStore } from '~/stores/user'
-import { useAuthStore } from '~/stores/auth'
-import { useUserService } from '~/services/user.service'
 import type { User, UserLocation, Notification, Promotion } from '~/types'
 
 export function useUserProfile() {
+  const { $userService } = useNuxtApp()
   const userStore = useUserStore()
-  const authStore = useAuthStore()
   
   const {
     user,
@@ -17,7 +15,7 @@ export function useUserProfile() {
     unreadNotificationsCount,
   } = storeToRefs(userStore)
 
-  const { isAuthenticated } = storeToRefs(authStore)
+  const { isAuthenticated } = storeToRefs(userStore)
 
   // Actions
   const updateProfile = (data: Partial<User>) => userStore.updateProfile(data)
@@ -128,14 +126,7 @@ export function useUserProfile() {
   // Preferences helpers
   const getUserPreferences = async () => {
     try {
-      const userService = useUserService()
-      const response = await userService.getPreferences()
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to get preferences')
+      return await ($userService as any).getPreferences()
     } catch (error) {
       console.error('Failed to get user preferences:', error)
       throw error
@@ -144,14 +135,7 @@ export function useUserProfile() {
 
   const updateUserPreferences = async (preferences: any) => {
     try {
-      const userService = useUserService()
-      const response = await userService.updatePreferences(preferences)
-      
-      if (response.success) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to update preferences')
+      return await ($userService as any).updatePreferences(preferences)
     } catch (error) {
       console.error('Failed to update user preferences:', error)
       throw error
@@ -161,14 +145,7 @@ export function useUserProfile() {
   // Loyalty points
   const getLoyaltyPoints = async () => {
     try {
-      const userService = useUserService()
-      const response = await userService.getLoyaltyPoints()
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to get loyalty points')
+      return await ($userService as any).getLoyaltyPoints()
     } catch (error) {
       console.error('Failed to get loyalty points:', error)
       throw error
@@ -177,14 +154,7 @@ export function useUserProfile() {
 
   const redeemLoyaltyReward = async (rewardId: string) => {
     try {
-      const userService = useUserService()
-      const response = await userService.redeemLoyaltyReward(rewardId)
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to redeem reward')
+      return await ($userService as any).redeemLoyaltyReward(rewardId)
     } catch (error) {
       console.error('Failed to redeem loyalty reward:', error)
       throw error
@@ -194,14 +164,7 @@ export function useUserProfile() {
   // Address management
   const getUserAddresses = async () => {
     try {
-      const userService = useUserService()
-      const response = await userService.getAddresses()
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to get addresses')
+      return await ($userService as any).getAddresses()
     } catch (error) {
       console.error('Failed to get user addresses:', error)
       throw error
@@ -210,14 +173,7 @@ export function useUserProfile() {
 
   const addUserAddress = async (address: any) => {
     try {
-      const userService = useUserService()
-      const response = await userService.addAddress(address)
-      
-      if (response.success && response.data) {
-        return response.data
-      }
-      
-      throw new Error(response.message || 'Failed to add address')
+      return await ($userService as any).addAddress(address)
     } catch (error) {
       console.error('Failed to add user address:', error)
       throw error

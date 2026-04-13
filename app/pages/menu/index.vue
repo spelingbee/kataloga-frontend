@@ -180,7 +180,7 @@ const activeCategory = ref<string | null>(null)
 // Computed
 const categories = computed(() => menuStore.categories)
 const filteredItems = computed(() => {
-  const items = menuStore.filteredItems
+  const items = menuStore.filteredMenuItems
   return Array.isArray(items) ? items : []
 })
 

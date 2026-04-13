@@ -20,16 +20,11 @@ export interface ValidationOptions {
 }
 
 export class CartValidationService {
-  private getApiClient(): any {
-    const nuxtApp = useNuxtApp()
-    return (nuxtApp as any).$apiClient
-  }
+  private menuCache: MenuItem[] | null = null
+  private cacheTimestamp: number = 0
+  private CACHE_TTL = 10000 // 10 seconds
 
-  private getTenantSlug(): string | null {
-    const nuxtApp = useNuxtApp()
-    const runtimeConfig = nuxtApp.$config
-    return runtimeConfig?.public?.tenantSlug || null
-  }
+  constructor(private apiClient: any, private config: any) {}
 
   /**
    * Validate cart items against current menu data
@@ -44,7 +39,8 @@ export class CartValidationService {
       checkStopList: true,
       checkPrices: true,
       checkAvailability: true,
-    }
+    },
+    forceRefresh: boolean = false
   ): Promise<ValidationResult> {
     const result: ValidationResult = {
       isValid: true,
@@ -61,7 +57,7 @@ export class CartValidationService {
 
     try {
       // Fetch current menu data
-      const currentMenuItems = await this.fetchCurrentMenuData()
+      const currentMenuItems = await this.fetchCurrentMenuData(forceRefresh)
       if (!currentMenuItems) {
         result.errors.push('Unable to validate cart. Please try again.')
         result.isValid = false
@@ -162,7 +158,7 @@ export class CartValidationService {
       checkStopList: true,
       checkPrices: true,
       checkAvailability: true,
-    })
+    }, true) // Force refresh during checkout
   }
 
   /**
@@ -192,63 +188,65 @@ export class CartValidationService {
   /**
    * Fetch current menu data from API
    */
-  private async fetchCurrentMenuData(): Promise<MenuItem[] | null> {
+  private async fetchCurrentMenuData(forceRefresh: boolean = false): Promise<MenuItem[] | null> {
     try {
-      const tenantSlug = this.getTenantSlug()
+      // Check cache first
+      const now = Date.now()
+      if (!forceRefresh && this.menuCache && now - this.cacheTimestamp < this.CACHE_TTL) {
+        return this.menuCache
+      }
+
+      const tenantSlug = this.config.public.tenantSlug
       if (!tenantSlug) {
         console.error('Tenant slug not configured')
         return null
       }
 
-      const response = await this.getApiClient().get(`/public/menu/${tenantSlug}`)
+      const response = await this.apiClient.get(`/public/menu/${tenantSlug}`)
 
-      // Check if response is in ApiResponse format or direct data
+      // The API client now returns unwrapped data (Category[] or MenuItem[])
+      // For the public menu endpoint, it returns an array of menus
       let menus: any[] = []
-      
-      if (response && typeof response === 'object') {
-        if ('success' in response && 'data' in response && response.success) {
-          // Standard ApiResponse format
-          menus = response.data
-        } else if (Array.isArray(response)) {
-          // Direct array response from public endpoints
-          menus = response
-        } else {
-          console.error('❌ Cart Validation - Menu response not in expected format:', response)
-          return null
-        }
-        
-        // Extract menu items from menus
-        const items: MenuItem[] = []
 
-        menus.forEach((menu: any) => {
-          if (menu.items) {
-            menu.items.forEach((item: any) => {
-              items.push({
-                id: item.id,
-                name: item.name,
-                description: item.description,
-                price: item.price,
-                imageUrl: item.imageUrl,
-                isActive: item.isActive,
-                categoryId: item.category?.id,
-                category: item.category,
-                calories: item.calories,
-                nutritionInfo: item.nutritionInfo,
-                cookingTime: item.cookingTime,
-                dietary: item.dietary || [],
-                // Check for stop list status
-                // This might come from different fields depending on backend implementation
-                isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
-                stockQuantity: item.stockQuantity,
-              } as MenuItem)
-            })
-          }
-        })
-
-        return items
+      if (Array.isArray(response)) {
+        menus = response
+      } else {
+        console.error('❌ Cart Validation - Menu response not an array:', response)
+        return null
       }
 
-      return null
+      // Extract menu items from menus
+      const items: MenuItem[] = []
+
+      menus.forEach((menu: any) => {
+        if (menu.items) {
+          menu.items.forEach((item: any) => {
+            items.push({
+              id: item.id,
+              name: item.name,
+              description: item.description,
+              price: item.price,
+              imageUrl: item.imageUrl,
+              isActive: item.isActive,
+              categoryId: item.category?.id,
+              category: item.category,
+              calories: item.calories,
+              nutritionInfo: item.nutritionInfo,
+              cookingTime: item.cookingTime,
+              dietary: item.dietary || [],
+              // Check for stop list status
+              isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
+              stockQuantity: item.stockQuantity,
+            } as MenuItem)
+          })
+        }
+      })
+
+      // Update cache
+      this.menuCache = items
+      this.cacheTimestamp = Date.now()
+
+      return items
     } catch (error) {
       console.error('Failed to fetch menu data:', error)
       return null
@@ -257,22 +255,18 @@ export class CartValidationService {
 
   /**
    * Check if an item is available (not in stop list)
-   * This checks multiple possible fields that might indicate stop list status
    */
   private checkItemAvailability(menuItem: MenuItem): boolean {
-    // Check isAvailable field if it exists
     if ('isAvailable' in menuItem && menuItem.isAvailable === false) {
       return false
     }
 
-    // Check stockQuantity if it exists
     if ('stockQuantity' in menuItem && typeof menuItem.stockQuantity === 'number') {
       if (menuItem.stockQuantity <= 0) {
         return false
       }
     }
 
-    // Check isActive as a fallback
     if (!menuItem.isActive) {
       return false
     }
@@ -326,14 +320,4 @@ export class CartValidationService {
       type: 'info',
     }
   }
-}
-
-// Create singleton instance
-let cartValidationService: CartValidationService | null = null
-
-export function useCartValidationService(): CartValidationService {
-  if (!cartValidationService) {
-    cartValidationService = new CartValidationService()
-  }
-  return cartValidationService
 }

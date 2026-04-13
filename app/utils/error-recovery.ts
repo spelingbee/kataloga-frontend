@@ -1,7 +1,7 @@
 import { useOfflineStore } from '~/stores/offline'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
-import { useAuthStore } from '~/stores/auth'
+import { useUserStore } from '~/stores/user'
 import type { ApiError } from '~/types'
 
 export interface RecoveryStrategy {
@@ -91,9 +91,11 @@ export function getDefaultRecoveryStrategies(): RecoveryStrategy[] {
       canRecover: (error) => error.status === 401,
       recover: async () => {
         try {
-          const authStore = useAuthStore()
-          await authStore.refreshToken()
-          return true
+          const userStore = useUserStore()
+          // Use the internal apiClient refresh logic as it handles tokens correctly
+          const nuxtApp = useNuxtApp()
+          const $apiClient = (nuxtApp as any).$apiClient
+          return await $apiClient.handleTokenRefresh()
         } catch {
           return false
         }
@@ -154,7 +156,7 @@ export function getDefaultRecoveryStrategies(): RecoveryStrategy[] {
           offlineStore.setOfflineMode(true)
           
           // Show notification to user
-          const { showNotification } = useNotifications()
+          const { showNotification } = useNotification()
           showNotification({
             type: 'warning',
             title: 'Offline Mode',

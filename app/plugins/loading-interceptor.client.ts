@@ -1,4 +1,5 @@
 export default defineNuxtPlugin(async (nuxtApp) => {
+  console.log('[LoadingInterceptor] Initializing...')
   const { useLoadingStore } = await import('~/stores/loading')
   const loadingStore = useLoadingStore()
 

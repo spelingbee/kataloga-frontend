@@ -2,11 +2,7 @@ import type { User, UserLocation, Notification, Promotion, UpdateProfileDto, Pag
 import { useApiClient } from '~/utils/api'
 
 export class UserService {
-  private apiClient = useApiClient()
-
-  private getApiClient() {
-    return this.apiClient
-  }
+  constructor(private apiClient: any) {}
 
   /**
    * Get user profile (unwrapped data)
@@ -15,7 +11,7 @@ export class UserService {
    */
   async getProfile(): Promise<User | null> {
     try {
-      return await this.getApiClient().get<User>('/users/profile')
+      return await this.apiClient.get<User>('/users/profile')
     } catch (error) {
       // Return null for not found cases
       if ((error as any)?.code === 'NOT_FOUND') {
@@ -31,7 +27,7 @@ export class UserService {
    * Requirements: 2.1
    */
   async updateProfile(updates: UpdateProfileDto): Promise<User> {
-    return this.getApiClient().patch<User>('/users/profile', updates)
+    return this.apiClient.patch<User>('/users/profile', updates)
   }
 
   /**
@@ -40,7 +36,7 @@ export class UserService {
    * Requirements: 2.3
    */
   async updateLocation(location: UserLocation): Promise<void> {
-    return this.getApiClient().post<void>('/users/location', location)
+    return this.apiClient.post<void>('/users/location', location)
   }
 
   /**
@@ -50,7 +46,7 @@ export class UserService {
    */
   async getLocation(): Promise<UserLocation | null> {
     try {
-      return await this.getApiClient().get<UserLocation>('/users/location')
+      return await this.apiClient.get<UserLocation>('/users/location')
     } catch (error) {
       // Return null for not found cases
       if ((error as any)?.code === 'NOT_FOUND') {
@@ -92,7 +88,7 @@ export class UserService {
     const endpoint = queryString ? `/users/notifications?${queryString}` : '/users/notifications'
 
     // Get full response to access pagination metadata
-    const response = await this.getApiClient().getRaw<{
+    const response = await this.apiClient.getRaw<{
       notifications: Notification[]
       total: number
       unreadCount: number
@@ -121,7 +117,7 @@ export class UserService {
    * Requirements: 2.3
    */
   async markNotificationRead(notificationId: string): Promise<void> {
-    return this.getApiClient().patch<void>(`/users/notifications/${notificationId}/read`)
+    return this.apiClient.patch<void>(`/users/notifications/${notificationId}/read`)
   }
 
   /**
@@ -130,7 +126,7 @@ export class UserService {
    * Requirements: 2.3
    */
   async markAllNotificationsRead(): Promise<void> {
-    return this.getApiClient().patch<void>('/users/notifications/read-all')
+    return this.apiClient.patch<void>('/users/notifications/read-all')
   }
 
   /**
@@ -139,7 +135,7 @@ export class UserService {
    * Requirements: 2.3
    */
   async deleteNotification(notificationId: string): Promise<void> {
-    return this.getApiClient().delete<void>(`/users/notifications/${notificationId}`)
+    return this.apiClient.delete<void>(`/users/notifications/${notificationId}`)
   }
 
   /**
@@ -164,7 +160,7 @@ export class UserService {
     const endpoint = queryString ? `/users/promotions?${queryString}` : '/users/promotions'
 
     // Get full response to access pagination metadata
-    const response = await this.getApiClient().getRaw<Promotion[]>(endpoint)
+    const response = await this.apiClient.getRaw<Promotion[]>(endpoint)
     
     if (response.success && response.data) {
       return {
@@ -191,7 +187,7 @@ export class UserService {
     discount: number
     expiresAt: string
   }> {
-    return this.getApiClient().post<{
+    return this.apiClient.post<{
       success: boolean
       discount: number
       expiresAt: string
@@ -218,7 +214,7 @@ export class UserService {
     }
   } | null> {
     try {
-      return await this.getApiClient().get<{
+      return await this.apiClient.get<{
         dietary: string[]
         allergies: string[]
         spiceLevel: number
@@ -260,7 +256,7 @@ export class UserService {
       preferredTimeSlots?: string[]
     }
   }): Promise<void> {
-    return this.getApiClient().patch<void>('/users/preferences', preferences)
+    return this.apiClient.patch<void>('/users/preferences', preferences)
   }
 
   /**
@@ -281,7 +277,7 @@ export class UserService {
       available: boolean
     }>
   }> {
-    return this.getApiClient().get<{
+    return this.apiClient.get<{
       currentPoints: number
       totalEarned: number
       pointsToNextReward: number
@@ -312,7 +308,7 @@ export class UserService {
       expiresAt: string
     }
   }> {
-    return this.getApiClient().post<{
+    return this.apiClient.post<{
       success: boolean
       pointsUsed: number
       remainingPoints: number
@@ -339,7 +335,7 @@ export class UserService {
     isDefault: boolean
     type: 'home' | 'work' | 'other'
   }>> {
-    return this.getApiClient().get<Array<{
+    return this.apiClient.get<Array<{
       id: string
       name: string
       address: string
@@ -363,7 +359,7 @@ export class UserService {
     type: 'home' | 'work' | 'other'
     isDefault?: boolean
   }): Promise<{ id: string }> {
-    return this.getApiClient().post<{ id: string }>('/users/addresses', address)
+    return this.apiClient.post<{ id: string }>('/users/addresses', address)
   }
 
   /**
@@ -379,7 +375,7 @@ export class UserService {
     type?: 'home' | 'work' | 'other'
     isDefault?: boolean
   }): Promise<void> {
-    return this.getApiClient().patch<void>(`/users/addresses/${addressId}`, updates)
+    return this.apiClient.patch<void>(`/users/addresses/${addressId}`, updates)
   }
 
   /**
@@ -388,7 +384,7 @@ export class UserService {
    * Requirements: 2.3
    */
   async deleteAddress(addressId: string): Promise<void> {
-    return this.getApiClient().delete<void>(`/users/addresses/${addressId}`)
+    return this.apiClient.delete<void>(`/users/addresses/${addressId}`)
   }
 
   /**
@@ -397,7 +393,7 @@ export class UserService {
    * Requirements: 2.3
    */
   async setDefaultAddress(addressId: string): Promise<void> {
-    return this.getApiClient().patch<void>(`/users/addresses/${addressId}/default`)
+    return this.apiClient.patch<void>(`/users/addresses/${addressId}/default`)
   }
 
   /**
@@ -406,7 +402,7 @@ export class UserService {
    * Requirements: 2.3
    */
   async deleteAccount(password: string): Promise<void> {
-    return this.getApiClient().delete<void>('/users/account', {
+    return this.apiClient.delete<void>('/users/account', {
       body: { password }
     })
   }
@@ -420,19 +416,9 @@ export class UserService {
     downloadUrl: string
     expiresAt: string
   }> {
-    return this.getApiClient().post<{
+    return this.apiClient.post<{
       downloadUrl: string
       expiresAt: string
     }>('/users/export-data')
   }
-}
-
-// Create singleton instance
-let userService: UserService | null = null
-
-export function useUserService(): UserService {
-  if (!userService) {
-    userService = new UserService()
-  }
-  return userService
 }

@@ -1,7 +1,5 @@
 <template>
   <div class="order-type-selector">
-    <h3 class="order-type-selector__title">How would you like to receive your order?</h3>
-    
     <div class="order-type-selector__options">
       <button
         v-for="type in orderTypes"
@@ -11,7 +9,7 @@
         @click="selectType(type.value)"
       >
         <div class="order-type-selector__option-icon">
-          <BaseIcon :name="type.icon" size="xl" />
+          <BaseIcon :name="type.icon" size="lg" />
         </div>
         <div class="order-type-selector__option-content">
           <h4 class="order-type-selector__option-title">{{ type.title }}</h4>
@@ -24,6 +22,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 type OrderType = 'delivery' | 'pickup' | 'dine-in'
 
@@ -41,20 +42,20 @@ const orderTypes = computed(() => [
   {
     value: 'delivery' as OrderType,
     icon: 'truck',
-    title: 'Delivery',
-    description: 'Get it delivered to your address'
+    title: t('checkout.delivery'),
+    description: t('checkout.deliveryDetails')
   },
   {
     value: 'pickup' as OrderType,
     icon: 'store',
-    title: 'Pickup',
-    description: 'Pick up from restaurant'
+    title: t('checkout.pickup'),
+    description: t('checkout.pickupDetails')
   },
   {
     value: 'dine-in' as OrderType,
     icon: 'utensils',
-    title: 'Dine-in',
-    description: 'Order for your table'
+    title: t('checkout.dineIn'),
+    description: t('checkout.dineInDetails')
   }
 ])
 
@@ -85,34 +86,28 @@ const selectType = (type: OrderType) => {
 
 .order-type-selector__options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: $space-4;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $space-3;
 }
 
 .order-type-selector__option {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: $space-6;
+  padding: $space-4 $space-2;
   background: var(--bg-primary);
-  border: 2px solid var(--border-primary);
+  border: 1px solid var(--border-primary);
   border-radius: $radius-card;
   cursor: pointer;
   transition: $transition-card;
   text-align: center;
-  min-height: $touch-target-min;
+  min-height: 120px;
   box-shadow: $shadow-sm;
 
   &:hover {
     border-color: var(--color-primary);
-    background: rgba(255, 107, 53, 0.05);
-    box-shadow: $shadow-md;
+    background: rgba(var(--color-primary-rgb), 0.05);
     transform: translateY(-2px);
-  }
-
-  &:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
   }
 }
 
@@ -154,19 +149,26 @@ const selectType = (type: OrderType) => {
   margin: 0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   .order-type-selector__options {
     grid-template-columns: 1fr;
+    gap: $space-2;
   }
 
   .order-type-selector__option {
     flex-direction: row;
     text-align: left;
+    padding: $space-3 $space-4;
+    min-height: auto;
     gap: $space-4;
   }
 
   .order-type-selector__option-icon {
     margin-bottom: 0;
+  }
+
+  .order-type-selector__option-description {
+    display: none;
   }
 }
 

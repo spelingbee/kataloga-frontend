@@ -4,6 +4,7 @@
 // Initializes theme system and prevents Flash of Unstyled Content
 
 export default defineNuxtPlugin(() => {
+  console.log('[ThemePlugin] Initializing theme system...')
   // FOUC Prevention - Apply theme immediately before hydration
   const THEME_STORAGE_KEY = 'app-theme';
   

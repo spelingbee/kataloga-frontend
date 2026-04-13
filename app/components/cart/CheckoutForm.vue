@@ -1,140 +1,123 @@
 <template>
-  <div class="max-w-2xl mx-auto p-6 space-y-6">
+  <div class="checkout-page">
     <!-- Header -->
-    <div class="text-center mb-6">
-      <AppHeading level="h1" size="heading-xl" class="text-white mb-2">
-        Checkout
-      </AppHeading>
-      <AppText class="text-neutral-20">
-        Complete your order details
-      </AppText>
+    <div class="checkout-header">
+      <h1 class="checkout-title">{{ $t('checkout.title', 'Оформление заказа') }}</h1>
+      <p class="checkout-subtitle">{{ $t('checkout.subtitle', 'Пожалуйста, заполните данные для доставки') }}</p>
     </div>
 
-    <form class="space-y-6" @submit.prevent="handleSubmit">
-      <!-- Customer Information -->
-      <div class="bg-background-card/50 rounded-lg p-4 border border-border-subtle">
-        <AppHeading level="h2" size="heading-md" class="text-white mb-4">
-          Contact Information
-        </AppHeading>
-        <CustomerInfoForm
-          v-model="customerInfo"
-          :errors="errors.customerInfo"
-          @validate="validateCustomerInfo"
-        />
-      </div>
+    <form class="checkout-form" @submit.prevent="handleSubmit">
+      <div class="checkout-layout">
+        <!-- Main Content -->
+        <div class="checkout-main">
+          <!-- Customer Information -->
+          <section class="checkout-section">
+            <h2 class="section-title">
+              <BaseIcon name="user" size="sm" class="mr-2" />
+              {{ $t('checkout.customerInfo', 'Контактные данные') }}
+            </h2>
+            <CustomerInfoForm
+              v-model="customerInfo"
+              :errors="errors.customerInfo"
+              @validate="validateCustomerInfo"
+            />
+          </section>
 
-      <!-- Delivery Information -->
-      <div class="bg-background-card/50 rounded-lg p-4 border border-border-subtle">
-        <AppHeading level="h2" size="heading-md" class="text-white mb-4">
-          Delivery Details
-        </AppHeading>
-        <DeliveryForm
-          v-model="deliveryInfo"
-          :errors="errors.deliveryInfo"
-          @validate="validateDeliveryInfo"
-        />
-      </div>
+          <!-- Delivery Information -->
+          <section class="checkout-section">
+            <h2 class="section-title">
+              <BaseIcon name="truck" size="sm" class="mr-2" />
+              {{ $t('checkout.deliveryInfo', 'Доставка') }}
+            </h2>
+            <DeliveryForm
+              v-model="deliveryInfo"
+              :errors="errors.deliveryInfo"
+              @validate="validateDeliveryInfo"
+            />
+          </section>
 
-      <!-- Payment Information -->
-      <div class="bg-background-card/50 rounded-lg p-4 border border-border-subtle">
-        <AppHeading level="h2" size="heading-md" class="text-white mb-4">
-          Payment Method
-        </AppHeading>
-        <PaymentForm
-          v-model="paymentInfo"
-          :errors="errors.paymentInfo"
-          @validate="validatePaymentInfo"
-        />
-      </div>
-
-      <!-- Order Summary -->
-      <div class="bg-background-card/50 rounded-lg p-4 border border-border-subtle">
-        <AppHeading level="h2" size="heading-md" class="text-white mb-4">
-          Order Summary
-        </AppHeading>
-        <CartSummary
-          :total="orderTotal"
-          :item-count="itemCount"
-          :subtotal="subtotal"
-          :delivery-fee="deliveryFee"
-          :service-fee="serviceFee"
-          :discount="discount"
-          :min-order-amount="minOrderAmount"
-        />
-      </div>
-
-      <!-- Order Notes -->
-      <div class="bg-background-card/50 rounded-lg p-4 border border-border-subtle">
-        <AppHeading level="h3" size="heading-sm" class="text-white mb-3">
-          Special Instructions (Optional)
-        </AppHeading>
-        <BaseInput
-          v-model="orderNotes"
-          type="textarea"
-          placeholder="Any special requests or delivery instructions..."
-          :rows="3"
-          class="w-full"
-        />
-      </div>
-
-      <!-- Terms and Conditions -->
-      <div class="flex items-start space-x-3">
-        <BaseToggle
-          v-model="acceptTerms"
-          :error="errors.terms"
-        />
-        <div class="flex-1">
-          <AppText size="body-sm" class="text-neutral-20">
-            I agree to the 
-            <a href="/terms" class="text-primary-green hover:underline" target="_blank">
-              Terms of Service
-            </a>
-            and 
-            <a href="/privacy" class="text-primary-green hover:underline" target="_blank">
-              Privacy Policy
-            </a>
-          </AppText>
-          <AppText v-if="errors.terms" size="caption" class="text-primary-red mt-1">
-            {{ errors.terms }}
-          </AppText>
+          <!-- Payment Information -->
+          <section class="checkout-section">
+            <h2 class="section-title">
+              <BaseIcon name="credit-card" size="sm" class="mr-2" />
+              {{ $t('checkout.paymentMethod', 'Способ оплаты') }}
+            </h2>
+            <PaymentForm
+              v-model="paymentInfo"
+              :errors="errors.paymentInfo"
+              @validate="validatePaymentInfo"
+            />
+          </section>
         </div>
-      </div>
 
-      <!-- Submit Button -->
-      <div class="pt-4">
-        <BaseButton
-          type="submit"
-          variant="primary"
-          size="lg"
-          :loading="loading"
-          :disabled="!isFormValid || loading"
-          class="w-full bg-primary-green hover:bg-green-600 text-white font-semibold"
-        >
-          <template v-if="loading">
-            Processing Order...
-          </template>
-          <template v-else>
-            Place Order • {{ formatPrice(orderTotal) }}
-          </template>
-        </BaseButton>
+        <!-- Sidebar / Summary -->
+        <aside class="checkout-sidebar">
+          <div class="summary-card">
+            <h2 class="summary-title">{{ $t('checkout.summary', 'Ваш заказ') }}</h2>
+            
+            <CartSummary
+              :total="orderTotal"
+              :item-count="itemCount"
+              :subtotal="subtotal"
+              :delivery-fee="deliveryFee"
+              :service-fee="serviceFee"
+              :discount="discount"
+              :min-order-amount="minOrderAmount"
+            />
+
+            <!-- Terms and Conditions -->
+            <div class="terms-acceptance">
+              <label class="terms-label">
+                <input 
+                  type="checkbox" 
+                  v-model="acceptTerms" 
+                  class="terms-checkbox"
+                >
+                <span class="terms-text">
+                  {{ $t('checkout.acceptTerms', 'Я согласен с') }}
+                  <a href="/terms" class="terms-link" target="_blank">{{ $t('checkout.termsLink', 'условиями использования') }}</a>
+                </span>
+              </label>
+              <p v-if="errors.terms" class="error-text">{{ errors.terms }}</p>
+            </div>
+
+            <!-- Submit Button -->
+            <BaseButton
+              type="submit"
+              variant="primary"
+              size="lg"
+              :loading="loading"
+              :disabled="!isFormValid || loading"
+              class="submit-button"
+            >
+              {{ loading ? $t('checkout.processing', 'Обработка...') : `${$t('checkout.placeOrder', 'Оформить заказ')} • ${formatPrice(orderTotal)}` }}
+            </BaseButton>
+
+            <p v-if="submitError" class="submit-error">
+              {{ submitError }}
+            </p>
+          </div>
+        </aside>
       </div>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { CustomerInfo, CreateOrderDto } from '~/types'
 import { useCartStore } from '~/stores/cart'
+import { useTenantStore } from '~/stores/tenant'
 
-// Props & Emits
+const { t } = useI18n()
+const cartStore = useCartStore()
+const tenantStore = useTenantStore()
+
 const emit = defineEmits<{
   submit: [orderData: CreateOrderDto]
   'validation-change': [isValid: boolean]
 }>()
-
-// Stores
-const cartStore = useCartStore()
 
 // Reactive state
 const customerInfo = ref<CustomerInfo>({
@@ -146,24 +129,23 @@ const customerInfo = ref<CustomerInfo>({
 })
 
 const deliveryInfo = ref({
+  type: 'delivery',
   address: '',
-  city: '',
-  postalCode: '',
+  pickupLocation: '',
   deliveryTime: 'asap',
+  customDate: '',
+  customTime: '',
   instructions: ''
 })
 
 const paymentInfo = ref({
-  method: 'cash',
-  cardNumber: '',
-  expiryDate: '',
-  cvv: '',
-  cardholderName: ''
+  method: 'CASH',
+  cashAmount: ''
 })
 
-const orderNotes = ref('')
 const acceptTerms = ref(false)
 const loading = ref(false)
+const submitError = ref('')
 
 // Validation errors
 const errors = reactive({
@@ -177,10 +159,10 @@ const errors = reactive({
 const items = computed(() => cartStore.items)
 const subtotal = computed(() => cartStore.total)
 const itemCount = computed(() => cartStore.itemCount)
-const deliveryFee = computed(() => 0) // TODO: Calculate based on location
+const deliveryFee = computed(() => 0) // TODO: Dynamic calculation
 const serviceFee = computed(() => 0)
 const discount = computed(() => 0)
-const minOrderAmount = computed(() => 500) // 500 rubles minimum
+const minOrderAmount = computed(() => tenantStore.currentTenant?.settings?.deliverySettings?.minOrderAmount || 0)
 const orderTotal = computed(() => subtotal.value + deliveryFee.value + serviceFee.value - discount.value)
 
 const isFormValid = computed(() => {
@@ -191,7 +173,7 @@ const isFormValid = computed(() => {
     acceptTerms.value &&
     customerInfo.value.name &&
     customerInfo.value.phone &&
-    deliveryInfo.value.address
+    (deliveryInfo.value.type === 'pickup' ? deliveryInfo.value.pickupLocation : deliveryInfo.value.address)
   )
 })
 
@@ -213,12 +195,11 @@ const validatePaymentInfo = (validationErrors: Record<string, string>) => {
 
 // Form submission
 const handleSubmit = async () => {
-  // Validate terms acceptance
+  submitError.value = ''
+  
   if (!acceptTerms.value) {
-    errors.terms = 'You must accept the terms and conditions'
+    errors.terms = t('checkout.termsRequired', 'Необходимо принять условия')
     return
-  } else {
-    errors.terms = ''
   }
 
   if (!isFormValid.value) {
@@ -230,61 +211,180 @@ const handleSubmit = async () => {
   try {
     const orderData: CreateOrderDto = {
       items: items.value.map(item => ({
-        productId: item.menuItem.id,
+        productId: item.productId,
         quantity: item.quantity,
         price: item.menuItem.price,
         customizations: item.customizations
       })),
-      customerInfo: customerInfo.value,
-      notes: orderNotes.value,
-      deliveryAddress: deliveryInfo.value.address
+      customerInfo: {
+        ...customerInfo.value,
+        address: deliveryInfo.value.address,
+        notes: deliveryInfo.value.instructions
+      },
+      paymentMethod: paymentInfo.value.method as any,
+      notes: deliveryInfo.value.instructions,
+      deliveryAddress: deliveryInfo.value.type === 'delivery' ? deliveryInfo.value.address : `PICKUP: ${deliveryInfo.value.pickupLocation}`
     }
 
     emit('submit', orderData)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Order submission error:', error)
+    submitError.value = error.message || t('checkout.errorGeneric', 'Не удалось создать заказ. Пожалуйста, попробуйте позже.')
   } finally {
     loading.value = false
   }
 }
 
-// Helper methods
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('ru-RU', {
+  return new Intl.NumberFormat('ru-KG', {
     style: 'currency',
-    currency: 'RUB',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    currency: 'KGS',
+    minimumFractionDigits: 0
   }).format(price)
 }
 
-// Watch for terms acceptance
 watch(acceptTerms, (value) => {
-  if (value) {
-    errors.terms = ''
-  }
+  if (value) errors.terms = ''
   emit('validation-change', isFormValid.value)
 })
 </script>
-</template>
 
-<style scoped>
-/* Form styling */
-.space-y-6 > * + * {
-  margin-top: 1.5rem;
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/radius' as *;
+
+.checkout-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $space-6 $space-4;
 }
 
-/* Smooth transitions */
-.transition-colors {
-  transition: color 0.2s ease-in-out;
+.checkout-header {
+  text-align: center;
+  margin-bottom: $space-8;
+
+  .checkout-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: $space-2;
+  }
+
+  .checkout-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+  }
 }
 
-/* Focus styles */
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  ring: 2px;
-  ring-color: theme('colors.primary.green');
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: $space-8;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.checkout-main {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+}
+
+.checkout-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-xl;
+  padding: $space-6;
+
+  .section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: $space-6;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-primary);
+    padding-bottom: $space-3;
+  }
+}
+
+.checkout-sidebar {
+  @media (min-width: 1025px) {
+    position: sticky;
+    top: $space-6;
+    height: fit-content;
+  }
+}
+
+.summary-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-xl;
+  padding: $space-6;
+
+  .summary-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: $space-4;
+  }
+}
+
+.terms-acceptance {
+  margin: $space-6 0;
+
+  .terms-label {
+    display: flex;
+    gap: $space-3;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+
+  .terms-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-success);
+    cursor: pointer;
+    margin-top: 2px;
+  }
+
+  .terms-link {
+    color: var(--color-success);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .error-text {
+    color: var(--color-error);
+    font-size: 0.75rem;
+    margin-top: $space-2;
+  }
+}
+
+.submit-button {
+  width: 100%;
+}
+
+.submit-error {
+  margin-top: $space-4;
+  padding: $space-3;
+  background: rgba(var(--color-error-rgb), 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: $radius-md;
+  color: var(--color-error);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.mr-2 {
+  margin-right: $space-2;
 }
 </style>
+

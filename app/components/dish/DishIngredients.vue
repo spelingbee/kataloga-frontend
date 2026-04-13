@@ -1,13 +1,9 @@
 <template>
-  <div class="space-y-4">
-    <AppHeading level="h4" size="heading-md" class="text-white">
-      Ingredients
-    </AppHeading>
-    
-    <div class="space-y-3">
+  <div class="dish-ingredients">
+    <div class="dish-ingredients__list">
       <IngredientSelector
-        v-for="ingredient in ingredients"
-        :key="ingredient.id"
+        v-for="(ingredient, index) in mappedIngredients"
+        :key="index"
         :ingredient="ingredient"
         :selected="selectedIngredients.includes(ingredient.id)"
         @toggle="toggleIngredient"
@@ -15,8 +11,8 @@
     </div>
 
     <!-- Ingredient Summary -->
-    <div v-if="selectedIngredients.length > 0" class="mt-4 p-3 bg-background-dark/50 rounded-lg">
-      <AppText size="body-sm" class="text-neutral-20">
+    <div v-if="selectedIngredients.length > 0" class="dish-ingredients__summary">
+      <AppText size="body-sm">
         Selected: {{ selectedIngredientsText }}
       </AppText>
     </div>
@@ -37,7 +33,7 @@ interface Ingredient {
 }
 
 interface Props {
-  ingredients: Ingredient[]
+  ingredients: (Ingredient | string)[]
   selectedIngredients: string[]
 }
 
@@ -48,8 +44,22 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+const mappedIngredients = computed<Ingredient[]>(() => {
+  return props.ingredients.map((item, index) => {
+    if (typeof item === 'string') {
+      return {
+        id: `ing-${index}`,
+        name: item,
+        isDefault: true,
+        isOptional: true
+      }
+    }
+    return item
+  })
+})
+
 const selectedIngredientsText = computed(() => {
-  const selectedNames = props.ingredients
+  const selectedNames = mappedIngredients.value
     .filter(ingredient => props.selectedIngredients.includes(ingredient.id))
     .map(ingredient => ingredient.name)
   
@@ -60,3 +70,27 @@ const toggleIngredient = (ingredientId: string) => {
   emit('toggle', ingredientId)
 }
 </script>
+
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/radius' as *;
+
+.dish-ingredients {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.dish-ingredients__list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.dish-ingredients__summary {
+  padding: $space-3;
+  background: var(--bg-secondary);
+  border-radius: $radius-md;
+  color: var(--text-secondary);
+}
+</style>

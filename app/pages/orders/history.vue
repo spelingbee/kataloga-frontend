@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="order-history-page">
     <!-- Header -->
     <div class="order-history-page__header">
@@ -63,7 +63,7 @@
 <script setup lang="ts">
 import type { Order, OrderStatus } from '~/types'
 import { useOrderStore } from '~/stores/order'
-import { useAuthStore } from '~/stores/auth'
+import { useUserStore } from '~/stores/user'
 import OrderHistory from '~/components/order/OrderHistory.vue'
 
 // Page metadata
@@ -74,7 +74,7 @@ definePageMeta({
 
 // Stores
 const orderStore = useOrderStore()
-const authStore = useAuthStore()
+const authStore = useUserStore()
 const router = useRouter()
 
 // State

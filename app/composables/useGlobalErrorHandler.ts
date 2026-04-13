@@ -88,8 +88,8 @@ export function useGlobalErrorHandler() {
   const handleAuthError = async (error: ApiError, meta: ApiMeta): Promise<void> => {
     try {
       // Clear authentication tokens using auth store
-      const { useAuthStore } = await import('~/stores/auth')
-      const authStore = useAuthStore()
+      const { useUserStore } = await import('~/stores/user')
+      const authStore = useUserStore()
       
       if (authStore.clearTokens) {
         authStore.clearTokens()

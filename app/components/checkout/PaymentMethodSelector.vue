@@ -1,23 +1,9 @@
 <template>
   <div class="payment-method-selector">
-    <h3 class="payment-method-selector__title">Select Payment Method</h3>
+    <h3 class="payment-method-selector__title">{{ $t('payment.selectMethod') }}</h3>
 
     <!-- Payment Method Selection -->
     <div class="payment-method-selector__methods">
-      <!-- Stripe Payment -->
-      <button
-        class="payment-method-selector__method"
-        :class="{ 'payment-method-selector__method--active': selectedMethod === 'STRIPE' }"
-        @click="selectMethod('STRIPE')"
-      >
-        <div class="payment-method-selector__method-icon">
-          <BaseIcon name="credit-card" size="md" />
-        </div>
-        <div class="payment-method-selector__method-info">
-          <span class="payment-method-selector__method-name">Card Payment</span>
-          <span class="payment-method-selector__method-desc">Pay securely with Visa, Mastercard</span>
-        </div>
-      </button>
 
       <!-- Cash Payment -->
       <button
@@ -26,11 +12,14 @@
         @click="selectMethod('CASH')"
       >
         <div class="payment-method-selector__method-icon">
-          <BaseIcon name="banknote" size="md" />
+          <BaseIcon name="banknotes" size="md" />
         </div>
         <div class="payment-method-selector__method-info">
-          <span class="payment-method-selector__method-name">Cash Payment</span>
-          <span class="payment-method-selector__method-desc">Pay with cash on delivery</span>
+          <span class="payment-method-selector__method-name">{{ $t('payment.methods.CASH') }}</span>
+          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.CASH_DESC', 'Оплата наличными при получении') }}</span>
+        </div>
+        <div v-if="selectedMethod === 'CASH'" class="payment-method-selector__method-check">
+          <BaseIcon name="check" size="sm" />
         </div>
       </button>
 
@@ -41,38 +30,93 @@
         @click="selectMethod('TRANSFER')"
       >
         <div class="payment-method-selector__method-icon">
-          <BaseIcon name="smartphone" size="md" />
+          <BaseIcon name="phone" size="md" />
         </div>
         <div class="payment-method-selector__method-info">
-          <span class="payment-method-selector__method-name">Bank Transfer</span>
-          <span class="payment-method-selector__method-desc">Transfer to WhatsApp and confirm</span>
+          <span class="payment-method-selector__method-name">{{ $t('payment.methods.TRANSFER') }}</span>
+          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.TRANSFER_DESC', 'Перевод на карту или кошелек') }}</span>
+        </div>
+        <div v-if="selectedMethod === 'TRANSFER'" class="payment-method-selector__method-check">
+          <BaseIcon name="check" size="sm" />
         </div>
       </button>
+
+      <!-- Stripe Payment (Optional, can be enabled via config) -->
+      <button
+        v-if="hasStripe"
+        class="payment-method-selector__method"
+        :class="{ 'payment-method-selector__method--active': selectedMethod === 'STRIPE' }"
+        @click="selectMethod('STRIPE')"
+      >
+        <div class="payment-method-selector__method-icon">
+          <BaseIcon name="credit-card" size="md" />
+        </div>
+        <div class="payment-method-selector__method-info">
+          <span class="payment-method-selector__method-name">{{ $t('payment.methods.STRIPE') }}</span>
+          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.STRIPE_DESC', 'Оплата картой на сайте') }}</span>
+        </div>
+        <div v-if="selectedMethod === 'STRIPE'" class="payment-method-selector__method-check">
+          <BaseIcon name="check" size="md" />
+        </div>
+      </button>
+    </div>
+
+    <!-- Optional: Payment Info Banner -->
+    <div v-if="selectedMethodInfo" class="payment-method-selector__info-banner">
+      <BaseIcon name="info" size="md" class="info-icon" />
+      <div class="info-content">
+        <p class="info-text">{{ selectedMethodInfo.bannerText }}</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
-type PaymentMethodType = 'STRIPE' | 'CASH' | 'TRANSFER'
+type PaymentMethodType = 'CASH' | 'TRANSFER' | 'STRIPE'
 
 interface Props {
   modelValue: PaymentMethodType
   orderTotal: number
+  hasStripe?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  hasStripe: false
+})
+
 const emit = defineEmits<{
   'update:modelValue': [value: PaymentMethodType]
 }>()
 
-const selectedMethod = ref<PaymentMethodType>(props.modelValue || 'STRIPE')
+const { t } = useI18n()
+const selectedMethod = ref<PaymentMethodType>(props.modelValue || 'CASH')
 
 const selectMethod = (method: PaymentMethodType) => {
   selectedMethod.value = method
   emit('update:modelValue', method)
 }
+
+const selectedMethodInfo = computed(() => {
+  if (selectedMethod.value === 'CASH') {
+    return {
+      bannerText: t('payment.methods.CASH_INFO', 'Оплата наличными при получении заказа.')
+    }
+  }
+  if (selectedMethod.value === 'TRANSFER') {
+    return {
+      bannerText: t('payment.methods.TRANSFER_INFO', 'После оформления заказа мы пришлем реквизиты для перевода.')
+    }
+  }
+  if (selectedMethod.value === 'STRIPE') {
+    return {
+      bannerText: t('payment.methods.STRIPE_DESC', 'Безопасная оплата картой на сайте.')
+    }
+  }
+  return null
+})
 
 // Watch for external changes
 watch(() => props.modelValue, (newValue) => {
@@ -111,74 +155,93 @@ watch(() => props.modelValue, (newValue) => {
   display: flex;
   align-items: center;
   gap: $space-4;
-  padding: $space-6;
-  background: var(--bg-secondary);
-  border: 2px solid var(--border-primary);
-  border-radius: $radius-card;
+  padding: $space-5;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-lg;
   cursor: pointer;
-  transition: $transition-card;
+  transition: all 0.2s ease;
   text-align: left;
   min-height: $touch-target-min;
-  box-shadow: $shadow-sm;
+  position: relative;
 
   &:hover {
     border-color: var(--color-primary);
-    background: rgba(255, 107, 53, 0.05);
-    box-shadow: $shadow-md;
-    transform: translateY(-1px);
+    background: var(--bg-tertiary);
   }
 
   &:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
   }
 }
 
 .payment-method-selector__method--active {
   border-color: var(--color-primary);
-  background: rgba(255, 107, 53, 0.1);
-  box-shadow: $shadow-md;
+  background: rgba(255, 107, 53, 0.05) !important;
+  border-width: 2px;
 }
 
 .payment-method-selector__method-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
+  background: var(--bg-tertiary);
   border-radius: $radius-md;
   color: var(--color-primary);
-  box-shadow: $shadow-sm;
   flex-shrink: 0;
 }
 
 .payment-method-selector__method-info {
   display: flex;
   flex-direction: column;
-  gap: $space-1;
+  gap: 0.125rem;
   flex: 1;
 }
 
 .payment-method-selector__method-name {
-  font-size: $text-base;
-  font-weight: $font-semibold;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
 .payment-method-selector__method-desc {
-  font-size: $text-sm;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 
-// Reduced motion support
-@media (prefers-reduced-motion: reduce) {
+.payment-method-selector__method-check {
+  color: var(--color-primary);
+  background: rgba(255, 107, 53, 0.1);
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.payment-method-selector__info {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  margin-top: $space-4;
+  padding: $space-3 $space-4;
+  background: var(--bg-tertiary);
+  border-radius: $radius-md;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border-primary);
+
+  svg {
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+}
+
+// Mobile overrides
+@media (max-width: 640px) {
   .payment-method-selector__method {
-    transition: none;
-    
-    &:hover {
-      transform: none;
-    }
+    padding: $space-4;
   }
 }
 </style>

@@ -109,7 +109,7 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth'
+import { useUserStore } from '~/stores/user'
 
 // Meta
 definePageMeta({
@@ -118,7 +118,7 @@ definePageMeta({
 })
 
 // Composables
-const authStore = useAuthStore()
+const authStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
 

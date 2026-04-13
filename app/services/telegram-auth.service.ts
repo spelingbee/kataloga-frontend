@@ -22,11 +22,7 @@ export interface TelegramAuthResponse {
 }
 
 export class TelegramAuthService {
-  private apiBaseUrl: string
-
-  constructor(apiBaseUrl: string) {
-    this.apiBaseUrl = apiBaseUrl
-  }
+  constructor(private apiBaseUrl: string) {}
 
   /**
    * Authenticate user with Telegram init data
@@ -91,15 +87,4 @@ export class TelegramAuthService {
     // Basic validation - actual validation happens on server
     return !!initData && initData.length > 0
   }
-}
-
-// Create singleton instance
-let telegramAuthService: TelegramAuthService | null = null
-
-export const useTelegramAuthService = () => {
-  if (!telegramAuthService) {
-    const config = useRuntimeConfig()
-    telegramAuthService = new TelegramAuthService(config.public.apiBaseUrl as string)
-  }
-  return telegramAuthService
 }

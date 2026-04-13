@@ -17,7 +17,7 @@
       
       <div class="order-status-tracker__content">
         <AppHeading level="h3" size="heading-md" class="order-status-tracker__title">
-          {{ getStatusTitle(order.status) }}
+          {{ $t(`status.order.${order.status}`) }}
         </AppHeading>
         <AppText size="body-md" class="order-status-tracker__description">
           {{ getStatusDescription(order.status) }}
@@ -36,7 +36,7 @@
     <!-- Timeline -->
     <div v-if="showTimeline && timeline.length > 0" class="order-status-tracker__timeline">
       <AppHeading level="h4" size="heading-sm" class="order-status-tracker__timeline-title">
-        Order Timeline
+        {{ $t('order.timeline', 'История заказа') }}
       </AppHeading>
       
       <div class="order-status-tracker__timeline-list">
@@ -68,7 +68,7 @@
         @click="$emit('cancel-order', order.id)"
       >
         <BaseIcon name="x" size="sm" class="mr-2" />
-        Cancel Order
+        {{ $t('common.cancelOrder', 'Отменить заказ') }}
       </BaseButton>
 
       <BaseButton
@@ -78,7 +78,7 @@
         @click="$emit('contact-support', order.id)"
       >
         <BaseIcon name="help-circle" size="sm" class="mr-2" />
-        Contact Support
+        {{ $t('common.contactSupport', 'Связаться с поддержкой') }}
       </BaseButton>
 
       <BaseButton
@@ -88,7 +88,7 @@
         @click="$emit('track-delivery', order.id)"
       >
         <BaseIcon name="map" size="sm" class="mr-2" />
-        Track Delivery
+        {{ $t('order.trackDelivery', 'Отследить доставку') }}
       </BaseButton>
     </div>
   </div>
@@ -96,9 +96,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { Order, OrderStatus as OrderStatusEnum } from '~/types'
 import { OrderStatus } from '~/types'
-import { useTenant } from '~/composables/useTenant'
+
+const { t } = useI18n()
 
 // Props & Emits
 interface Props {
@@ -184,70 +186,36 @@ const getStatusIconColor = (status: OrderStatusEnum): string => {
   return colors[status] || 'text-neutral-20'
 }
 
-const getStatusTitle = (status: OrderStatusEnum): string => {
-  const titles = {
-    [OrderStatus.PENDING]: 'Order Received',
-    [OrderStatus.CONFIRMED]: 'Order Confirmed',
-    [OrderStatus.PREPARING]: 'Preparing Your Order',
-    [OrderStatus.READY]: 'Order Ready',
-    [OrderStatus.OUT_FOR_DELIVERY]: 'Out for Delivery',
-    [OrderStatus.DELIVERED]: 'Order Delivered',
-    [OrderStatus.CANCELLED]: 'Order Cancelled'
-  }
-  return titles[status] || 'Unknown Status'
-}
-
 const getStatusDescription = (status: OrderStatusEnum): string => {
-  const descriptions = {
-    [OrderStatus.PENDING]: 'We have received your order and are processing it.',
-    [OrderStatus.CONFIRMED]: 'Your order has been confirmed and will be prepared soon.',
-    [OrderStatus.PREPARING]: 'Our chefs are preparing your delicious meal.',
-    [OrderStatus.READY]: 'Your order is ready for pickup or delivery.',
-    [OrderStatus.OUT_FOR_DELIVERY]: 'Your order is on its way to you.',
-    [OrderStatus.DELIVERED]: 'Your order has been successfully delivered. Enjoy!',
-    [OrderStatus.CANCELLED]: 'This order has been cancelled.'
-  }
-  return descriptions[status] || 'Status information not available.'
+  // We can add localized descriptions too if needed, but for now using titles is enough
+  // Or add status_description keys to locales
+  return t(`status.description.${status}`, '') 
 }
-
-// Tenant context
-const { tenantSettings } = useTenant()
-
-const locale = computed(() => {
-  const language = tenantSettings.value?.language || 'en'
-  const localeMap: Record<string, string> = {
-    en: 'en-US',
-    ru: 'ru-RU',
-    de: 'de-DE',
-    fr: 'fr-FR',
-    es: 'es-ES'
-  }
-  return localeMap[language] || 'en-US'
-})
 
 // Date/time formatting
 const formatTime = (dateString: string): string => {
   const date = new Date(dateString)
-  return new Intl.DateTimeFormat(locale.value, {
+  return new Intl.DateTimeFormat('ru-RU', {
     hour: '2-digit',
-    minute: '2-digit',
-    timeZone: tenantSettings.value?.timezone || 'UTC'
+    minute: '2-digit'
   }).format(date)
 }
 
 const formatEstimatedTime = (minutes: number): string => {
   if (minutes < 60) {
-    return `${minutes} minutes remaining`
+    return t('order.timeRemaining', { count: minutes }, `${minutes} мин осталось`)
   } else {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return `${hours}h ${remainingMinutes}m remaining`
+    return `${hours}ч ${remainingMinutes}м осталось`
   }
 }
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/abstracts/variables' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/radius' as *;
 
 .order-status-tracker {
   width: 100%;
@@ -261,8 +229,9 @@ const formatEstimatedTime = (minutes: number): string => {
   display: flex;
   gap: $space-6;
   padding: $space-6;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: $radius-lg;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-xl;
   margin-bottom: $space-8;
 }
 
@@ -273,8 +242,8 @@ const formatEstimatedTime = (minutes: number): string => {
   justify-content: center;
   width: 64px;
   height: 64px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: $radius-md;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: $radius-lg;
 }
 
 .order-status-tracker__content {
@@ -282,12 +251,12 @@ const formatEstimatedTime = (minutes: number): string => {
 }
 
 .order-status-tracker__title {
-  color: white;
+  color: var(--text-primary);
   margin-bottom: $space-2;
 }
 
 .order-status-tracker__description {
-  color: $color-neutral-20;
+  color: var(--text-secondary);
   margin-bottom: $space-4;
 }
 
@@ -295,14 +264,10 @@ const formatEstimatedTime = (minutes: number): string => {
   display: flex;
   align-items: center;
   gap: $space-2;
-}
-
-.order-status-tracker__time-icon {
   color: var(--color-warning);
 }
 
 .order-status-tracker__time-text {
-  color: var(--color-warning);
   font-weight: 500;
 }
 
@@ -311,7 +276,7 @@ const formatEstimatedTime = (minutes: number): string => {
 }
 
 .order-status-tracker__timeline-title {
-  color: white;
+  color: var(--text-primary);
   margin-bottom: $space-4;
 }
 
@@ -325,8 +290,9 @@ const formatEstimatedTime = (minutes: number): string => {
   display: flex;
   gap: $space-4;
   padding: $space-4;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: $radius-md;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-lg;
 }
 
 .order-status-tracker__timeline-dot {
@@ -343,12 +309,12 @@ const formatEstimatedTime = (minutes: number): string => {
 }
 
 .order-status-tracker__timeline-message {
-  color: white;
+  color: var(--text-primary);
   margin-bottom: $space-1;
 }
 
 .order-status-tracker__timeline-time {
-  color: $color-neutral-20;
+  color: var(--text-tertiary);
 }
 
 .order-status-tracker__actions {
@@ -394,3 +360,4 @@ const formatEstimatedTime = (minutes: number): string => {
   }
 }
 </style>
+

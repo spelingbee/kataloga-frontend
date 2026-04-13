@@ -3,7 +3,7 @@ import { resolve } from 'path'
 
 export default defineConfig({
   test: {
-    environment: 'happy-dom',
+    environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.ts'],
@@ -15,6 +15,12 @@ export default defineConfig({
       'coverage/',
       'app/**',
     ],
+    // Mock @vue/devtools-kit to prevent it from calling localStorage at module init time
+    server: {
+      deps: {
+        inline: ['@vue/devtools-kit'],
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -35,6 +41,7 @@ export default defineConfig({
       '~': resolve(__dirname, './app'),
       '@': resolve(__dirname, './app'),
       '#app': resolve(__dirname, './app'),
+      '@vue/devtools-kit': resolve(__dirname, './tests/__mocks__/devtools-kit.ts'),
     },
   },
 })

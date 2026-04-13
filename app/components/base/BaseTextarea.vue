@@ -114,7 +114,7 @@ const slots = defineSlots<{}>()
 const textareaRef = ref<HTMLTextAreaElement>()
 const isFocused = ref(false)
 
-const textareaId = computed(() => `textarea-${Math.random().toString(36).substring(2, 11)}`)
+const textareaId = useId()
 
 const hasValue = computed(() => {
   return modelValue.value !== undefined && modelValue.value !== null && modelValue.value !== ''

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="order-history">
     <!-- Loading State -->
     <div v-if="loading && !orders.length" class="order-history__loading">
@@ -8,12 +8,12 @@
 
     <!-- Empty State -->
     <div v-else-if="!orders.length" class="order-history__empty">
-      <div class="order-history__empty-icon">📦</div>
+      <div class="order-history__empty-icon">??</div>
       <h3 class="order-history__empty-title">No orders yet</h3>
       <p class="order-history__empty-text">
         Start exploring our menu and place your first order!
       </p>
-      <NuxtLink to="/menu/browse" class="order-history__empty-button">
+      <NuxtLink to="/" class="order-history__empty-button">
         Browse Menu
       </NuxtLink>
     </div>
@@ -46,7 +46,7 @@
             :key="item.id"
             class="order-history__item-row"
           >
-            <span class="order-history__item-quantity">{{ item.quantity }}×</span>
+            <span class="order-history__item-quantity">{{ item.quantity }}?</span>
             <span class="order-history__item-name">{{ item.menuItem.name }}</span>
             <span class="order-history__item-price">${{ item.subtotal.toFixed(2) }}</span>
           </div>
@@ -114,7 +114,7 @@
       <div class="order-history__modal" @click.stop>
         <div class="order-history__modal-header">
           <h3 class="order-history__modal-title">{{ reorderNotification.title }}</h3>
-          <button class="order-history__modal-close" @click="closeReorderNotification">×</button>
+          <button class="order-history__modal-close" @click="closeReorderNotification">?</button>
         </div>
         <div class="order-history__modal-body">
           <p class="order-history__modal-message">{{ reorderNotification.message }}</p>
@@ -130,7 +130,7 @@
               >
                 <span>{{ change.itemName }}</span>
                 <span class="order-history__modal-price-change">
-                  ${{ change.oldPrice.toFixed(2) }} → ${{ change.newPrice.toFixed(2) }}
+                  ${{ change.oldPrice.toFixed(2) }} > ${{ change.newPrice.toFixed(2) }}
                 </span>
               </li>
             </ul>
@@ -282,7 +282,7 @@ const handleReorder = async (order: Order): Promise<void> => {
     } else {
       // No changes, add directly to cart
       await addOrderToCart(order)
-      router.push('/cart')
+      router.push('/checkout')
     }
   } catch (error) {
     console.error('Error reordering:', error)
@@ -341,7 +341,7 @@ const confirmReorder = async (): Promise<void> => {
   if (order) {
     await addOrderToCart(order)
     closeReorderNotification()
-    router.push('/cart')
+    router.push('/checkout')
   }
 }
 
@@ -863,3 +863,4 @@ const closeReorderNotification = (): void => {
   }
 }
 </style>
+

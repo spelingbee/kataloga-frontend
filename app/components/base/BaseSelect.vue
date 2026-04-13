@@ -116,7 +116,7 @@ const slots = defineSlots<{}>()
 const selectRef = ref<HTMLSelectElement>()
 const isFocused = ref(false)
 
-const selectId = computed(() => `select-${Math.random().toString(36).substring(2, 11)}`)
+const selectId = useId()
 
 const hasValue = computed(() => {
   return modelValue.value !== undefined && modelValue.value !== null && modelValue.value !== ''

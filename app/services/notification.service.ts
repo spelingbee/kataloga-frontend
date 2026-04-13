@@ -21,7 +21,7 @@ interface NotificationPreferences {
   reminders: boolean
 }
 
-class NotificationService {
+export class NotificationService {
   private ws: WebSocket | null = null
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
@@ -30,7 +30,7 @@ class NotificationService {
   private inAppNotifications: InAppNotification[] = []
   private unreadCount = 0
 
-  constructor() {
+  constructor(private config: any) {
     if (import.meta.client) {
       this.loadNotificationsFromStorage()
     }
@@ -43,8 +43,7 @@ class NotificationService {
     if (!import.meta.client) return
     if (this.ws && this.ws.readyState === WebSocket.OPEN) return
 
-    const config = useRuntimeConfig()
-    const wsUrl = config.public.wsUrl || 'ws://localhost:3000'
+    const wsUrl = this.config.public.wsUrl || 'ws://localhost:3000'
     const url = orderId ? `${wsUrl}/notifications?orderId=${orderId}` : `${wsUrl}/notifications`
 
     try {
@@ -258,8 +257,7 @@ class NotificationService {
    */
   async getVapidPublicKey(): Promise<string | null> {
     try {
-      const config = useRuntimeConfig()
-      const response = await fetch(`${config.public.apiUrl}/notifications/vapid-public-key`)
+      const response = await fetch(`${this.config.public.apiUrl}/notifications/vapid-public-key`)
       
       if (!response.ok) {
         throw new Error('Failed to get VAPID public key')
@@ -276,17 +274,13 @@ class NotificationService {
   /**
    * Register push subscription with backend
    */
-  async registerPushSubscription(subscription: PushSubscription): Promise<boolean> {
+  async registerPushSubscription(subscription: PushSubscription, tenantId: string): Promise<boolean> {
     try {
-      const config = useRuntimeConfig()
-      const { useTenantStore } = await import('~/stores/tenant')
-      const tenantStore = useTenantStore()
-      
-      const response = await fetch(`${config.public.apiUrl}/notifications/subscribe`, {
+      const response = await fetch(`${this.config.public.apiUrl}/notifications/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': tenantStore.tenantId || ''
+          'X-Tenant-ID': tenantId || ''
         },
         body: JSON.stringify({
           subscription: subscription.toJSON()
@@ -303,17 +297,13 @@ class NotificationService {
   /**
    * Unregister push subscription from backend
    */
-  async unregisterPushSubscription(subscription: PushSubscription): Promise<void> {
+  async unregisterPushSubscription(subscription: PushSubscription, tenantId: string): Promise<void> {
     try {
-      const config = useRuntimeConfig()
-      const { useTenantStore } = await import('~/stores/tenant')
-      const tenantStore = useTenantStore()
-      
-      await fetch(`${config.public.apiUrl}/notifications/unsubscribe`, {
+      await fetch(`${this.config.public.apiUrl}/notifications/unsubscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': tenantStore.tenantId || ''
+          'X-Tenant-ID': tenantId || ''
         },
         body: JSON.stringify({
           subscription: subscription.toJSON()
@@ -327,17 +317,13 @@ class NotificationService {
   /**
    * Send test notification
    */
-  async sendTestNotification(): Promise<boolean> {
+  async sendTestNotification(tenantId: string): Promise<boolean> {
     try {
-      const config = useRuntimeConfig()
-      const { useTenantStore } = await import('~/stores/tenant')
-      const tenantStore = useTenantStore()
-      
-      const response = await fetch(`${config.public.apiUrl}/notifications/test`, {
+      const response = await fetch(`${this.config.public.apiUrl}/notifications/test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': tenantStore.tenantId || ''
+          'X-Tenant-ID': tenantId || ''
         }
       })
 
@@ -351,17 +337,13 @@ class NotificationService {
   /**
    * Update notification preferences
    */
-  async updateNotificationPreferences(preferences: NotificationPreferences): Promise<boolean> {
+  async updateNotificationPreferences(preferences: NotificationPreferences, tenantId: string): Promise<boolean> {
     try {
-      const config = useRuntimeConfig()
-      const { useTenantStore } = await import('~/stores/tenant')
-      const tenantStore = useTenantStore()
-      
-      const response = await fetch(`${config.public.apiUrl}/notifications/preferences`, {
+      const response = await fetch(`${this.config.public.apiUrl}/notifications/preferences`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': tenantStore.tenantId || ''
+          'X-Tenant-ID': tenantId || ''
         },
         body: JSON.stringify(preferences)
       })
@@ -376,15 +358,11 @@ class NotificationService {
   /**
    * Get notification preferences
    */
-  async getNotificationPreferences(): Promise<NotificationPreferences | null> {
+  async getNotificationPreferences(tenantId: string): Promise<NotificationPreferences | null> {
     try {
-      const config = useRuntimeConfig()
-      const { useTenantStore } = await import('~/stores/tenant')
-      const tenantStore = useTenantStore()
-      
-      const response = await fetch(`${config.public.apiUrl}/notifications/preferences`, {
+      const response = await fetch(`${this.config.public.apiUrl}/notifications/preferences`, {
         headers: {
-          'X-Tenant-ID': tenantStore.tenantId || ''
+          'X-Tenant-ID': tenantId || ''
         }
       })
 
@@ -402,17 +380,13 @@ class NotificationService {
   /**
    * Update push subscription for tenant
    */
-  async updatePushSubscriptionForTenant(): Promise<boolean> {
+  async updatePushSubscriptionForTenant(tenantId: string): Promise<boolean> {
     try {
-      const config = useRuntimeConfig()
-      const { useTenantStore } = await import('~/stores/tenant')
-      const tenantStore = useTenantStore()
-      
-      const response = await fetch(`${config.public.apiUrl}/notifications/update-tenant`, {
+      const response = await fetch(`${this.config.public.apiUrl}/notifications/update-tenant`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Tenant-ID': tenantStore.tenantId || ''
+          'X-Tenant-ID': tenantId || ''
         }
       })
 
@@ -422,14 +396,4 @@ class NotificationService {
       return false
     }
   }
-}
-
-// Singleton instance
-let notificationServiceInstance: NotificationService | null = null
-
-export const useNotificationService = (): NotificationService => {
-  if (!notificationServiceInstance) {
-    notificationServiceInstance = new NotificationService()
-  }
-  return notificationServiceInstance
 }

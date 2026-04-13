@@ -24,15 +24,6 @@ vi.mock('vue', () => ({
   onMounted: () => {},
 }))
 
-// Mock useOfflineCart to avoid IndexedDB errors
-vi.mock('~/composables/useOfflineCart', () => ({
-  useOfflineCart: () => ({
-    saveCartOffline: vi.fn(),
-    loadCartOffline: vi.fn(() => []),
-    isOnline: { value: true },
-    savePendingOrder: vi.fn()
-  })
-}))
 
 // Mock useTelegramHaptic to avoid Telegram API errors
 vi.mock('~/composables/useTelegramHaptic', () => ({

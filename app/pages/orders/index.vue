@@ -1,10 +1,32 @@
+
 <template>
   <div class="orders-page">
+    <!-- Not Authenticated State -->
+    <div v-if="!isAuthenticated" class="orders-page__auth-prompt">
+      <BaseIcon name="lock" size="xl" class="orders-page__auth-icon" />
+      <AppHeading level="h2" size="heading-lg" class="orders-page__auth-title">
+        Войдите, чтобы увидеть заказы
+      </AppHeading>
+      <AppText class="orders-page__auth-subtitle">
+        Для просмотра истории заказов необходимо войти в аккаунт
+      </AppText>
+      <div class="orders-page__auth-actions">
+        <NuxtLink to="/auth/login?redirect=/orders">
+          <BaseButton variant="primary">Войти</BaseButton>
+        </NuxtLink>
+        <NuxtLink to="/auth/register?redirect=/orders">
+          <BaseButton variant="secondary">Создать аккаунт</BaseButton>
+        </NuxtLink>
+      </div>
+    </div>
+
+    <!-- Authenticated content -->
+    <template v-else>
     <!-- Header Section -->
     <div class="orders-page__header">
-      <h1 class="orders-page__title">Order History</h1>
+      <h1 class="orders-page__title">История заказов</h1>
       <p class="orders-page__subtitle">
-        Track your orders and reorder your favorites
+        Отслеживайте заказы и повторяйте любимые
       </p>
     </div>
 
@@ -25,7 +47,7 @@
 
         <!-- Filters -->
         <div class="orders-page__filter-controls">
-          <BaseSelect 
+          <BaseSelect
             v-model="statusFilter"
             :options="[
               { value: '', label: 'All Orders' },
@@ -37,8 +59,8 @@
               { value: 'CANCELLED', label: 'Cancelled' }
             ]"
           />
-          
-          <BaseSelect 
+
+          <BaseSelect
             v-model="timeFilter"
             :options="[
               { value: '', label: 'All Time' },
@@ -77,7 +99,7 @@
       <AppHeading level="h2" size="heading-xl" class="text-white mb-6">
         Active Orders
       </AppHeading>
-      
+
       <div class="space-y-4">
         <div
           v-for="order in activeOrders"
@@ -129,17 +151,17 @@
                 View Details
               </BaseButton>
             </NuxtLink>
-            <BaseButton 
+            <BaseButton
               v-if="order.status === 'PENDING'"
-              variant="secondary" 
+              variant="secondary"
               size="sm"
               @click="cancelOrder(order.id)"
             >
               <BaseIcon name="x" size="sm" class="mr-2" />
               Cancel
             </BaseButton>
-            <BaseButton 
-              variant="ghost" 
+            <BaseButton
+              variant="ghost"
               size="sm"
               @click="trackOrder(order.id)"
             >
@@ -158,15 +180,15 @@
           Order History
         </AppHeading>
         <div class="flex items-center gap-2">
-          <BaseButton 
-            variant="ghost" 
+          <BaseButton
+            variant="ghost"
             size="sm"
             @click="showListView = !showListView"
           >
             <BaseIcon :name="showListView ? 'grid' : 'list'" size="sm" />
           </BaseButton>
-          <BaseButton 
-            variant="secondary" 
+          <BaseButton
+            variant="secondary"
             size="sm"
             @click="exportOrders"
           >
@@ -189,9 +211,9 @@
           {{ searchQuery || statusFilter || timeFilter ? 'No orders found' : 'No orders yet' }}
         </AppHeading>
         <AppText class="text-neutral-20 mb-8 max-w-md mx-auto">
-          {{ searchQuery || statusFilter || timeFilter ? 
-            'Try adjusting your search or filters to find orders.' : 
-            'Start exploring our menu and place your first order!' 
+          {{ searchQuery || statusFilter || timeFilter ?
+            'Try adjusting your search or filters to find orders.' :
+            'Start exploring our menu and place your first order!'
           }}
         </AppText>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -201,7 +223,7 @@
               Browse Menu
             </BaseButton>
           </NuxtLink>
-          <BaseButton 
+          <BaseButton
             v-if="searchQuery || statusFilter || timeFilter"
             variant="secondary"
             @click="clearFilters"
@@ -259,16 +281,16 @@
                   View
                 </BaseButton>
               </NuxtLink>
-              <BaseButton 
-                variant="ghost" 
+              <BaseButton
+                variant="ghost"
                 size="sm"
                 @click="reorderItems(order)"
               >
                 <BaseIcon name="repeat" size="sm" class="mr-2" />
                 Reorder
               </BaseButton>
-              <BaseButton 
-                variant="ghost" 
+              <BaseButton
+                variant="ghost"
                 size="sm"
                 @click="shareOrder(order)"
               >
@@ -303,8 +325,8 @@
             </AppText>
 
             <div class="flex gap-2">
-              <BaseButton 
-                variant="secondary" 
+              <BaseButton
+                variant="secondary"
                 size="sm"
                 class="flex-1"
                 @click.stop="reorderItems(order)"
@@ -318,54 +340,60 @@
 
         <!-- Load More -->
         <div v-if="hasMoreOrders" class="text-center mt-8">
-          <BaseButton 
+          <BaseButton
             variant="secondary"
             :disabled="loadingMore"
             @click="loadMoreOrders"
           >
-            <BaseIcon 
+            <BaseIcon
               v-if="loadingMore"
-              name="loader" 
-              size="sm" 
-              class="mr-2 animate-spin" 
+              name="loader"
+              size="sm"
+              class="mr-2 animate-spin"
             />
             Load More Orders
           </BaseButton>
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
-
 <script setup lang="ts">
+
 import type { Order } from '~/types'
 import { useOrders } from '~/composables/useOrders'
 import { useCart } from '~/composables/useCart'
 import { useOrderStore } from '~/stores/order'
 import { useCartStore } from '~/stores/cart'
-
+import { useUserStore } from '~/stores/user'
+import { useMenuStore } from '~/stores/menu'
+import { useTenantStore } from '~/stores/tenant'
+import AppHeading from '../../components/base/AppHeading.vue'
+import AppText from '../../components/base/AppText.vue'
+import StatusBadge from '../../components/order/StatusBadge.vue'
+import AppPrice from '../../components/base/AppPrice.vue'
 // Page setup
 definePageMeta({
-  title: 'Order History - Menu Ordering App'
+  title: 'История заказов'
 })
+
+// Auth check
+const userStore = useUserStore()
+const isAuthenticated = computed(() => userStore.isLoggedIn || userStore.isAuthenticated)
 
 // Stores
 const orderStore = useOrderStore()
 const cartStore = useCartStore()
 
 // Composables
-const { 
-  orderHistory, 
-  loading, 
-  error,
-  fetchOrderHistory,
+const {
+  orderHistory,
+  loading,
   getOrderStats,
-  filterOrders,
-  reorderItems: reorderOrderItems,
-  validateOrderForReorder
 } = useOrders()
 
-const { addItem } = useCart()
+// const { addItem } = useCart()
 const router = useRouter()
 
 // Reactive state
@@ -386,23 +414,23 @@ const favoriteRestaurant = computed(() => orderStats.value.favoriteItems[0]?.nam
 const averageOrderValue = computed(() => `$${orderStats.value.averageOrderValue.toFixed(2)}`)
 
 const activeOrders = computed(() => {
-  return orders.value.filter(order => 
+  return orders.value.filter(order =>
     ['PENDING', 'CONFIRMED', 'PREPARING', 'READY'].includes(order.status)
   )
 })
 
 const filteredOrders = computed(() => {
-  let filtered = orders.value.filter(order => 
+  let filtered = orders.value.filter(order =>
     !['PENDING', 'CONFIRMED', 'PREPARING', 'READY'].includes(order.status)
   )
 
   // Use the composable's filter method
   const filters: any = {}
-  
+
   if (statusFilter.value) {
     filters.status = [statusFilter.value]
   }
-  
+
   if (timeFilter.value) {
     const now = new Date()
     switch (timeFilter.value) {
@@ -421,9 +449,9 @@ const filteredOrders = computed(() => {
         break
     }
   }
-  
+
   if (searchQuery.value) {
-    filtered = filtered.filter(order => 
+    filtered = filtered.filter(order =>
       order.id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       order.customerInfo?.name?.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
@@ -438,11 +466,11 @@ const formatDate = (dateString: string) => {
   const now = new Date()
   const diffTime = Math.abs(now.getTime() - date.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays === 1) return 'Today'
   if (diffDays === 2) return 'Yesterday'
   if (diffDays <= 7) return `${diffDays - 1} days ago`
-  
+
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -476,8 +504,8 @@ const reorderItems = (order: Order) => {
   orderCopy.items.forEach((item: any) => {
     cartStore.addItem(item.menuItem, item.quantity)
   })
-  
-  router.push('/cart')
+
+  router.push('/checkout')
 }
 
 const shareOrder = (order: Order) => {
@@ -619,4 +647,38 @@ onMounted(() => {
     flex-direction: column;
   }
 }
+
+// Auth prompt
+.orders-page__auth-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: $space-8;
+}
+
+.orders-page__auth-icon {
+  color: var(--text-secondary);
+  margin-bottom: $space-6;
+  opacity: 0.6;
+}
+
+.orders-page__auth-title {
+  color: var(--text-primary);
+  margin-bottom: $space-4;
+}
+
+.orders-page__auth-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: $space-8;
+  max-width: 400px;
+}
+
+.orders-page__auth-actions {
+  display: flex;
+  gap: $space-4;
+}
 </style>
+

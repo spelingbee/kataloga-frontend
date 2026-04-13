@@ -14,35 +14,31 @@ export interface NotificationItem {
 }
 
 export const useNotifications = () => {
+  const { $notificationService } = useNuxtApp()
   const notifications = ref<NotificationItem[]>([])
   const unreadCount = ref(0)
   const isConnected = ref(false)
-
-  let notificationService: any = null
 
   /**
    * Initialize notification service
    */
   const initialize = async () => {
-    if (!import.meta.client) return
+    if (!import.meta.client || !$notificationService) return
 
     try {
-      const { useNotificationService } = await import('~/services/notification.service')
-      notificationService = useNotificationService()
-
       // Load existing notifications
-      const existing = notificationService.getInAppNotifications()
+      const existing = ($notificationService as any).getInAppNotifications()
       notifications.value = existing
-      unreadCount.value = notificationService.getUnreadCount()
+      unreadCount.value = ($notificationService as any).getUnreadCount()
 
       // Subscribe to new notifications
-      notificationService.onNotification((notification: NotificationItem) => {
+      ($notificationService as any).onNotification((notification: NotificationItem) => {
         notifications.value.unshift(notification)
         unreadCount.value++
       })
 
       // Connect to WebSocket
-      notificationService.connect()
+      ($notificationService as any).connect()
       isConnected.value = true
     } catch (error) {
       console.error('Failed to initialize notifications:', error)
@@ -53,25 +49,22 @@ export const useNotifications = () => {
    * Connect to WebSocket for specific order
    */
   const connectForOrder = async (orderId: string) => {
-    if (!import.meta.client) return
+    if (!import.meta.client || !$notificationService) return
 
     try {
-      const { useNotificationService } = await import('~/services/notification.service')
-      notificationService = useNotificationService()
-
       // Load existing notifications
-      const existing = notificationService.getInAppNotifications()
+      const existing = ($notificationService as any).getInAppNotifications()
       notifications.value = existing
-      unreadCount.value = notificationService.getUnreadCount()
+      unreadCount.value = ($notificationService as any).getUnreadCount()
 
       // Subscribe to new notifications
-      notificationService.onNotification((notification: NotificationItem) => {
+      ($notificationService as any).onNotification((notification: NotificationItem) => {
         notifications.value.unshift(notification)
         unreadCount.value++
       })
 
       // Connect to WebSocket for specific order
-      notificationService.connect(orderId)
+      ($notificationService as any).connect(orderId)
       isConnected.value = true
     } catch (error) {
       console.error('Failed to connect for order:', error)
@@ -82,8 +75,8 @@ export const useNotifications = () => {
    * Disconnect from WebSocket
    */
   const disconnect = () => {
-    if (notificationService) {
-      notificationService.disconnect()
+    if ($notificationService) {
+      ($notificationService as any).disconnect()
       isConnected.value = false
     }
   }
@@ -92,9 +85,9 @@ export const useNotifications = () => {
    * Mark notification as read
    */
   const markAsRead = (notificationId: string) => {
-    if (!notificationService) return
+    if (!$notificationService) return
 
-    notificationService.markAsRead(notificationId)
+    ($notificationService as any).markAsRead(notificationId)
     
     // Update local state
     const notification = notifications.value.find(n => n.id === notificationId)
@@ -108,9 +101,9 @@ export const useNotifications = () => {
    * Mark all notifications as read
    */
   const markAllAsRead = () => {
-    if (!notificationService) return
+    if (!$notificationService) return
 
-    notificationService.markAllAsRead()
+    ($notificationService as any).markAllAsRead()
     
     // Update local state
     notifications.value.forEach(n => {
@@ -123,9 +116,9 @@ export const useNotifications = () => {
    * Clear all notifications
    */
   const clearAll = () => {
-    if (!notificationService) return
+    if (!$notificationService) return
 
-    notificationService.clearNotifications()
+    ($notificationService as any).clearNotifications()
     
     // Update local state
     notifications.value = []

@@ -7,7 +7,7 @@ import {
   captureException,
 } from '@sentry/vue'
 import { useCartStore } from '~/stores/cart'
-import { useAuthStore } from '~/stores/auth'
+import { useUserStore } from '~/stores/user'
 import { useTenantStore } from '~/stores/tenant'
 
 export default defineNuxtPlugin((nuxtApp) => {
@@ -72,7 +72,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         }
         
         // Add user context if available
-        const authStore = useAuthStore()
+        const authStore = useUserStore()
         if (authStore.user) {
           setUser({
             id: authStore.user.id,

@@ -2,7 +2,7 @@ import type { Category, MenuItem, MenuFilters, PaginatedResult, ApiResponse } fr
 import { useApiClient } from '~/utils/api'
 
 export class MenuService {
-  private apiClient = useApiClient()
+  constructor(private apiClient: any) {}
 
   private getApiClient() {
     return this.apiClient
@@ -434,10 +434,12 @@ export class MenuService {
         menu.items.forEach((item: any) => {
           items.push({
             id: item.id,
+            productId: item.productId,
+            menuId: item.menuId,
             name: item.name,
             description: item.description,
             price: item.price,
-            imageUrl: item.imageUrl,
+            imageUrl: item.imageUrl || this.getImageUrl(item, item.category?.name),
             isActive: item.isActive,
             categoryId: item.category?.id,
             category: item.category,
@@ -544,14 +546,15 @@ export class MenuService {
     const key = categoryName.toLowerCase()
     return iconMap[key] || '🍽️'
   }
-}
 
-// Create singleton instance
-let menuService: MenuService | null = null
-
-export function useMenuService(): MenuService {
-  if (!menuService) {
-    menuService = new MenuService()
+  private getImageUrl(item: any, categoryName: string): string {
+    if (item?.imageUrl) return item.imageUrl
+    
+    // Use B2B placeholders based on category
+    const cat = (categoryName || '').toLowerCase()
+    if (cat.includes('flower') || cat.includes('цвет') || cat.includes('букет')) return '/images/placeholders/flowers.png'
+    if (cat.includes('dessert') || cat.includes('десерт') || cat.includes('слад') || cat.includes('cake')) return '/images/placeholders/dessert.png'
+    if (cat.includes('drink') || cat.includes('напит') || cat.includes('соки')) return '/images/placeholders/drink.png'
+    return '/images/placeholders/pizza.png'
   }
-  return menuService
 }

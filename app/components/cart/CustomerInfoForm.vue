@@ -1,15 +1,15 @@
 <template>
-  <div class="space-y-4">
+  <div class="customer-info-form">
     <!-- Name Field -->
-    <div>
-      <label for="customer-name" class="block text-sm font-medium text-neutral-20 mb-2">
-        Full Name *
+    <div class="form-group">
+      <label for="customer-name" class="form-label">
+        {{ $t('form.name') }} *
       </label>
       <BaseInput
         id="customer-name"
         v-model="localCustomerInfo.name"
         type="text"
-        placeholder="Enter your full name"
+        :placeholder="$t('form.namePlaceholder')"
         :error="errors.name"
         required
         @blur="validateField('name')"
@@ -18,15 +18,15 @@
     </div>
 
     <!-- Phone Field -->
-    <div>
-      <label for="customer-phone" class="block text-sm font-medium text-neutral-20 mb-2">
-        Phone Number *
+    <div class="form-group">
+      <label for="customer-phone" class="form-label">
+        {{ $t('form.phone') }} *
       </label>
       <BaseInput
         id="customer-phone"
         v-model="localCustomerInfo.phone"
         type="tel"
-        placeholder="+7 (999) 123-45-67"
+        :placeholder="$t('form.phonePlaceholder')"
         :error="errors.phone"
         required
         @blur="validateField('phone')"
@@ -35,51 +35,49 @@
     </div>
 
     <!-- Email Field -->
-    <div>
-      <label for="customer-email" class="block text-sm font-medium text-neutral-20 mb-2">
-        Email Address
+    <div class="form-group">
+      <label for="customer-email" class="form-label">
+        {{ $t('form.email') }}
       </label>
       <BaseInput
         id="customer-email"
         v-model="localCustomerInfo.email"
         type="email"
-        placeholder="your.email@example.com"
+        :placeholder="$t('form.emailPlaceholder')"
         :error="errors.email"
         @blur="validateField('email')"
         @input="clearError('email')"
       />
-      <AppText size="caption" class="text-neutral-20 mt-1">
-        Optional - for order confirmations and updates
-      </AppText>
     </div>
 
     <!-- Address Field -->
-    <div>
-      <label for="customer-address" class="block text-sm font-medium text-neutral-20 mb-2">
-        Address
+    <div v-if="requiresAddress" class="form-group">
+      <label for="customer-address" class="form-label">
+        {{ $t('form.address') }} *
       </label>
       <BaseInput
         id="customer-address"
         v-model="localCustomerInfo.address"
         type="textarea"
-        placeholder="Enter your address"
+        :placeholder="$t('form.addressPlaceholder')"
         :rows="2"
         :error="errors.address"
+        required
         @blur="validateField('address')"
         @input="clearError('address')"
       />
     </div>
 
     <!-- Notes Field -->
-    <div>
-      <label for="customer-notes" class="block text-sm font-medium text-neutral-20 mb-2">
-        Additional Notes
+    <div class="form-group">
+      <label for="customer-notes" class="form-label">
+        {{ $t('form.notes') }}
       </label>
       <BaseInput
         id="customer-notes"
         v-model="localCustomerInfo.notes"
         type="textarea"
-        placeholder="Any special requests or information..."
+        :placeholder="$t('form.notesPlaceholder')"
         :rows="2"
         @input="updateCustomerInfo"
       />
@@ -88,17 +86,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { CustomerInfo } from '~/types'
+
+const { t } = useI18n()
 
 // Props & Emits
 interface Props {
   modelValue: CustomerInfo
   errors?: Record<string, string>
+  requiresAddress?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  errors: () => ({})
+  errors: () => ({}),
+  requiresAddress: false
 })
 
 const emit = defineEmits<{
@@ -115,20 +118,22 @@ const validateField = (field: keyof CustomerInfo) => {
   switch (field) {
     case 'name':
       if (!localCustomerInfo.value.name?.trim()) {
-        errors.name = 'Name is required'
+        errors.name = t('form.required')
       } else if (localCustomerInfo.value.name.trim().length < 2) {
-        errors.name = 'Name must be at least 2 characters'
+        errors.name = t('form.nameMinLength', { min: 2 }) // Fallback if key missing
       } else {
         delete errors.name
       }
       break
 
     case 'phone':
-      const phoneRegex = /^(\+7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/
+      // Basic KG/International phone regex
+      const phoneRegex = /^\+?[0-9]{10,15}$/
+      const cleanPhone = localCustomerInfo.value.phone?.replace(/[\s\-\(\)]/g, '') || ''
       if (!localCustomerInfo.value.phone?.trim()) {
-        errors.phone = 'Phone number is required'
-      } else if (!phoneRegex.test(localCustomerInfo.value.phone.replace(/[\s\-\(\)]/g, ''))) {
-        errors.phone = 'Please enter a valid Russian phone number'
+        errors.phone = t('form.required')
+      } else if (!phoneRegex.test(cleanPhone)) {
+        errors.phone = t('form.invalidPhone')
       } else {
         delete errors.phone
       }
@@ -138,7 +143,7 @@ const validateField = (field: keyof CustomerInfo) => {
       if (localCustomerInfo.value.email?.trim()) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(localCustomerInfo.value.email)) {
-          errors.email = 'Please enter a valid email address'
+          errors.email = t('form.invalidEmail')
         } else {
           delete errors.email
         }
@@ -148,8 +153,14 @@ const validateField = (field: keyof CustomerInfo) => {
       break
 
     case 'address':
-      if (localCustomerInfo.value.address?.trim() && localCustomerInfo.value.address.trim().length < 10) {
-        errors.address = 'Please provide a more detailed address'
+      if (props.requiresAddress) {
+        if (!localCustomerInfo.value.address?.trim()) {
+          errors.address = t('form.required')
+        } else if (localCustomerInfo.value.address.trim().length < 5) {
+          errors.address = t('form.addressMinLength', { min: 5 })
+        } else {
+          delete errors.address
+        }
       } else {
         delete errors.address
       }
@@ -179,58 +190,28 @@ watch(localCustomerInfo, (newValue) => {
 watch(() => props.errors, (newErrors) => {
   Object.assign(errors, newErrors)
 }, { deep: true })
-
-// Format phone number on input
-watch(() => localCustomerInfo.value.phone, (newPhone) => {
-  if (newPhone) {
-    // Auto-format phone number
-    const cleaned = newPhone.replace(/\D/g, '')
-    if (cleaned.length <= 11) {
-      let formatted = cleaned
-      if (cleaned.length >= 1) {
-        if (cleaned.startsWith('8')) {
-          formatted = '+7' + cleaned.slice(1)
-        } else if (cleaned.startsWith('7')) {
-          formatted = '+' + cleaned
-        } else if (!cleaned.startsWith('+7')) {
-          formatted = '+7' + cleaned
-        }
-      }
-      
-      // Apply formatting: +7 (999) 123-45-67
-      if (formatted.length >= 2) {
-        formatted = formatted.replace(/(\+7)(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 ($2) $3-$4-$5')
-      }
-      
-      if (formatted !== newPhone) {
-        localCustomerInfo.value.phone = formatted
-      }
-    }
-  }
-})
 </script>
 
-<style scoped>
-/* Form field spacing */
-.space-y-4 > * + * {
-  margin-top: 1rem;
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/colors' as *;
+
+.customer-info-form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
 }
 
-/* Label styling */
-label {
-  display: block;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.form-label {
+  font-size: 0.875rem;
   font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
-/* Required field indicator */
-label::after {
-  content: '';
-}
-
-label:has(+ input[required])::after,
-label:has(+ textarea[required])::after {
-  content: ' *';
-  color: theme('colors.primary.red');
+  color: var(--text-primary);
 }
 </style>
+

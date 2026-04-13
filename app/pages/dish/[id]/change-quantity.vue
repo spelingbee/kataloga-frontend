@@ -516,7 +516,7 @@ const confirmQuantity = () => {
 const addToCart = () => {
   if (dish.value) {
     cartStore.addItem(dish.value, selectedQuantity.value)
-    router.push('/cart')
+    router.push('/checkout')
   }
 }
 

@@ -5,13 +5,14 @@
 
 export type Theme = 'light' | 'dark' | 'auto';
 
+// Global reactive theme state to ensure synchronization across components
+const currentTheme = ref<Theme>('light');
+const resolvedTheme = ref<'light' | 'dark'>('light');
+
+// Storage key for theme persistence
+const THEME_STORAGE_KEY = 'app-theme';
+
 export const useTheme = () => {
-  // Reactive theme state
-  const currentTheme = ref<Theme>('auto');
-  const resolvedTheme = ref<'light' | 'dark'>('light');
-  
-  // Storage key for theme persistence
-  const THEME_STORAGE_KEY = 'app-theme';
   
   /**
    * Get system theme preference
@@ -30,10 +31,12 @@ export const useTheme = () => {
     if (process.client) {
       const root = document.documentElement;
       
+      // Явно устанавливаем data-theme для светлой и темной тем,
+      // чтобы избежать конфликта с @media (prefers-color-scheme: dark)
       if (theme === 'dark') {
         root.setAttribute('data-theme', 'dark');
       } else {
-        root.removeAttribute('data-theme');
+        root.setAttribute('data-theme', 'light');
       }
       
       resolvedTheme.value = theme;
@@ -72,7 +75,7 @@ export const useTheme = () => {
   const initializeTheme = () => {
     if (process.client) {
       // Get saved theme or default to auto
-      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme || 'auto';
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme || 'light';
       currentTheme.value = savedTheme;
       
       // Apply resolved theme immediately to prevent FOUC

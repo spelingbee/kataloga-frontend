@@ -1,528 +1,558 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="product-page-container">
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading dish details...</AppText>
-      </div>
+    <div v-if="loading" class="product-page__state">
+      <div class="product-page__spinner" />
+      <AppText class="text-neutral-20">Loading dish details...</AppText>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <BaseIcon name="alert-circle" size="4xl" class="text-primary-red mx-auto mb-6" />
-        <AppHeading level="h2" size="heading-lg" class="text-white mb-4">
-          Dish Not Found
-        </AppHeading>
-        <AppText class="text-neutral-20 mb-8">
-          {{ error }}
-        </AppText>
-        <div class="flex gap-4 justify-center">
-          <BaseButton @click="$router.go(-1)">
-            Go Back
+    <div v-else-if="error" class="product-page__state">
+      <BaseIcon name="alert-circle" size="4xl" class="text-primary-red mx-auto mb-6" />
+      <AppHeading level="h2" size="heading-lg" class="text-white mb-4">
+        Dish Not Found
+      </AppHeading>
+      <AppText class="text-neutral-20 mb-8">
+        {{ error }}
+      </AppText>
+      <div class="flex gap-4 justify-center">
+        <BaseButton @click="$router.go(-1)">
+          Go Back
+        </BaseButton>
+        <NuxtLink to="/menu">
+          <BaseButton variant="secondary">
+            Browse Menu
           </BaseButton>
-          <NuxtLink to="/menu">
-            <BaseButton variant="secondary">
-              Browse Menu
-            </BaseButton>
-          </NuxtLink>
-        </div>
+        </NuxtLink>
       </div>
     </div>
 
     <!-- Dish Details -->
-    <div v-else-if="dish" class="dish-details-wrapper pb-8">
+    <div v-else-if="dish" class="product-page">
       <!-- Header with Navigation -->
-      <div class="px-6 py-4 flex items-center justify-between border-b border-neutral-80/20">
-        <div class="flex items-center gap-4">
-          <BaseButton 
-            variant="ghost" 
+      <header class="product-page__header">
+        <div class="product-page__header-nav">
+          <button 
+            class="product-page__nav-btn"
             @click="$router.go(-1)"
           >
             <BaseIcon name="arrow-left" size="md" />
-          </BaseButton>
-          <AppHeading level="h1" size="heading-lg" class="text-white">
-            {{ dish.name }}
-          </AppHeading>
+          </button>
+          
+          <div class="product-page__header-actions">
+            <button
+              :class="{ 'product-page__nav-btn--active': isFavourite }"
+              class="product-page__nav-btn"
+              @click="toggleFavourite"
+            >
+              <BaseIcon :name="isFavourite ? 'heart-filled' : 'heart'" size="md" />
+            </button>
+            <button class="product-page__nav-btn" @click="shareDish">
+              <BaseIcon name="share" size="md" />
+            </button>
+          </div>
         </div>
-        
-        <div class="flex items-center gap-2">
-          <BaseButton
-            variant="ghost"
-            :class="isFavourite ? 'text-primary-red' : 'text-neutral-80'"
-            @click="toggleFavourite"
-          >
-            <BaseIcon :name="isFavourite ? 'heart-filled' : 'heart'" size="md" />
-          </BaseButton>
-          <BaseButton variant="ghost" @click="shareDish">
-            <BaseIcon name="share" size="md" />
-          </BaseButton>
-        </div>
-      </div>
 
-      <!-- Main Content -->
-      <div class="content-sheet flex flex-col lg:flex-row">
-        <!-- Left Column - Images and Info -->
-        <div class="lg:w-2/3 px-6 py-8">
-          <!-- Dish Hero Section -->
-          <img :src="dish.imageUrl || '/images/placeholder-dish.svg'" :alt="dish.name" class="hero-image" />
-
-          <!-- Dish Images Slider -->
-          <div class="mb-8">
-            <DishImageSlider 
-              :images="dishImages"
-              :dish-name="dish.name"
+        <div class="product-page__hero">
+          <div class="product-page__image-wrapper">
+            <img 
+              :src="dish.imageUrl || '/images/placeholder-dish.svg'" 
+              :alt="dish.name" 
+              class="product-page__image" 
             />
+            <div v-if="isPopular" class="product-page__popular-badge">
+              <BaseIcon name="fire" size="xs" />
+              {{ $t('common.popular', 'Популярное') }}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="product-page__content">
+        <div class="product-page__main-info">
+          <div class="product-page__title-row">
+            <h1 class="product-page__title">
+              {{ dish.name }}
+            </h1>
+            <AppPrice :amount="dish.price" size="xl" class="product-page__price" />
           </div>
 
-          <!-- Description -->
-          <div class="mb-8">
-            <AppHeading level="h2" size="heading-md" class="text-white mb-4">
-              Description
-            </AppHeading>
-            <AppText class="text-neutral-20 leading-relaxed">
-              {{ dish.description }}
-            </AppText>
+          <div class="product-page__meta">
+            <div v-if="dish.calories" class="product-page__meta-item">
+              <BaseIcon name="fire" size="xs" />
+              {{ dish.calories }} {{ $t('common.cal', 'ккал') }}
+            </div>
+            <!-- Rating removed as it was hardcoded -->
           </div>
 
-          <!-- Ingredients -->
-          <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-              <AppHeading level="h2" size="heading-md" class="text-white">
-                Ingredients
-              </AppHeading>
-              <NuxtLink :to="`/dish/${dish.id}/ingredients`">
-                <BaseButton variant="ghost" size="sm">
-                  View All
-                  <BaseIcon name="arrow-right" size="sm" class="ml-2" />
-                </BaseButton>
-              </NuxtLink>
+          <p class="product-page__description">
+            {{ dish.description || $t('common.no_description', 'Описание отсутствует') }}
+          </p>
+        </div>
+
+        <!-- Customization Sections -->
+        <div class="product-page__customization">
+          <section v-if="dish.ingredients?.length" class="product-page__section">
+            <div class="product-page__section-header">
+              <h2 class="product-page__section-title">{{ $t('common.ingredients', 'Состав') }}</h2>
             </div>
             <DishIngredients 
               :ingredients="dish.ingredients || []"
-              :show-all="false"
-              :max-items="6"
+              :selected-ingredients="[]"
+              class="product-page__ingredients-list"
             />
-          </div>
+          </section>
 
-          <!-- Nutrition Info -->
-          <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-              <AppHeading level="h2" size="heading-md" class="text-white">
-                Nutrition Information
-              </AppHeading>
-              <NuxtLink :to="`/dish/${dish.id}/caloric-content`">
-                <BaseButton variant="ghost" size="sm">
-                  Full Details
-                  <BaseIcon name="arrow-right" size="sm" class="ml-2" />
-                </BaseButton>
-              </NuxtLink>
-            </div>
-            <DishNutrition 
-              :nutrition="dish.nutritionInfo"
-              :calories="dish.calories"
-              :compact="true"
-            />
-          </div>
-
-          <!-- Preparation Time -->
-          <div class="mb-8">
-            <div class="flex items-center justify-between mb-4">
-              <AppHeading level="h2" size="heading-md" class="text-white">
-                Preparation Time
-              </AppHeading>
-              <NuxtLink :to="`/dish/${dish.id}/waiting-time`">
-                <BaseButton variant="ghost" size="sm">
-                  More Info
-                  <BaseIcon name="arrow-right" size="sm" class="ml-2" />
-                </BaseButton>
-              </NuxtLink>
-            </div>
-            <WaitingTimeIndicator 
-              :preparation-time="dish.preparationTime || 20"
-              :show-details="false"
-            />
-          </div>
-
-          <!-- Allergens -->
-          <div v-if="dish.allergens && dish.allergens.length > 0" class="mb-8">
-            <AppHeading level="h2" size="heading-md" class="text-white mb-4">
-              Allergen Information
-            </AppHeading>
-            <div class="flex flex-wrap gap-2">
+          <section v-if="dish.allergens?.length" class="product-page__section">
+            <h2 class="product-page__section-title product-page__section-title--small">{{ $t('common.allergens', 'Аллергены') }}</h2>
+            <div class="product-page__allergens-grid">
               <BaseBadge
                 v-for="allergen in dish.allergens"
                 :key="allergen"
                 variant="warning"
                 size="sm"
               >
-                <BaseIcon name="alert-triangle" size="xs" class="mr-1" />
                 {{ allergen }}
               </BaseBadge>
             </div>
+          </section>
+        </div>
+
+        <!-- Related Items -->
+        <section v-if="relatedDishes.length > 0" class="product-page__related">
+          <h2 class="product-page__related-title">
+            {{ $t('common.related', 'Вам также может понравиться') }}
+          </h2>
+          <MenuItemGrid 
+            :items="relatedDishes"
+            @item-selected="onRelatedDishSelected"
+          />
+        </section>
+      </div>
+
+      <!-- Sticky Footer / Action Bar -->
+      <footer class="product-page__footer">
+        <div class="product-page__footer-container">
+          <div class="product-page__qty-control">
+            <button class="product-page__qty-btn" @click="quantity = Math.max(1, quantity - 1)">
+              <BaseIcon name="minus" size="sm" />
+            </button>
+            <span class="product-page__qty-value">{{ quantity }}</span>
+            <button class="product-page__qty-btn" @click="quantity++">
+              <BaseIcon name="plus" size="sm" />
+            </button>
           </div>
-        </div>
-
-        <!-- Right Column - Customization and Order -->
-        <div class="lg:w-1/3 lg:border-l border-neutral-80/20">
-          <div class="sticky top-0 px-6 py-8">
-            <!-- Price and Basic Info -->
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-4">
-                <AppPrice :price="dish.price" size="xl" />
-                <div v-if="dish.calories" class="flex items-center gap-2">
-                  <FireIcon size="sm" />
-                  <AppText size="body-sm" class="text-neutral-20">
-                    {{ dish.calories }} cal
-                  </AppText>
-                </div>
-              </div>
-              
-              <!-- Rating and Reviews (Mock) -->
-              <div class="flex items-center gap-4 mb-4">
-                <div class="flex items-center gap-1">
-                  <BaseIcon name="star" size="sm" class="text-primary-orange" />
-                  <AppText size="body-sm" class="text-white">4.8</AppText>
-                  <AppText size="body-sm" class="text-neutral-20">(124 reviews)</AppText>
-                </div>
-              </div>
-            </div>
-
-            <!-- Subcategory Selection -->
-            <div v-if="hasSubcategories" class="mb-6">
-              <div class="flex items-center justify-between mb-3">
-                <AppText size="body-sm" class="text-white font-medium">
-                  Choose Size/Type
-                </AppText>
-                <NuxtLink :to="`/dish/${dish.id}/subcategory`">
-                  <BaseButton variant="ghost" size="sm">
-                    More Options
-                  </BaseButton>
-                </NuxtLink>
-              </div>
-              <SubcategorySelector 
-                v-model="selectedSubcategory"
-                :options="subcategoryOptions"
-                :compact="true"
-              />
-            </div>
-
-            <!-- Customization Options -->
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-3">
-                <AppText size="body-sm" class="text-white font-medium">
-                  Customize
-                </AppText>
-                <NuxtLink :to="`/dish/${dish.id}/change-ingredients`">
-                  <BaseButton variant="ghost" size="sm">
-                    Full Options
-                  </BaseButton>
-                </NuxtLink>
-              </div>
-              <DishCustomization 
-                v-model="customizations"
-                :dish="dish"
-                :compact="true"
-              />
-            </div>
-
-            <!-- Quantity Selection -->
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-3">
-                <AppText size="body-sm" class="text-white font-medium">
-                  Quantity
-                </AppText>
-                <NuxtLink :to="`/dish/${dish.id}/change-quantity`">
-                  <BaseButton variant="ghost" size="sm">
-                    Bulk Order
-                  </BaseButton>
-                </NuxtLink>
-              </div>
-              <QuantitySelector 
-                v-model="quantity"
-                :min="1"
-                :max="10"
-                size="lg"
-              />
-            </div>
-
-            <!-- Special Instructions -->
-            <div class="mb-6">
-              <AppText size="body-sm" class="text-white font-medium mb-3">
-                Special Instructions (Optional)
-              </AppText>
-              <BaseInput
-                v-model="specialInstructions"
-                placeholder="Any special requests..."
-                type="textarea"
-                rows="3"
-              />
-            </div>
-
-            <!-- Total Price -->
-            <div class="mb-6 p-4 bg-background-card rounded-xl">
-              <div class="flex items-center justify-between">
-                <AppText size="body-md" class="text-white font-medium">
-                  Total
-                </AppText>
-                <AppPrice :price="totalPrice" size="lg" />
-              </div>
-              <AppText size="body-sm" class="text-neutral-20 mt-1">
-                {{ quantity }} × {{ formatPrice(dish.price) }}
-                <span v-if="customizationPrice > 0">
-                  + {{ formatPrice(customizationPrice) }} extras
-                </span>
-              </AppText>
-            </div>
-
-          </div>
-        </div>
-      </div>
-      <div class="sticky-footer">
-        <div class="flex gap-2 mb-4">
-          <BaseButton
-            variant="secondary"
-            size="sm"
-            class="flex-1"
-            @click="addToFavourites"
+          
+          <button 
+            class="product-page__add-btn"
+            @click="onAddedToCart"
           >
-            <BaseIcon name="heart" size="sm" class="mr-2" />
-            Save
-          </BaseButton>
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            class="flex-1"
-            @click="compareDish"
-          >
-            <BaseIcon name="compare" size="sm" class="mr-2" />
-            Compare
-          </BaseButton>
+            <span class="product-page__add-text">{{ $t('common.add_to_order', 'В корзину') }}</span>
+            <span class="product-page__add-divider"/>
+            <span class="product-page__add-price">{{ formatPriceDisplay(totalPrice) }}</span>
+          </button>
         </div>
-        <AddToCartButton
-          :item="dish"
-          :quantity="quantity"
-          :customizations="customizations"
-          :special-instructions="specialInstructions"
-          size="lg"
-          class="w-full"
-          @added="onAddedToCart"
-        />
-      </div>
-
-      <!-- Related Dishes -->
-      <div class="px-6 py-8 border-t border-neutral-80/20">
-        <AppHeading level="h2" size="heading-lg" class="text-white mb-6">
-          You Might Also Like
-        </AppHeading>
-        <MenuItemGrid 
-          :items="relatedDishes"
-          :columns="4"
-          @item-selected="onRelatedDishSelected"
-        />
-      </div>
+      </footer>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { MenuItem, NutritionInfo } from '~/types'
+import type { MenuItem } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
+import { useTenantSettings } from '~/composables/useTenant'
 
-// Page setup
-definePageMeta({
-  title: 'Dish Details - Menu Ordering App'
-})
-
-// Route and stores
 const route = useRoute()
 const router = useRouter()
-
 const menuStore = useMenuStore()
-const cartStore = useCartStore()
+const { formatCurrency } = useTenantSettings()
 
-// Reactive state
 const loading = ref(true)
 const error = ref<string | null>(null)
 const quantity = ref(1)
-const customizations = ref({})
-const specialInstructions = ref('')
-const selectedSubcategory = ref('')
-
-// Get dish ID from route
 const dishId = computed(() => route.params.id as string)
-
-// Mock dish data - will be replaced with real API call
 const dish = ref<MenuItem | null>(null)
-
-// Mock related data
-const dishImages = ref([
-  '/images/dish-1.jpg',
-  '/images/dish-2.jpg',
-  '/images/dish-3.jpg'
-])
-
-const subcategoryOptions = ref([
-  { id: 'small', name: 'Small', price: 0 },
-  { id: 'medium', name: 'Medium', price: 2 },
-  { id: 'large', name: 'Large', price: 5 }
-])
-
 const relatedDishes = ref<MenuItem[]>([])
 
-// Computed
 const isFavourite = computed(() => {
   return dish.value ? menuStore.favourites.some(fav => fav.id === dish.value!.id) : false
 })
 
-const hasSubcategories = computed(() => {
-  return subcategoryOptions.value.length > 0
-})
-
-const customizationPrice = computed(() => {
-  // Calculate additional price from customizations
-  return Object.values(customizations.value).reduce((total: number, customization: any) => {
-    return total + (customization.price || 0)
-  }, 0)
-})
+const isPopular = computed(() => dish.value?.isPopular || false)
 
 const totalPrice = computed(() => {
   if (!dish.value) return 0
-  const basePrice = dish.value.price
-  const subcategoryPrice = selectedSubcategory.value ? 
-    subcategoryOptions.value.find(opt => opt.id === selectedSubcategory.value)?.price || 0 : 0
-  return (basePrice + subcategoryPrice + customizationPrice.value) * quantity.value
+  return dish.value.price * quantity.value
 })
 
-// Methods
 const loadDish = async () => {
-  loading.value = true
-  error.value = null
-  
+  // If dish exists in store, use it immediately for faster load
+  const cachedDish = menuStore.getMenuItemById(dishId.value)
+  if (cachedDish) {
+    dish.value = cachedDish
+    loading.value = false
+    // Still fetch fresh data in background
+  }
+
   try {
-    // Try to get dish from menu store first
-    const existingDish = menuStore.getMenuItemById(dishId.value)
-    if (existingDish) {
-      dish.value = existingDish
-    } else {
-      // Fetch dish from API
-      const response = await menuStore.fetchMenuItem(dishId.value)
-      if (response) {
-        dish.value = response
-      } else {
-        throw new Error('Dish not found')
+    const response = await menuStore.fetchMenuItem(dishId.value)
+    if (response) {
+      dish.value = response
+      if (response.categoryId) {
+        relatedDishes.value = menuStore.itemsByCategory[response.categoryId]?.slice(0, 4) || []
       }
+    } else if (!dish.value) {
+      throw new Error('Dish not found')
     }
-    
-    // Load related dishes from the same category
-    if (dish.value?.categoryId) {
-      const categoryItems = menuStore.getItemsByCategory(dish.value.categoryId)
-      relatedDishes.value = categoryItems
-        .filter(item => item.id !== dish.value!.id)
-        .slice(0, 4)
-    }
-    
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load dish details'
-    console.error('Error loading dish:', err)
+    if (!dish.value) {
+      error.value = err instanceof Error ? err.message : 'Failed to load'
+    }
   } finally {
     loading.value = false
   }
 }
 
 const toggleFavourite = () => {
-  if (dish.value) {
-    menuStore.toggleFavourite(dish.value.id)
-  }
+  if (dish.value) menuStore.toggleFavourite(dish.value.id)
 }
 
 const shareDish = () => {
   if (navigator.share && dish.value) {
-    navigator.share({
-      title: dish.value.name,
-      text: dish.value.description,
-      url: window.location.href
-    })
-  } else {
-    // Fallback: copy to clipboard
-    navigator.clipboard.writeText(window.location.href)
+    navigator.share({ title: dish.value.name, url: window.location.href })
   }
 }
 
 const onAddedToCart = () => {
-  // Show success message or navigate to cart
-  router.push('/cart')
-}
-
-const addToFavourites = () => {
   if (dish.value) {
-    menuStore.toggleFavourite(dish.value.id)
+    const cartStore = useCartStore()
+    cartStore.addItem(dish.value, quantity.value)
+    router.push('/checkout')
   }
 }
 
-const compareDish = () => {
-  // Add to comparison list (mock functionality)
-  console.log('Added to comparison')
-}
+const onRelatedDishSelected = (item: MenuItem) => router.push(`/dish/${item.id}`)
+const formatPriceDisplay = (price: number) => formatCurrency(price)
 
-const onRelatedDishSelected = (selectedDish: MenuItem) => {
-  router.push(`/dish/${selectedDish.id}`)
-}
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(price)
-}
-
-// Initialize
-onMounted(() => {
-  loadDish()
-})
-
-// Watch for route changes
-watch(() => dishId.value, () => {
-  loadDish()
-})
-
-// Update page title
-watchEffect(() => {
-  if (dish.value) {
-    useHead({
-      title: `${dish.value.name} - Menu Ordering App`
-    })
-  }
-})
+onMounted(loadDish)
+watch(() => dishId.value, loadDish)
 </script>
 
-<style scoped>
-.dish-details-wrapper {
-  padding-bottom: 120px; /* Add padding to prevent content from being hidden by the sticky footer */
+<style lang="scss" scoped>
+@use '../../../assets/scss/tokens/spacing' as *;
+@use '../../../assets/scss/tokens/radius' as *;
+@use '../../../assets/scss/tokens/typography' as *;
+@use '../../../assets/scss/tokens/transitions' as *;
+@use '../../../assets/scss/tokens/shadows' as *;
+
+.product-page-container {
+  min-height: 100vh;
+  background: var(--bg-primary);
 }
 
-.hero-image {
+.product-page {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-page__header {
+  position: relative;
   width: 100%;
-  height: 40vh;
+}
+
+.product-page__header-nav {
+  position: absolute;
+  top: $space-4;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 0 $space-4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-page__nav-btn {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-full;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: $shadow-md;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all $transition-base;
+  padding: 0;
+  
+  &:hover {
+    background: var(--bg-secondary);
+    transform: scale(1.05);
+    border-color: var(--color-primary);
+  }
+
+  &--active {
+    color: var(--color-error);
+    border-color: var(--color-error);
+  }
+}
+
+.product-page__header-actions {
+  display: flex;
+  gap: $space-2;
+}
+
+.product-page__hero {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--bg-secondary);
+}
+
+.product-page__image-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.product-page__image {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-.content-sheet {
-  background-color: white;
-  margin-top: -40px;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+.product-page__popular-badge {
+  position: absolute;
+  bottom: $space-4;
+  left: $space-4;
+  background: var(--color-primary);
+  color: white;
+  padding: $space-1 $space-3;
+  border-radius: $radius-full;
+  font-size: $text-xs;
+  font-weight: $font-bold;
+  display: flex;
+  align-items: center;
+  gap: $space-1;
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
 }
 
-.sticky-footer {
+.product-page__content {
+  flex: 1;
+  padding: $space-6 $space-4 $space-32;
+  background: var(--bg-primary);
+  border-top-left-radius: $radius-xl;
+  border-top-right-radius: $radius-xl;
+  margin-top: -$radius-xl;
+  position: relative;
+  z-index: 5;
+}
+
+.product-page__title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $space-2;
+}
+
+.product-page__title {
+  color: var(--text-primary);
+  margin: 0;
+  flex: 1;
+  padding-right: $space-4;
+  font-size: $text-2xl;
+  font-weight: $font-bold;
+}
+
+.product-page__meta {
+  display: flex;
+  gap: $space-4;
+  margin-bottom: $space-4;
+}
+
+.product-page__meta-item {
+  display: flex;
+  align-items: center;
+  gap: $space-1;
+  font-size: $text-sm;
+  color: var(--text-secondary);
+}
+
+.product-page__meta-icon--star {
+  color: var(--color-warning);
+}
+
+.product-page__description {
+  color: var(--text-secondary);
+  line-height: $leading-relaxed;
+  margin-bottom: $space-8;
+  font-size: $text-base;
+}
+
+.product-page__section {
+  margin-bottom: $space-8;
+}
+
+.product-page__section-header {
+  margin-bottom: $space-4;
+}
+
+.product-page__section-title {
+  color: var(--text-primary);
+  font-size: $text-lg;
+  font-weight: $font-bold;
+
+  &--small {
+    font-size: $text-base;
+    margin-bottom: $space-2;
+  }
+}
+
+.product-page__allergens-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.product-page__related {
+  margin-top: $space-12;
+  padding-top: $space-8;
+  border-top: 1px solid var(--border-primary);
+}
+
+.product-page__related-title {
+  color: var(--text-primary);
+  margin-bottom: $space-6;
+  font-size: $text-xl;
+  font-weight: $font-bold;
+}
+
+.product-page__footer {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20px;
-  background-color: white;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  padding: $space-4 $space-4 calc($space-4 + env(safe-area-inset-bottom));
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-primary);
+  z-index: 100;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  background: rgba(var(--bg-primary-rgb), 0.9);
+}
+
+.product-page__footer-container {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  gap: $space-3;
+}
+
+.product-page__qty-control {
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary);
+  border-radius: $radius-full;
+  padding: $space-1;
+  border: 1px solid var(--border-primary);
+}
+
+.product-page__qty-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all $transition-base;
+  border-radius: $radius-full;
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+}
+
+.product-page__qty-value {
+  min-width: 32px;
+  text-align: center;
+  font-weight: $font-bold;
+  color: var(--text-primary);
+  font-size: $text-base;
+}
+
+.product-page__add-btn {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: $space-3;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: $radius-full;
+  font-weight: $font-bold;
+  font-size: $text-base;
+  cursor: pointer;
+  transition: all $transition-base;
+  box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+
+  &:hover {
+    background: var(--color-primary-light);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.product-page__add-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.product-page__add-price {
+  font-weight: $font-bold;
+}
+
+.product-page__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: $space-10;
+}
+
+.product-page__spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--bg-secondary);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: $space-6;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .product-page__hero {
+    aspect-ratio: 4 / 3;
+  }
 }
 </style>

@@ -2,8 +2,21 @@
   <header class="app-header">
     <!-- Left section -->
     <div class="app-header__left">
+      <!-- Back button (for non-telegram) -->
+      <BaseButton
+        v-if="!isTelegramApp && !isHomePage"
+        variant="ghost"
+        size="sm"
+        class="app-header__back-btn"
+        aria-label="Back"
+        @click="$router.back()"
+      >
+        <BaseIcon name="arrow-left" size="md" />
+      </BaseButton>
+
       <!-- Mobile menu button -->
       <BaseButton
+        v-if="isHomePage"
         variant="ghost"
         size="sm"
         class="app-header__menu-btn app-header__menu-btn--mobile"
@@ -66,7 +79,7 @@
 
       <!-- Notifications (web only) -->
       <BaseButton
-        v-if="!isTelegram"
+        v-if="!isTelegramApp"
         variant="ghost"
         size="sm"
         class="u-relative"
@@ -96,8 +109,20 @@
         <BaseBadge v-if="cartItemCount > 0" :count="cartItemCount" class="app-header__cart-badge" />
       </BaseButton>
 
-      <!-- User menu (web only) -->
-      <div v-if="!isTelegram" class="app-header__user-menu">
+      <!-- User menu (visible in both web and Telegram) -->
+      <div class="app-header__right-actions">
+        <!-- Guest Auth Buttons -->
+        <div v-if="!userStore.isAuthenticated" class="u-flex u-items-center u-gap-2">
+          <NuxtLink to="/auth/login" class="app-header__link">
+            <BaseButton variant="ghost" size="sm">Войти</BaseButton>
+          </NuxtLink>
+          <NuxtLink to="/auth/register" class="app-header__link">
+            <BaseButton variant="primary" size="sm">Регистрация</BaseButton>
+          </NuxtLink>
+        </div>
+
+        <!-- Logged In User Menu -->
+        <div v-else class="app-header__user-menu">
         <BaseButton
           variant="ghost"
           size="sm"
@@ -112,16 +137,16 @@
         <!-- User dropdown menu -->
         <div v-if="showUserMenu" class="app-header__dropdown">
           <NuxtLink to="/profile" class="app-header__dropdown-item" @click="closeUserMenu">
-            Profile
+            {{ $t('common.profile', 'Профиль') }}
           </NuxtLink>
           <NuxtLink to="/orders" class="app-header__dropdown-item" @click="closeUserMenu">
-            Order History
+            {{ $t('common.order_history', 'История заказов') }}
           </NuxtLink>
-          <NuxtLink to="/favourites" class="app-header__dropdown-item" @click="closeUserMenu">
-            Favourites
-          </NuxtLink>
+
           <hr class="app-header__dropdown-divider" />
-          <button class="app-header__dropdown-item" @click="logout">Logout</button>
+          <button class="app-header__dropdown-item" @click="logout">
+            {{ $t('common.logout', 'Выйти') }}
+          </button>
         </div>
       </div>
     </div>
@@ -139,12 +164,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useCartStore } from '~/stores/cart'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter, useRuntimeConfig, useNuxtApp } from '#app'
 import { useUserStore } from '~/stores/user'
+import { useMenuStore } from '~/stores/menu'
+import { useCartStore } from '~/stores/cart'
 import { useTenantStore } from '~/stores/tenant'
-import { useNotificationStore } from '~/stores/notification'
+import { useAnimations } from '~/composables/useAnimations'
+import { useResponsive } from '~/composables/useResponsive'
+import SkipLinks from '~/components/base/SkipLinks.vue'
+import { useHead } from '#app'
+import { useI18n } from 'vue-i18n'
 import { useTenant } from '~/composables/useTenant'
+import { useTelegram } from '~/composables/useTelegram'
+import { onClickOutside } from '@vueuse/core'
+import { useNotificationStore } from '~/stores/notification'
 import LanguageSwitcher from '../base/LanguageSwitcher.vue'
 
 // Emits
@@ -153,6 +187,10 @@ defineEmits<{
   'toggle-cart': []
 }>()
 
+// Composables
+const { currentTenant, isMultiTenant, tenantBranding } = useTenant()
+const telegram = useTelegram()
+
 // Stores
 const userStore = useUserStore()
 const cartStore = useCartStore()
@@ -160,19 +198,18 @@ const tenantStore = useTenantStore()
 const notificationStore = useNotificationStore()
 const { $router } = useNuxtApp()
 
-// Tenant composable
-const { currentTenant, isMultiTenant, tenantBranding } = useTenant()
-
 // Reactive state
 const showUserMenu = ref(false)
 const showMobileSearch = ref(false)
 
 // Computed properties
-const isTelegram = computed(() => userStore.platform === 'telegram')
-const userName = computed(() => userStore.user?.name || 'Guest')
+const isTelegramApp = computed(() => telegram.isTelegram.value)
+const isHomePage = computed(() => useRoute().path === '/')
+const userName = computed(() => userStore.user?.name || 'Гость')
 const cartItemCount = computed(() => cartStore.itemCount)
 const unreadNotifications = computed(() => notificationStore.unreadCount)
 const appName = computed(() => useRuntimeConfig().public.appName)
+const { locale } = useI18n()
 
 // Methods
 const toggleUserMenu = () => {

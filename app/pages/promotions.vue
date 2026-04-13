@@ -331,6 +331,7 @@
 
 <script setup lang="ts">
 import type { Promotion } from '~/types'
+import AppText from '../components/base/AppText.vue'
 
 // Page setup
 definePageMeta({

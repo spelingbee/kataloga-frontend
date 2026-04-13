@@ -3,10 +3,19 @@ export default defineNuxtPlugin(async () => {
   if (import.meta.server) return
 
   try {
-    // Check if running in Telegram Web App
+    // Check if running in Telegram Web App with actual context
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
       
+      // Determine if we are actually INSIDE Telegram (initData is present)
+      // or if the script is just loaded in a regular browser.
+      const isActuallyTelegram = !!tg.initData
+      
+      if (!isActuallyTelegram) {
+        console.log('Telegram script detected, but running in standard browser environment')
+        return
+      }
+
       // Initialize Telegram Web App
       tg.ready()
       
@@ -46,22 +55,45 @@ export default defineNuxtPlugin(async () => {
         console.log('Cloud storage available')
       }
 
-      // Set header color
-      if (tg.setHeaderColor) {
+      // Set header color (supported in v6.1+)
+      if (tg.setHeaderColor && tg.isVersionAtLeast('6.1')) {
         try {
           tg.setHeaderColor(tg.themeParams?.bg_color || '#ffffff')
         } catch (err) {
-          console.log('Header color setting not supported')
+          console.log('Header color setting failed:', err)
         }
       }
 
-      // Set background color
-      if (tg.setBackgroundColor) {
+      // Set background color (supported in v6.1+)
+      if (tg.setBackgroundColor && tg.isVersionAtLeast('6.1')) {
         try {
           tg.setBackgroundColor(tg.themeParams?.bg_color || '#ffffff')
         } catch (err) {
-          console.log('Background color setting not supported')
+          console.log('Background color setting failed:', err)
         }
+      }
+
+      // Automatically authenticate with Telegram if not already logged in
+      try {
+        const { useUserStore } = await import('~/stores/user')
+        const authStore = useUserStore()
+        
+        if (!authStore.isLoggedIn) {
+          console.log('User not logged in, attempting Telegram authentication...')
+          const { useTelegramAuth } = await import('~/composables/useTelegramAuth')
+          const { loginWithTelegram } = useTelegramAuth()
+          
+          const success = await loginWithTelegram()
+          if (success) {
+            console.log('Telegram authentication successful')
+          } else {
+            console.warn('Telegram authentication failed or was skipped')
+          }
+        } else {
+          console.log('User already logged in')
+        }
+      } catch (authErr) {
+        console.error('Error during automatic Telegram authentication:', authErr)
       }
     } else {
       console.log('Not running in Telegram Web App environment')

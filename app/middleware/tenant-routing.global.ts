@@ -61,19 +61,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     }
   }
 
-  // Handle tenant-specific redirects
-  // If navigating to home page with a tenant, redirect to menu
-  if (to.path === '/' && tenantStore.currentTenant) {
-    return navigateTo({
-      path: '/menu',
-      query: tenantStore.isMultiTenant ? { tenant: tenantStore.tenantSlug } : {}
-    })
-  }
-
-  // If navigating to tenant selector but tenant is already set (single-tenant mode)
-  if (to.path === '/select-restaurant' && !tenantStore.isMultiTenant && tenantStore.currentTenant) {
-    return navigateTo('/menu')
-  }
+  // Preservation logic for tenant in URL (removed the redundant / to /menu redirect)
+  return
 })
 
 /**

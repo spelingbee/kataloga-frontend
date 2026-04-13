@@ -1,5 +1,6 @@
 import { useAuth } from '~/composables/useAuth'
 import { useTelegram } from '~/composables/useTelegram'
+import { useUserStore } from '~/stores/user'
 import { useTenantStore } from '~/stores/tenant'
 
 export default defineNuxtRouteMiddleware(async (to) => {

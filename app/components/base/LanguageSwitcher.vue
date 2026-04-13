@@ -88,14 +88,16 @@ onMounted(() => {
   align-items: center;
   gap: $space-1;
   padding: $space-2 $space-4;
-  background: var(--bg-primary);
-  border: 1px solid $border-color;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: $radius-md;
+  color: white;
   cursor: pointer;
   transition: all $transition-base;
 
   &:hover {
-    border-color: var(--color-success);
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.1);
   }
 
   &:focus {
@@ -107,7 +109,7 @@ onMounted(() => {
 .language-switcher__current {
   font-size: $text-sm;
   font-weight: $font-medium;
-  color: $text-primary;
+  color: inherit;
 }
 
 .language-switcher__icon {

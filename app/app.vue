@@ -3,9 +3,6 @@
     <!-- Skip Links for Keyboard Navigation -->
     <SkipLinks />
     
-    <!-- Network Status Indicator -->
-    <NetworkStatusIndicator position="top" :auto-hide="true" :auto-hide-delay="5000" />
-    
     <NuxtLayout>
       <NuxtRouteAnnouncer />
       <NuxtPage :transition="pageTransition" />
@@ -14,22 +11,22 @@
 </template>
 
 <script setup lang="ts">
-import { useUserStore } from './stores/user'
-import { useMenuStore } from './stores/menu'
+import { useUserStore } from '~/stores/user'
+import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
-import { useOfflineCart } from '~/composables/useOfflineCart'
+import { useTenantStore } from '~/stores/tenant'
 import { useAnimations } from '~/composables/useAnimations'
 import { useResponsive } from '~/composables/useResponsive'
-import NetworkStatusIndicator from '~/components/base/NetworkStatusIndicator.vue'
 import SkipLinks from '~/components/base/SkipLinks.vue'
+import { onMounted, computed } from 'vue'
+import { useHead, useRuntimeConfig } from '#app'
+import { useI18n } from 'vue-i18n'
 
 // Initialize stores on app startup
 const userStore = useUserStore()
 const cartStore = useCartStore()
 const menuStore = useMenuStore()
-
-// Initialize offline functionality
-const { initializeOfflineCart } = useOfflineCart()
+const tenantStore = useTenantStore()
 
 // Initialize animations and responsive utilities
 const { pageTransition } = useAnimations()
@@ -65,12 +62,23 @@ useHead({
 
 // Initialize user and restore cart on app start
 onMounted(async () => {
-  await userStore.initializeUser()
-  cartStore.restoreCart()
-  menuStore.initializeFavourites()
+  console.log('[App] 🚀 onMounted - initialization sequence started')
   
-  // Initialize offline cart functionality
-  initializeOfflineCart()
+  try {
+    console.log('[App] 📥 Restoring cart...')
+    cartStore.restoreCart()
+    
+    console.log('[App] 📥 Initializing favorites...')
+    menuStore.initializeFavourites()
+
+    console.log('[App] 📥 Initializing user data...')
+    await userStore.initializeUser()
+    console.log('[App] ✅ User initialization complete')
+  } catch (error) {
+    console.error('[App] ❌ Initialization failed:', error)
+  }
+  
+  console.log('[App] ✨ onMounted - sequence complete')
 })
 </script>
 

@@ -179,7 +179,7 @@ const handleAddToCart = (item: MenuItem) => {
     handleItemClick(item)
     return
   }
-  
+  console.log(item)
   addItem(item, 1, [])
   // Show toast notification
   // useToast().success(`${item.name} added to cart`)

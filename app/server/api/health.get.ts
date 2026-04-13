@@ -14,8 +14,7 @@ export default defineEventHandler(async (event) => {
       checks: {
         api: 'healthy',
         database: 'healthy',
-        cache: 'healthy',
-        websocket: 'healthy'
+        cache: 'healthy'
       }
     }
 

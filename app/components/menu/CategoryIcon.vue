@@ -2,7 +2,7 @@
   <div
     :class="[
       'inline-flex items-center justify-center transition-all duration-200',
-      sizeClasses[size],
+      sizeClasses[size as keyof typeof sizeClasses],
       {
         'bg-category-all': categoryType === 'all',
         'bg-category-salad': categoryType === 'salad',
@@ -19,7 +19,7 @@
     <!-- Emoji Icons -->
     <span 
       v-if="iconType === 'emoji'"
-      :class="textSizeClasses[size]"
+      :class="textSizeClasses[size as keyof typeof textSizeClasses]"
       class="select-none"
       role="img"
       :aria-label="ariaLabel"
@@ -50,7 +50,7 @@ import { computed } from 'vue'
 
 interface Props {
   category: string
-  size?: 'sm' | 'md' | 'lg' | 'xl'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
   iconType?: 'emoji' | 'svg' | 'auto'
 }
 
@@ -64,7 +64,9 @@ const sizeClasses = {
   sm: 'w-8 h-8',
   md: 'w-10 h-10',
   lg: 'w-12 h-12',
-  xl: 'w-16 h-16'
+  xl: 'w-16 h-16',
+  '2xl': 'w-20 h-20',
+  '3xl': 'w-24 h-24'
 }
 
 // Text size classes for emoji
@@ -72,15 +74,19 @@ const textSizeClasses = {
   sm: 'text-sm',
   md: 'text-base',
   lg: 'text-lg',
-  xl: 'text-2xl'
+  xl: 'text-2xl',
+  '2xl': 'text-3xl',
+  '3xl': 'text-4xl'
 }
 
 // Icon size mapping for BaseIcon
-const iconSizeMap = {
+const iconSizeMap: Record<string, 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '4xl' | 'category-icon'> = {
   sm: 'sm',
   md: 'md',
   lg: 'lg',
-  xl: 'xl'
+  xl: 'xl',
+  '2xl': 'xl',
+  '3xl': 'xl'
 }
 
 // Category type mapping

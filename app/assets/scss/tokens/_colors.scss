@@ -108,22 +108,6 @@ $border-secondary: $color-neutral-300;
   --border-secondary: #{$color-neutral-600};
 }
 
-// System Theme Detection
-// -----------------------------------------------------------------------------
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    // Auto dark theme when no explicit theme is set
-    --bg-primary: #{$color-neutral-900};
-    --bg-secondary: #{$color-neutral-800};
-    --bg-tertiary: #{$color-neutral-700};
-    --text-primary: #{$color-neutral-50};
-    --text-secondary: #{$color-neutral-300};
-    --text-tertiary: #{$color-neutral-500};
-    --border-primary: #{$color-neutral-700};
-    --border-secondary: #{$color-neutral-600};
-  }
-}
-
 // Forced Colors Mode Support (High Contrast)
 // -----------------------------------------------------------------------------
 @media (forced-colors: active) {

@@ -35,11 +35,23 @@ export function useApi<T>(
     const response = await handleApiCall(
       async () => {
         const result = await apiCall()
-        if (result.success && result.data !== undefined) {
-          data.value = result.data
-          return result.data
+        
+        // Handle both standard ApiResponse and direct unwrapped data
+        const isResponseObj = (res: any): res is ApiResponse<T> => {
+          return res && typeof res === 'object' && 'success' in res && 'data' in res
+        }
+
+        if (isResponseObj(result)) {
+          if (result.success && result.data !== undefined) {
+            data.value = result.data
+            return result.data
+          } else {
+            throw new Error(result.message || 'API call failed')
+          }
         } else {
-          throw new Error(result.message || 'API call failed')
+          // Direct data from unwrapped response
+          data.value = result as T
+          return result as T
         }
       },
       { showError, errorMessage }

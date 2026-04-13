@@ -1,60 +1,68 @@
 <template>
   <div class="pickup-form">
-    <!-- Pickup Location -->
+    <!-- Location Selection -->
     <div class="pickup-form__field">
-      <label for="pickup-location" class="pickup-form__label">
-        Pickup Location *
+      <label class="pickup-form__label">
+        {{ $t('checkout.selectLocation', 'Выберите филиал') }} *
       </label>
-      <select
-        id="pickup-location"
-        v-model="localData.locationId"
-        class="pickup-form__select"
-        :class="{ 'pickup-form__select--error': errors.locationId }"
-        @change="handleChange"
-      >
-        <option value="">Select pickup location</option>
-        <option
+      
+      <!-- Card-based selection for small number of locations -->
+      <div v-if="locations.length < 6" class="pickup-form__locations-grid">
+        <button
           v-for="location in locations"
           :key="location.id"
-          :value="location.id"
+          type="button"
+          class="pickup-form__location-card"
+          :class="{ 'pickup-form__location-card--active': localData.locationId === location.id }"
+          @click="selectLocation(location.id)"
         >
-          {{ location.name }} - {{ location.address }}
-        </option>
-      </select>
+          <div class="pickup-form__location-icon">
+            <BaseIcon name="store" size="md" />
+          </div>
+          <div class="pickup-form__location-content">
+            <span class="pickup-form__location-name">{{ location.name }}</span>
+            <span class="pickup-form__location-address">{{ location.address }}</span>
+          </div>
+          <div v-if="localData.locationId === location.id" class="pickup-form__location-check">
+            <BaseIcon name="check" size="sm" />
+          </div>
+        </button>
+      </div>
+
+      <!-- Dropdown-based selection for large number of locations -->
+      <BaseSelect
+        v-else
+        id="pickup-location-select"
+        v-model="localData.locationId"
+        :options="locationOptions"
+        :placeholder="$t('delivery.selectLocation', 'Выберите точку из списка')"
+        :error="errors.locationId"
+        @change="handleChange"
+      />
+      
       <p v-if="errors.locationId" class="pickup-form__error">
         {{ errors.locationId }}
       </p>
     </div>
 
     <!-- Pickup Time -->
-    <div class="pickup-form__field">
-      <label for="pickup-time" class="pickup-form__label">
-        Pickup Time *
-      </label>
-      <select
+    <div class="form-group">
+      <BaseSelect
         id="pickup-time"
         v-model="localData.pickupTime"
-        class="pickup-form__select"
-        :class="{ 'pickup-form__select--error': errors.pickupTime }"
+        :label="$t('delivery.timePickup')"
+        :options="timeOptions"
+        :error="errors.pickupTime"
         @change="handleChange"
-      >
-        <option value="asap">As soon as possible ({{ estimatedTime }})</option>
-        <option value="30min">In 30 minutes</option>
-        <option value="1hour">In 1 hour</option>
-        <option value="2hours">In 2 hours</option>
-        <option value="custom">Choose specific time</option>
-      </select>
-      <p v-if="errors.pickupTime" class="pickup-form__error">
-        {{ errors.pickupTime }}
-      </p>
+      />
     </div>
 
-    <!-- Custom Time Picker (Combined into single field to stay under 5 field limit) -->
-    <div v-if="localData.pickupTime === 'custom'" class="pickup-form__field">
-      <label class="pickup-form__label">
-        Custom Date & Time *
+    <!-- Custom Time Picker -->
+    <div v-if="localData.pickupTime === 'custom'" class="form-group">
+      <label class="form-label">
+        {{ $t('delivery.customDateTime') }} *
       </label>
-      <div class="pickup-form__time-picker">
+      <div class="custom-time-grid">
         <BaseInput
           v-model="localData.customDate"
           type="date"
@@ -74,56 +82,60 @@
       </div>
     </div>
 
-    <!-- Phone Number -->
-    <div class="pickup-form__field">
-      <label for="pickup-phone" class="pickup-form__label">
-        Phone Number *
+    <!-- Contact Information -->
+    <div class="form-group">
+      <label for="pickup-phone" class="form-label">
+        {{ $t('form.phone') }} <span v-if="!isTelegram">*</span><span v-else>(Optional)</span>
       </label>
       <BaseInput
         id="pickup-phone"
         v-model="localData.phone"
         type="tel"
-        placeholder="+996 XXX XXX XXX"
+        :placeholder="$t('form.phonePlaceholder')"
         :error="errors.phone"
         @input="handleChange"
       />
-      <p class="pickup-form__hint">
-        We'll call you when your order is ready
+      <p class="hint-text">
+        {{ $t('form.phoneHint', 'Мы перезвоним вам при необходимости') }}
       </p>
     </div>
 
+    <!-- Contact Preference (Only in Telegram) -->
+    <div v-if="isTelegram" class="form-group checkbox-group">
+      <label class="checkbox-label">
+        <input 
+          type="checkbox" 
+          v-model="localData.writeToTelegram" 
+          @change="handleChange"
+        />
+        <span>{{ $t('checkout.contactTelegram', 'Связаться через Telegram') }}</span>
+      </label>
+    </div>
+
     <!-- Special Instructions -->
-    <div class="pickup-form__field">
-      <label for="pickup-instructions" class="pickup-form__label">
-        Special Instructions (Optional)
+    <div class="form-group">
+      <label for="pickup-instructions" class="form-label">
+        {{ $t('delivery.instructions') }}
       </label>
       <BaseInput
         id="pickup-instructions"
         v-model="localData.instructions"
         type="textarea"
-        placeholder="Any special requests or instructions..."
+        :placeholder="$t('delivery.instructionsPlaceholder')"
         :rows="3"
         @input="handleChange"
       />
-    </div>
-
-    <!-- Location Info -->
-    <div v-if="selectedLocation" class="pickup-form__location-info">
-      <div class="pickup-form__location-header">
-        <BaseIcon name="store" size="md" />
-        <h4 class="pickup-form__location-name">{{ selectedLocation.name }}</h4>
-      </div>
-      <p class="pickup-form__location-address">{{ selectedLocation.address }}</p>
-      <p v-if="selectedLocation.phone" class="pickup-form__location-phone">
-        <BaseIcon name="phone" size="sm" />
-        {{ selectedLocation.phone }}
-      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useTelegram } from '~/composables/useTelegram'
+
+const { t } = useI18n()
+const { isTelegram } = useTelegram()
 
 interface PickupLocation {
   id: string
@@ -138,6 +150,7 @@ interface PickupData {
   customDate: string
   customTime: string
   phone: string
+  writeToTelegram?: boolean
   instructions: string
 }
 
@@ -149,26 +162,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   errors: () => ({}),
-  locations: () => [
-    {
-      id: 'main',
-      name: 'Main Restaurant',
-      address: 'Nevsky Prospect 123, St. Petersburg',
-      phone: '+7 (812) 123-45-67'
-    },
-    {
-      id: 'mall',
-      name: 'Mall Location',
-      address: 'Galeria Shopping Center, St. Petersburg',
-      phone: '+7 (812) 234-56-78'
-    },
-    {
-      id: 'downtown',
-      name: 'Downtown Branch',
-      address: 'Sadovaya Street 45, St. Petersburg',
-      phone: '+7 (812) 345-67-89'
-    }
-  ]
+  locations: () => []
 })
 
 const emit = defineEmits<{
@@ -203,9 +197,25 @@ const estimatedTime = computed(() => {
   return '20-30 min'
 })
 
-const selectedLocation = computed(() => {
-  return props.locations.find(loc => loc.id === localData.value.locationId)
+const locationOptions = computed(() => {
+  return props.locations.map(loc => ({
+    label: `${loc.name} - ${loc.address}`,
+    value: loc.id
+  }))
 })
+
+const timeOptions = computed(() => [
+  { label: t('delivery.asap', { time: estimatedTime.value }), value: 'asap' },
+  { label: t('delivery.in30min'), value: '30min' },
+  { label: t('delivery.in1hour'), value: '1hour' },
+  { label: t('delivery.in2hours'), value: '2hours' },
+  { label: t('delivery.customTime'), value: 'custom' }
+])
+
+const selectLocation = (id: string) => {
+  localData.value.locationId = id
+  handleChange()
+}
 
 const handleChange = () => {
   emit('update:modelValue', { ...localData.value })
@@ -217,114 +227,135 @@ watch(() => props.modelValue, (newValue) => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/abstracts/variables' as *;
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/transitions' as *;
+@use '../../assets/scss/tokens/typography' as *;
 
 .pickup-form {
   display: flex;
   flex-direction: column;
-  gap: $space-6;
+  gap: $space-4;
 }
 
-.pickup-form__field {
+.form-group {
   display: flex;
   flex-direction: column;
   gap: $space-2;
 }
 
 .pickup-form__label {
-  font-size: $text-sm;
-  font-weight: $font-medium;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--text-primary);
+  margin-bottom: $space-2;
+  display: block;
 }
 
-.pickup-form__select {
-  width: 100%;
-  padding: $space-2 $space-4;
-  font-size: $text-base;
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: $radius-md;
-  transition: $transition-base;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right $space-2 center;
-  background-repeat: no-repeat;
-  background-size: 1.5em 1.5em;
-  padding-right: 2.5rem;
-
-  &:focus {
-    outline: none;
-    border-color: var(--color-success);
-    box-shadow: 0 0 0 3px rgba(var(--color-success), 0.1);
-  }
-
-  &:disabled {
-    background-color: $color-neutral-20;
-    cursor: not-allowed;
-  }
+.pickup-form__locations-grid {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
 }
 
-.pickup-form__select--error {
-  border-color: var(--color-error);
-}
-
-.pickup-form__error {
-  font-size: $text-xs;
-  color: var(--color-error);
-  margin: 0;
-}
-
-.pickup-form__hint {
-  font-size: $text-xs;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.pickup-form__time-picker {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: $space-4;
-}
-
-.pickup-form__location-info {
-  padding: $space-4;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: $radius-md;
-}
-
-.pickup-form__location-header {
+.pickup-form__location-card {
   display: flex;
   align-items: center;
-  gap: $space-2;
-  margin-bottom: $space-2;
+  gap: $space-4;
+  padding: $space-4;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  position: relative;
+
+  &:hover {
+    border-color: var(--color-primary);
+    background: var(--bg-secondary);
+  }
+
+  &--active {
+    background: rgba(var(--color-primary-rgb), 0.05);
+    border-color: var(--color-primary);
+    border-width: 2px;
+  }
+}
+
+.pickup-form__location-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  border-radius: $radius-md;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.pickup-form__location-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
 }
 
 .pickup-form__location-name {
-  font-size: $text-base;
-  font-weight: $font-semibold;
+  font-weight: 600;
+  font-size: 1rem;
   color: var(--text-primary);
-  margin: 0;
 }
 
 .pickup-form__location-address {
-  font-size: $text-sm;
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  margin: 0 0 $space-1 0;
 }
 
-.pickup-form__location-phone {
+.pickup-form__location-check {
+  color: var(--color-primary);
+}
+
+.custom-time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-3;
+}
+
+.checkbox-group {
+  margin-top: $space-2;
+}
+
+.checkbox-label {
   display: flex;
   align-items: center;
-  gap: $space-1;
-  font-size: $text-sm;
-  color: var(--text-secondary);
-  margin: 0;
+  gap: $space-3;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary);
+  }
 }
 
-@media (max-width: $breakpoint-sm) {
-  .pickup-form__time-picker {
+.pickup-form__error {
+  font-size: 0.75rem;
+  color: var(--color-error);
+  margin-top: $space-1;
+}
+
+.hint-text {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .custom-time-grid {
     grid-template-columns: 1fr;
   }
 }

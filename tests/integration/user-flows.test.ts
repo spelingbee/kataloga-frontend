@@ -371,55 +371,6 @@ describe('User Flow Integration Tests', () => {
     })
   })
 
-  describe('Offline Functionality Flow', () => {
-    it('should handle offline cart operations', async () => {
-      // Mock offline state
-      Object.defineProperty(navigator, 'onLine', {
-        value: false,
-        writable: true
-      })
-
-      const { useOfflineCart } = await import('~/composables/useOfflineCart')
-      const offlineCart = useOfflineCart()
-
-      const item = {
-        id: '1',
-        name: 'Pizza Margherita',
-        price: 12.99,
-        quantity: 1
-      }
-
-      offlineCart.addItem(item)
-
-      expect(offlineCart.items.value).toHaveLength(1)
-      expect(offlineCart.isOffline.value).toBe(true)
-    })
-
-    it('should sync cart when coming back online', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ success: true })
-      })
-
-      const { useOfflineCart } = await import('~/composables/useOfflineCart')
-      const offlineCart = useOfflineCart()
-
-      // Add item while offline
-      Object.defineProperty(navigator, 'onLine', { value: false })
-      offlineCart.addItem({
-        id: '1',
-        name: 'Pizza Margherita',
-        price: 12.99,
-        quantity: 1
-      })
-
-      // Come back online
-      Object.defineProperty(navigator, 'onLine', { value: true })
-      await offlineCart.syncWithServer()
-
-      expect(global.fetch).toHaveBeenCalled()
-    })
-  })
 
   describe('Error Handling Flow', () => {
     it('should handle network errors gracefully', async () => {

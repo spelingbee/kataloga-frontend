@@ -3,13 +3,12 @@
  * Provides authentication functionality using Telegram Web App
  */
 
-import { useAuthStore } from '~/stores/auth'
-import { useTelegramAuthService } from '~/services/telegram-auth.service'
+import { useUserStore } from '~/stores/user'
 
 export const useTelegramAuth = () => {
+  const { $telegramAuthService } = useNuxtApp()
   const telegram = useTelegram()
-  const authStore = useAuthStore()
-  const telegramAuthService = useTelegramAuthService()
+  const authStore = useUserStore()
 
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -25,7 +24,7 @@ export const useTelegramAuth = () => {
    * Authenticate user with Telegram
    */
   const loginWithTelegram = async (): Promise<boolean> => {
-    if (!isAvailable.value) {
+    if (!isAvailable.value || !$telegramAuthService) {
       error.value = 'Telegram authentication is not available'
       return false
     }
@@ -42,12 +41,12 @@ export const useTelegramAuth = () => {
       }
 
       // Validate init data
-      if (!telegramAuthService.validateInitData(initData)) {
+      if (!($telegramAuthService as any).validateInitData(initData)) {
         throw new Error('Invalid Telegram init data')
       }
 
       // Authenticate with backend
-      const response = await telegramAuthService.authenticateWithTelegram({
+      const response = await ($telegramAuthService as any).authenticateWithTelegram({
         initData,
         initDataUnsafe
       })
@@ -74,7 +73,7 @@ export const useTelegramAuth = () => {
    * Link Telegram account to current user
    */
   const linkAccount = async (): Promise<boolean> => {
-    if (!isAvailable.value) {
+    if (!isAvailable.value || !$telegramAuthService) {
       error.value = 'Telegram is not available'
       return false
     }
@@ -95,7 +94,7 @@ export const useTelegramAuth = () => {
         throw new Error('Failed to get Telegram init data')
       }
 
-      await telegramAuthService.linkTelegramAccount(authStore.user.id, {
+      await ($telegramAuthService as any).linkTelegramAccount(authStore.user.id, {
         initData,
         initDataUnsafe
       })
@@ -119,7 +118,7 @@ export const useTelegramAuth = () => {
    * Unlink Telegram account from current user
    */
   const unlinkAccount = async (): Promise<boolean> => {
-    if (!authStore.user?.id) {
+    if (!authStore.user?.id || !$telegramAuthService) {
       error.value = 'User must be logged in'
       return false
     }
@@ -128,7 +127,7 @@ export const useTelegramAuth = () => {
     error.value = null
 
     try {
-      await telegramAuthService.unlinkTelegramAccount(authStore.user.id)
+      await ($telegramAuthService as any).unlinkTelegramAccount(authStore.user.id)
 
       // Refresh user profile
       await authStore.fetchUserProfile()

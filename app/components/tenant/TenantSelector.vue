@@ -87,15 +87,15 @@ const loadTenants = async () => {
   error.value = null
 
   try {
-    const { $api } = useNuxtApp()
-    const response = await $api.get<TenantInfo[]>('/tenants', {
+    const { $apiClient } = useNuxtApp()
+    const response = await ($apiClient as any).get<TenantInfo[]>('/tenants', {
       bypassTenant: true
     })
 
-    if (response.success) {
-      tenants.value = response.data.filter(t => t.isActive)
+    if (Array.isArray(response)) {
+      tenants.value = response.filter(t => t.isActive)
     } else {
-      throw new Error('Failed to load restaurants')
+      throw new Error('Failed to load restaurants: Invalid response format')
     }
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load restaurants'

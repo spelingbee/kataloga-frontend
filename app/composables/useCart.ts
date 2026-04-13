@@ -3,8 +3,10 @@ import { storeToRefs } from 'pinia'
 import type { CartItem, MenuItem, CreateOrderDto, CustomerInfo } from '~/types'
 import { useCartStore } from '~/stores/cart'
 import { useOrderStore } from '~/stores/order'
+import { useTenantSettings } from '~/composables/useTenant'
 
 export function useCart() {
+  const { $orderService } = useNuxtApp()
   const cartStore = useCartStore()
   const orderStore = useOrderStore()
   
@@ -39,13 +41,12 @@ export function useCart() {
     cartStore.restoreCart()
   }
 
+  const tenantSettings = useTenantSettings()
+
   // Computed
   const hasItems = computed(() => !isEmpty.value)
   const formattedTotal = computed(() => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(total.value)
+    return tenantSettings.formatCurrency(total.value)
   })
 
   // Helper functions
@@ -135,26 +136,18 @@ export function useCart() {
     longitude: number
     address: string
   }) => {
-    if (isEmpty.value) {
-      throw new Error('Cart is empty')
+    if (isEmpty.value || !$orderService) {
+      throw new Error('Cart is empty or service unavailable')
     }
 
     try {
-      const { useOrderService } = await import('~/services/order.service')
-      const orderService = useOrderService()
-      const response = await orderService.estimateDeliveryTime({
+      return await ($orderService as any).estimateDeliveryTime({
         items: items.value.map(item => ({
           itemId: item.menuItem.id,
           quantity: item.quantity,
         })),
         deliveryAddress,
       })
-
-      if (response.success && response.data) {
-        return response.data
-      }
-
-      throw new Error(response.message || 'Failed to estimate delivery time')
     } catch (error) {
       console.error('Failed to estimate delivery time:', error)
       throw error

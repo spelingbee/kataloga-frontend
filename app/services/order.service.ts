@@ -2,11 +2,7 @@ import type { Order, CreateOrderDto, OrderStatus, OrderItem, PaginatedResult } f
 import { useApiClient } from '~/utils/api'
 
 export class OrderService {
-  private apiClient = useApiClient()
-
-  private getApiClient() {
-    return this.apiClient
-  }
+  constructor(private apiClient: any) {}
 
   /**
    * Create order (unwrapped data)
@@ -14,7 +10,7 @@ export class OrderService {
    * Requirements: 2.1
    */
   async createOrder(orderData: CreateOrderDto): Promise<Order> {
-    return this.getApiClient().post<Order>('/orders', orderData)
+    return this.apiClient.post<Order>('/orders', orderData)
   }
 
   /**
@@ -37,7 +33,7 @@ export class OrderService {
     const endpoint = queryString ? `/orders?${queryString}` : '/orders'
     
     // Get full response to access pagination metadata
-    const response = await this.getApiClient().getRaw<Order[]>(endpoint)
+    const response = await this.apiClient.getRaw<Order[]>(endpoint)
     
     if (response.success && response.data) {
       return {
@@ -61,7 +57,7 @@ export class OrderService {
    */
   async getOrder(orderId: string): Promise<Order | null> {
     try {
-      return await this.getApiClient().get<Order>(`/orders/${orderId}`)
+      return await this.apiClient.get<Order>(`/orders/${orderId}`)
     } catch (error) {
       // Return null for not found cases
       if ((error as any)?.code === 'NOT_FOUND') {
@@ -77,7 +73,7 @@ export class OrderService {
    * Requirements: 2.1
    */
   async updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
-    return this.getApiClient().patch<Order>(`/orders/${orderId}/status`, { status })
+    return this.apiClient.patch<Order>(`/orders/${orderId}/status`, { status })
   }
 
   /**
@@ -86,7 +82,7 @@ export class OrderService {
    * Requirements: 2.1
    */
   async cancelOrder(orderId: string, reason?: string): Promise<Order> {
-    return this.getApiClient().patch<Order>(`/orders/${orderId}/cancel`, { reason })
+    return this.apiClient.patch<Order>(`/orders/${orderId}/cancel`, { reason })
   }
 
   /**
@@ -96,7 +92,7 @@ export class OrderService {
    */
   async getOrderHistory(page: number = 1, limit: number = 10): Promise<PaginatedResult<Order>> {
     // Get full response to access pagination metadata
-    const response = await this.getApiClient().getRaw<Order[]>(`/orders/history?page=${page}&limit=${limit}`)
+    const response = await this.apiClient.getRaw<Order[]>(`/orders/history?page=${page}&limit=${limit}`)
     
     if (response.success && response.data) {
       return {
@@ -119,7 +115,7 @@ export class OrderService {
    * Requirements: 2.1
    */
   async repeatOrder(orderId: string): Promise<Order> {
-    return this.getApiClient().post<Order>(`/orders/${orderId}/repeat`)
+    return this.apiClient.post<Order>(`/orders/${orderId}/repeat`)
   }
 
   /**
@@ -140,7 +136,7 @@ export class OrderService {
       }>
     }
   }> {
-    return this.getApiClient().get<{
+    return this.apiClient.get<{
       order: Order
       tracking: {
         status: OrderStatus
@@ -178,7 +174,7 @@ export class OrderService {
       message: string
     }>
   }> {
-    return this.getApiClient().get<{
+    return this.apiClient.get<{
       status: OrderStatus
       estimatedTime: number
       currentLocation?: {
@@ -209,7 +205,7 @@ export class OrderService {
     delivery: number
     comment?: string
   }): Promise<void> {
-    return this.getApiClient().post<void>(`/orders/${orderId}/rating`, rating)
+    return this.apiClient.post<void>(`/orders/${orderId}/rating`, rating)
   }
 
   /**
@@ -229,7 +225,7 @@ export class OrderService {
       transactionId: string
     }
   }> {
-    return this.getApiClient().get<{
+    return this.apiClient.get<{
       order: Order
       receipt: {
         subtotal: number
@@ -257,7 +253,7 @@ export class OrderService {
     status: string
     estimatedProcessingTime: string
   }> {
-    return this.getApiClient().post<{
+    return this.apiClient.post<{
       refundId: string
       status: string
       estimatedProcessingTime: string
@@ -270,7 +266,7 @@ export class OrderService {
    * Requirements: 2.1
    */
   async getActiveOrders(): Promise<Order[]> {
-    return this.getApiClient().get<Order[]>('/orders/active')
+    return this.apiClient.get<Order[]>('/orders/active')
   }
 
   /**
@@ -290,20 +286,10 @@ export class OrderService {
     deliveryFee: number
     availableTimeSlots: string[]
   }> {
-    return this.getApiClient().post<{
+    return this.apiClient.post<{
       estimatedTime: number
       deliveryFee: number
       availableTimeSlots: string[]
     }>('/orders/estimate', data)
   }
-}
-
-// Create singleton instance
-let orderService: OrderService | null = null
-
-export function useOrderService(): OrderService {
-  if (!orderService) {
-    orderService = new OrderService()
-  }
-  return orderService
 }

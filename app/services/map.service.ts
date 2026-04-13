@@ -185,5 +185,4 @@ export class MapService {
   }
 }
 
-// Export singleton instance
 export const mapService = new MapService()

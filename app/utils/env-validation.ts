@@ -21,10 +21,6 @@ export function validateEnvironmentConfig(): EnvironmentValidationResult {
     errors.push('NUXT_PUBLIC_API_BASE_URL is required')
   }
 
-  // Check WebSocket URL
-  if (!config.public.websocketUrl) {
-    warnings.push('NUXT_PUBLIC_WEBSOCKET_URL is not set, real-time features may not work')
-  }
 
   // Validate multi-tenant configuration
   const isMultiTenant = config.public.multiTenantMode

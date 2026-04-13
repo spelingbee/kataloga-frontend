@@ -1,76 +1,57 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="category-page">
     <!-- Header Section -->
-    <div class="px-6 py-8">
-      <div class="flex items-center gap-4 mb-4">
-        <NuxtLink 
-          to="/menu/categories"
-          class="text-neutral-20 hover:text-white transition-colors"
-        >
+    <header class="category-page__header">
+      <div class="category-page__nav">
+        <NuxtLink to="/" class="category-page__back-btn">
           <BaseIcon name="arrow-left" size="md" />
         </NuxtLink>
-        
-        <div class="flex items-center gap-3">
-          <CategoryIcon 
-            v-if="category"
-            :category="category.id" 
-            size="lg"
-          />
-          <div>
-            <AppHeading level="h1" size="display-md" class="text-white">
-              {{ category?.name || 'Category' }}
-            </AppHeading>
-            <AppText size="body-md" class="text-neutral-20">
-              {{ category?.description || 'Explore our delicious selection' }}
-            </AppText>
+        <div class="category-page__header-content">
+          <h1 class="category-page__title">
+            {{ category?.name || $t('common.category', 'Категория') }}
+          </h1>
+          <div class="category-page__stats">
+            <span class="category-page__stat-item">
+              {{ filteredItems.length }} {{ $t('common.items', 'товаров') }}
+            </span>
+            <template v-if="averagePrice">
+              <span class="category-page__stat-divider">•</span>
+              <span class="category-page__stat-item">
+                {{ $t('common.avg_price', 'Средний чек') }}: {{ formatPriceDisplay(averagePrice) }}
+              </span>
+            </template>
           </div>
         </div>
       </div>
 
-      <!-- Category Stats -->
-      <div class="flex items-center gap-6">
-        <div class="flex items-center gap-2">
-          <BaseIcon name="utensils" size="sm" class="text-primary-orange" />
-          <AppText class="text-neutral-20">
-            {{ filteredItems.length }} items
-          </AppText>
-        </div>
-        <div v-if="averagePrice" class="flex items-center gap-2">
-          <BaseIcon name="dollar-sign" size="sm" class="text-primary-green" />
-          <AppText class="text-neutral-20">
-            Avg. {{ formatPrice(averagePrice) }}
-          </AppText>
-        </div>
-        <div v-if="isPopularCategory" class="flex items-center gap-2">
-          <FireIcon size="sm" />
-          <AppText class="text-primary-orange">
-            Popular Category
-          </AppText>
-        </div>
+      <div v-if="category?.description" class="category-page__description-wrapper">
+        <p class="category-page__description">
+          {{ category.description }}
+        </p>
       </div>
-    </div>
+    </header>
 
     <!-- Filters and Search -->
-    <div class="px-6 mb-8">
-      <div class="flex flex-col md:flex-row gap-4">
+    <section class="category-page__filters-section">
+      <div class="category-page__filters-row">
         <!-- Search -->
-        <div class="flex-1 max-w-md">
+        <div class="category-page__search-box">
           <BaseInput
             v-model="searchQuery"
             placeholder="Search in this category..."
-            class="w-full"
+            class="category-page__search-input"
           >
             <template #prefix>
-              <BaseIcon name="search" size="sm" class="text-neutral-80" />
+              <BaseIcon name="search" size="sm" class="category-page__search-icon" />
             </template>
           </BaseInput>
         </div>
 
         <!-- Sort and Filter Controls -->
-        <div class="flex gap-2">
+        <div class="category-page__controls">
           <select 
             v-model="sortBy"
-            class="bg-background-card border border-neutral-80/30 rounded-lg px-3 py-2 text-white text-sm"
+            class="category-page__sort-select"
           >
             <option value="name">Sort by Name</option>
             <option value="price-low">Price: Low to High</option>
@@ -81,42 +62,43 @@
           
           <BaseButton 
             variant="secondary" 
+            class="category-page__filter-btn"
             @click="showFilters = !showFilters"
           >
-            <BaseIcon name="filter" size="sm" class="mr-2" />
+            <BaseIcon name="filter" size="sm" class="category-page__filter-icon" />
             Filters
           </BaseButton>
         </div>
       </div>
 
       <!-- Advanced Filters -->
-      <div v-if="showFilters" class="mt-4">
+      <div v-if="showFilters" class="category-page__advanced-filters">
         <MenuFilters 
           :category="categorySlug"
           @close="showFilters = false"
         />
       </div>
-    </div>
+    </section>
 
     <!-- Main Content -->
-    <div class="px-6">
+    <main class="category-page__main">
       <!-- Loading State -->
-      <div v-if="menuStore.loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading {{ category?.name || 'category' }}...</AppText>
+      <div v-if="menuStore.loading" class="category-page__state category-page__state--loading">
+        <div class="category-page__spinner"/>
+        <AppText class="category-page__state-text">Loading {{ category?.name || 'category' }}...</AppText>
       </div>
 
       <!-- Error State -->
-      <div v-else-if="menuStore.error" class="text-center py-12">
-        <BaseIcon name="alert-circle" size="xl" class="text-primary-red mx-auto mb-4" />
-        <AppText class="text-white mb-4">{{ menuStore.error }}</AppText>
+      <div v-else-if="menuStore.error" class="category-page__state category-page__state--error">
+        <BaseIcon name="alert-circle" size="xl" class="category-page__state-icon category-page__state-icon--error" />
+        <AppText class="category-page__state-text">{{ menuStore.error }}</AppText>
         <BaseButton @click="loadCategoryData">
           Try Again
         </BaseButton>
       </div>
 
       <!-- Menu Items -->
-      <div v-else>
+      <div v-else class="category-page__content">
         <!-- Items Grid -->
         <MenuItemGrid 
           v-if="filteredItems.length > 0"
@@ -126,18 +108,18 @@
         />
 
         <!-- Empty State -->
-        <div v-else class="text-center py-16">
-          <BaseIcon name="search" size="4xl" class="text-neutral-80 mx-auto mb-6" />
-          <AppHeading level="h3" size="heading-lg" class="text-white mb-4">
+        <div v-else class="category-page__state category-page__state--empty">
+          <BaseIcon name="search" size="xl" class="category-page__state-icon" />
+          <AppHeading level="h3" size="heading-lg" class="category-page__state-title">
             No items found
           </AppHeading>
-          <AppText class="text-neutral-20 mb-8 max-w-md mx-auto">
+          <AppText class="category-page__state-text">
             {{ searchQuery ? 
               `No items match "${searchQuery}" in this category.` : 
               'This category is currently empty.' 
             }}
           </AppText>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <div class="category-page__state-actions">
             <BaseButton 
               v-if="searchQuery"
               variant="secondary"
@@ -145,7 +127,7 @@
             >
               Clear Search
             </BaseButton>
-            <NuxtLink to="/menu/categories">
+            <NuxtLink to="/menu/categories" class="category-page__state-link">
               <BaseButton variant="secondary">
                 Browse Other Categories
               </BaseButton>
@@ -153,54 +135,60 @@
           </div>
         </div>
       </div>
-    </div>
+    </main>
 
-    <!-- Related Categories -->
-    <div v-if="relatedCategories.length > 0" class="px-6 py-12 mt-12 border-t border-neutral-80/20">
-      <AppHeading level="h2" size="heading-xl" class="text-white mb-6">
-        You Might Also Like
-      </AppHeading>
+    <section v-if="relatedCategories.length > 0" class="category-page__related">
+      <h2 class="category-page__related-title">
+        {{ $t('common.other_categories', 'Другие категории') }}
+      </h2>
       
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div class="category-page__related-grid">
         <NuxtLink
           v-for="relatedCategory in relatedCategories"
           :key="relatedCategory.id"
           :to="`/menu/categories/${relatedCategory.id}`"
-          class="group"
+          class="category-page__related-card"
         >
-          <BaseCard class="p-4 text-center bg-background-card hover:bg-background-card/80 transition-all duration-300 group-hover:scale-105">
+          <div class="category-page__related-card-inner">
             <CategoryIcon 
               :category="relatedCategory.id" 
-              size="md"
-              class="mx-auto mb-2 group-hover:scale-110 transition-transform duration-300"
+              size="3xl"
+              class="category-page__related-icon"
             />
-            <AppText size="body-sm" class="text-white group-hover:text-primary-green transition-colors">
+            <span class="category-page__related-name">
               {{ relatedCategory.name }}
-            </AppText>
-            <AppText size="caption" class="text-neutral-20 mt-1">
-              {{ relatedCategory.count }} items
-            </AppText>
-          </BaseCard>
+            </span>
+            <span class="category-page__related-count">
+              {{ relatedCategory.count }} {{ $t('common.items', 'товаров') }}
+            </span>
+          </div>
         </NuxtLink>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { MenuItem, Category } from '~/types'
 import { useMenuStore } from '~/stores/menu'
+import AppText from '../../../components/base/AppText.vue'
+import CategoryIcon from '../../../components/menu/CategoryIcon.vue'
+import AppHeading from '../../../components/base/AppHeading.vue'
+
+import { useTenantStore } from '~/stores/tenant'
+import { useTenantSettings } from '~/composables/useTenant'
 
 // Page setup
 definePageMeta({
-  title: 'Category - Menu Ordering App'
+  title: 'Category - Menu'
 })
 
 // Route and stores
 const route = useRoute()
 const router = useRouter()
-
 const menuStore = useMenuStore()
+const tenantStore = useTenantStore()
+const { formatCurrency } = useTenantSettings()
 
 // Reactive state
 const showFilters = ref(false)
@@ -210,29 +198,15 @@ const sortBy = ref('name')
 // Get category slug from route
 const categorySlug = computed(() => route.params.slug as string)
 
-// Sample categories data - will be replaced with real data from API
-const categories = ref<Category[]>([
-  { id: 'all', name: 'All Items', description: 'Browse our complete menu', icon: '🍔', count: 48, sortOrder: 0 },
-  { id: 'salads', name: 'Fresh Salads', description: 'Healthy and nutritious salads', icon: '🥗', count: 12, sortOrder: 1 },
-  { id: 'main-dishes', name: 'Main Dishes', description: 'Hearty and satisfying meals', icon: '🍽️', count: 18, sortOrder: 2 },
-  { id: 'meat', name: 'Meat Dishes', description: 'Premium meat selections', icon: '🥩', count: 15, sortOrder: 3 },
-  { id: 'fastfood', name: 'Fast Food', description: 'Quick and delicious options', icon: '🍟', count: 20, sortOrder: 4 },
-  { id: 'desserts', name: 'Sweet Desserts', description: 'Indulgent treats and sweets', icon: '🧁', count: 8, sortOrder: 5 },
-  { id: 'drinks', name: 'Beverages', description: 'Refreshing drinks and cocktails', icon: '🥤', count: 16, sortOrder: 6 },
-  { id: 'appetizers', name: 'Appetizers', description: 'Perfect starters for your meal', icon: '🥨', count: 10, sortOrder: 7 },
-  { id: 'soups', name: 'Soups', description: 'Warm and comforting soups', icon: '🍲', count: 6, sortOrder: 8 },
-  { id: 'pizza', name: 'Pizza', description: 'Authentic wood-fired pizzas', icon: '🍕', count: 12, sortOrder: 9 }
-])
-
-const popularCategories = ['fastfood', 'main-dishes', 'pizza', 'drinks']
-
 // Computed
+const categories = computed(() => menuStore.categories)
+
 const category = computed(() => {
   return categories.value.find(cat => cat.id === categorySlug.value)
 })
 
 const filteredItems = computed(() => {
-  let items = menuStore.filteredItems
+  let items = menuStore.menuItems
   
   // Filter by category
   if (categorySlug.value && categorySlug.value !== 'all') {
@@ -244,7 +218,7 @@ const filteredItems = computed(() => {
     const query = searchQuery.value.toLowerCase()
     items = items.filter(item => 
       item.name.toLowerCase().includes(query) ||
-      item.description.toLowerCase().includes(query)
+      item.description?.toLowerCase().includes(query)
     )
   }
   
@@ -260,8 +234,7 @@ const sortedItems = computed(() => {
     case 'price-high':
       return items.sort((a, b) => b.price - a.price)
     case 'popular':
-      // Sort by popularity (mock implementation)
-      return items.sort(() => Math.random() - 0.5)
+      return items.sort((a, b) => (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0))
     case 'calories':
       return items.sort((a, b) => (a.calories || 0) - (b.calories || 0))
     case 'name':
@@ -276,12 +249,7 @@ const averagePrice = computed(() => {
   return total / filteredItems.value.length
 })
 
-const isPopularCategory = computed(() => {
-  return popularCategories.includes(categorySlug.value)
-})
-
 const relatedCategories = computed(() => {
-  // Show related categories (exclude current category)
   return categories.value
     .filter(cat => cat.id !== categorySlug.value && cat.id !== 'all')
     .slice(0, 6)
@@ -289,7 +257,6 @@ const relatedCategories = computed(() => {
 
 // Methods
 const onItemSelected = (item: MenuItem) => {
-  menuStore.setSelectedDish(item)
   router.push(`/dish/${item.id}`)
 }
 
@@ -297,11 +264,8 @@ const clearSearch = () => {
   searchQuery.value = ''
 }
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(price)
+const formatPriceDisplay = (price: number) => {
+  return formatCurrency(price)
 }
 
 const loadCategoryData = async () => {
@@ -338,3 +302,299 @@ watchEffect(() => {
   }
 })
 </script>
+
+<style scoped lang="scss">
+@use '../../../assets/scss/tokens/colors' as *;
+@use '../../../assets/scss/tokens/typography' as *;
+@use '../../../assets/scss/tokens/spacing' as *;
+@use '../../../assets/scss/tokens/transitions' as *;
+@use '../../../assets/scss/tokens/radius' as *;
+@use '../../../assets/scss/tokens/shadows' as *;
+
+.category-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.category-page__header {
+  padding: $space-8 $space-4 $space-6;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.category-page__nav {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  margin-bottom: $space-6;
+}
+
+.category-page__header-content {
+  flex: 1;
+}
+
+.category-page__back-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-full;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  transition: all $transition-base;
+
+  &:hover {
+    background: var(--bg-tertiary);
+    transform: scale(1.05);
+    border-color: var(--color-primary);
+  }
+}
+
+.category-page__title {
+  margin: 0 0 $space-1 0;
+  color: var(--text-primary);
+  font-size: $text-2xl;
+  font-weight: $font-bold;
+}
+
+.category-page__stats {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $text-sm;
+  color: var(--text-secondary);
+}
+
+.category-page__stat-divider {
+  opacity: 0.3;
+}
+
+.category-page__description-wrapper {
+  padding-left: calc(44px + $space-4); // Align with title
+}
+
+.category-page__description {
+  color: var(--text-tertiary);
+  margin: 0;
+  max-width: 600px;
+  line-height: $leading-relaxed;
+  font-size: $text-sm;
+}
+
+.category-page__filters-section {
+  padding: $space-4;
+}
+
+.category-page__filters-row {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  margin-bottom: $space-4;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.category-page__search-box {
+  flex: 1;
+  max-width: 100%;
+  
+  @media (min-width: 768px) {
+    max-width: 400px;
+  }
+}
+
+.category-page__search-input {
+  width: 100%;
+}
+
+.category-page__search-icon {
+  color: var(--text-tertiary);
+}
+
+.category-page__controls {
+  display: flex;
+  gap: $space-2;
+  
+  @media (max-width: 640px) {
+    width: 100%;
+    
+    .category-page__sort-select {
+      flex: 1;
+    }
+  }
+}
+
+.category-page__sort-select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-md;
+  padding: $space-2 $space-3;
+  color: var(--text-primary);
+  font-size: $text-sm;
+  font-family: inherit;
+  cursor: pointer;
+  
+  &:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -1px;
+  }
+}
+
+.category-page__filter-icon {
+  margin-right: $space-2;
+}
+
+.category-page__main {
+  padding: 0 $space-4 $space-12;
+  flex: 1;
+  
+  @media (min-width: 768px) {
+    padding: 0 $space-6 $space-12;
+  }
+}
+
+.category-page__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $space-12 $space-4;
+  text-align: center;
+  
+  &--loading {
+    padding: $space-16 $space-4;
+  }
+}
+
+.category-page__spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--border-primary);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: $space-4;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.category-page__state-icon {
+  color: var(--text-tertiary);
+  margin-bottom: $space-6;
+  
+  &--error {
+    color: var(--color-error);
+  }
+}
+
+.category-page__state-title {
+  color: var(--text-primary);
+  margin-bottom: $space-2;
+}
+
+.category-page__state-text {
+  color: var(--text-secondary);
+  margin-bottom: $space-6;
+  max-width: 400px;
+}
+
+.category-page__state-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  width: 100%;
+  max-width: 300px;
+  
+  @media (min-width: 640px) {
+    flex-direction: row;
+    max-width: none;
+    justify-content: center;
+  }
+}
+
+.category-page__state-link {
+  text-decoration: none;
+}
+
+.category-page__related {
+  padding: $space-12 $space-4;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+}
+
+.category-page__related-title {
+  color: var(--text-primary);
+  margin-bottom: $space-8;
+  font-size: $text-xl;
+  font-weight: $font-bold;
+  text-align: center;
+}
+
+.category-page__related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: $space-6;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.category-page__related-card {
+  text-decoration: none;
+  display: block;
+}
+
+.category-page__related-card-inner {
+  padding: $space-8 $space-4;
+  text-align: center;
+  height: 100%;
+  border-radius: $radius-xl;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  transition: all $transition-base;
+  
+  &:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-primary);
+    box-shadow: $shadow-lg;
+
+    .category-page__related-icon {
+      transform: scale(1.15) rotate(5deg);
+    }
+    .category-page__related-name {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.category-page__related-icon {
+  margin-bottom: $space-4;
+  transition: transform $transition-slow;
+}
+
+.category-page__related-name {
+  color: var(--text-primary);
+  margin-bottom: $space-1;
+  font-weight: $font-bold;
+  font-size: $text-base;
+  transition: color $transition-base;
+}
+
+.category-page__related-count {
+  color: var(--text-tertiary);
+  font-size: $text-xs;
+}
+</style>

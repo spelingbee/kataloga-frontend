@@ -18,7 +18,7 @@
       <div class="cart-item__info">
         <h3 class="cart-item__name">{{ cartItem.menuItem.name }}</h3>
         <div class="cart-item__price">
-          ${{ cartItem.subtotal.toFixed(2) }}
+          <AppPrice :amount="cartItem.subtotal" />
         </div>
       </div>
 

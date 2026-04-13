@@ -124,13 +124,23 @@ export interface Category {
   count?: number
 }
 
+export interface Product {
+  id: string;
+  name: string;
+  basePrice: number;
+  type: 'PHYSICAL' | 'VIRTUAL';
+  inStock: boolean;
+  tenantId: string;
+}
+
 export interface MenuItem {
-  id: string
-  name: string
-  description: string
-  price: number
-  imageUrl?: string
-  categoryId?: string
+  id: string;
+  productId: string; // Master product ID
+  name: string;
+  description: string;
+  price: number; // Resolved price (override ?? basePrice)
+  imageUrl?: string;
+  categoryId?: string;
   category?: Category
   isActive: boolean
   isAvailable?: boolean  // Stop list check - false if item is temporarily unavailable
@@ -145,7 +155,8 @@ export interface MenuItem {
   badges?: MenuItemBadge[]
   modifierGroups?: ModifierGroup[]
   isNew?: boolean
-  isPopular?: boolean
+  isPopular?: boolean;
+  product?: Product; // Linked master product details
 }
 
 export interface ModifierGroup {
@@ -188,6 +199,7 @@ export interface MenuFilters {
 
 // Cart types
 export interface CartItem {
+  productId: string
   menuItem: MenuItem
   quantity: number
   selectedModifiers: Modifier[]
@@ -216,6 +228,7 @@ export interface Order {
 
 export interface OrderItem {
   id: string
+  productId: string
   menuItemId: string
   menuItem: MenuItem
   quantity: number

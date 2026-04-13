@@ -1,49 +1,50 @@
 <template>
-  <div class="cart-summary-wrapper">
-    <div class="cart-summary">
+  <div class="cart-summary">
+    <!-- Items count indicator (optional) -->
+    
+    <div class="summary-rows">
       <!-- Subtotal -->
-      <div class="cart-summary__row">
-        <AppText class="cart-summary__label">
-          Subtotal
-        </AppText>
-        <AppPrice :price="subtotal" class="cart-summary__value" />
+      <div class="summary-row">
+        <span class="summary-label">{{ $t('checkout.subtotal', 'Сумма') }}</span>
+        <span class="summary-value">{{ formatPrice(subtotal) }}</span>
       </div>
 
       <!-- Delivery Fee -->
-      <div v-if="showDeliveryFee" class="cart-summary__row">
-        <AppText class="cart-summary__label">
-          Delivery
-        </AppText>
-        <AppPrice
-          v-if="deliveryFee > 0"
-          :price="deliveryFee"
-          class="cart-summary__value"
-        />
-        <AppText v-else class="cart-summary__value cart-summary__value--free">
-          Free
-        </AppText>
+      <div v-if="showDeliveryFee || deliveryFee > 0" class="summary-row">
+        <span class="summary-label">{{ $t('checkout.deliveryFee', 'Доставка') }}</span>
+        <span v-if="deliveryFee > 0" class="summary-value">{{ formatPrice(deliveryFee) }}</span>
+        <span v-else class="summary-value free">{{ $t('checkout.free', 'Бесплатно') }}</span>
       </div>
 
-      <!-- Divider -->
-      <hr class="cart-summary__divider"/>
-
-      <!-- Total -->
-      <div class="cart-summary__total">
-        <AppText size="heading-md" class="cart-summary__total-label">
-          Total
-        </AppText>
-        <AppPrice :price="total" size="lg" class="cart-summary__total-value" />
+      <!-- Discount -->
+      <div v-if="discount > 0" class="summary-row discount">
+        <span class="summary-label">{{ $t('checkout.discount', 'Скидка') }}</span>
+        <span class="summary-value">-{{ formatPrice(discount) }}</span>
       </div>
     </div>
-    <BaseButton class="w-full">
-      Place Order (${{ total.toFixed(2) }})
-    </BaseButton>
+
+    <!-- Divider -->
+    <div class="summary-divider"></div>
+
+    <!-- Total -->
+    <div class="summary-total">
+      <span class="total-label">{{ $t('checkout.total', 'Итого') }}</span>
+      <span class="total-value">{{ formatPrice(total) }}</span>
+    </div>
+
+    <!-- Minimum Order Notice -->
+    <div v-if="showMinimumNotice" class="min-order-notice">
+      <BaseIcon name="info" size="xs" class="mr-1" />
+      <span>{{ $t('checkout.minOrderNotice', { amount: formatPrice(remainingAmount) }, `Нужно добавить еще {amount} до минимального заказа`) }}</span>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useTenant } from '~/composables/useTenant'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 // Props
 interface Props {
@@ -62,11 +63,8 @@ const props = withDefaults(defineProps<Props>(), {
   serviceFee: 0,
   discount: 0,
   minOrderAmount: 0,
-  showDeliveryFee: false
+  showDeliveryFee: true
 })
-
-// Tenant context
-const { tenantSettings } = useTenant()
 
 // Computed properties
 const showMinimumNotice = computed(() => {
@@ -77,83 +75,96 @@ const remainingAmount = computed(() => {
   return Math.max(0, props.minOrderAmount - props.subtotal)
 })
 
-const currency = computed(() => tenantSettings.value?.currency || 'USD')
-const locale = computed(() => {
-  // Map currency to locale
-  const currencyLocaleMap: Record<string, string> = {
-    USD: 'en-US',
-    EUR: 'de-DE',
-    GBP: 'en-GB',
-    RUB: 'ru-RU'
-  }
-  return currencyLocaleMap[currency.value] || 'en-US'
-})
-
-// Helper methods
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat(locale.value, {
+  return new Intl.NumberFormat('ru-KG', {
     style: 'currency',
-    currency: currency.value,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
+    currency: 'KGS',
+    minimumFractionDigits: 0
   }).format(price)
 }
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
-@use '~/assets/scss/abstracts/functions' as *;
-
-.cart-summary-wrapper {
-  padding: 16px;
-  background-color: var(--bg-primary);
-  border-top: 1px solid var(--border-primary);
-}
+@use '~/assets/scss/tokens/spacing' as *;
+@use '~/assets/scss/tokens/colors' as *;
+@use '~/assets/scss/tokens/radius' as *;
 
 .cart-summary {
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
 
-  &__row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: $font-size-body-sm;
-    margin-bottom: 8px;
-  }
+.summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
 
-  &__label {
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9375rem;
+
+  .summary-label {
     color: var(--text-secondary);
   }
 
-  &__value {
-    color: var(--text-primary);
+  .summary-value {
     font-weight: 500;
+    color: var(--text-primary);
 
-    &--free {
+    &.free {
       color: var(--color-success);
     }
   }
 
-  &__divider {
-    border: none;
-    border-top: 1px solid var(--border-primary);
-    margin: 16px 0;
+  &.discount {
+    .summary-value {
+      color: var(--color-error);
+    }
   }
+}
 
-  &__total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+.summary-divider {
+  height: 1px;
+  background: var(--border-primary);
+  margin: $space-1 0;
+}
 
-  &__total-label {
-    font-weight: $font-semibold;
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .total-label {
+    font-size: 1.125rem;
+    font-weight: 700;
     color: var(--text-primary);
   }
 
-  &__total-value {
-    font-weight: $font-bold;
-    color: var(--color-primary);
+  .total-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--color-success);
   }
 }
+
+.min-order-notice {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-3;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: $radius-md;
+  color: #f59e0b;
+  font-size: 0.75rem;
+}
+
+.mr-1 {
+  margin-right: $space-1;
+}
 </style>
+

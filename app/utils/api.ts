@@ -53,6 +53,10 @@ export class ApiClient {
   private tokenStore: any
   private errorStore: any
   private tenantStore: any
+  private tenantErrorCount = 0
+  private lastTenantErrorTime = 0
+  private readonly RECURSION_LIMIT = 2
+  private readonly RECURSION_WINDOW = 30000 // 30 seconds
 
   /**
    * Creates a new API client instance
@@ -77,7 +81,7 @@ export class ApiClient {
   constructor(config: ApiClientConfig) {
     this.config = {
       timeout: 10000,
-      retries: 3,
+      retries: 1,
       retryDelay: 1000,
       tenantSlug: '',
       ...config,
@@ -95,7 +99,7 @@ export class ApiClient {
    * 
    * @example
    * ```typescript
-   * const authStore = useAuthStore();
+   * const authStore = useUserStore();
    * client.setTokenStore(authStore);
    * ```
    */
@@ -401,8 +405,9 @@ export class ApiClient {
     // Add authorization header if token is available
     if (this.tokenStore && 'accessToken' in this.tokenStore) {
       const tokenStore = this.tokenStore as any
-      if (tokenStore.accessToken) {
-        headers.Authorization = `Bearer ${tokenStore.accessToken}`
+      const token = tokenStore.accessToken
+      if (token && typeof token === 'string' && token !== 'undefined' && token !== 'null') {
+        headers.Authorization = `Bearer ${token}`
       }
     }
 
@@ -428,15 +433,40 @@ export class ApiClient {
       'INVALID_TENANT',
     ]
 
+    // Refinement: Only treat it as a tenant error if it has a specific code
+    // OR if the message explicitly indicates a missing/invalid tenant context.
+    // Avoid broad keyword matching for "tenant" which catches general 403s.
     const isTenantError = tenantErrorCodes.includes(error.code || '') || 
-                          (error.message && error.message.toLowerCase().includes('tenant'))
+                          (error.message && (
+                            error.message.includes('Tenant not found') || 
+                            error.message.includes('Invalid tenant') ||
+                            error.message.includes('No tenant configured')
+                          ))
 
     if (isTenantError && this.tenantStore) {
+      const now = Date.now()
+      
+      // Reset counter if outside window
+      if (now - this.lastTenantErrorTime > this.RECURSION_WINDOW) {
+        this.tenantErrorCount = 0
+      }
+      
+      this.tenantErrorCount++
+      this.lastTenantErrorTime = now
+      
+      if (this.tenantErrorCount > this.RECURSION_LIMIT) {
+        console.error('🛑 API Client - Recursion guard triggered for tenant error handling. Stopping recovery loop.')
+        return
+      }
+
       console.error('Tenant-specific error detected:', error)
       
       // Notify tenant store about the error
       if ('handleTenantError' in this.tenantStore && typeof this.tenantStore.handleTenantError === 'function') {
-        await this.tenantStore.handleTenantError(new Error(error.message))
+        // We do NOT await this in case it triggers more API calls that come back here
+        this.tenantStore.handleTenantError(new Error(error.message)).catch((err: any) => {
+          console.error('Failed to handle tenant error in store:', err)
+        })
       } else if ('setError' in this.tenantStore && typeof this.tenantStore.setError === 'function') {
         this.tenantStore.setError(error.message)
       }
@@ -509,24 +539,20 @@ export class ApiClient {
       async () => {
         const headers = useAuth ? await this.getAuthHeaders(config) : await this.getBaseHeaders(config)
 
-        console.log('🌐 API Client - Making request:', {
-          method: requestConfig.method || 'GET',
-          url,
-          headers: { ...headers, Authorization: headers.Authorization ? '[REDACTED]' : undefined },
-          useAuth,
-          unwrap,
-          tenantSlug: this.getCurrentTenant()
-        })
+        console.log(`🌐 API ${requestConfig.method || 'GET'} ${endpoint}`)
 
         const requestInit: RequestInit = {
           method: requestConfig.method || 'GET',
           headers: { ...headers, ...requestConfig.headers },
-          signal: AbortSignal.timeout(requestConfig.timeout || this.config.timeout),
+        }
+
+        // Add timeout if supported by browser (AbortSignal.timeout is relatively new)
+        if (typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal) {
+          requestInit.signal = (AbortSignal as any).timeout(requestConfig.timeout || this.config.timeout)
         }
 
         if (requestConfig.body && requestConfig.method !== 'GET') {
           requestInit.body = JSON.stringify(requestConfig.body)
-          console.log('📤 API Client - Request body:', requestConfig.body)
         }
 
         let response: Response
@@ -542,11 +568,7 @@ export class ApiClient {
           throw networkError
         }
         
-        console.log('📥 API Client - Response received:', {
-          status: response?.status || 'unknown',
-          statusText: response?.statusText || 'unknown',
-          headers: response?.headers ? Object.fromEntries(response.headers.entries()) : {}
-        })
+        console.log(`📥 ${endpoint} -> ${response.status}`)
         
         // Handle 401 Unauthorized - try token refresh
         if (response.status === 401 && useAuth) {
@@ -572,7 +594,6 @@ export class ApiClient {
         }
 
         const responseData = await response.json()
-        console.log('📦 API Client - Response data:', responseData)
 
         // Process and normalize the response
         const normalizedResponse = await this.processResponse<T>(responseData, response.status, url)
@@ -610,7 +631,7 @@ export class ApiClient {
           throw this.createTypedApiError(error, normalizedResponse.meta)
         }
 
-        console.log('✅ API Client - Request successful')
+        console.log(`✅ ${endpoint} OK`)
         
         // Return unwrapped data or full response based on config
         return unwrap ? this.unwrapResponse<T>(normalizedResponse) : normalizedResponse

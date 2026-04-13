@@ -85,8 +85,9 @@ const buttonClasses = computed(() => {
 })
 
 const iconSize = computed((): 'xs' | 'sm' | 'md' | 'lg' | 'xl' => {
+  if (!props.size) return 'md'
   const sizes: Record<string, 'xs' | 'sm' | 'md' | 'lg' | 'xl'> = { sm: 'sm', md: 'md', lg: 'lg' }
-  return sizes[props.size]
+  return sizes[props.size] || 'md'
 })
 
 const handleClick = (event: Event) => {
@@ -145,41 +146,24 @@ const handleClick = (event: Event) => {
   &--primary {
     background-color: var(--color-primary);
     color: white;
-    box-shadow: 0 4px 14px 0 rgba(255, 107, 0, 0.39);
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.25);
     position: relative;
     overflow: hidden;
     
-    &::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      transition: width $transition-fast $ease-out, height $transition-fast $ease-out;
-    }
-    
     &:hover:not(.base-button--disabled):not(.base-button--loading) {
       background-color: var(--color-primary-light);
-      box-shadow: var(--hover-shadow-button);
-      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 16px rgba(var(--color-primary-rgb), 0.35);
+      transform: translateY(-2px);
     }
     
     &:active:not(.base-button--disabled):not(.base-button--loading) {
       background-color: var(--color-primary-dark);
-      transform: translateY(0) scale(0.98);
-      
-      &::before {
-        width: 300px;
-        height: 300px;
-      }
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.2);
     }
     
     &:focus-visible {
-      box-shadow: var(--hover-shadow-button), 0 0 0 3px rgba(var(--color-primary-rgb), 0.3);
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.3);
     }
   }
   
@@ -204,32 +188,15 @@ const handleClick = (event: Event) => {
     background-color: transparent;
     color: var(--color-primary);
     border: 1px solid var(--color-primary);
-    position: relative;
-    overflow: hidden;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: var(--color-primary);
-      transition: left $transition-base $ease-out;
-      z-index: -1;
-    }
     
     &:hover:not(.base-button--disabled):not(.base-button--loading) {
-      color: white;
+      background-color: rgba(var(--color-primary-rgb), 0.05);
       transform: translateY(-1px);
-      
-      &::before {
-        left: 0;
-      }
     }
     
     &:active:not(.base-button--disabled):not(.base-button--loading) {
-      transform: translateY(0) scale(0.98);
+      transform: translateY(0);
+      background-color: rgba(var(--color-primary-rgb), 0.1);
     }
   }
   

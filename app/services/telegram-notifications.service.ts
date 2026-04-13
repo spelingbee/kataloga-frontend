@@ -14,11 +14,7 @@ export interface TelegramNotificationOptions {
 }
 
 export class TelegramNotificationsService {
-  private apiBaseUrl: string
-
-  constructor(apiBaseUrl: string) {
-    this.apiBaseUrl = apiBaseUrl
-  }
+  constructor(private apiBaseUrl: string) {}
 
   /**
    * Send order confirmation via Telegram
@@ -156,15 +152,4 @@ export class TelegramNotificationsService {
 
     return statusMap[status] || status
   }
-}
-
-// Create singleton instance
-let telegramNotificationsService: TelegramNotificationsService | null = null
-
-export const useTelegramNotificationsService = () => {
-  if (!telegramNotificationsService) {
-    const config = useRuntimeConfig()
-    telegramNotificationsService = new TelegramNotificationsService(config.public.apiBaseUrl as string)
-  }
-  return telegramNotificationsService
 }

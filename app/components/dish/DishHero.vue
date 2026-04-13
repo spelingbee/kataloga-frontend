@@ -12,7 +12,7 @@
       <!-- Single Image -->
       <BaseImage
         v-else
-        :src="dish.imageUrl || '/placeholder-dish.jpg'"
+        :src="dish.imageUrl || '/images/placeholder-dish.svg'"
         :alt="dish.name"
         class="w-32 h-32 mx-auto rounded-full border-4 border-white shadow-lg object-cover"
       />

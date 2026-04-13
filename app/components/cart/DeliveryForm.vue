@@ -1,78 +1,31 @@
 <template>
-  <div class="space-y-4">
-    <!-- Delivery Type -->
-    <div>
-      <label class="block text-sm font-medium text-neutral-20 mb-3">
-        Delivery Option *
-      </label>
-      <div class="grid grid-cols-2 gap-3">
-        <BaseButton
-          variant="ghost"
-          :class="[
-            'p-4 border-2 transition-all',
-            localDeliveryInfo.type === 'delivery' 
-              ? 'border-primary-green bg-primary-green/10 text-primary-green' 
-              : 'border-border-subtle text-neutral-20 hover:border-neutral-20'
-          ]"
-          @click="setDeliveryType('delivery')"
-        >
-          <div class="text-center">
-            <BaseIcon name="truck" size="lg" class="mx-auto mb-2" />
-            <div class="font-medium">Delivery</div>
-            <div class="text-xs opacity-75">To your address</div>
-          </div>
-        </BaseButton>
-        
-        <BaseButton
-          variant="ghost"
-          :class="[
-            'p-4 border-2 transition-all',
-            localDeliveryInfo.type === 'pickup' 
-              ? 'border-primary-green bg-primary-green/10 text-primary-green' 
-              : 'border-border-subtle text-neutral-20 hover:border-neutral-20'
-          ]"
-          @click="setDeliveryType('pickup')"
-        >
-          <div class="text-center">
-            <BaseIcon name="store" size="lg" class="mx-auto mb-2" />
-            <div class="font-medium">Pickup</div>
-            <div class="text-xs opacity-75">From restaurant</div>
-          </div>
-        </BaseButton>
-      </div>
-    </div>
+  <div class="delivery-form">
 
     <!-- Delivery Address (only for delivery) -->
-    <div v-if="localDeliveryInfo.type === 'delivery'">
-      <label for="delivery-address" class="block text-sm font-medium text-neutral-20 mb-2">
-        Delivery Address *
+    <div v-if="localDeliveryInfo.type === 'delivery'" class="form-group">
+      <label for="delivery-address" class="form-label">
+        {{ $t('delivery.address') }} *
       </label>
       
       <!-- Address input mode toggle -->
-      <div class="mb-3 flex gap-2">
+      <div class="input-mode-toggle">
         <BaseButton
           variant="ghost"
           size="sm"
-          :class="[
-            'flex-1',
-            !showMap ? 'bg-primary-green/10 text-primary-green' : 'text-neutral-20'
-          ]"
+          :class="['mode-button', !showMap ? 'active' : '']"
           @click="showMap = false"
         >
           <BaseIcon name="edit" size="sm" class="mr-1" />
-          Type Address
+          {{ $t('delivery.typeAddress') }}
         </BaseButton>
         <BaseButton
           variant="ghost"
           size="sm"
-          :class="[
-            'flex-1',
-            showMap ? 'bg-primary-green/10 text-primary-green' : 'text-neutral-20'
-          ]"
+          :class="['mode-button', showMap ? 'active' : '']"
           @click="showMap = true"
         >
           <BaseIcon name="map" size="sm" class="mr-1" />
-          Pick on Map
+          {{ $t('delivery.pickOnMap') }}
         </BaseButton>
       </div>
 
@@ -82,7 +35,7 @@
           id="delivery-address"
           v-model="localDeliveryInfo.address"
           type="textarea"
-          placeholder="Enter full delivery address including apartment/office number"
+          :placeholder="$t('delivery.addressPlaceholder')"
           :rows="3"
           :error="errors.address"
           required
@@ -90,79 +43,72 @@
           @input="clearError('address')"
         />
         
-        <div class="mt-2 flex items-center space-x-2">
+        <div class="mt-2">
           <BaseButton
             variant="ghost"
             size="sm"
-            class="text-primary-green hover:text-green-400"
+            class="location-button"
             :loading="gettingLocation"
             @click="getCurrentLocation"
           >
-            <BaseIcon name="location" size="sm" class="mr-1" />
-            Use Current Location
+            <BaseIcon name="location" size="sm" class="mr-2" />
+            {{ $t('delivery.useCurrentLocation') }}
           </BaseButton>
         </div>
       </div>
 
       <!-- Map picker mode -->
-      <div v-else>
-        <MapPicker
-          :initial-coordinates="deliveryCoordinates"
-          @location-selected="handleLocationSelected"
-        />
-        <AppText v-if="errors.address" size="caption" class="text-primary-red mt-2">
+      <div v-else class="map-container">
+        <ClientOnly>
+          <MapPicker
+            :initial-coordinates="deliveryCoordinates"
+            @location-selected="handleLocationSelected"
+          />
+          <template #fallback>
+            <div class="map-placeholder">
+              <div class="text-center">
+                <BaseIcon name="map" size="xl" class="mx-auto mb-2 opacity-50" />
+                <p>{{ $t('delivery.loadingMap') }}</p>
+              </div>
+            </div>
+          </template>
+        </ClientOnly>
+        <AppText v-if="errors.address" size="caption" class="text-error mt-2">
           {{ errors.address }}
         </AppText>
       </div>
     </div>
 
     <!-- Pickup Location (only for pickup) -->
-    <div v-if="localDeliveryInfo.type === 'pickup'">
-      <label for="pickup-location" class="block text-sm font-medium text-neutral-20 mb-2">
-        Pickup Location *
-      </label>
-      <select
+    <div v-if="localDeliveryInfo.type === 'pickup'" class="form-group">
+      <BaseSelect
         id="pickup-location"
         v-model="localDeliveryInfo.pickupLocation"
-        class="w-full px-3 py-2 bg-background-dark border border-border-subtle rounded-lg text-white focus:ring-2 focus:ring-primary-green focus:border-transparent"
-        :class="{ 'border-primary-red': errors.pickupLocation }"
+        :label="$t('delivery.selectLocation')"
+        :options="locationOptions"
+        :error="errors.pickupLocation"
+        required
         @change="validateField('pickupLocation')"
-      >
-        <option value="">Select pickup location</option>
-        <option value="main-restaurant">Main Restaurant - Nevsky Prospect 123</option>
-        <option value="mall-location">Mall Location - Galeria Shopping Center</option>
-        <option value="downtown">Downtown Branch - Sadovaya Street 45</option>
-      </select>
-      <AppText v-if="errors.pickupLocation" size="caption" class="text-primary-red mt-1">
-        {{ errors.pickupLocation }}
-      </AppText>
+      />
     </div>
 
     <!-- Delivery Time -->
-    <div>
-      <label for="delivery-time" class="block text-sm font-medium text-neutral-20 mb-2">
-        {{ localDeliveryInfo.type === 'delivery' ? 'Delivery' : 'Pickup' }} Time *
-      </label>
-      <select
+    <div class="form-group">
+      <BaseSelect
         id="delivery-time"
         v-model="localDeliveryInfo.deliveryTime"
-        class="w-full px-3 py-2 bg-background-dark border border-border-subtle rounded-lg text-white focus:ring-2 focus:ring-primary-green focus:border-transparent"
+        :label="localDeliveryInfo.type === 'delivery' ? $t('delivery.time') : $t('delivery.timePickup')"
+        :options="timeOptions"
         @change="updateDeliveryInfo"
-      >
-        <option value="asap">As soon as possible ({{ estimatedTime }})</option>
-        <option value="30min">In 30 minutes</option>
-        <option value="1hour">In 1 hour</option>
-        <option value="2hours">In 2 hours</option>
-        <option value="custom">Choose specific time</option>
-      </select>
+      />
     </div>
 
-    <!-- Custom Time Picker (Combined to stay under 5 field limit) -->
-    <div v-if="localDeliveryInfo.deliveryTime === 'custom'">
-      <label class="block text-sm font-medium text-neutral-20 mb-2">
-        Custom Date & Time
+    <!-- Custom Time Picker -->
+    <div v-if="localDeliveryInfo.deliveryTime === 'custom'" class="form-group">
+      <label class="form-label">
+        {{ $t('delivery.customDateTime') }}
       </label>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="custom-time-grid">
         <BaseInput
           v-model="localDeliveryInfo.customDate"
           type="date"
@@ -181,41 +127,62 @@
     </div>
 
     <!-- Special Instructions -->
-    <div>
-      <label for="delivery-instructions" class="block text-sm font-medium text-neutral-20 mb-2">
-        Special Instructions
+    <div class="form-group">
+      <label for="delivery-instructions" class="form-label">
+        {{ $t('delivery.instructions') }}
       </label>
       <BaseInput
         id="delivery-instructions"
         v-model="localDeliveryInfo.instructions"
         type="textarea"
-        placeholder="Building entrance, floor, apartment number, or any special delivery instructions..."
+        :placeholder="$t('delivery.instructionsPlaceholder')"
         :rows="2"
         @input="updateDeliveryInfo"
       />
     </div>
 
-    <!-- Delivery Fee Info -->
-    <div v-if="localDeliveryInfo.type === 'delivery'" class="p-3 bg-background-dark/50 rounded-lg border border-border-subtle">
-      <div class="flex items-center justify-between">
-        <AppText size="body-sm" class="text-neutral-20">
-          Delivery Fee
-        </AppText>
-        <AppText size="body-sm" class="text-white font-medium">
-          {{ deliveryFee === 0 ? 'Free' : formatPrice(deliveryFee) }}
-        </AppText>
+    <!-- Contact Information -->
+    <div class="form-group">
+      <label for="delivery-phone" class="form-label">
+        {{ $t('form.phone') }} <span v-if="!isTelegram">*</span><span v-else>(Optional)</span>
+      </label>
+      <BaseInput
+        id="delivery-phone"
+        v-model="localDeliveryInfo.phone"
+        type="tel"
+        :placeholder="$t('form.phonePlaceholder')"
+        :error="errors.phone"
+        @input="updateDeliveryInfo"
+      />
+      <p class="hint-text">
+        {{ $t('form.phoneHint', 'Мы перезвоним вам при необходимости') }}
+      </p>
+    </div>
+
+    <div v-if="localDeliveryInfo.type === 'delivery' && deliveryFee !== undefined" class="fee-card">
+      <div class="fee-row">
+        <span>{{ $t('delivery.fee') }}</span>
+        <span class="fee-amount">{{ deliveryFee === 0 ? $t('delivery.free') : formatPrice(deliveryFee) }}</span>
       </div>
-      <AppText size="caption" class="text-neutral-20 mt-1">
-        {{ deliveryFee === 0 ? 'Free delivery on orders over 500₽' : 'Standard delivery fee applies' }}
-      </AppText>
+      <p v-if="deliveryFee === 0" class="fee-hint">
+        {{ $t('delivery.freeThreshold', { amount: formatPrice(500) }) }}
+      </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
-import MapPicker from '../checkout/MapPicker.vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useTenantStore } from '~/stores/tenant'
+import { useTelegram } from '~/composables/useTelegram'
 import type { Coordinates } from '../../types/delivery'
+import AppText from '../base/AppText.vue'
+import MapPicker from '../checkout/MapPicker.vue'
+
+const { t } = useI18n()
+const tenantStore = useTenantStore()
+const { isTelegram } = useTelegram()
 
 // Props & Emits
 interface DeliveryInfo {
@@ -226,6 +193,7 @@ interface DeliveryInfo {
   customDate: string
   customTime: string
   instructions: string
+  phone: string
   coordinates?: Coordinates
   deliveryZone?: string
   deliveryFeeAmount?: number
@@ -255,6 +223,7 @@ const localDeliveryInfo = ref<DeliveryInfo>({
   customDate: '',
   customTime: '',
   instructions: '',
+  phone: '',
   ...props.modelValue 
 })
 
@@ -264,26 +233,23 @@ const showMap = ref(false)
 const deliveryCoordinates = ref<Coordinates | undefined>(props.modelValue.coordinates)
 
 // Computed properties
-const today = computed(() => {
-  return new Date().toISOString().split('T')[0]
-})
-
+const today = computed(() => new Date().toISOString().split('T')[0])
 const maxDate = computed(() => {
   const date = new Date()
-  date.setDate(date.getDate() + 7) // Allow booking up to 7 days ahead
+  date.setDate(date.getDate() + 7)
   return date.toISOString().split('T')[0]
 })
 
 const minTime = computed(() => {
   if (localDeliveryInfo.value.customDate === today.value) {
     const now = new Date()
-    now.setHours(now.getHours() + 1) // Minimum 1 hour from now
+    now.setHours(now.getHours() + 1)
     return now.toTimeString().slice(0, 5)
   }
-  return '09:00' // Restaurant opening time
+  return '09:00'
 })
 
-const maxTime = computed(() => '22:00') // Restaurant closing time
+const maxTime = computed(() => '22:00')
 
 const estimatedTime = computed(() => {
   const baseTime = localDeliveryInfo.value.type === 'delivery' ? 45 : 25
@@ -291,21 +257,32 @@ const estimatedTime = computed(() => {
 })
 
 const deliveryFee = computed(() => {
-  // Calculate delivery fee based on location, order total, etc.
-  return localDeliveryInfo.value.type === 'delivery' ? 0 : 0 // Free for now
+  return localDeliveryInfo.value.type === 'delivery' ? 0 : 0
 })
+
+const locationOptions = computed(() => {
+  return tenantStore.locations.map(loc => ({
+    label: `${loc.name} - ${loc.address}`,
+    value: loc.id
+  }))
+})
+
+const timeOptions = computed(() => [
+  { label: t('delivery.asap', { time: estimatedTime.value }), value: 'asap' },
+  { label: t('delivery.in30min'), value: '30min' },
+  { label: t('delivery.in1hour'), value: '1hour' },
+  { label: t('delivery.in2hours'), value: '2hours' },
+  { label: t('delivery.customTime'), value: 'custom' }
+])
 
 // Methods
 const setDeliveryType = (type: 'delivery' | 'pickup') => {
   localDeliveryInfo.value.type = type
-  
-  // Clear type-specific errors
   if (type === 'delivery') {
     delete errors.pickupLocation
   } else {
     delete errors.address
   }
-  
   updateDeliveryInfo()
   emit('validate', { ...errors })
 }
@@ -315,9 +292,9 @@ const validateField = (field: keyof DeliveryInfo) => {
     case 'address':
       if (localDeliveryInfo.value.type === 'delivery') {
         if (!localDeliveryInfo.value.address?.trim()) {
-          errors.address = 'Delivery address is required'
-        } else if (localDeliveryInfo.value.address.trim().length < 10) {
-          errors.address = 'Please provide a more detailed address'
+          errors.address = t('form.required')
+        } else if (localDeliveryInfo.value.address.trim().length < 5) {
+          errors.address = t('form.addressMinLength', { min: 5 })
         } else {
           delete errors.address
         }
@@ -327,14 +304,28 @@ const validateField = (field: keyof DeliveryInfo) => {
     case 'pickupLocation':
       if (localDeliveryInfo.value.type === 'pickup') {
         if (!localDeliveryInfo.value.pickupLocation) {
-          errors.pickupLocation = 'Please select a pickup location'
+          errors.pickupLocation = t('delivery.selectLocation')
         } else {
           delete errors.pickupLocation
         }
       }
       break
-  }
 
+    case 'phone':
+      if (!isTelegram.value && !localDeliveryInfo.value.phone?.trim()) {
+        errors.phone = t('form.required')
+      } else if (localDeliveryInfo.value.phone?.trim()) {
+        const phoneRegex = /^\+?[\d\s\-()]{10,}$/
+        if (!phoneRegex.test(localDeliveryInfo.value.phone)) {
+          errors.phone = t('form.phoneInvalid', 'Некорректный номер')
+        } else {
+          delete errors.phone
+        }
+      } else {
+        delete errors.phone
+      }
+      break
+  }
   emit('validate', { ...errors })
 }
 
@@ -350,30 +341,17 @@ const updateDeliveryInfo = () => {
 }
 
 const getCurrentLocation = async () => {
-  if (!navigator.geolocation) {
-    alert('Geolocation is not supported by this browser')
-    return
-  }
-
+  if (!navigator.geolocation) return
   gettingLocation.value = true
-
   try {
     const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
-      })
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
     })
-
-    // Set coordinates and switch to map view
     const { latitude, longitude } = position.coords
     deliveryCoordinates.value = { lat: latitude, lng: longitude }
     showMap.value = true
-    
   } catch (error) {
     console.error('Error getting location:', error)
-    alert('Unable to get your location. Please enter your address manually.')
   } finally {
     gettingLocation.value = false
   }
@@ -384,78 +362,180 @@ const handleLocationSelected = (coords: Coordinates, address: string, zoneId: st
   localDeliveryInfo.value.coordinates = coords
   localDeliveryInfo.value.deliveryZone = zoneId
   deliveryCoordinates.value = coords
-  
-  // Clear address error if it exists
   delete errors.address
-  
-  // Emit delivery fee calculation event
-  // The parent component or cart store should handle the actual fee calculation
-  emit('delivery-fee-calculated', 0, zoneId) // Fee will be calculated by parent
-  
+  emit('delivery-fee-calculated', 0, zoneId)
   updateDeliveryInfo()
   emit('validate', { ...errors })
 }
 
 const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('ru-RU', {
+  return new Intl.NumberFormat('ru-KG', {
     style: 'currency',
-    currency: 'RUB',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
+    currency: 'KGS',
+    minimumFractionDigits: 0
   }).format(price)
 }
 
-// Watch for changes and emit updates
+// Lifecycle
+onMounted(() => {
+  if (tenantStore.locations.length === 0) {
+    tenantStore.fetchLocations()
+  }
+})
+
+// Watchers
 watch(localDeliveryInfo, (newValue) => {
-  emit('update:modelValue', { ...newValue })
+  // Prevent infinite loop by checking if data actually changed
+  const hasChanged = JSON.stringify(newValue) !== JSON.stringify(props.modelValue)
+  if (hasChanged) {
+    emit('update:modelValue', { ...newValue })
+  }
 }, { deep: true })
 
-// Watch for external errors
 watch(() => props.errors, (newErrors) => {
   Object.assign(errors, newErrors)
 }, { deep: true })
-
-// Validate on delivery type change
-watch(() => localDeliveryInfo.value.type, () => {
-  if (localDeliveryInfo.value.type === 'delivery') {
-    validateField('address')
-  } else {
-    validateField('pickupLocation')
-  }
-})
 </script>
 
-<style scoped>
-/* Form field spacing */
-.space-y-4 > * + * {
-  margin-top: 1rem;
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/radius' as *;
+
+.delivery-form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
 }
 
-/* Grid spacing */
-.grid {
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.delivery-type-grid {
   display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-3;
 }
 
-.grid-cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.type-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $space-4;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-primary);
+  border-radius: $radius-lg;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-align: center;
+
+  svg {
+    margin-bottom: $space-2;
+    opacity: 0.7;
+  }
+
+  &.active {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: var(--color-success);
+    color: var(--color-success);
+
+    svg {
+      opacity: 1;
+    }
+  }
+
+  .type-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .type-name {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .type-hint {
+    font-size: 0.75rem;
+    opacity: 0.8;
+  }
 }
 
-.gap-3 {
-  gap: 0.75rem;
+.input-mode-toggle {
+  display: flex;
+  gap: $space-2;
+  margin-bottom: $space-2;
+
+  .mode-button {
+    flex: 1;
+    background: var(--bg-tertiary);
+    
+    &.active {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--color-success);
+    }
+  }
 }
 
-/* Select styling */
-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 0.5rem center;
-  background-repeat: no-repeat;
-  background-size: 1.5em 1.5em;
-  padding-right: 2.5rem;
+.location-button {
+  color: var(--color-success);
 }
 
-/* Button transitions */
-.transition-all {
-  transition: all 0.2s ease-in-out;
+.map-container {
+  border-radius: $radius-lg;
+  overflow: hidden;
+  border: 1px solid var(--border-primary);
+}
+
+.map-placeholder {
+  height: 300px;
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+}
+
+.custom-time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-3;
+}
+
+.fee-card {
+  padding: $space-3;
+  background: var(--bg-tertiary);
+  border-radius: $radius-md;
+  border: 1px solid var(--border-primary);
+
+  .fee-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 500;
+  }
+
+  .fee-amount {
+    color: var(--text-primary);
+  }
+
+  .fee-hint {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: $space-1;
+  }
+}
+
+.text-error {
+  color: var(--color-error);
 }
 </style>
+

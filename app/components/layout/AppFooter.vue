@@ -94,8 +94,7 @@ const currentYear = computed(() => new Date().getFullYear())
 
 // Navigation data
 const quickLinks = [
-  { path: '/menu', label: 'Menu' },
-  { path: '/favourites', label: 'Favourites' },
+  { path: '/', label: 'Menu' },
   { path: '/orders', label: 'Order History' },
   { path: '/map', label: 'Locations' },
   { path: '/delivery', label: 'Delivery Info' }

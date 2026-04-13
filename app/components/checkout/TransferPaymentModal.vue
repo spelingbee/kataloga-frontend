@@ -1,21 +1,28 @@
 <template>
-  <BaseModal
-    :show="show"
-    title="Bank Transfer Payment"
+<BaseModal
+    :model-value="modelValue"
+    :title="$t('payment.transfer.title')"
+    @update:model-value="$emit('update:modelValue', $event)"
     @close="$emit('close')"
   >
     <div class="transfer-payment-modal">
+      <!-- Order Success Banner -->
+      <div v-if="orderNumber" class="transfer-payment-modal__success-banner">
+        <BaseIcon name="check-circle" size="md" class="text-green-500" />
+        <span>{{ $t('payment.transfer.orderCreated', { number: orderNumber }) }}</span>
+      </div>
+
       <!-- WhatsApp Phone Display -->
       <div class="transfer-payment-modal__phone-section">
         <div class="transfer-payment-modal__phone-label">
-          Send payment receipt to WhatsApp:
+          {{ $t('payment.transfer.phoneLabel') }}
         </div>
         <div class="transfer-payment-modal__phone-display">
           <div class="transfer-payment-modal__phone-icon">
             <BaseIcon name="smartphone" size="lg" />
           </div>
           <div class="transfer-payment-modal__phone-number">
-            {{ whatsappPhone || 'Not available' }}
+            {{ whatsappPhone || $t('payment.transfer.notAvailable') }}
           </div>
           <button
             v-if="whatsappPhone"
@@ -30,20 +37,20 @@
       <!-- Instructions -->
       <div class="transfer-payment-modal__instructions">
         <h4 class="transfer-payment-modal__instructions-title">
-          Payment Instructions:
+          {{ $t('payment.transfer.instructionsTitle') }}
         </h4>
         <ol class="transfer-payment-modal__instructions-list">
-          <li>Make a bank transfer for the order amount</li>
-          <li>Take a screenshot of the transfer receipt</li>
-          <li>Send the receipt to the WhatsApp number above</li>
-          <li>Click "I Paid" below to confirm your payment</li>
+          <li>{{ $t('payment.transfer.step1') }}</li>
+          <li>{{ $t('payment.transfer.step2') }}</li>
+          <li>{{ $t('payment.transfer.step3') }}</li>
+          <li>{{ $t('payment.transfer.step4') }}</li>
         </ol>
       </div>
 
       <!-- Order Summary -->
       <div class="transfer-payment-modal__summary">
         <div class="transfer-payment-modal__summary-row">
-          <span class="transfer-payment-modal__summary-label">Order Total:</span>
+          <span class="transfer-payment-modal__summary-label">{{ $t('payment.transfer.summaryLabel') }}</span>
           <span class="transfer-payment-modal__summary-amount">{{ formatAmount(orderTotal) }}</span>
         </div>
       </div>
@@ -54,14 +61,14 @@
           variant="secondary"
           @click="$emit('close')"
         >
-          Cancel
+          {{ $t('payment.transfer.cancel') }}
         </BaseButton>
         <BaseButton
           variant="primary"
           :disabled="!whatsappPhone"
           @click="confirmPayment"
         >
-          I Paid
+          {{ $t('payment.transfer.confirm') }}
         </BaseButton>
       </div>
 
@@ -70,7 +77,7 @@
         v-if="showCopySuccess"
         class="transfer-payment-modal__toast"
       >
-        Phone number copied to clipboard!
+        {{ $t('payment.transfer.copySuccess') }}
       </div>
     </div>
   </BaseModal>
@@ -78,19 +85,23 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useTenantSettings } from '~/composables/useTenant'
 
 interface Props {
-  show: boolean
+  modelValue: boolean
   whatsappPhone?: string
   orderTotal: number
+  orderNumber?: string
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
   close: []
   confirm: []
 }>()
 
+const { formatCurrency } = useTenantSettings()
 const showCopySuccess = ref(false)
 
 const copyPhoneNumber = async () => {
@@ -112,10 +123,7 @@ const confirmPayment = () => {
 }
 
 const formatAmount = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'KGS'
-  }).format(amount)
+  return formatCurrency(amount)
 }
 </script>
 
@@ -129,6 +137,20 @@ const formatAmount = (amount: number): string => {
 
 .transfer-payment-modal {
   padding: $space-6;
+}
+
+.transfer-payment-modal__success-banner {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-4;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: $radius-card;
+  margin-bottom: $space-6;
+  color: var(--text-primary);
+  font-size: $text-sm;
+  font-weight: $font-medium;
 }
 
 .transfer-payment-modal__phone-section {

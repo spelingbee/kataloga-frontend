@@ -1,179 +1,157 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Создать аккаунт
-        </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
-          Или
-          <NuxtLink to="/auth/login" class="font-medium text-indigo-600 hover:text-indigo-500">
-            войдите в существующий аккаунт
-          </NuxtLink>
-        </p>
-      </div>
-      
-      <form class="mt-8 space-y-6" @submit.prevent="handleRegister">
-        <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label for="firstName" class="block text-sm font-medium text-gray-700">Имя</label>
-              <input
-                id="firstName"
-                v-model="form.firstName"
-                name="firstName"
-                type="text"
-                required
-                class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                :class="{ 'border-red-300': errors.firstName }"
-                placeholder="Имя"
-              />
-              <p v-if="errors.firstName" class="mt-1 text-sm text-red-600">{{ errors.firstName }}</p>
-            </div>
+  <div class="register-page">
+    <!-- Background Elements -->
+    <div class="register-page__bg-blob register-page__bg-blob--1"/>
+    <div class="register-page__bg-blob register-page__bg-blob--2"/>
+    
+    <div class="register-page__container">
+      <!-- Back Navigation -->
+      <nav class="register-page__nav">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          icon="arrow-left"
+          @click="router.push('/')"
+        >
+          На главную
+        </BaseButton>
+      </nav>
+
+      <main class="register-page__card">
+        <header class="register-page__header">
+          <h1 class="register-page__title">Создать аккаунт</h1>
+          <p class="register-page__subtitle">
+            Уже есть аккаунт? 
+            <NuxtLink to="/auth/login" class="register-page__link">Войти</NuxtLink>
+          </p>
+        </header>
+        
+        <form class="register-page__form" @submit.prevent="handleRegister">
+          <div class="register-page__form-grid">
+            <BaseInput
+              v-model="form.firstName"
+              label="Имя"
+              placeholder="Иван"
+              required
+              :error="errors.firstName"
+              autocomplete="given-name"
+              class="register-page__input"
+            />
             
-            <div>
-              <label for="lastName" class="block text-sm font-medium text-gray-700">Фамилия</label>
-              <input
-                id="lastName"
-                v-model="form.lastName"
-                name="lastName"
-                type="text"
-                required
-                class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                :class="{ 'border-red-300': errors.lastName }"
-                placeholder="Фамилия"
-              />
-              <p v-if="errors.lastName" class="mt-1 text-sm text-red-600">{{ errors.lastName }}</p>
-            </div>
-          </div>
-          
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email адрес</label>
-            <input
-              id="email"
-              v-model="form.email"
-              name="email"
-              type="email"
-              autocomplete="email"
+            <BaseInput
+              v-model="form.lastName"
+              label="Фамилия"
+              placeholder="Иванов"
               required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              :class="{ 'border-red-300': errors.email }"
-              placeholder="Email адрес"
+              :error="errors.lastName"
+              autocomplete="family-name"
+              class="register-page__input"
             />
-            <p v-if="errors.email" class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
           </div>
           
-          <div>
-            <label for="phone" class="block text-sm font-medium text-gray-700">Телефон (необязательно)</label>
-            <input
-              id="phone"
-              v-model="form.phone"
-              name="phone"
-              type="tel"
-              autocomplete="tel"
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              :class="{ 'border-red-300': errors.phone }"
-              placeholder="+7 (999) 123-45-67"
-            />
-            <p v-if="errors.phone" class="mt-1 text-sm text-red-600">{{ errors.phone }}</p>
-          </div>
-          
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">Пароль</label>
-            <input
-              id="password"
-              v-model="form.password"
-              name="password"
-              type="password"
-              autocomplete="new-password"
-              required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              :class="{ 'border-red-300': errors.password }"
-              placeholder="Пароль"
-            />
-            <p v-if="errors.password" class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
-          </div>
-          
-          <div>
-            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Подтвердите пароль</label>
-            <input
-              id="confirmPassword"
-              v-model="form.confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autocomplete="new-password"
-              required
-              class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              :class="{ 'border-red-300': errors.confirmPassword }"
-              placeholder="Подтвердите пароль"
-            />
-            <p v-if="errors.confirmPassword" class="mt-1 text-sm text-red-600">{{ errors.confirmPassword }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center">
-          <input
-            id="agree-terms"
-            v-model="form.agreeTerms"
-            name="agree-terms"
-            type="checkbox"
+          <BaseInput
+            v-model="form.email"
+            label="Email адрес"
+            type="email"
+            placeholder="example@mail.com"
             required
-            class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            :error="errors.email"
+            autocomplete="email"
+            prefix-icon="mail"
+            class="register-page__input"
           />
-          <label for="agree-terms" class="ml-2 block text-sm text-gray-900">
-            Я согласен с 
-            <a href="#" class="text-indigo-600 hover:text-indigo-500">условиями использования</a>
-            и 
-            <a href="#" class="text-indigo-600 hover:text-indigo-500">политикой конфиденциальности</a>
-          </label>
-        </div>
-
-        <div v-if="error" class="rounded-md bg-red-50 p-4">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">
-                {{ error }}
-              </h3>
-            </div>
+          
+          <BaseInput
+            v-model="form.phone"
+            label="Телефон"
+            type="tel"
+            placeholder="+7 (999) 123-4567"
+            :error="errors.phone"
+            autocomplete="tel"
+            prefix-icon="phone"
+            class="register-page__input"
+          />
+          
+          <div class="register-page__form-grid">
+            <BaseInput
+              v-model="form.password"
+              label="Пароль"
+              type="password"
+              placeholder="••••••••"
+              required
+              show-password-toggle
+              :error="errors.password"
+              autocomplete="new-password"
+              prefix-icon="lock"
+              class="register-page__input"
+            />
+            
+            <BaseInput
+              v-model="form.confirmPassword"
+              label="Подтвердите пароль"
+              type="password"
+              placeholder="••••••••"
+              required
+              show-password-toggle
+              :error="errors.confirmPassword"
+              autocomplete="new-password"
+              prefix-icon="check-circle"
+              class="register-page__input"
+            />
           </div>
-        </div>
 
-        <div>
-          <button
-            type="submit"
-            :disabled="isLoading || !form.agreeTerms"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <span v-if="isLoading" class="absolute left-0 inset-y-0 flex items-center pl-3">
-              <svg class="animate-spin h-5 w-5 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-              </svg>
-            </span>
-            {{ isLoading ? 'Создание аккаунта...' : 'Создать аккаунт' }}
-          </button>
-        </div>
-      </form>
+          <div class="register-page__checkbox-container">
+            <BaseCheckbox
+              v-model="form.agreeTerms"
+              required
+              :error="error && !form.agreeTerms ? 'Вы должны согласиться с условиями' : ''"
+            >
+              Я согласен с 
+              <a href="#" class="register-page__link" @click.stop>условиями</a>
+              и 
+              <a href="#" class="register-page__link" @click.stop>политикой конфиденциальности</a>
+            </BaseCheckbox>
+          </div>
+
+          <!-- Error Message -->
+          <Transition name="fade">
+            <div v-if="error" class="register-page__error">
+              <BaseIcon name="alert-circle" size="sm" />
+              <span>{{ error }}</span>
+            </div>
+          </Transition>
+
+          <div class="register-page__actions">
+            <BaseButton
+              type="submit"
+              variant="primary"
+              full-width
+              :loading="isLoading"
+              :disabled="!form.agreeTerms"
+            >
+              {{ isLoading ? 'Создание...' : 'Зарегистрироваться' }}
+            </BaseButton>
+          </div>
+        </form>
+      </main>
+      
+      <footer class="register-page__footer">
+        © {{ new Date().getFullYear() }} Kataloga. Все права защищены.
+      </footer>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth'
+import { useUserStore } from '~/stores/user'
 
 // Meta
 definePageMeta({
-  layout: false,
   middleware: 'guest'
 })
 
 // Composables
-const authStore = useAuthStore()
+const authStore = useUserStore()
 const router = useRouter()
 
 // Reactive data
@@ -288,12 +266,200 @@ const handleRegister = async () => {
     isLoading.value = false
   }
 }
-
-// Auto-focus first name field
-onMounted(() => {
-  const firstNameInput = document.getElementById('firstName')
-  if (firstNameInput) {
-    firstNameInput.focus()
-  }
-})
 </script>
+
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/shadows' as *;
+@use '../../assets/scss/tokens/transitions' as *;
+@use '../../assets/scss/tokens/typography' as *;
+
+.register-page {
+  min-height: calc(100vh - 64px); // Adjust for header
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+  padding: $space-4;
+}
+
+.register-page__bg-blob {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  filter: blur(80px);
+  opacity: 0.15;
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  
+  &--1 {
+    background: var(--color-primary);
+    top: -100px;
+    right: -100px;
+  }
+  
+  &--2 {
+    background: var(--color-secondary);
+    bottom: -100px;
+    left: -100px;
+  }
+}
+
+.register-page__container {
+  width: 100%;
+  max-width: 540px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+}
+
+.register-page__nav {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: $space-4;
+}
+
+.register-page__card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: $radius-xl;
+  padding: $space-8;
+  box-shadow: $shadow-xl;
+  transition: $transition-base-ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-xl;
+  }
+}
+
+.register-page__header {
+  text-align: center;
+  margin-bottom: $space-8;
+}
+
+.register-page__title {
+  font-family: $font-secondary;
+  font-size: $text-3xl;
+  font-weight: $font-bold;
+  color: var(--text-primary);
+  margin-bottom: $space-2;
+}
+
+.register-page__subtitle {
+  color: var(--text-secondary);
+  font-size: $text-sm;
+}
+
+.register-page__link {
+  color: var(--color-primary);
+  font-weight: $font-semibold;
+  text-decoration: none;
+  transition: $transition-base-ease;
+  
+  &:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+  }
+}
+
+.register-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+.register-page__form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-4;
+  
+  @media (max-width: 540px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.register-page__checkbox-container {
+  margin-top: $space-2;
+}
+
+.register-page__error {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-3;
+  background: rgba(var(--color-error-rgb), 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: $radius-md;
+  color: var(--color-error);
+  font-size: $text-sm;
+  font-weight: $font-medium;
+}
+
+.register-page__actions {
+  margin-top: $space-4;
+}
+
+.register-page__footer {
+  text-align: center;
+  font-size: $text-xs;
+  color: var(--text-tertiary);
+  margin-bottom: $space-4;
+}
+
+// Transitions
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+// Deep overrides for glassmorphism inputs
+.register-page__input {
+  :deep(.base-input__field) {
+    background: rgba(255, 255, 255, 0.45);
+    border-color: rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(12px);
+    color: #1a1a1a;
+    
+    &::placeholder {
+      color: rgba(0, 0, 0, 0.45) !important;
+    }
+    
+    &:focus {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: var(--color-primary);
+    }
+  }
+
+  :deep(.base-input__prefix),
+  :deep(.base-input__suffix) {
+    color: rgba(0, 0, 0, 0.6) !important;
+  }
+
+  :deep(.base-input__floating-label--active)::before {
+    background-color: rgba(255, 255, 255, 0.9);
+    height: 4px;
+    border-radius: 2px;
+  }
+}
+
+// Accessibility
+@media (prefers-reduced-motion: reduce) {
+  .register-page__card:hover {
+    transform: none;
+  }
+}
+</style>

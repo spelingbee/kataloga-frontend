@@ -1,11 +1,11 @@
-import { useCartValidationService, type ValidationResult } from '~/services/cart-validation.service'
 import { useCartStore } from '~/stores/cart'
 import { useNotification } from '~/composables/useNotification'
 import type { CartItem } from '~/types'
+import type { ValidationResult } from '~/services/cart-validation.service'
 
 export function useCartValidation() {
+  const { $cartValidationService } = useNuxtApp()
   const cartStore = useCartStore()
-  const validationService = useCartValidationService()
   const notification = useNotification()
 
   const validating = ref(false)
@@ -13,10 +13,6 @@ export function useCartValidation() {
   const requiresAcknowledgment = ref(false)
   const acknowledged = ref(false)
 
-  /**
-   * Validate cart before checkout
-   * Returns validation result and updates cart if needed
-   */
   const validateBeforeCheckout = async (): Promise<{
     isValid: boolean
     requiresAcknowledgment: boolean
@@ -27,28 +23,21 @@ export function useCartValidation() {
     acknowledged.value = false
 
     try {
-      const result = await validationService.validateBeforeCheckout(cartStore.items)
+      const result = await ($cartValidationService as any).validateBeforeCheckout(cartStore.items)
       lastValidation.value = result
 
-      // Handle removed items (stop list or unavailable)
       if (result.removedItems.length > 0) {
-        // Remove items from cart
         for (const item of result.removedItems) {
           cartStore.removeItem(item.menuItem.id, item.customizations)
         }
-
-        // Show notification
         notification.showWarning(
           'Cart Updated',
           `${result.removedItems.length} unavailable item(s) removed from your cart`
         )
-
         requiresAcknowledgment.value = true
       }
 
-      // Handle price changes
       if (result.priceChanges.length > 0) {
-        // Update cart with new prices
         for (const change of result.priceChanges) {
           const cartItem = cartStore.items.find(
             item =>
@@ -57,7 +46,6 @@ export function useCartValidation() {
           )
 
           if (cartItem) {
-            // Update menu item data and recalculate subtotal
             cartItem.menuItem = change.item.menuItem
             const modifierPrice = cartItem.selectedModifiers.reduce(
               (sum, mod) => sum + (mod.priceAdjustment || 0),
@@ -67,10 +55,6 @@ export function useCartValidation() {
           }
         }
 
-        // Persist updated cart
-        cartStore.persistCart()
-
-        // Show notification
         const priceIncreases = result.priceChanges.filter(c => c.newPrice > c.oldPrice).length
         const priceDecreases = result.priceChanges.filter(c => c.newPrice < c.oldPrice).length
 
@@ -87,7 +71,6 @@ export function useCartValidation() {
         requiresAcknowledgment.value = true
       }
 
-      // Show general errors if any
       if (result.errors.length > 0 && result.removedItems.length === 0) {
         notification.showError('Validation Error', result.errors[0])
       }
@@ -121,23 +104,15 @@ export function useCartValidation() {
     }
   }
 
-  /**
-   * Validate cart on reconnection (after being offline)
-   */
   const validateOnReconnection = async (): Promise<void> => {
-    if (cartStore.items.length === 0) {
-      return
-    }
-
+    if (cartStore.items.length === 0) return
     validating.value = true
 
     try {
-      const result = await validationService.validateOnReconnection(cartStore.items)
+      const result = await ($cartValidationService as any).validateOnReconnection(cartStore.items)
       lastValidation.value = result
-
       let hasChanges = false
 
-      // Handle removed items
       if (result.removedItems.length > 0) {
         for (const item of result.removedItems) {
           cartStore.removeItem(item.menuItem.id, item.customizations)
@@ -145,7 +120,6 @@ export function useCartValidation() {
         hasChanges = true
       }
 
-      // Handle price changes
       if (result.priceChanges.length > 0) {
         for (const change of result.priceChanges) {
           const cartItem = cartStore.items.find(
@@ -163,13 +137,11 @@ export function useCartValidation() {
             cartItem.subtotal = cartItem.quantity * (change.newPrice + modifierPrice)
           }
         }
-        cartStore.persistCart()
         hasChanges = true
       }
 
-      // Show notification if there were changes
       if (hasChanges) {
-        const message = validationService.formatValidationMessage(result)
+        const message = ($cartValidationService as any).formatValidationMessage(result)
         if (message.type === 'error') {
           notification.showError(message.title, message.message)
         } else if (message.type === 'warning') {
@@ -185,23 +157,14 @@ export function useCartValidation() {
     }
   }
 
-  /**
-   * Quick validation for stop list only
-   */
   const validateStopList = async (): Promise<void> => {
-    if (cartStore.items.length === 0) {
-      return
-    }
-
+    if (cartStore.items.length === 0) return
     try {
-      const result = await validationService.validateStopList(cartStore.items)
-
+      const result = await ($cartValidationService as any).validateStopList(cartStore.items)
       if (result.stopListItems.length > 0) {
-        // Remove stop list items from cart
         for (const item of result.stopListItems) {
           cartStore.removeItem(item.menuItem.id, item.customizations)
         }
-
         notification.showWarning(
           'Items Unavailable',
           `${result.stopListItems.length} item(s) are temporarily unavailable and have been removed`
@@ -212,41 +175,20 @@ export function useCartValidation() {
     }
   }
 
-  /**
-   * Acknowledge validation warnings
-   * User must acknowledge before proceeding to payment
-   */
   const acknowledgeValidation = () => {
     acknowledged.value = true
   }
 
-  /**
-   * Check if user can proceed to payment
-   */
   const canProceedToPayment = computed(() => {
-    if (!lastValidation.value) {
-      return false
-    }
-
-    // If validation requires acknowledgment, user must acknowledge
-    if (requiresAcknowledgment.value && !acknowledged.value) {
-      return false
-    }
-
-    // Cart must be valid and not empty
+    if (!lastValidation.value) return false
+    if (requiresAcknowledgment.value && !acknowledged.value) return false
     return lastValidation.value.isValid && cartStore.items.length > 0
   })
 
-  /**
-   * Get validation summary for display
-   */
   const getValidationSummary = computed(() => {
-    if (!lastValidation.value) {
-      return null
-    }
-
+    if (!lastValidation.value) return null
     const result = lastValidation.value
-    const summary = {
+    return {
       hasChanges: result.removedItems.length > 0 || result.priceChanges.length > 0,
       removedCount: result.removedItems.length,
       priceChangesCount: result.priceChanges.length,
@@ -255,13 +197,8 @@ export function useCartValidation() {
       requiresAcknowledgment: requiresAcknowledgment.value,
       acknowledged: acknowledged.value,
     }
-
-    return summary
   })
 
-  /**
-   * Reset validation state
-   */
   const resetValidation = () => {
     lastValidation.value = null
     requiresAcknowledgment.value = false

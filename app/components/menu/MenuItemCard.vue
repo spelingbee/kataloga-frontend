@@ -6,63 +6,65 @@
   >
     <!-- Image Container with Fallback -->
     <div class="product-card__image-container">
-      <img 
+      <img
         :src="imageUrl"
         :alt="menuItem.name"
         class="product-card__image"
         loading="lazy"
         @error="handleImageError"
       />
-      
+
       <!-- Fallback Icon -->
       <div v-if="imageError" class="product-card__image-fallback">
-        <BaseIcon name="utensils" size="lg" class="text-neutral-400" />
+        <BaseIcon name="utensils" size="lg" class="product-card__fallback-icon" />
       </div>
-      
+
       <!-- Popular Badge -->
       <div v-if="isPopular" class="product-card__badge">
-        <BaseIcon name="fire" size="xs" class="text-orange-500" />
-        <span class="text-xs font-medium text-white">Popular</span>
+        <BaseIcon name="fire" size="xs" class="product-card__badge-icon" />
+        <span class="product-card__badge-text">Popular</span>
       </div>
-      
+
       <!-- Unavailable Overlay -->
       <div v-if="!menuItem.isActive" class="product-card__unavailable-overlay">
-        <span class="text-sm font-medium text-white">Unavailable</span>
+        <span class="product-card__unavailable-text">Unavailable</span>
       </div>
     </div>
-    
+
     <!-- Content -->
     <div class="product-card__content">
       <div class="product-card__info">
         <h3 class="product-card__name">{{ menuItem.name }}</h3>
         <p class="product-card__description">{{ menuItem.description }}</p>
       </div>
-      
+
       <!-- Footer with Price and Button -->
       <div class="product-card__footer">
-        <span class="product-card__price">${{ menuItem.price.toFixed(2) }}</span>
-        <button 
+        <div class="product-card__price-wrapper">
+          <AppPrice :amount="menuItem.price" class="product-card__price" />
+        </div>
+        
+        <div v-if="qtyInCart > 0" class="product-card__qty-control" @click.stop>
+          <button class="product-card__qty-btn product-card__qty-btn--minus" @click="decreaseQty">
+            <BaseIcon name="minus" size="sm" />
+          </button>
+          <span class="product-card__qty-text">{{ qtyInCart }}</span>
+          <button class="product-card__qty-btn product-card__qty-btn--plus" @click="increaseQty">
+            <BaseIcon name="plus" size="sm" />
+          </button>
+        </div>
+        <button
+          v-else
           class="product-card__add-btn"
-          :class="{ 
+          :class="{
             'product-card__add-btn--added': isAdded,
-            'product-card__add-btn--disabled': !menuItem.isActive 
+            'product-card__add-btn--disabled': !menuItem.isActive,
           }"
           :disabled="!menuItem.isActive"
           @click.stop="addToCart"
         >
-          <BaseIcon 
-            v-if="isAdded" 
-            name="check" 
-            size="sm" 
-            class="product-card__add-icon" 
-          />
-          <BaseIcon 
-            v-else 
-            name="plus" 
-            size="sm" 
-            class="product-card__add-icon" 
-          />
-          {{ isAdded ? 'Added' : 'Add' }}
+          <BaseIcon :name="isAdded ? 'check' : 'plus'" size="sm" class="product-card__add-icon" />
+          <span class="product-card__add-text">{{ isAdded ? $t('common.added', 'В корзине') : $t('common.add', 'Добавить') }}</span>
         </button>
       </div>
     </div>
@@ -74,6 +76,7 @@ import { ref, computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useNotification } from '~/composables/useNotification'
 import type { MenuItem } from '~/types'
+import AppPrice from '../base/AppPrice.vue'
 
 interface Props {
   menuItem: MenuItem
@@ -103,6 +106,14 @@ const imageUrl = computed(() => {
   return props.menuItem.imageUrl || '/images/placeholder-dish.svg'
 })
 
+const cartItem = computed(() => {
+  return cartStore.items.find((i) => i.menuItem.id === props.menuItem.id)
+})
+
+const qtyInCart = computed(() => {
+  return cartItem.value ? cartItem.value.quantity : 0
+})
+
 // Methods
 const handleClick = () => {
   emit('click', props.menuItem)
@@ -112,22 +123,38 @@ const handleImageError = () => {
   imageError.value = true
 }
 
+const increaseQty = () => {
+  if (!props.menuItem.isActive) return
+  if (cartItem.value) {
+    cartStore.updateQuantity(props.menuItem.id, cartItem.value.quantity + 1)
+  } else {
+    addToCart()
+  }
+}
+
+const decreaseQty = () => {
+  if (cartItem.value) {
+    cartStore.updateQuantity(props.menuItem.id, cartItem.value.quantity - 1)
+  }
+}
+
 const addToCart = async () => {
   if (!props.menuItem.isActive) return
-  
+
   try {
     // Add to cart
     cartStore.addItem(props.menuItem, 1)
-    
+    console.log(props.menuItem, 'added to cart', cartStore.items.length, 'items in cart')
+
     // Show feedback
     isAdded.value = true
     showSuccess('Added to Cart', `${props.menuItem.name} has been added to your cart`)
-    
+
     // Reset button state after 2 seconds
     setTimeout(() => {
       isAdded.value = false
     }, 2000)
-    
+
     emit('addToCart', props.menuItem)
   } catch (error) {
     console.error('Failed to add item to cart:', error)
@@ -140,30 +167,31 @@ const addToCart = async () => {
 @use '../../assets/scss/tokens/spacing' as *;
 @use '../../assets/scss/tokens/typography' as *;
 @use '../../assets/scss/tokens/transitions' as *;
+@use '../../assets/scss/tokens/radius' as *;
 
 .product-card {
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
-  border-radius: $radius-card;
+  border-radius: $radius-xl;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   cursor: pointer;
   position: relative;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    border-color: var(--color-primary);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
   }
-  
+
   &--unavailable {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
-    
+    filter: grayscale(80%);
+
     &:hover {
       transform: none;
-      box-shadow: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
   }
 }
@@ -171,7 +199,8 @@ const addToCart = async () => {
 .product-card__image-container {
   position: relative;
   width: 100%;
-  height: 200px;
+  aspect-ratio: 4 / 3;
+  height: auto;
   background: var(--bg-secondary);
   overflow: hidden;
 }
@@ -180,10 +209,10 @@ const addToCart = async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
-  
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+
   .product-card:hover & {
-    transform: scale(1.05);
+    transform: scale(1.08);
   }
 }
 
@@ -196,48 +225,77 @@ const addToCart = async () => {
   background: var(--bg-secondary);
 }
 
+.product-card__fallback-icon {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
 .product-card__badge {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  background: rgba(0, 0, 0, 0.8);
+  top: $space-3;
+  left: $space-3;
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
-  border-radius: 20px;
-  padding: 4px 8px;
+  border-radius: $radius-full;
+  padding: $space-1 $space-2;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: $space-1;
   z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-card__badge-icon {
+  color: var(--color-primary);
+}
+
+.product-card__badge-text {
+  font-size: $text-xs;
+  font-weight: $font-bold;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .product-card__unavailable-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(var(--bg-primary-rgb), 0.7);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3;
 }
 
+.product-card__unavailable-text {
+  font-size: $text-sm;
+  font-weight: $font-bold;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  padding: $space-2 $space-4;
+  border-radius: $radius-full;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .product-card__content {
-  padding: 20px;
+  padding: $space-4;
   display: flex;
   flex-direction: column;
-  height: 140px;
+  min-height: 156px;
 }
 
 .product-card__info {
   flex: 1;
-  margin-bottom: 16px;
+  margin-bottom: $space-3;
 }
 
 .product-card__name {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: $text-lg;
+  font-weight: $font-semibold;
   color: var(--text-primary);
-  margin: 0 0 8px 0;
-  line-height: 1.3;
+  margin: 0 0 $space-1 0;
+  line-height: $leading-tight;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -245,10 +303,10 @@ const addToCart = async () => {
 }
 
 .product-card__description {
-  font-size: 14px;
+  font-size: $text-sm;
   color: var(--text-secondary);
   margin: 0;
-  line-height: 1.4;
+  line-height: $leading-relaxed;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -262,93 +320,141 @@ const addToCart = async () => {
   margin-top: auto;
 }
 
+.product-card__price-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
 .product-card__price {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-primary);
+  font-size: $text-lg;
+  font-weight: $font-bold;
+  color: var(--text-primary);
 }
 
 .product-card__add-btn {
   background: var(--bg-secondary);
-  color: var(--text-primary);
+  color: var(--color-primary);
   border: 1px solid var(--border-primary);
   border-radius: $radius-full;
-  padding: $space-2;
-  font-size: 14px;
-  font-weight: 600;
+  padding: $space-2 $space-5;
+  height: 40px;
+  font-size: $text-sm;
+  font-weight: $font-bold;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: $space-2;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all $transition-base;
   
   &:hover:not(&--disabled) {
     background: var(--color-primary);
     color: white;
-    transform: translateY(-1px);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
   }
-  
-  &:active:not(&--disabled) {
-    transform: translateY(0);
-  }
-  
+
   &--added {
     background: var(--color-success);
-    
-    &:hover {
-      background: var(--color-success);
-    }
-  }
-  
-  &--disabled {
-    background: var(--color-neutral-300);
-    cursor: not-allowed;
-    
-    &:hover {
-      transform: none;
-    }
+    border-color: var(--color-success);
+    color: white;
   }
 }
 
-.product-card__add-icon {
-  transition: transform 0.2s ease;
-}
+.product-card__qty-control {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  background: transparent;
 
-// Dark theme adjustments
-@media (prefers-color-scheme: dark) {
-  .product-card {
-    background: var(--color-neutral-800);
-    border-color: var(--color-neutral-700);
-    
+  .product-card__qty-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-full;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all $transition-base;
+    border: 1px solid var(--border-primary);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+
     &:hover {
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+      background: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+      transform: scale(1.1);
+    }
+
+    &--plus {
+      color: var(--color-primary);
     }
   }
+
+  .product-card__qty-text {
+    font-size: $text-base;
+    font-weight: $font-bold;
+    color: var(--text-primary);
+    min-width: 24px;
+    text-align: center;
+  }
 }
+
 
 // Mobile optimizations
 @media (max-width: 640px) {
   .product-card__content {
-    padding: 16px;
-    height: 120px;
+    padding: $space-3;
+    min-height: 130px;
   }
-  
+
+  .product-card__info {
+    margin-bottom: $space-2;
+  }
+
   .product-card__name {
-    font-size: 16px;
+    font-size: $text-base;
+    margin-bottom: $space-1;
   }
-  
+
   .product-card__description {
-    font-size: 13px;
+    font-size: $text-xs;
+    -webkit-line-clamp: 2;
+  }
+
+  .product-card__price {
+    font-size: $text-base;
+  }
+
+  .product-card__add-btn {
+    padding: $space-2 $space-3;
+    height: 36px;
+    font-size: $text-xs;
   }
   
-  .product-card__price {
-    font-size: 18px;
+  .product-card__add-text {
+    display: none; // Collapse to icon only on very small screens if needed, or keep smaller text
   }
   
   .product-card__add-btn {
-    padding: 8px 12px;
-    font-size: 13px;
-    min-width: 70px;
+    .product-card__add-text {
+      display: inline; // Actually, keeping text is better for CTA. Let's override hide.
+    }
+  }
+
+  .product-card__qty-control {
+    height: 36px;
+
+    .product-card__qty-btn {
+      width: 32px;
+    }
+
+    .product-card__qty-text {
+      font-size: $text-sm;
+      min-width: 20px;
+    }
   }
 }
 
@@ -356,23 +462,23 @@ const addToCart = async () => {
 @media (prefers-reduced-motion: reduce) {
   .product-card {
     transition: none;
-    
+
     &:hover {
       transform: none;
     }
   }
-  
+
   .product-card__image {
     transition: none;
-    
+
     .product-card:hover & {
       transform: none;
     }
   }
-  
+
   .product-card__add-btn {
     transition: none;
-    
+
     &:hover:not(&--disabled) {
       transform: none;
     }

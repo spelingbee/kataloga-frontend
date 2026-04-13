@@ -1,10 +1,8 @@
-import type { Order, OrderStatus } from '~/types'
-import type { OrderUpdateMessage } from '~/services/websocket.service'
 import { useOrderStore } from '~/stores/order'
-import { useWebSocketService } from '~/services/websocket.service'
+import type { OrderStatus } from '~/types'
 
 export function useOrderTracking(orderId?: string) {
-  const { subscribeToOrderUpdates, trackOrder, stopTrackingOrder, isConnected } = useWebSocketService()
+  const { $orderService } = useNuxtApp()
   const orderStore = useOrderStore()
   
   const isTracking = ref(false)
@@ -27,7 +25,7 @@ export function useOrderTracking(orderId?: string) {
     }>
   } | null>(null)
 
-  let unsubscribe: (() => void) | null = null
+  let pollingInterval: any = null
 
   const startTracking = async (targetOrderId: string) => {
     if (isTracking.value) {
@@ -36,30 +34,13 @@ export function useOrderTracking(orderId?: string) {
 
     isTracking.value = true
 
-    // Subscribe to WebSocket updates
-    unsubscribe = subscribeToOrderUpdates((update: OrderUpdateMessage) => {
-      if (update.orderId === targetOrderId) {
-        handleOrderUpdate(update)
-      }
-    })
-
-    // Start tracking via WebSocket
-    if (isConnected.value) {
-      trackOrder(targetOrderId)
-    }
-
     // Fetch initial tracking data
-    try {
-      const { useOrderService } = await import('~/services/order.service')
-      const orderService = useOrderService()
-      const response = await orderService.getOrderTracking(targetOrderId)
-      
-      if (response.success && response.data) {
-        trackingData.value = response.data
-      }
-    } catch (error) {
-      console.error('Failed to fetch initial tracking data:', error)
-    }
+    await refreshTracking(targetOrderId)
+
+    // Start polling every 10 seconds
+    pollingInterval = setInterval(() => {
+      refreshTracking(targetOrderId)
+    }, 10000)
   }
 
   const stopTracking = () => {
@@ -67,64 +48,43 @@ export function useOrderTracking(orderId?: string) {
 
     isTracking.value = false
     
-    if (unsubscribe) {
-      unsubscribe()
-      unsubscribe = null
-    }
-
-    if (orderId && isConnected.value) {
-      stopTrackingOrder(orderId)
+    if (pollingInterval) {
+      clearInterval(pollingInterval)
+      pollingInterval = null
     }
 
     trackingData.value = null
   }
 
-  const handleOrderUpdate = (update: OrderUpdateMessage) => {
-    // Update tracking data
-    if (trackingData.value) {
-      trackingData.value.status = update.status
-      
-      if (update.estimatedTime) {
-        trackingData.value.estimatedTime = update.estimatedTime
-      }
-      
-      if (update.courierLocation) {
-        trackingData.value.currentLocation = update.courierLocation
-      }
-
-      // Add to timeline
-      trackingData.value.timeline.unshift({
-        status: update.status,
-        timestamp: new Date().toISOString(),
-        message: update.message || `Order status updated to ${update.status}`,
-      })
-    }
-
-    // Update order in store
-    const order = orderStore.orderHistory.find(o => o.id === update.orderId)
-    if (order) {
-      order.status = update.status
-      if (update.estimatedTime) {
-        order.estimatedTime = update.estimatedTime
-      }
-    }
-
-    if (orderStore.currentOrder?.id === update.orderId) {
-      orderStore.currentOrder.status = update.status
-      if (update.estimatedTime) {
-        orderStore.currentOrder.estimatedTime = update.estimatedTime
-      }
-    }
-  }
+  // Not used anymore with polling
+  const handleOrderUpdate = (update: any) => {}
 
   const refreshTracking = async (targetOrderId: string) => {
+    if (!$orderService) return
+
     try {
-      const { useOrderService } = await import('~/services/order.service')
-      const orderService = useOrderService()
-      const response = await orderService.getOrderTracking(targetOrderId)
+      const data = await ($orderService as any).getOrderTracking(targetOrderId)
       
-      if (response.success && response.data) {
-        trackingData.value = response.data
+      if (data) {
+        // Only update if status changed or it's the first load
+        if (!trackingData.value || trackingData.value.status !== data.status) {
+          trackingData.value = data
+          
+          // Update order in store
+          const order = orderStore.orderHistory.find(o => o.id === targetOrderId)
+          if (order) {
+            order.status = data.status
+            order.estimatedTime = data.estimatedTime
+          }
+
+          if (orderStore.currentOrder?.id === targetOrderId) {
+            orderStore.currentOrder.status = data.status
+            orderStore.currentOrder.estimatedTime = data.estimatedTime
+          }
+        } else {
+          // Update courier location even if status is same
+          trackingData.value.currentLocation = data.currentLocation
+        }
       }
     } catch (error) {
       console.error('Failed to refresh tracking data:', error)
@@ -133,15 +93,9 @@ export function useOrderTracking(orderId?: string) {
 
   // Auto-start tracking if orderId is provided
   if (orderId) {
-    watch(
-      isConnected,
-      (connected) => {
-        if (connected && !isTracking.value) {
-          startTracking(orderId)
-        }
-      },
-      { immediate: true }
-    )
+    onMounted(() => {
+      startTracking(orderId)
+    })
   }
 
   // Cleanup on unmount
@@ -170,7 +124,7 @@ export function useOrderTracking(orderId?: string) {
     const status = currentStatus.value
     if (!status) return 0
 
-    const progressMap = {
+    const progressMap: Record<string, number> = {
       PENDING: 20,
       CONFIRMED: 40,
       PREPARING: 60,
@@ -186,7 +140,7 @@ export function useOrderTracking(orderId?: string) {
     const status = currentStatus.value
     if (!status) return 'gray'
 
-    const colorMap = {
+    const colorMap: Record<string, string> = {
       PENDING: 'orange',
       CONFIRMED: 'blue',
       PREPARING: 'yellow',
@@ -216,7 +170,6 @@ export function useOrderTracking(orderId?: string) {
     // State
     isTracking: readonly(isTracking),
     trackingData: readonly(trackingData),
-    isConnected,
 
     // Computed
     currentStatus,

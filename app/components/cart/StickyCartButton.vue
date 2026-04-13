@@ -34,6 +34,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useTelegramHaptic } from '~/composables/useTelegramHaptic'
+import { useTenantSettings } from '~/composables/useTenant'
 
 interface Props {
   /** Show button only on mobile devices */
@@ -75,22 +76,19 @@ const isMobile = computed(() => {
 })
 
 const buttonText = computed(() => {
-  if (isEmpty.value) return 'Cart is empty'
-  return itemCount.value === 1 ? 'View Cart' : 'View Cart'
+  if (isEmpty.value) return 'Корзина пуста'
+  return 'Оформить заказ'
 })
+
+const { formatCurrency } = useTenantSettings()
 
 const formattedTotal = computed(() => {
   if (isEmpty.value) return ''
-  
-  const price = new Intl.NumberFormat('ru-RU', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(total.value)
-  
-  return `${price} ₽`
+  return formatCurrency(total.value)
 })
 
 // Methods
+const router = useRouter()
 const handleClick = () => {
   if (!isEmpty.value) {
     // Trigger haptic feedback on cart button click
@@ -101,7 +99,7 @@ const handleClick = () => {
       // Silently fail if haptic feedback is not available
     }
     
-    emit('click')
+    router.push('/checkout')
   }
 }
 

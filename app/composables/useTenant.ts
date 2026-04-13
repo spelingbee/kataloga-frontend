@@ -5,6 +5,8 @@ import type {
   TenantSwitchOptions 
 } from '~/types/tenant'
 import { useTenantStore } from '~/stores/tenant'
+import { computed, ref, watch, onMounted, type ComputedRef } from 'vue'
+import { useRoute, useRouter, useRuntimeConfig } from '#app'
 
 /**
  * Tenant Context Composable
@@ -529,7 +531,7 @@ export function useTenantSettings() {
 
   // Settings properties with fallbacks
   const currency = computed(() => {
-    return tenantStore.tenantSettings.currency || 'USD'
+    return tenantStore.tenantSettings.currency || 'KGS'
   })
 
   const timezone = computed(() => {

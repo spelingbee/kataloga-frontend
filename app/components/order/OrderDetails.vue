@@ -172,7 +172,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Order } from '~/types'
-import { useTenant } from '~/composables/useTenant'
+import { useTenant, useTenantSettings } from '~/composables/useTenant'
 
 // Props & Emits
 interface Props {
@@ -210,42 +210,22 @@ const discount = computed(() => {
 
 // Tenant context
 const { tenantSettings } = useTenant()
-
-const locale = computed(() => {
-  const language = tenantSettings.value?.language || 'en'
-  const localeMap: Record<string, string> = {
-    en: 'en-US',
-    ru: 'ru-RU',
-    de: 'DE',
-    fr: 'fr-FR',
-    es: 'es-ES'
-  }
-  return localeMap[language] || 'en-US'
-})
-
-const currency = computed(() => {
-  return tenantSettings.value?.currency || 'USD'
-})
+const { formatCurrency, language } = useTenantSettings()
 
 // Methods
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
-  return new Intl.DateTimeFormat(locale.value, {
+  return new Intl.DateTimeFormat(language.value, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    timeZone: tenantSettings.value?.timezone || 'UTC'
+    timeZone: tenantSettings.value?.timezone || 'Asia/Bishkek'
   }).format(date)
 }
 
-const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat(locale.value, {
-    style: 'currency',
-    currency: currency.value
-  }).format(price)
-}
+const formatPrice = formatCurrency
 
 const formatCustomizations = (customizations: Record<string, any>): string => {
   return Object.entries(customizations)

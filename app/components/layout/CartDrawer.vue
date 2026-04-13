@@ -15,12 +15,12 @@
       <!-- Header -->
       <div class="flex items-center justify-between p-4 border-b border-border-subtle">
         <AppHeading level="h2" size="heading-lg">
-          Cart ({{ itemCount }})
+          {{ $t('cart.title', 'Корзина') }} ({{ itemCount }})
         </AppHeading>
         <BaseButton
           variant="ghost"
           size="sm"
-          aria-label="Close cart"
+          :aria-label="$t('cart.close', 'Закрыть корзину')"
           @click="$emit('close')"
         >
           <BaseIcon name="x" size="md" />
@@ -34,21 +34,21 @@
           <div v-if="items.length === 0" class="text-center py-8">
             <BaseIcon name="cart" size="xl" class="text-neutral-80 mx-auto mb-4" />
             <AppText class="text-neutral-80 mb-4">
-              Your cart is empty
+              {{ $t('cart.empty', 'Ваша корзина пуста') }}
             </AppText>
             <BaseButton
               variant="primary"
               @click="goToMenu"
             >
-              Browse Menu
+              {{ $t('cart.browse_menu', 'Перейти в меню') }}
             </BaseButton>
           </div>
 
           <div v-else class="space-y-4">
             <CartItem
               v-for="item in items"
-              :key="item.id"
-              :item="item"
+              :key="item.menuItem.id"
+              :cart-item="item"
               @update-quantity="updateQuantity"
               @remove="removeItem"
             />
@@ -79,8 +79,8 @@
             :disabled="!canCheckout"
             @click="proceedToCheckout"
           >
-            <span v-if="canCheckout">Proceed to Checkout</span>
-            <span v-else>Add {{ formatPrice(remainingForMinimum) }} more</span>
+            <span v-if="canCheckout">{{ $t('cart.checkout', 'Оформить заказ') }}</span>
+            <span v-else>{{ $t('cart.min_reached', 'Добавьте еще') }} {{ formatPrice(remainingForMinimum) }}</span>
           </BaseButton>
         </div>
       </div>
@@ -91,12 +91,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useCartStore } from '~/stores/cart'
-import { useTenant } from '~/composables/useTenant'
+import { useTenant, useTenantSettings } from '~/composables/useTenant'
 
-// Props & Emits
-defineEmits<{
-  close: []
-}>()
+
 
 // Props & Emits
 interface Props {
@@ -111,10 +108,9 @@ const emit = defineEmits<{
   close: []
 }>()
 
-// Stores
 const cartStore = useCartStore()
 const router = useRouter()
-const { tenantSettings } = useTenant()
+const { formatCurrency } = useTenantSettings()
 
 // Computed properties
 const items = computed(() => cartStore.items)
@@ -128,17 +124,7 @@ const canCheckout = computed(() => cartStore.canCheckout)
 const remainingForMinimum = computed(() => cartStore.remainingForMinimum)
 
 // Helper methods
-const formatPrice = (price: number) => {
-  const currency = tenantSettings.value?.currency || 'USD'
-  const locale = currency === 'USD' ? 'en-US' : currency === 'RUB' ? 'ru-RU' : 'en-US'
-  
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  }).format(price)
-}
+const formatPrice = formatCurrency
 
 // Methods
 const updateQuantity = (itemId: string, quantity: number) => {

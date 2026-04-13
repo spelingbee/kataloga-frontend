@@ -600,7 +600,7 @@ const reorderItems = () => {
     order.value.items.forEach(item => {
       cartStore.addItem(item.menuItem, item.quantity)
     })
-    router.push('/cart')
+    router.push('/checkout')
   }
 }
 

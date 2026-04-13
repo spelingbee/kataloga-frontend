@@ -4,9 +4,11 @@
       v-if="icon"
       :name="icon"
       :size="iconSize"
-      :class="{ 'base-badge__icon--with-text': slots.default }"
+      :class="{ 'base-badge__icon--with-text': slots.default || count }"
     />
-    <slot />
+    <slot>
+      <span v-if="count != null && count > 0" class="base-badge__count">{{ count > 99 ? '99+' : count }}</span>
+    </slot>
   </span>
 </template>
 
@@ -16,6 +18,7 @@ interface Props {
   size?: 'sm' | 'md' | 'lg'
   icon?: string
   pulse?: boolean
+  count?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -49,7 +52,7 @@ const iconSize = computed((): 'xs' | 'sm' | 'md' => {
     md: 'sm', 
     lg: 'md' 
   }
-  return sizes[props.size]
+  return sizes[props.size] || 'sm'
 })
 </script>
 

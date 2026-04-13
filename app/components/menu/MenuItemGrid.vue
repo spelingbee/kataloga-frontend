@@ -41,8 +41,8 @@ defineEmits<{
   }
 
   @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: $space-4;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $space-3;
   }
 }
 

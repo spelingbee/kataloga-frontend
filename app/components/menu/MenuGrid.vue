@@ -192,6 +192,10 @@ watch(() => props.items.length, () => {
   gap: $space-6;
   width: 100%;
 
+  @media (max-width: 640px) {
+    gap: $space-3;
+  }
+
   &--cols-2 {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -204,7 +208,7 @@ watch(() => props.items.length, () => {
     }
 
     @media (max-width: 640px) {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 
@@ -220,7 +224,7 @@ watch(() => props.items.length, () => {
     }
 
     @media (max-width: 640px) {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 }

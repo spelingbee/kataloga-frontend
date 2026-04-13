@@ -13,7 +13,7 @@
       <input
         :id="inputId"
         ref="inputRef"
-        :type="type"
+        :type="isPasswordVisible ? 'text' : type"
         :value="modelValue"
         :placeholder="floatingLabel ? ' ' : placeholder"
         :disabled="disabled"
@@ -39,7 +39,7 @@
       </label>
       
       <div
-        v-if="$slots.suffix || suffixIcon || (clearable && modelValue)"
+        v-if="$slots.suffix || suffixIcon || (clearable && modelValue) || (type === 'password' && showPasswordToggle)"
         class="base-input__suffix"
       >
         <slot name="suffix">
@@ -49,6 +49,14 @@
             size="sm"
             icon="x"
             @click="clear"
+          />
+          <BaseButton
+            v-else-if="type === 'password' && showPasswordToggle"
+            variant="ghost"
+            size="sm"
+            :icon="isPasswordVisible ? 'eye-off' : 'eye'"
+            tabindex="-1"
+            @click="togglePasswordVisibility"
           />
           <BaseIcon v-else-if="suffixIcon" :name="suffixIcon" size="sm" />
         </slot>
@@ -109,6 +117,7 @@ interface Props {
   success?: string
   hint?: string
   autocomplete?: string
+  showPasswordToggle?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -118,7 +127,8 @@ const props = withDefaults(defineProps<Props>(), {
   readonly: false,
   required: false,
   clearable: false,
-  floatingLabel: true
+  floatingLabel: true,
+  showPasswordToggle: true
 })
 
 const modelValue = defineModel<string | number>()
@@ -135,8 +145,9 @@ const slots = defineSlots<{
 
 const inputRef = ref<HTMLInputElement>()
 const isFocused = ref(false)
+const isPasswordVisible = ref(false)
 
-const inputId = computed(() => `input-${Math.random().toString(36).substring(2, 11)}`)
+const inputId = useId()
 
 const hasValue = computed(() => {
   return modelValue.value !== undefined && modelValue.value !== null && modelValue.value !== ''
@@ -154,7 +165,9 @@ const inputClasses = computed(() => {
   if (props.disabled) classes.push('base-input__field--disabled')
   if (props.readonly) classes.push('base-input__field--readonly')
   if (props.prefixIcon || slots.prefix) classes.push('base-input__field--has-prefix')
-  if (props.suffixIcon || slots.suffix || (props.clearable && hasValue.value)) classes.push('base-input__field--has-suffix')
+  if (props.suffixIcon || slots.suffix || (props.clearable && hasValue.value) || (props.type === 'password' && props.showPasswordToggle)) {
+    classes.push('base-input__field--has-suffix')
+  }
   
   return classes
 })
@@ -191,6 +204,10 @@ const handleFocus = (event: FocusEvent) => {
 const clear = () => {
   modelValue.value = ''
   inputRef.value?.focus()
+}
+
+const togglePasswordVisibility = () => {
+  isPasswordVisible.value = !isPasswordVisible.value
 }
 </script>
 
@@ -280,11 +297,11 @@ const clear = () => {
   }
   
   &--has-prefix {
-    padding-left: 2.5rem;
+    padding-left: 3rem;
   }
   
   &--has-suffix {
-    padding-right: 2.5rem;
+    padding-right: 3rem;
   }
 }
 
@@ -302,11 +319,11 @@ const clear = () => {
 }
 
 .base-input__prefix {
-  left: $space-3;
+  left: $space-4;
 }
 
 .base-input__suffix {
-  right: $space-3;
+  right: $space-4;
 }
 
 .base-input__floating-label {
@@ -319,14 +336,31 @@ const clear = () => {
   font-weight: $font-regular;
   transition: $transition-base-ease;
   pointer-events: none;
-  background-color: var(--bg-primary);
+  background-color: transparent;
   padding: 0 $space-1;
+  
+  &::before {
+     content: '';
+     position: absolute;
+     left: 0;
+     top: 50%;
+     width: 100%;
+     height: 2px;
+     background-color: var(--bg-primary);
+     z-index: -1;
+     display: none;
+  }
   
   &--active {
     top: 0;
     transform: translateY(-50%);
     font-size: $text-sm;
     color: var(--color-primary);
+    
+    &::before {
+      display: block;
+      height: 2px;
+    }
   }
   
   &--error {

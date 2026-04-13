@@ -6,9 +6,21 @@ export interface TenantInfo {
   domain?: string
   branding: TenantBranding
   settings: TenantSettings
+  locations: TenantLocation[]
   isActive: boolean
   createdAt: string
   updatedAt: string
+}
+
+export interface TenantLocation {
+  id: string
+  name: string
+  address: string
+  phone?: string
+  email?: string
+  latitude: number
+  longitude: number
+  isActive: boolean
 }
 
 export interface TenantBranding {
@@ -149,6 +161,7 @@ export interface TenantStoreState {
   isLoading: boolean
   error: string | null
   isInitialized: boolean
+  locations: TenantLocation[]
 }
 
 // Tenant validation result

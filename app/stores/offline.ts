@@ -20,9 +20,10 @@ export const useOfflineStore = defineStore('offline', () => {
    * Check if currently offline
    */
   const checkOnlineStatus = () => {
+    let online = true
     // Check if we're in a browser environment
     if (typeof navigator !== 'undefined' && 'onLine' in navigator) {
-      const online = navigator.onLine
+      online = navigator.onLine
       setOfflineMode(!online)
     } else {
       // Assume online in SSR environment
