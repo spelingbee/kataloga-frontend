@@ -32,7 +32,10 @@
       <label
         v-if="floatingLabel && label"
         :for="inputId"
-        :class="labelClasses"
+        :class="[
+          labelClasses,
+          { 'base-input__floating-label--has-prefix': prefixIcon || $slots.prefix }
+        ]"
       >
         {{ label }}
         <span v-if="required" class="base-input__required">*</span>
@@ -338,6 +341,10 @@ const togglePasswordVisibility = () => {
   pointer-events: none;
   background-color: transparent;
   padding: 0 $space-1;
+  
+  &--has-prefix {
+    left: 3rem;
+  }
   
   &::before {
      content: '';

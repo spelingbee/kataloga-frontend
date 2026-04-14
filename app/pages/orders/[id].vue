@@ -1,211 +1,202 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="order-details-page">
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading order details...</AppText>
+    <div v-if="loading" class="order-details-page__loading">
+      <div class="order-details-page__loading-content">
+        <div class="order-details-page__spinner" />
+        <AppText>Loading order details...</AppText>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="flex items-center justify-center min-h-screen">
-      <div class="text-center">
-        <BaseIcon name="alert-circle" size="4xl" class="text-primary-red mx-auto mb-6" />
-        <AppHeading level="h2" size="heading-lg" class="text-white mb-4">
-          Order Not Found
-        </AppHeading>
-        <AppText class="text-neutral-20 mb-8">
+    <div v-else-if="error" class="order-details-page__error">
+      <div class="order-details-page__error-content">
+        <BaseIcon name="alert-circle" size="xl" class="order-details-page__error-icon" />
+        <AppHeading level="h2" size="heading-lg">Order Not Found</AppHeading>
+        <AppText>
           {{ error }}
         </AppText>
-        <div class="flex gap-4 justify-center">
-          <BaseButton @click="$router.go(-1)">
-            Go Back
-          </BaseButton>
+        <div class="order-details-page__error-actions">
+          <BaseButton @click="$router.go(-1)">Go Back</BaseButton>
           <NuxtLink to="/orders">
-            <BaseButton variant="secondary">
-              View All Orders
-            </BaseButton>
+            <BaseButton variant="secondary">View All Orders</BaseButton>
           </NuxtLink>
         </div>
       </div>
     </div>
 
     <!-- Order Details -->
-    <div v-else-if="order" class="pb-8">
+    <div v-else-if="order">
       <!-- Header -->
-      <div class="px-6 py-4 border-b border-neutral-80/20">
-        <div class="flex items-center gap-4 mb-4">
-          <BaseButton 
-            variant="ghost" 
-            @click="$router.go(-1)"
-          >
+      <div class="order-header">
+        <div class="order-header__top">
+          <BaseButton variant="ghost" class="order-header__back-btn" @click="$router.go(-1)">
             <BaseIcon name="arrow-left" size="md" />
           </BaseButton>
-          <div class="flex-1">
-            <AppHeading level="h1" size="heading-lg" class="text-white">
-              Order #{{ order.id }}
-            </AppHeading>
-            <AppText class="text-neutral-20">
+          <div class="order-header__info">
+            <div class="order-header__title-row">
+              <AppHeading level="h2" size="heading-sm" class="order-header__title">
+                {{ $t('orders.orderNumber', { number: order.orderNumber || order.id.slice(-6).toUpperCase() }) }}
+              </AppHeading>
+              <StatusBadge :status="order.status" size="sm" class="order-header__status" />
+            </div>
+            <AppText size="body-xs" class="order-header__date">
               {{ formatDate(order.createdAt) }}
             </AppText>
           </div>
-          <StatusBadge :status="order.status" size="lg" />
         </div>
 
         <!-- Tab Navigation -->
-        <div class="flex gap-1 bg-background-card rounded-lg p-1">
+        <div class="order-header__tabs">
           <button
             v-for="tab in tabs"
             :key="tab.id"
-            class="flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-            :class="activeTab === tab.id ? 
-              'bg-primary-green text-white' : 
-              'text-neutral-20 hover:text-white hover:bg-neutral-80/20'"
+            class="order-header__tab"
+            :class="{ 'order-header__tab--active': activeTab === tab.id }"
             @click="activeTab = tab.id"
           >
-            <BaseIcon :name="tab.icon" size="sm" class="mr-2" />
+            <BaseIcon :name="tab.icon" size="sm" />
             {{ tab.label }}
           </button>
         </div>
       </div>
 
       <!-- Tab Content -->
-      <div class="px-6 py-8">
+      <div class="order-content">
         <!-- Overview Tab -->
         <div v-if="activeTab === 'overview'">
           <!-- Order Summary -->
-          <div class="mb-8 bg-background-card rounded-xl p-6">
-            <div class="flex items-center justify-between mb-6">
-              <AppHeading level="h3" size="heading-md" class="text-white">
-                Order Summary
+          <div class="order-summary">
+            <div class="order-summary__header">
+              <AppHeading level="h3" size="heading-sm" class="order-summary__title">
+                {{ $t('orders.summary') }}
               </AppHeading>
-              <AppPrice :price="order.total" size="xl" />
             </div>
 
             <!-- Order Items -->
-            <div class="space-y-4 mb-6">
+            <div class="order-summary__items">
               <div
                 v-for="item in order.items"
                 :key="item.id"
-                class="flex items-center gap-4 p-4 bg-neutral-80/10 rounded-lg"
+                class="order-item"
               >
                 <!-- Item Image -->
-                <div class="w-16 h-16 bg-neutral-80/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <BaseIcon name="utensils" size="lg" class="text-neutral-80" />
+                <div class="order-item__image">
+                  <BaseIcon name="utensils" size="lg" />
                 </div>
 
                 <!-- Item Details -->
-                <div class="flex-1 min-w-0">
-                  <AppHeading level="h4" size="heading-sm" class="text-white mb-1">
-                    {{ item.menuItem.name }}
+                <div class="order-item__details">
+                  <AppHeading level="h4" size="heading-sm" class="order-item__name">
+                    {{ item.product?.name || item.name || item.title || $t('common.error') }}
                   </AppHeading>
-                  <AppText size="body-sm" class="text-neutral-20 mb-2">
-                    {{ item.menuItem.description }}
+                  <AppText size="body-sm" class="order-item__description">
+                    {{ item.menuItem?.description }}
                   </AppText>
-                  <div class="flex items-center gap-4">
-                    <AppText size="body-sm" class="text-neutral-20">
-                      Qty: {{ item.quantity }}
+                  <div class="order-item__meta">
+                    <AppText size="body-xs" class="order-item__quantity">
+                      {{ $t('menu.quantity') }}: {{ item.quantity }}
                     </AppText>
-                    <AppPrice :price="item.price" size="sm" />
                   </div>
                 </div>
-
                 <!-- Item Total -->
-                <div class="text-right">
-                  <AppPrice :price="item.subtotal" size="md" />
+                <div class="order-item__total">
+                  <AppPrice :price="item.price * item.quantity || 0" size="sm" />
                 </div>
               </div>
             </div>
 
             <!-- Order Totals -->
-            <div class="border-t border-neutral-80/20 pt-4 space-y-2">
-              <div class="flex items-center justify-between">
-                <AppText class="text-neutral-20">Subtotal</AppText>
-                <AppText class="text-white">{{ formatPrice(subtotal) }}</AppText>
+            <div class="order-summary__totals">
+              <div class="order-summary__total-row">
+                <AppText class="order-summary__total-label">{{ $t('orders.subtotal') }}</AppText>
+                <AppPrice :price="subtotal" size="sm" />
               </div>
-              <div class="flex items-center justify-between">
-                <AppText class="text-neutral-20">Delivery Fee</AppText>
-                <AppText class="text-white">{{ formatPrice(deliveryFee) }}</AppText>
+              <div v-if="order.deliveryFee" class="order-summary__total-row">
+                <AppText class="order-summary__total-label">{{ $t('orders.deliveryFee') }}</AppText>
+                <AppPrice :price="order.deliveryFee" size="sm" />
               </div>
-              <div class="flex items-center justify-between">
-                <AppText class="text-neutral-20">Tax</AppText>
-                <AppText class="text-white">{{ formatPrice(tax) }}</AppText>
+              <div v-if="tax > 0" class="order-summary__total-row">
+                <AppText class="order-summary__total-label">{{ $t('orders.tax') }}</AppText>
+                <AppPrice :price="tax" size="sm" />
               </div>
-              <div class="flex items-center justify-between pt-2 border-t border-neutral-80/20">
-                <AppText size="body-lg" class="text-white font-semibold">Total</AppText>
-                <AppPrice :price="order.total" size="lg" />
+              <div class="order-summary__total-row order-summary__total-row--final">
+                <AppText size="body-lg" class="order-summary__total-label order-summary__total-label--final">{{ $t('orders.total') }}</AppText>
+                <AppPrice :price="order.total" size="lg" color="orange" />
               </div>
             </div>
           </div>
 
           <!-- Customer Information -->
-          <div class="mb-8 bg-background-card rounded-xl p-6">
-            <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-              Customer Information
+          <div class="customer-info">
+            <AppHeading level="h3" size="heading-sm" class="customer-info__title">
+              {{ $t('orders.customerInfo') }}
             </AppHeading>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="customer-info__grid">
               <div>
-                <AppText size="body-sm" class="text-neutral-20 mb-2">Contact Details</AppText>
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2">
-                    <BaseIcon name="user" size="sm" class="text-neutral-80" />
-                    <AppText class="text-white">{{ order.customerInfo.name }}</AppText>
+                <AppText size="body-xs" class="customer-info__section-title">{{ $t('orders.contactDetails') }}</AppText>
+                <div class="customer-info__details">
+                  <div v-if="customerInfo?.name" class="customer-info__detail-row">
+                    <BaseIcon name="user" size="sm" class="customer-info__detail-icon" />
+                    <AppText size="body-sm" class="customer-info__detail-text">{{ customerInfo.name }}</AppText>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <BaseIcon name="phone" size="sm" class="text-neutral-80" />
-                    <AppText class="text-white">{{ order.customerInfo.phone }}</AppText>
+                  <div v-if="customerInfo?.phone" class="customer-info__detail-row">
+                    <BaseIcon name="phone" size="sm" class="customer-info__detail-icon" />
+                    <AppText size="body-sm" class="customer-info__detail-text">{{ customerInfo.phone }}</AppText>
                   </div>
-                  <div v-if="order.customerInfo.email" class="flex items-center gap-2">
-                    <BaseIcon name="mail" size="sm" class="text-neutral-80" />
-                    <AppText class="text-white">{{ order.customerInfo.email }}</AppText>
+                  <div v-if="customerInfo?.email" class="customer-info__detail-row">
+                    <BaseIcon name="mail" size="sm" class="customer-info__detail-icon" />
+                    <AppText size="body-sm" class="customer-info__detail-text">{{ customerInfo.email }}</AppText>
                   </div>
                 </div>
               </div>
               
-              <div v-if="order.deliveryAddress">
-                <AppText size="body-sm" class="text-neutral-20 mb-2">Delivery Address</AppText>
-                <div class="flex items-start gap-2">
-                  <BaseIcon name="map-pin" size="sm" class="text-neutral-80 mt-1" />
-                  <AppText class="text-white">{{ order.deliveryAddress }}</AppText>
+              <div v-if="customerInfo?.address">
+                <AppText size="body-xs" class="customer-info__section-title">{{ $t('orders.deliveryAddress') }}</AppText>
+                <div class="customer-info__detail-row">
+                  <BaseIcon name="map-pin" size="sm" class="customer-info__detail-icon" />
+                  <AppText size="body-sm" class="customer-info__detail-text">{{ customerInfo.address }}</AppText>
                 </div>
               </div>
             </div>
 
             <!-- Special Instructions -->
-            <div v-if="order.customerInfo.notes" class="mt-6 pt-6 border-t border-neutral-80/20">
-              <AppText size="body-sm" class="text-neutral-20 mb-2">Special Instructions</AppText>
-              <AppText class="text-white">{{ order.customerInfo.notes }}</AppText>
+            <div v-if="order.customerInfo && order.customerInfo.notes" class="customer-info__notes">
+              <AppText size="body-xs" class="customer-info__section-title">{{ $t('orders.specialInstructions') }}</AppText>
+              <AppText size="body-sm" class="customer-info__notes-text">{{ order.customerInfo.notes }}</AppText>
             </div>
           </div>
 
           <!-- Quick Actions -->
-          <div class="flex flex-col sm:flex-row gap-4">
+          <div class="order-actions">
             <BaseButton 
               variant="primary"
-              class="flex-1"
-              @click="reorderItems"
+              size="md"
+              class="order-actions__button"
+              @click="reorderItemsInDetails"
             >
-              <BaseIcon name="repeat" size="sm" class="mr-2" />
-              Reorder Items
+              <BaseIcon name="repeat" size="sm" />
+              {{ $t('orders.reorderItems') }}
             </BaseButton>
             <BaseButton 
               variant="secondary"
-              class="flex-1"
+              size="md"
+              class="order-actions__button"
               @click="shareOrder"
             >
-              <BaseIcon name="share" size="sm" class="mr-2" />
-              Share Order
+              <BaseIcon name="share" size="sm" />
+              {{ $t('orders.shareOrder') }}
             </BaseButton>
+          </div>
+          <div v-if="canCancelOrder" class="order-actions-cancel">
             <BaseButton 
-              v-if="canCancelOrder"
               variant="ghost"
-              class="flex-1"
+              size="sm"
+              class="order-actions-cancel__button"
               @click="cancelOrder"
             >
-              <BaseIcon name="x" size="sm" class="mr-2" />
-              Cancel Order
+              {{ $t('orders.cancelOrder') }}
             </BaseButton>
           </div>
         </div>
@@ -222,187 +213,186 @@
         <!-- Receipt Tab -->
         <div v-if="activeTab === 'receipt'">
           <!-- Digital Receipt -->
-          <div class="max-w-md mx-auto bg-white text-black p-8 rounded-lg">
+          <div class="receipt">
             <!-- Receipt Header -->
-            <div class="text-center mb-6">
-              <AppHeading level="h2" size="heading-lg" class="text-black mb-2">
-                Menu Ordering App
+            <div class="receipt__header">
+              <AppHeading level="h2" size="heading-lg" class="receipt__title">
+                {{ tenantSettings?.name || 'Kataloga' }}
               </AppHeading>
-              <AppText size="body-sm" class="text-gray-600">
-                Digital Receipt
+              <AppText size="body-sm" class="receipt__subtitle">
+                {{ $t('orders.receipt') }}
               </AppText>
             </div>
 
             <!-- Order Info -->
-            <div class="mb-6 pb-4 border-b border-gray-300">
-              <div class="flex justify-between mb-2">
-                <AppText size="body-sm" class="text-gray-600">Order #</AppText>
-                <AppText size="body-sm" class="text-black font-medium">{{ order.id }}</AppText>
+            <div class="receipt__info">
+              <div class="receipt__info-row">
+                <AppText size="body-sm" class="receipt__info-label">{{ $t('orders.orderNumber', { number: '' }).replace(' №', '') }}</AppText>
+                <AppText size="body-sm" class="receipt__info-value">{{ order.id }}</AppText>
               </div>
-              <div class="flex justify-between mb-2">
-                <AppText size="body-sm" class="text-gray-600">Date</AppText>
-                <AppText size="body-sm" class="text-black">{{ formatReceiptDate(order.createdAt) }}</AppText>
+              <div class="receipt__info-row">
+                <AppText size="body-sm" class="receipt__info-label">{{ $t('delivery.time') }}</AppText>
+                <AppText size="body-sm" class="receipt__info-value">{{ formatReceiptDate(order.createdAt) }}</AppText>
               </div>
-              <div class="flex justify-between">
-                <AppText size="body-sm" class="text-gray-600">Status</AppText>
-                <AppText size="body-sm" class="text-black font-medium">{{ order.status }}</AppText>
+              <div class="receipt__info-row">
+                <AppText size="body-sm" class="receipt__info-label">{{ $t('orders.status') }}</AppText>
+                <StatusBadge :status="order.status" size="sm" />
               </div>
             </div>
 
             <!-- Items -->
-            <div class="mb-6">
+            <div class="receipt__items">
               <div
                 v-for="item in order.items"
                 :key="item.id"
-                class="flex justify-between items-start mb-3"
+                class="receipt__item"
               >
-                <div class="flex-1">
-                  <AppText size="body-sm" class="text-black font-medium">
-                    {{ item.menuItem.name }}
+                <div class="receipt__item-details">
+                  <AppText size="body-sm" class="receipt__item-name">
+                    {{ item.quantity }}× {{ item.product?.name || item.name || item.title || $t('common.error') }}
                   </AppText>
-                  <AppText size="caption" class="text-gray-600">
-                    {{ item.quantity }} × {{ formatPrice(item.price) }}
+                  <AppText size="caption" class="receipt__item-meta">
+                    {{ item.quantity }} × {{ formatCurrency(item.price) }}
                   </AppText>
                 </div>
-                <AppText size="body-sm" class="text-black font-medium">
-                  {{ formatPrice(item.subtotal) }}
+                <AppText size="body-sm" class="receipt__item-total">
+                  {{ formatCurrency(Number(item.subtotal) || (item.price * item.quantity)) }}
                 </AppText>
               </div>
             </div>
 
             <!-- Totals -->
-            <div class="border-t border-gray-300 pt-4 space-y-2">
-              <div class="flex justify-between">
-                <AppText size="body-sm" class="text-gray-600">Subtotal</AppText>
-                <AppText size="body-sm" class="text-black">{{ formatPrice(subtotal) }}</AppText>
+            <div class="receipt__totals">
+              <div class="receipt__total-row">
+                <AppText size="body-sm" class="receipt__total-label">{{ $t('orders.subtotal') }}</AppText>
+                <AppText size="body-sm" class="receipt__total-value">{{ formatCurrency(subtotal) }}</AppText>
               </div>
-              <div class="flex justify-between">
-                <AppText size="body-sm" class="text-gray-600">Delivery</AppText>
-                <AppText size="body-sm" class="text-black">{{ formatPrice(deliveryFee) }}</AppText>
+              <div v-if="order.deliveryFee > 0" class="receipt__total-row">
+                <AppText size="body-sm" class="receipt__total-label">{{ $t('orders.deliveryFee') }}</AppText>
+                <AppText size="body-sm" class="receipt__total-value">{{ formatCurrency(order.deliveryFee) }}</AppText>
               </div>
-              <div class="flex justify-between">
-                <AppText size="body-sm" class="text-gray-600">Tax</AppText>
-                <AppText size="body-sm" class="text-black">{{ formatPrice(tax) }}</AppText>
+              <div v-if="tax > 0" class="receipt__total-row">
+                <AppText size="body-sm" class="receipt__total-label">{{ $t('orders.tax') }}</AppText>
+                <AppText size="body-sm" class="receipt__total-value">{{ formatCurrency(tax) }}</AppText>
               </div>
-              <div class="flex justify-between pt-2 border-t border-gray-300">
-                <AppText size="body-md" class="text-black font-bold">Total</AppText>
-                <AppText size="body-md" class="text-black font-bold">{{ formatPrice(order.total) }}</AppText>
+              <div class="receipt__total-row receipt__total-row--final">
+                <AppText size="body-md" class="receipt__total-label receipt__total-label--final">{{ $t('orders.total') }}</AppText>
+                <AppText size="body-md" class="receipt__total-value receipt__total-value--final">{{ formatCurrency(order.total) }}</AppText>
               </div>
             </div>
 
             <!-- Footer -->
-            <div class="text-center mt-6 pt-4 border-t border-gray-300">
-              <AppText size="caption" class="text-gray-600">
-                Thank you for your order!
+            <div class="receipt__footer">
+              <AppText size="caption" class="receipt__footer-text">
+                {{ $t('checkout.orderPlaced') }}!
               </AppText>
             </div>
           </div>
 
           <!-- Receipt Actions -->
-          <div class="flex justify-center gap-4 mt-8">
+          <div class="receipt-actions">
             <BaseButton 
               variant="secondary"
               @click="downloadReceipt"
             >
-              <BaseIcon name="download" size="sm" class="mr-2" />
-              Download PDF
+              <BaseIcon name="download" size="sm" />
+              {{ $t('orders.export') }} PDF
             </BaseButton>
             <BaseButton 
               variant="ghost"
               @click="emailReceipt"
             >
-              <BaseIcon name="mail" size="sm" class="mr-2" />
-              Email Receipt
+              <BaseIcon name="mail" size="sm" />
+              {{ $t('orders.support') }}
             </BaseButton>
           </div>
         </div>
 
         <!-- Support Tab -->
         <div v-if="activeTab === 'support'">
-          <div class="max-w-2xl mx-auto">
+          <div class="support-section">
             <!-- Support Options -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <BaseCard class="p-6 text-center">
-                <BaseIcon name="message-circle" size="xl" class="text-primary-green mx-auto mb-4" />
-                <AppHeading level="h3" size="heading-md" class="text-white mb-2">
-                  Chat Support
+            <div class="support-section__options">
+              <BaseCard class="support-section__option-card">
+                <BaseIcon name="message-circle" size="xl" class="support-section__option-icon" />
+                <AppHeading level="h3" size="heading-md" class="support-section__option-title">
+                  {{ $t('orders.chatSupport') }}
                 </AppHeading>
-                <AppText class="text-neutral-20 mb-4">
-                  Get instant help from our support team
+                <AppText class="support-section__option-text">
+                  {{ $t('orders.stats.favorite') }}
                 </AppText>
                 <BaseButton variant="primary" @click="startChat">
-                  Start Chat
+                  {{ $t('common.submit') }}
                 </BaseButton>
               </BaseCard>
 
-              <BaseCard class="p-6 text-center">
-                <BaseIcon name="phone" size="xl" class="text-primary-orange mx-auto mb-4" />
-                <AppHeading level="h3" size="heading-md" class="text-white mb-2">
-                  Call Support
+              <BaseCard class="support-section__option-card">
+                <BaseIcon name="phone" size="xl" class="support-section__option-icon" />
+                <AppHeading level="h3" size="heading-md" class="support-section__option-title">
+                  {{ $t('orders.callSupport') }}
                 </AppHeading>
-                <AppText class="text-neutral-20 mb-4">
-                  Speak directly with our support team
+                <AppText class="support-section__option-text">
+                  {{ $t('orders.contactRestaurant') }}
                 </AppText>
                 <BaseButton variant="secondary" @click="callSupport">
-                  Call Now
+                  {{ $t('orders.callSupport') }}
                 </BaseButton>
               </BaseCard>
             </div>
 
             <!-- Common Issues -->
-            <div class="mb-8">
-              <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-                Common Issues
+            <div class="support-section__issues">
+              <AppHeading level="h3" size="heading-md" class="support-section__issues-title">
+                {{ $t('orders.commonIssues') }}
               </AppHeading>
               
-              <div class="space-y-4">
+              <div class="support-section__issues-list">
                 <div
                   v-for="issue in commonIssues"
                   :key="issue.id"
-                  class="bg-background-card rounded-xl p-4 cursor-pointer hover:bg-background-card/80 transition-colors"
+                  class="support-section__issue-item"
                   @click="handleIssue(issue)"
                 >
-                  <div class="flex items-center justify-between">
-                    <AppText class="text-white">{{ issue.title }}</AppText>
-                    <BaseIcon name="chevron-right" size="sm" class="text-neutral-80" />
+                  <div class="support-section__issue-content">
+                    <AppText class="support-section__issue-text">{{ issue.title }}</AppText>
+                    <BaseIcon name="chevron-right" size="sm" class="support-section__issue-icon" />
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Contact Form -->
-            <div class="bg-background-card rounded-xl p-6">
-              <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-                Report an Issue
+            <div class="support-section__form">
+              <AppHeading level="h3" size="heading-md" class="support-section__form-title">
+                {{ $t('orders.reportIssue') }}
               </AppHeading>
               
-              <form class="space-y-4" @submit.prevent="submitIssue">
-                <div>
-                  <label class="block text-white text-sm font-medium mb-2">
-                    Issue Type
+              <form class="support-section__form-fields" @submit.prevent="submitIssue">
+                <div class="support-section__form-field">
+                  <label class="support-section__form-label">
+                    {{ $t('orders.issueType') }}
                   </label>
                   <select 
                     v-model="issueForm.type"
-                    class="w-full bg-background-dark border border-neutral-80/30 rounded-lg px-3 py-2 text-white"
+                    class="support-section__form-select"
                     required
                   >
-                    <option value="">Select issue type</option>
-                    <option value="wrong-order">Wrong Order</option>
-                    <option value="missing-items">Missing Items</option>
-                    <option value="quality-issue">Quality Issue</option>
-                    <option value="delivery-delay">Delivery Delay</option>
-                    <option value="refund-request">Refund Request</option>
-                    <option value="other">Other</option>
+                    <option value="">{{ $t('common.viewDetails') }}</option>
+                    <option value="wrong-order">{{ $t('orders.statuses.cancelled') }}</option>
+                    <option value="missing-items">{{ $t('common.error') }}</option>
+                    <option value="quality-issue">{{ $t('orders.stats.favorite') }}</option>
+                    <option value="delivery-delay">{{ $t('orders.estimatedTime') }}</option>
+                    <option value="refund-request">{{ $t('orders.stats.totalSpent') }}</option>
+                    <option value="other">{{ $t('common.clear') }}</option>
                   </select>
                 </div>
                 
-                <div>
-                  <label class="block text-white text-sm font-medium mb-2">
-                    Description
+                <div class="support-section__form-field">
+                  <label class="support-section__form-label">
+                    {{ $t('orders.description') }}
                   </label>
-                  <BaseInput
+                  <BaseTextarea
                     v-model="issueForm.description"
-                    type="textarea"
                     rows="4"
                     placeholder="Please describe the issue in detail..."
                     required
@@ -412,16 +402,15 @@
                 <BaseButton 
                   type="submit"
                   variant="primary"
-                  class="w-full"
+                  class="support-section__form-submit"
                   :disabled="submittingIssue"
                 >
                   <BaseIcon 
                     v-if="submittingIssue"
                     name="loader" 
-                    size="sm" 
-                    class="mr-2 animate-spin" 
+                    size="sm"
                   />
-                  Submit Issue
+                  {{ $t('orders.submitIssue') }}
                 </BaseButton>
               </form>
             </div>
@@ -436,19 +425,26 @@
 import type { Order } from '~/types'
 import { useOrderStore } from '~/stores/order'
 import { useCartStore } from '~/stores/cart'
+import { useTenantSettings } from '~/composables/useTenant'
 import { OrderStatus } from '~/types'
+import AppHeading from '../../components/base/AppHeading.vue'
+import AppText from '../../components/base/AppText.vue'
+import AppPrice from '../../components/base/AppPrice.vue'
+import StatusBadge from '../../components/order/StatusBadge.vue'
 
 // Page setup
 definePageMeta({
-  title: 'Order Details - Menu Ordering App'
+  title: 'История заказа',
 })
 
 // Route and stores
 const route = useRoute()
 const router = useRouter()
+const { t, locale } = useI18n()
 
 const orderStore = useOrderStore()
 const cartStore = useCartStore()
+const { formatCurrency, tenantSettings } = useTenantSettings()
 
 // Reactive state
 const loading = ref(true)
@@ -458,40 +454,43 @@ const submittingIssue = ref(false)
 
 const issueForm = ref({
   type: '',
-  description: ''
+  description: '',
 })
 
 // Get order ID from route
 const orderId = computed(() => route.params.id as string)
 
-// Mock order data
+// Real order data
 const order = ref<Order | null>(null)
 
 // Tab configuration
-const tabs = [
-  { id: 'overview', label: 'Overview', icon: 'eye' },
-  { id: 'tracking', label: 'Tracking', icon: 'map' },
-  { id: 'receipt', label: 'Receipt', icon: 'receipt' },
-  { id: 'support', label: 'Support', icon: 'help-circle' }
-]
-
-// Common support issues
-const commonIssues = [
-  { id: '1', title: 'Order is taking too long', action: 'track' },
-  { id: '2', title: 'Missing items from my order', action: 'report' },
-  { id: '3', title: 'Food quality issue', action: 'report' },
-  { id: '4', title: 'Wrong delivery address', action: 'contact' },
-  { id: '5', title: 'Request refund', action: 'refund' }
-]
+const tabs = computed(() => [
+  { id: 'overview', label: t('orders.overview'), icon: 'eye' },
+  { id: 'tracking', label: t('orders.trackOrder'), icon: 'map' },
+  { id: 'receipt', label: t('orders.receipt'), icon: 'receipt' },
+  { id: 'support', label: t('orders.support'), icon: 'info' },
+])
 
 // Computed
 const subtotal = computed(() => {
   if (!order.value) return 0
-  return order.value.items.reduce((sum, item) => sum + item.subtotal, 0)
+  return (order.value.items || []).reduce((sum, item) => {
+    const itemSubtotal = Number(item.subtotal) || (item.price * item.quantity) || 0
+    return sum + itemSubtotal
+  }, 0)
 })
 
-const deliveryFee = computed(() => 2.99)
-const tax = computed(() => subtotal.value * 0.08)
+const tax = computed(() => (order.value?.tax || 0))
+
+const customerInfo = computed(() => {
+  if (!order.value) return null
+  return {
+    name: order.value.customerName,
+    phone: order.value.customerPhone,
+    email: order.value.customerEmail,
+    address: order.value.deliveryAddress
+  }
+})
 
 const canCancelOrder = computed(() => {
   return order.value && ['PENDING', 'CONFIRMED'].includes(order.value.status)
@@ -501,104 +500,58 @@ const canCancelOrder = computed(() => {
 const loadOrder = async () => {
   loading.value = true
   error.value = null
-  
+
   try {
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Create mock order data
-    order.value = {
-      id: orderId.value,
-      orderNumber: `ORD-${orderId.value.slice(-6).toUpperCase()}`,
-      status: OrderStatus.DELIVERED,
-      total: 23.47,
-      customerId: 'customer-123',
-      orderType: 'delivery' as const,
-      createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-      estimatedTime: 25,
-      deliveryAddress: '123 Main St, Apt 4B, New York, NY 10001',
-      customerInfo: {
-        name: 'John Doe',
-        phone: '+1 (555) 123-4567',
-        email: 'john.doe@example.com',
-        notes: 'Please ring doorbell twice'
-      },
-      items: [
-        {
-          id: '1',
-          menuItemId: '1',
-          menuItem: {
-            id: '1',
-            name: 'Delicious Burger',
-            description: 'A mouth-watering burger with fresh ingredients',
-            price: 15.99,
-            categoryId: 'fastfood',
-            isActive: true
-          },
-          quantity: 1,
-          price: 15.99,
-          subtotal: 15.99
-        },
-        {
-          id: '2',
-          menuItemId: '2',
-          menuItem: {
-            id: '2',
-            name: 'Crispy Fries',
-            description: 'Golden crispy french fries',
-            price: 4.99,
-            categoryId: 'fastfood',
-            isActive: true
-          },
-          quantity: 1,
-          price: 4.99,
-          subtotal: 4.99
-        }
-      ]
+    const result = await orderStore.getOrder(orderId.value)
+    if (result) {
+      order.value = result
+    } else {
+      error.value = t('orders.noResults')
     }
-    
   } catch (err) {
-    error.value = 'Failed to load order details'
+    error.value = t('errors.serverError')
     console.error('Error loading order:', err)
   } finally {
     loading.value = false
   }
 }
 
+const formatReceiptDate = (dateString?: string) => {
+  if (!dateString) return ''
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(new Date(dateString))
+}
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(locale.value, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 
-const formatReceiptDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(price)
-}
-
-const reorderItems = () => {
+const reorderItemsInDetails = () => {
   if (order.value) {
-    order.value.items.forEach(item => {
-      cartStore.addItem(item.menuItem, item.quantity)
+    (order.value.items || []).forEach(item => {
+      // Reconstruct minimal MenuItem
+      const menuItem: any = {
+        id: (item as any).menuItemId || item.id,
+        productId: (item as any).productId,
+        name: item.product?.name || item.name || '',
+        price: item.price,
+        imageUrl: item.product?.imageUrl,
+        isActive: true
+      }
+      cartStore.addItem(menuItem, item.quantity)
     })
     router.push('/checkout')
   }
@@ -607,9 +560,9 @@ const reorderItems = () => {
 const shareOrder = () => {
   if (navigator.share && order.value) {
     navigator.share({
-      title: `Order #${order.value.id}`,
-      text: `Check out my order from Menu Ordering App`,
-      url: window.location.href
+      title: t('orders.orderNumber', { number: order.value.orderNumber || order.value.id }),
+      text: t('orders.shareOrder'),
+      url: window.location.href,
     })
   } else {
     navigator.clipboard.writeText(window.location.href)
@@ -617,7 +570,7 @@ const shareOrder = () => {
 }
 
 const cancelOrder = async () => {
-  if (order.value && confirm('Are you sure you want to cancel this order?')) {
+  if (order.value && confirm(t('orders.confirmCancel'))) {
     try {
       await orderStore.cancelOrder(order.value.id)
       order.value.status = OrderStatus.CANCELLED
@@ -667,17 +620,16 @@ const handleIssue = (issue: any) => {
 
 const submitIssue = async () => {
   submittingIssue.value = true
-  
+
   try {
     // Mock API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     // Reset form
     issueForm.value = { type: '', description: '' }
-    
+
     // Show success message
     alert('Issue submitted successfully! We will contact you soon.')
-    
   } catch (error) {
     console.error('Failed to submit issue:', error)
     alert('Failed to submit issue. Please try again.')
@@ -689,10 +641,10 @@ const submitIssue = async () => {
 // Initialize
 onMounted(() => {
   loadOrder()
-  
+
   // Set active tab from query params
   const tabFromQuery = route.query.tab as string
-  if (tabFromQuery && tabs.some(tab => tab.id === tabFromQuery)) {
+  if (tabFromQuery && tabs.value.some(tab => tab.id === tabFromQuery)) {
     activeTab.value = tabFromQuery
   }
 })
@@ -701,8 +653,12 @@ onMounted(() => {
 watchEffect(() => {
   if (order.value) {
     useHead({
-      title: `Order #${order.value.id} - Menu Ordering App`
+      title: `Order #${order.value.id} - Menu Ordering App`,
     })
   }
 })
 </script>
+
+<style lang="scss" scoped>
+@use '~/assets/scss/pages/order-details';
+</style>

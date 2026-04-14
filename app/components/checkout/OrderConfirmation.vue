@@ -88,9 +88,19 @@
         <div class="order-confirmation__step">
           <div class="order-confirmation__step-number">1</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.preparation_title', 'Приготовление заказа') }}</h4>
+            <h4 class="order-confirmation__step-title">
+              {{ businessType === 'RESTAURANT' || businessType === 'CAFE' 
+                ? $t('checkout.confirmation.preparation_title', 'Приготовление заказа')
+                : $t('checkout.confirmation.preparation_title_generic', 'Обработка заказа') 
+              }}
+            </h4>
             <p class="order-confirmation__step-description">
-              {{ $t('checkout.confirmation.preparation_desc', 'Ваш заказ уже готовится нашими поварами') }}
+              {{ businessType === 'RESTAURANT' || businessType === 'CAFE'
+                ? $t('checkout.confirmation.preparation_desc', 'Ваш заказ уже готовится нашими поварами')
+                : businessType === 'FLOWERS'
+                ? $t('checkout.confirmation.preparation_desc_flowers', 'Ваш букет уже собирается нашими флористами')
+                : $t('checkout.confirmation.preparation_desc_generic', 'Мы уже собираем ваш заказ')
+              }}
             </p>
           </div>
         </div>
@@ -128,9 +138,19 @@
         <div class="order-confirmation__step">
           <div class="order-confirmation__step-number">3</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.enjoy_title', 'Приятного аппетита!') }}</h4>
+            <h4 class="order-confirmation__step-title">
+              {{ businessType === 'RESTAURANT' || businessType === 'CAFE'
+                ? $t('checkout.confirmation.enjoy_title', 'Приятного аппетита!')
+                : businessType === 'FLOWERS'
+                ? $t('checkout.confirmation.enjoy_title_flowers', 'Пусть цветы радуют вас!')
+                : $t('checkout.confirmation.enjoy_title_generic', 'Спасибо за ваш выбор!')
+              }}
+            </h4>
             <p class="order-confirmation__step-description">
-              {{ $t('checkout.confirmation.enjoy_desc', 'Спасибо, что выбрали нас. Наслаждайтесь вашим заказом!') }}
+              {{ businessType === 'RESTAURANT' || businessType === 'CAFE'
+                ? $t('checkout.confirmation.enjoy_desc', 'Спасибо, что выбрали нас. Наслаждайтесь вашим заказом!')
+                : $t('checkout.confirmation.enjoy_desc_generic', 'Спасибо, что выбрали нас! Мы всегда рады вам.')
+              }}
             </p>
           </div>
         </div>
@@ -164,9 +184,10 @@
     </div>
   </div>
 </template>
-
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useTenantSettings } from '~/composables/useTenant'
+import { useTenantStore } from '~/stores/tenant'
 
 interface OrderItem {
   id: string
@@ -199,6 +220,9 @@ const emit = defineEmits<{
   'continue-shopping': []
   'view-orders': []
 }>()
+
+const tenantStore = useTenantStore()
+const businessType = computed(() => tenantStore.currentTenant?.businessType || 'RESTAURANT')
 
 const formatOrderType = (type: string): string => {
   const types: Record<string, string> = {

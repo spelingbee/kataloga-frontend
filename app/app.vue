@@ -2,7 +2,7 @@
   <div id="app" class="app-root">
     <!-- Skip Links for Keyboard Navigation -->
     <SkipLinks />
-    
+
     <NuxtLayout>
       <NuxtRouteAnnouncer />
       <NuxtPage :transition="pageTransition" />
@@ -38,7 +38,10 @@ const { locale } = useI18n()
 // Set viewport meta tags for responsive design
 useHead({
   meta: [
-    { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes' },
+    {
+      name: 'viewport',
+      content: 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes',
+    },
     { name: 'theme-color', content: '#1a1a1a' },
     { name: 'apple-mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
@@ -63,11 +66,15 @@ useHead({
 // Initialize user and restore cart on app start
 onMounted(async () => {
   console.log('[App] 🚀 onMounted - initialization sequence started')
-  
+
   try {
+    console.log('[App] 🏢 Initializing tenant...')
+    await tenantStore.initializeTenant()
+    console.log('[App] ✅ Tenant initialization complete')
+
     console.log('[App] 📥 Restoring cart...')
     cartStore.restoreCart()
-    
+
     console.log('[App] 📥 Initializing favorites...')
     menuStore.initializeFavourites()
 
@@ -77,7 +84,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('[App] ❌ Initialization failed:', error)
   }
-  
+
   console.log('[App] ✨ onMounted - sequence complete')
 })
 </script>
@@ -96,7 +103,7 @@ onMounted(async () => {
   * {
     -webkit-tap-highlight-color: transparent;
   }
-  
+
   // Improve scrolling on iOS
   -webkit-overflow-scrolling: touch;
 }

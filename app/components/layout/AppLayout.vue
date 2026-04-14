@@ -91,7 +91,7 @@
 
     <!-- Sticky Cart Button (Mobile) -->
     <StickyCartButton
-      v-if="showStickyCart && !isCartOrCheckoutPage"
+      v-if="showStickyCart && !isCartOrCheckoutPage && !showMobileNav"
       @click="handleStickyCartClick"
     />
 
@@ -240,7 +240,7 @@ const handleStickyCartClick = () => {
   }
 
   &--with-mobile-nav {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
 
     @include tablet-up {
       padding-bottom: 0;

@@ -137,7 +137,14 @@ export class ApiClient {
    * Requirements: 1.1, 4.1
    */
   getCurrentTenant(): string {
-    // Try to get from tenant store first
+    // 1. Try to get from URL query first (most reliable for direct links)
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      const tenantParam = urlParams.get('tenant')
+      if (tenantParam) return tenantParam
+    }
+
+    // 2. Try to get from tenant store
     if (this.tenantStore && 'tenantSlug' in this.tenantStore) {
       return this.tenantStore.tenantSlug || this.config.tenantSlug
     }

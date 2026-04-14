@@ -1,5 +1,6 @@
 import type { Order, CreateOrderDto, OrderStatus, OrderItem, PaginatedResult } from '~/types'
 import { useApiClient } from '~/utils/api'
+import { useTenantStore } from '~/stores/tenant'
 
 export class OrderService {
   constructor(private apiClient: any) {}
@@ -24,17 +25,17 @@ export class OrderService {
     limit?: number
   }): Promise<PaginatedResult<Order>> {
     const searchParams = new URLSearchParams()
-    
+
     if (params?.status) searchParams.set('status', params.status)
     if (params?.page) searchParams.set('page', params.page.toString())
     if (params?.limit) searchParams.set('limit', params.limit.toString())
 
     const queryString = searchParams.toString()
-    const endpoint = queryString ? `/orders?${queryString}` : '/orders'
-    
+    const endpoint = queryString ? `/my-orders?${queryString}` : '/my-orders'
+
     // Get full response to access pagination metadata
     const response = await this.apiClient.getRaw<Order[]>(endpoint)
-    
+
     if (response.success && response.data) {
       return {
         items: response.data,
@@ -42,8 +43,8 @@ export class OrderService {
           page: params?.page || 1,
           limit: params?.limit || 20,
           totalItems: response.data.length,
-          totalPages: 1
-        }
+          totalPages: 1,
+        },
       }
     } else {
       throw new Error(response.error?.message || 'Failed to fetch orders')
@@ -57,7 +58,7 @@ export class OrderService {
    */
   async getOrder(orderId: string): Promise<Order | null> {
     try {
-      return await this.apiClient.get<Order>(`/orders/${orderId}`)
+      return await this.apiClient.get<Order>(`/my-orders/${orderId}`)
     } catch (error) {
       // Return null for not found cases
       if ((error as any)?.code === 'NOT_FOUND') {
@@ -73,7 +74,7 @@ export class OrderService {
    * Requirements: 2.1
    */
   async updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
-    return this.apiClient.patch<Order>(`/orders/${orderId}/status`, { status })
+    return this.apiClient.patch<Order>(`/my-orders/${orderId}/status`, { status })
   }
 
   /**
@@ -82,7 +83,7 @@ export class OrderService {
    * Requirements: 2.1
    */
   async cancelOrder(orderId: string, reason?: string): Promise<Order> {
-    return this.apiClient.patch<Order>(`/orders/${orderId}/cancel`, { reason })
+    return this.apiClient.patch<Order>(`/my-orders/${orderId}/cancel`, { reason })
   }
 
   /**
@@ -91,9 +92,9 @@ export class OrderService {
    * Requirements: 2.1, 2.2
    */
   async getOrderHistory(page: number = 1, limit: number = 10): Promise<PaginatedResult<Order>> {
-    // Get full response to access pagination metadata
-    const response = await this.apiClient.getRaw<Order[]>(`/orders/history?page=${page}&limit=${limit}`)
-    
+    // Get full response to access pagination metadata - mapped to the standard customer orders endpoint
+    const response = await this.apiClient.getRaw<Order[]>(`/my-orders?page=${page}&limit=${limit}`)
+
     if (response.success && response.data) {
       return {
         items: response.data,
@@ -101,8 +102,8 @@ export class OrderService {
           page,
           limit,
           totalItems: response.data.length,
-          totalPages: 1
-        }
+          totalPages: 1,
+        },
       }
     } else {
       throw new Error(response.error?.message || 'Failed to fetch order history')
@@ -115,7 +116,7 @@ export class OrderService {
    * Requirements: 2.1
    */
   async repeatOrder(orderId: string): Promise<Order> {
-    return this.apiClient.post<Order>(`/orders/${orderId}/repeat`)
+    return this.apiClient.post<Order>(`/my-orders/${orderId}/repeat`)
   }
 
   /**
@@ -199,13 +200,16 @@ export class OrderService {
    * Returns: void
    * Requirements: 2.3
    */
-  async rateOrder(orderId: string, rating: {
-    overall: number
-    food: number
-    delivery: number
-    comment?: string
-  }): Promise<void> {
-    return this.apiClient.post<void>(`/orders/${orderId}/rating`, rating)
+  async rateOrder(
+    orderId: string,
+    rating: {
+      overall: number
+      food: number
+      delivery: number
+      comment?: string
+    }
+  ): Promise<void> {
+    return this.apiClient.post<void>(`/my-orders/${orderId}/rating`, rating)
   }
 
   /**
@@ -236,7 +240,7 @@ export class OrderService {
         paymentMethod: string
         transactionId: string
       }
-    }>(`/orders/${orderId}/receipt`)
+    }>(`/my-orders/${orderId}/receipt`)
   }
 
   /**
@@ -244,11 +248,14 @@ export class OrderService {
    * Returns: refund data
    * Requirements: 2.1
    */
-  async requestRefund(orderId: string, data: {
-    reason: string
-    items?: string[]
-    amount?: number
-  }): Promise<{
+  async requestRefund(
+    orderId: string,
+    data: {
+      reason: string
+      items?: string[]
+      amount?: number
+    }
+  ): Promise<{
     refundId: string
     status: string
     estimatedProcessingTime: string
@@ -257,7 +264,7 @@ export class OrderService {
       refundId: string
       status: string
       estimatedProcessingTime: string
-    }>(`/orders/${orderId}/refund`, data)
+    }>(`/my-orders/${orderId}/refund`, data)
   }
 
   /**
@@ -266,7 +273,12 @@ export class OrderService {
    * Requirements: 2.1
    */
   async getActiveOrders(): Promise<Order[]> {
-    return this.apiClient.get<Order[]>('/orders/active')
+    // Return all orders that are not delivered or cancelled by using the status filter on my-orders
+    const response = await this.apiClient.getRaw<Order[]>('/my-orders?limit=100&status=PENDING')
+    if (response.success && response.data) {
+      return response.data
+    }
+    return []
   }
 
   /**
@@ -291,5 +303,11 @@ export class OrderService {
       deliveryFee: number
       availableTimeSlots: string[]
     }>('/orders/estimate', data)
+  }
+
+  // Helper methods
+  private getTenantId(): string | null {
+    const tenantStore = useTenantStore()
+    return tenantStore.tenantId || null
   }
 }

@@ -1,5 +1,13 @@
-import type { User, UserLocation, Notification, Promotion, UpdateProfileDto, PaginatedResult } from '~/types'
+import type {
+  User,
+  UserLocation,
+  Notification,
+  Promotion,
+  UpdateProfileDto,
+  PaginatedResult,
+} from '~/types'
 import { useApiClient } from '~/utils/api'
+import { useTenantStore } from '~/stores/tenant'
 
 export class UserService {
   constructor(private apiClient: any) {}
@@ -93,7 +101,7 @@ export class UserService {
       total: number
       unreadCount: number
     }>(endpoint)
-    
+
     if (response.success && response.data) {
       return {
         notifications: response.data.notifications,
@@ -103,8 +111,8 @@ export class UserService {
           page: params?.page || 1,
           limit: params?.limit || 20,
           totalItems: response.data.total,
-          totalPages: Math.ceil(response.data.total / (params?.limit || 20))
-        }
+          totalPages: Math.ceil(response.data.total / (params?.limit || 20)),
+        },
       }
     } else {
       throw new Error(response.error?.message || 'Failed to fetch notifications')
@@ -161,7 +169,7 @@ export class UserService {
 
     // Get full response to access pagination metadata
     const response = await this.apiClient.getRaw<Promotion[]>(endpoint)
-    
+
     if (response.success && response.data) {
       return {
         items: response.data,
@@ -169,8 +177,8 @@ export class UserService {
           page: params?.page || 1,
           limit: params?.limit || 20,
           totalItems: response.data.length,
-          totalPages: 1
-        }
+          totalPages: 1,
+        },
       }
     } else {
       throw new Error(response.error?.message || 'Failed to fetch promotions')
@@ -326,16 +334,8 @@ export class UserService {
    * Returns: address array
    * Requirements: 2.1
    */
-  async getAddresses(): Promise<Array<{
-    id: string
-    name: string
-    address: string
-    latitude: number
-    longitude: number
-    isDefault: boolean
-    type: 'home' | 'work' | 'other'
-  }>> {
-    return this.apiClient.get<Array<{
+  async getAddresses(): Promise<
+    Array<{
       id: string
       name: string
       address: string
@@ -343,7 +343,19 @@ export class UserService {
       longitude: number
       isDefault: boolean
       type: 'home' | 'work' | 'other'
-    }>>('/users/addresses')
+    }>
+  > {
+    return this.apiClient.get<
+      Array<{
+        id: string
+        name: string
+        address: string
+        latitude: number
+        longitude: number
+        isDefault: boolean
+        type: 'home' | 'work' | 'other'
+      }>
+    >('/users/addresses')
   }
 
   /**
@@ -367,14 +379,17 @@ export class UserService {
    * Returns: void
    * Requirements: 2.3
    */
-  async updateAddress(addressId: string, updates: {
-    name?: string
-    address?: string
-    latitude?: number
-    longitude?: number
-    type?: 'home' | 'work' | 'other'
-    isDefault?: boolean
-  }): Promise<void> {
+  async updateAddress(
+    addressId: string,
+    updates: {
+      name?: string
+      address?: string
+      latitude?: number
+      longitude?: number
+      type?: 'home' | 'work' | 'other'
+      isDefault?: boolean
+    }
+  ): Promise<void> {
     return this.apiClient.patch<void>(`/users/addresses/${addressId}`, updates)
   }
 
@@ -403,7 +418,7 @@ export class UserService {
    */
   async deleteAccount(password: string): Promise<void> {
     return this.apiClient.delete<void>('/users/account', {
-      body: { password }
+      body: { password },
     })
   }
 
@@ -420,5 +435,11 @@ export class UserService {
       downloadUrl: string
       expiresAt: string
     }>('/users/export-data')
+  }
+
+  // Helper methods
+  private getTenantId(): string | null {
+    const tenantStore = useTenantStore()
+    return tenantStore.tenantId || null
   }
 }

@@ -99,6 +99,9 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { Order, OrderStatus as OrderStatusEnum } from '~/types'
 import { OrderStatus } from '~/types'
+import AppText from '../base/AppText.vue'
+import AppHeading from '../base/AppHeading.vue'
+import ProgressBar from './ProgressBar.vue'
 
 const { t } = useI18n()
 

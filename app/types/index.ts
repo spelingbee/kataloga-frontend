@@ -257,6 +257,7 @@ export enum OrderStatus {
 }
 
 export interface CreateOrderDto {
+  userId?: string
   items: {
     productId: string
     quantity: number

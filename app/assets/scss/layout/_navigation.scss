@@ -24,7 +24,7 @@
     text-decoration: none;
     color: $color-neutral-80;
     min-width: 0;
-    min-height: 60px;
+    min-height: 44px;
     min-width: 60px;
     position: relative;
     transition: all 0.2s ease-in-out;
@@ -83,7 +83,6 @@
 // Touch-friendly sizing
 .app-navigation__item {
   @media (hover: none) and (pointer: coarse) {
-    min-height: 64px;
     padding: $spacing-md;
   }
 }

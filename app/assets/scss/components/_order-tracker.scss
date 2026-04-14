@@ -1,17 +1,22 @@
 @use '../abstracts/variables' as *;
 
-// Order Tracker Component Styles
+// Order Tracker Component Styles - Minimalist White Theme
 .order-tracker {
-  background-color: rgba($color-background-card, 0.5);
-  border-radius: 0.5rem;
-  padding: $spacing-xl;
-  border: 1px solid $color-border-subtle;
+  background-color: var(--bg-primary);
+  border-radius: $radius-lg;
+  padding: $space-4;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: $spacing-xl;
+    padding-bottom: $space-2;
+    border-bottom: 1px solid var(--border-color);
   }
 
   &__header-info {
@@ -19,59 +24,67 @@
   }
 
   &__title {
-    color: white;
+    color: var(--text-primary);
+    margin-bottom: $space-1;
   }
 
   &__subtitle {
-    color: $color-neutral-20;
+    color: var(--text-secondary);
   }
 
   &__refresh-btn {
-    color: $color-neutral-20;
+    color: var(--text-tertiary);
     transition: color 0.2s ease;
 
     &:hover {
-      color: white;
+      color: var(--color-primary);
     }
   }
 
   &__status {
-    margin-bottom: $spacing-xl;
+    // Component OrderStatus already has internal padding/background
   }
 
   &__section {
-    margin-bottom: $spacing-xl;
+    margin-bottom: $space-2;
   }
 
   &__section-title {
-    color: white;
-    margin-bottom: $spacing-lg;
+    color: var(--text-primary);
+    margin-bottom: $space-3;
+    font-weight: $font-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: $text-xs;
   }
 
   &__info-card {
-    background-color: rgba($color-background-dark, 0.5);
-    border-radius: 0.5rem;
-    padding: $spacing-lg;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: $radius-lg;
+    padding: $space-4;
     display: flex;
     flex-direction: column;
-    gap: $spacing-md;
+    gap: $space-3;
+    box-shadow: var(--shadow-xs);
   }
 
   &__info-item {
     display: flex;
     align-items: flex-start;
-    gap: $spacing-md;
+    gap: $space-3;
   }
 
   &__info-icon {
-    margin-top: $spacing-xs;
+    margin-top: 2px;
+    color: var(--text-tertiary);
 
     &--green {
-      color: $color-primary-green;
+      color: var(--color-success);
     }
 
     &--orange {
-      color: $color-primary-orange;
+      color: var(--color-warning);
     }
   }
 
@@ -80,169 +93,125 @@
   }
 
   &__info-label {
-    color: white;
-    font-weight: $font-weight-medium;
+    color: var(--text-secondary);
+    font-weight: $font-medium;
+    font-size: $text-sm;
+    display: block;
+    margin-bottom: 2px;
   }
 
   &__info-value {
-    color: $color-neutral-20;
+    color: var(--text-primary);
+    font-weight: $font-semibold;
 
     &--orange {
-      color: $color-primary-orange;
+      color: var(--color-warning);
     }
   }
 
   &__courier-contact {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    margin-top: $spacing-xs;
+    gap: $space-2;
+    margin-top: $space-1;
   }
 
   &__contact-btn {
-    color: $color-primary-green;
+    color: var(--color-success);
     padding: 0;
-    transition: color 0.2s ease;
-
+    font-weight: $font-semibold;
+    
     &:hover {
-      color: #22c55e; // Lighter green
+      text-decoration: underline;
     }
   }
 
-  &__contact-icon {
-    margin-right: $spacing-xs;
-  }
-
   &__map-placeholder {
-    background-color: rgba($color-background-dark, 0.5);
-    border-radius: 0.5rem;
-    padding: $spacing-lg;
-    height: 16rem;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: $radius-lg;
+    padding: $space-4;
+    height: 12rem;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  &__map-content {
-    text-align: center;
-  }
-
-  &__map-icon {
-    color: $color-neutral-20;
-    margin-bottom: $spacing-sm;
-  }
-
-  &__map-text {
-    color: $color-neutral-20;
-  }
-
-  &__map-subtext {
-    color: $color-neutral-20;
-    margin-top: $spacing-xs;
-  }
-
   &__items {
     display: flex;
     flex-direction: column;
-    gap: $spacing-sm;
+    gap: $space-2;
   }
 
   &__item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: $spacing-md;
-    background-color: rgba($color-background-dark, 0.3);
-    border-radius: 0.5rem;
-  }
-
-  &__item-info {
-    flex: 1;
+    padding: $space-3;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: $radius-md;
   }
 
   &__item-name {
-    color: white;
+    color: var(--text-primary);
+    font-weight: $font-medium;
   }
 
   &__item-customizations {
-    color: $color-neutral-20;
+    color: var(--text-secondary);
+    font-size: $text-xs;
   }
 
   &__total {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-top: $spacing-md;
-    margin-top: $spacing-md;
-    border-top: 1px solid $color-border-subtle;
+    padding-top: $space-4;
+    margin-top: $space-2;
+    border-top: 2px dashed var(--border-color);
   }
 
   &__total-label {
-    color: white;
-    font-weight: $font-weight-semibold;
+    color: var(--text-primary);
+    font-weight: $font-bold;
+    font-size: $text-lg;
   }
 
   &__total-price {
-    font-weight: $font-weight-semibold;
+    font-weight: $font-bold;
+    font-size: $text-lg;
+    color: var(--color-primary);
   }
 
   &__actions {
     display: flex;
-    gap: $spacing-md;
+    gap: $space-3;
+    margin-top: $space-2;
   }
 
   &__action-btn {
     flex: 1;
-
-    &--cancel {
-      color: $color-primary-red;
-
-      &:hover {
-        background-color: rgba($color-primary-red, 0.1);
-      }
-    }
-
-    &--support {
-      color: $color-primary-orange;
-
-      &:hover {
-        background-color: rgba($color-primary-orange, 0.1);
-      }
-    }
-
-    &--primary {
-      background-color: $color-primary-green;
-
-      &:hover {
-        background-color: #16a34a; // Darker green
-      }
-    }
   }
 }
 
 // Responsive design
 @media (max-width: 768px) {
   .order-tracker {
-    padding: $spacing-lg;
+    padding: $space-4;
 
     &__header {
       flex-direction: column;
       align-items: flex-start;
-      gap: $spacing-md;
+      gap: $space-2;
     }
 
     &__actions {
       flex-direction: column;
     }
 
-    &__info-item {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: $spacing-sm;
-    }
-
-    &__info-icon {
-      margin-top: 0;
+    &__info-card {
+      padding: $space-3;
     }
   }
 }

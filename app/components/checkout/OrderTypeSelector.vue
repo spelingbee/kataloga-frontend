@@ -23,8 +23,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useTenantSettings } from '~/composables/useTenant'
 
 const { t } = useI18n()
+const { formatCurrency, features } = useTenantSettings()
 
 type OrderType = 'delivery' | 'pickup' | 'dine-in'
 
@@ -38,26 +40,34 @@ const emit = defineEmits<{
   'update:modelValue': [value: OrderType]
 }>()
 
-const orderTypes = computed(() => [
-  {
-    value: 'delivery' as OrderType,
-    icon: 'truck',
-    title: t('checkout.delivery'),
-    description: t('checkout.deliveryDetails')
-  },
-  {
-    value: 'pickup' as OrderType,
-    icon: 'store',
-    title: t('checkout.pickup'),
-    description: t('checkout.pickupDetails')
-  },
-  {
-    value: 'dine-in' as OrderType,
-    icon: 'utensils',
-    title: t('checkout.dineIn'),
-    description: t('checkout.dineInDetails')
+const orderTypes = computed(() => {
+  const types = [
+    {
+      value: 'delivery' as OrderType,
+      icon: 'truck',
+      title: t('checkout.delivery'),
+      description: t('checkout.deliveryDetails')
+    },
+    {
+      value: 'pickup' as OrderType,
+      icon: 'store',
+      title: t('checkout.pickup'),
+      description: t('checkout.pickupDetails')
+    }
+  ]
+
+  // Only add dine-in if explicitly enabled in tenant features
+  if (features.value?.dineInEnabled) {
+    types.push({
+      value: 'dine-in' as OrderType,
+      icon: 'utensils',
+      title: t('checkout.dineIn'),
+      description: t('checkout.dineInDetails')
+    })
   }
-])
+
+  return types
+})
 
 const selectType = (type: OrderType) => {
   emit('update:modelValue', type)

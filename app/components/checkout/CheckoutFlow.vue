@@ -51,6 +51,41 @@
         />
       </section>
 
+      <!-- Section: Order Summary (Accordion) -->
+      <section class="checkout-section checkout-section--accordion">
+        <div class="checkout-section__header" @click="isOrderExpanded = !isOrderExpanded">
+          <h3 class="checkout-section__title">
+            {{ $t('checkout.yourOrder', 'Ваш заказ') }}
+            <span class="checkout-section__title-count">({{ cart.length }})</span>
+          </h3>
+          <BaseIcon 
+            :name="isOrderExpanded ? 'chevron-up' : 'chevron-down'" 
+            size="sm" 
+            class="checkout-section__toggle"
+          />
+        </div>
+        
+        <Transition name="expand">
+          <div v-if="isOrderExpanded" class="checkout-section__body">
+            <div class="order-summary-list">
+              <div v-for="item in cart" :key="item.menuItem.id" class="order-summary-item">
+                <div class="order-summary-item__info">
+                  <span class="order-summary-item__name">{{ item.menuItem.name }}</span>
+                  <span v-if="item.quantity > 1" class="order-summary-item__qty">× {{ item.quantity }}</span>
+                </div>
+                <div class="order-summary-item__price">
+                  {{ formatCurrency(item.menuItem.price * item.quantity) }}
+                </div>
+              </div>
+            </div>
+            <div class="order-summary-total">
+              <span>{{ $t('common.subtotal', 'Сумма') }}</span>
+              <span>{{ formatCurrency(cartTotal) }}</span>
+            </div>
+          </div>
+        </Transition>
+      </section>
+
       <!-- Section: Details (Delivery/Pickup/Dine-in) -->
       <section class="checkout-section">
         <!-- Delivery Form -->
@@ -144,8 +179,12 @@ import { useOrders } from '~/composables/useOrders'
 import { useTelegram } from '~/composables/useTelegram'
 import { useTenantSettings } from '~/composables/useTenant'
 import { useTenantStore } from '~/stores/tenant'
+import { useUserStore } from '~/stores/user'
+import { storeToRefs } from 'pinia'
 import type { CartItem, CreateOrderDto } from '~/types'
 
+const userStore = useUserStore()
+const { user, isAuthenticated } = storeToRefs(userStore)
 const tenantStore = useTenantStore()
 const telegram = useTelegram()
 const { formatCurrency, contactInfo, deliverySettings } = useTenantSettings()
@@ -169,6 +208,9 @@ const emit = defineEmits<{
   'continue-shopping': []
   'view-orders': []
 }>()
+
+// UI State
+const isOrderExpanded = ref(false)
 
 // Telegram integration
 const isTelegramApp = computed(() => telegram.isTelegram.value)
@@ -407,21 +449,23 @@ const submitOrder = async () => {
 
   try {
 
-    const finalPhone =
-      orderData.value.pickupDetails.phone ||
-      orderData.value.deliveryDetails.phone ||
-      (orderData.value.pickupDetails.writeToTelegram ? 'via Telegram' : '')
-
     const customerInfo = {
       name:
-        telegram.isTelegram.value && telegram.user.value
-          ? [telegram.user.value.firstName, telegram.user.value.lastName].filter(Boolean).join(' ')
-          : 'Telegram User',
-      phone: finalPhone,
-      email: '',
+        isAuthenticated.value && user.value
+          ? [user.value.firstName, user.value.lastName].filter(Boolean).join(' ')
+          : telegram.isTelegram.value && telegram.user.value
+            ? [telegram.user.value.firstName, telegram.user.value.lastName].filter(Boolean).join(' ')
+            : 'Guest User',
+      phone:
+        orderData.value.pickupDetails.phone ||
+        orderData.value.deliveryDetails.phone ||
+        user.value?.phone ||
+        (orderData.value.pickupDetails.writeToTelegram ? 'via Telegram' : ''),
+      email: user.value?.email || '',
     }
 
     const createOrderDto: CreateOrderDto = {
+      userId: user.value?.id,
       items: props.cart.map(cartItem => ({
         productId: cartItem.productId,
         quantity: cartItem.quantity,
@@ -450,7 +494,7 @@ const submitOrder = async () => {
       finalTotal.value = createdOrder.total
 
       // Store in localStorage for guest tracking if not logged in
-      if (!telegram.user.value) {
+      if (!isAuthenticated.value && !telegram.user.value) {
         try {
           const guestOrders = JSON.parse(localStorage.getItem('guest_orders') || '[]')
           guestOrders.push({
@@ -628,6 +672,7 @@ onUnmounted(() => {
 @use '../../assets/scss/tokens/colors' as *;
 @use '../../assets/scss/tokens/spacing' as *;
 @use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/typography' as *;
 
 .checkout-single-page {
   width: 100%;
@@ -678,6 +723,100 @@ onUnmounted(() => {
     font-size: 16px;
     font-weight: 600;
   }
+}
+
+.checkout-section--accordion {
+  .checkout-section__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .checkout-section__title {
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+  }
+
+  .checkout-section__title-count {
+    font-size: $text-sm;
+    color: var(--text-tertiary);
+    font-weight: $font-regular;
+  }
+
+  .checkout-section__toggle {
+    color: var(--text-tertiary);
+    transition: transform 0.3s ease;
+  }
+
+  .checkout-section__body {
+    padding-top: $space-4;
+    margin-top: $space-4;
+    border-top: 1px solid var(--border-primary);
+  }
+}
+
+.order-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.order-summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: $text-sm;
+}
+
+.order-summary-item__info {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+}
+
+.order-summary-item__name {
+  color: var(--text-primary);
+  font-weight: $font-medium;
+}
+
+.order-summary-item__qty {
+  color: var(--text-tertiary);
+  font-size: $text-xs;
+}
+
+.order-summary-item__price {
+  color: var(--text-secondary);
+  font-weight: $font-semibold;
+}
+
+.order-summary-total {
+  margin-top: $space-4;
+  padding-top: $space-4;
+  border-top: 1px dashed var(--border-primary);
+  display: flex;
+  justify-content: space-between;
+  font-weight: $font-bold;
+  color: var(--text-primary);
+}
+
+// Transitions
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+  max-height: 500px;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  margin-top: 0;
 }
 
 @media (max-width: 480px) {

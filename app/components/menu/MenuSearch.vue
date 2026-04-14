@@ -3,7 +3,7 @@
     <BaseInput
       v-model="searchQuery"
       type="text"
-      placeholder="Search menu items..."
+      :placeholder="$t('menu.searchPlaceholder')"
       class="menu-search__input"
       @input="handleSearch"
     >

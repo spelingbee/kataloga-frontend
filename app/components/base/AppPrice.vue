@@ -27,7 +27,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  currency: 'KGS',
+  currency: 'сом',
   size: 'md',
   color: 'primary',
   strikethrough: false,
@@ -49,7 +49,7 @@ const formattedPrice = computed(() => {
   return formatCurrency(priceValue, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-    currency: props.currency !== 'KGS' ? props.currency : undefined // Let formatCurrency use default if it's 'KGS' but user changed it. Actually, wait. Let's just pass props.currency if we really want to override.
+    currency: props.currency !== 'сом' ? props.currency : undefined
   })
 })
 </script>

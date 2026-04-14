@@ -468,7 +468,7 @@ function getDefaultBranding(): TenantBranding {
  */
 function getDefaultSettings(): TenantSettings {
   return {
-    currency: 'KGS',
+    currency: 'сом',
     timezone: 'Asia/Bishkek',
     language: 'ru',
     features: {

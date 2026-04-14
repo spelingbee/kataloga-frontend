@@ -3,10 +3,10 @@
     <!-- Header Section -->
     <section class="menu-header">
       <AppHeading level="h1" size="display-md" class="menu-header__title">
-        Full Menu
+        {{ $t('menu.fullMenu') }}
       </AppHeading>
       <AppText size="body-lg" class="menu-header__subtitle">
-        Browse all our delicious dishes by category
+        {{ $t('menu.browseSubtitle') }}
       </AppText>
     </section>
 
@@ -16,23 +16,23 @@
         <div class="menu-controls__search">
           <MenuSearch />
         </div>
-        <BaseButton 
-          variant="secondary" 
+        <BaseButton
+          variant="secondary"
           class="menu-controls__search-button"
           @click="$router.push('/menu/search')"
         >
           <BaseIcon name="search" size="sm" />
         </BaseButton>
       </div>
-      
+
       <div class="menu-controls__filter-row">
-        <BaseButton 
-          variant="secondary" 
+        <BaseButton
+          variant="secondary"
           class="menu-controls__filters-button"
           @click="showFilters = !showFilters"
         >
           <BaseIcon name="filter" size="sm" class="u-mr-2" />
-          Filters
+          {{ $t('menu.filters') }}
         </BaseButton>
       </div>
 
@@ -60,7 +60,7 @@
           :class="{ 'menu-categories__chip--active': activeCategory === 'all' || !activeCategory }"
           @click="onCategorySelected(null)"
         >
-          All Items
+          {{ $t('menu.allItems') }}
           <span class="menu-categories__count">{{ filteredItems.length }}</span>
         </button>
       </div>
@@ -74,7 +74,11 @@
           {{ getCategoryName(activeCategory) }}
         </AppHeading>
         <AppText class="menu-category-header__count">
-          {{ filteredItems.length > 0 ? `${filteredItems.length} items available` : 'No items available' }}
+          {{
+            filteredItems.length > 0
+              ? $t('menu.itemsAvailable', { count: filteredItems.length })
+              : $t('menu.noItemsAvailable')
+          }}
         </AppText>
       </div>
 
@@ -91,7 +95,7 @@
       >
         <!-- Menu Items -->
         <div class="menu-items">
-          <MenuItemGrid 
+          <MenuItemGrid
             :items="filteredItems"
             @item-selected="onItemSelected"
             @add-to-cart="onAddToCart"
@@ -108,23 +112,19 @@
     </section>
 
     <!-- Debug Actions (Development Only) -->
-    <section v-if="$config.public.NODE_ENV === 'development'" class="menu-debug" style="background: #333; padding: 1rem; margin: 1rem 0; border-radius: 8px;">
-      <h3 style="color: white; margin-bottom: 1rem;">🔧 Debug Tools</h3>
-      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        <BaseButton variant="primary" @click="testApiConnection">
-          🌐 Test API Connection
-        </BaseButton>
-        <BaseButton variant="secondary" @click="testTenantConfig">
-          🏢 Test Tenant Config
-        </BaseButton>
-        <BaseButton variant="secondary" @click="manualFetchMenu">
-          🍽️ Manual Fetch Menu
-        </BaseButton>
-        <BaseButton variant="secondary" @click="clearCache">
-          🗑️ Clear Cache
-        </BaseButton>
+    <section
+      v-if="$config.public.NODE_ENV === 'development'"
+      class="menu-debug"
+      style="background: #333; padding: 1rem; margin: 1rem 0; border-radius: 8px"
+    >
+      <h3 style="color: white; margin-bottom: 1rem">🔧 Debug Tools</h3>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap">
+        <BaseButton variant="primary" @click="testApiConnection">🌐 Test API Connection</BaseButton>
+        <BaseButton variant="secondary" @click="testTenantConfig">🏢 Test Tenant Config</BaseButton>
+        <BaseButton variant="secondary" @click="manualFetchMenu">🍽️ Manual Fetch Menu</BaseButton>
+        <BaseButton variant="secondary" @click="clearCache">🗑️ Clear Cache</BaseButton>
       </div>
-      <div style="margin-top: 1rem; color: white; font-size: 0.875rem;">
+      <div style="margin-top: 1rem; color: white; font-size: 0.875rem">
         <div>Loading: {{ menuStore.loading }}</div>
         <div>Error: {{ menuStore.error }}</div>
         <div>Categories: {{ categories.length }}</div>
@@ -138,13 +138,13 @@
         <NuxtLink to="/favourites">
           <BaseButton variant="secondary">
             <BaseIcon name="heart" size="sm" class="u-mr-2" />
-            View Favourites
+            {{ $t('favorites.viewAll') }}
           </BaseButton>
         </NuxtLink>
         <NuxtLink to="/orders">
           <BaseButton variant="secondary">
             <BaseIcon name="receipt" size="sm" class="u-mr-2" />
-            Order History
+            {{ $t('orders.history') }}
           </BaseButton>
         </NuxtLink>
       </div>
@@ -157,19 +157,20 @@ import type { MenuItem } from '~/types'
 
 // Stores
 import { useMenuStore } from '~/stores/menu'
-import { useCartStore } from '~/stores/cart'
 import AppText from '../../components/base/AppText.vue'
 import AppHeading from '../../components/base/AppHeading.vue'
 import LoadingWrapper from '../../components/base/LoadingWrapper.vue'
 import BasePagination from '../../components/base/BasePagination.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 // Page setup
 definePageMeta({
-  title: 'Menu - Menu Ordering App'
+  title: 'Menu - Menu Ordering App',
 })
 
 const menuStore = useMenuStore()
-const cartStore = useCartStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -188,7 +189,7 @@ const filteredItems = computed(() => {
 const onCategorySelected = (categoryId: string | null) => {
   activeCategory.value = categoryId
   menuStore.setCurrentCategory(categoryId)
-  
+
   // Update URL without navigation
   if (categoryId && categoryId !== 'all') {
     router.replace({ query: { category: categoryId } })
@@ -209,7 +210,7 @@ const onAddToCart = (item: MenuItem) => {
 }
 
 const getCategoryName = (categoryId: string | null) => {
-  if (!categoryId || categoryId === 'all') return 'All Items'
+  if (!categoryId || categoryId === 'all') return t('menu.allItems')
   const category = categories.value.find(cat => cat.id === categoryId)
   return category?.name || 'Category'
 }
@@ -270,11 +271,11 @@ const clearCache = () => {
 // Initialize
 onMounted(async () => {
   console.log('🎯 Menu Page - onMounted called')
-  
+
   // Set initial category from query params
   const categoryFromQuery = route.query.category as string
   console.log('📋 Menu Page - Category from query:', categoryFromQuery)
-  
+
   if (categoryFromQuery) {
     activeCategory.value = categoryFromQuery
     menuStore.setCurrentCategory(categoryFromQuery)
@@ -282,9 +283,9 @@ onMounted(async () => {
     activeCategory.value = 'all'
     menuStore.setCurrentCategory(null)
   }
-  
+
   console.log('🏪 Menu Page - Active category set to:', activeCategory.value)
-  
+
   // Fetch menu data
   console.log('🚀 Menu Page - Starting fetchMenu...')
   try {
@@ -297,10 +298,13 @@ onMounted(async () => {
 })
 
 // Watch for route changes
-watch(() => route.query.category, (newCategory) => {
-  if (newCategory && typeof newCategory === 'string') {
-    activeCategory.value = newCategory
-    menuStore.setCurrentCategory(newCategory === 'all' ? null : newCategory)
+watch(
+  () => route.query.category,
+  newCategory => {
+    if (newCategory && typeof newCategory === 'string') {
+      activeCategory.value = newCategory
+      menuStore.setCurrentCategory(newCategory === 'all' ? null : newCategory)
+    }
   }
-})
+)
 </script>

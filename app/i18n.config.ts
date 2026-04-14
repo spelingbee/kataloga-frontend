@@ -66,7 +66,7 @@ export default defineI18nConfig(() => ({
     en: {
       currency: {
         style: 'currency',
-        currency: 'KGS',
+        currency: 'сом',
         notation: 'standard',
         currencyDisplay: 'symbol',
       },
@@ -83,7 +83,7 @@ export default defineI18nConfig(() => ({
     ru: {
       currency: {
         style: 'currency',
-        currency: 'KGS',
+        currency: 'сом',
         notation: 'standard',
         currencyDisplay: 'symbol',
       },
@@ -100,7 +100,7 @@ export default defineI18nConfig(() => ({
     ky: {
       currency: {
         style: 'currency',
-        currency: 'KGS',
+        currency: 'сом',
         notation: 'standard',
         currencyDisplay: 'symbol',
       },

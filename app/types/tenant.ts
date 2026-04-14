@@ -8,6 +8,7 @@ export interface TenantInfo {
   settings: TenantSettings
   locations: TenantLocation[]
   isActive: boolean
+  businessType: 'RESTAURANT' | 'CAFE' | 'FLOWERS' | 'SHOP' | 'OTHER'
   createdAt: string
   updatedAt: string
 }
@@ -52,6 +53,7 @@ export interface TenantSettings {
 export interface TenantFeatures {
   deliveryEnabled: boolean
   pickupEnabled: boolean
+  dineInEnabled: boolean
   paymentMethods: string[]
   loyaltyProgram: boolean
   onlineOrdering: boolean

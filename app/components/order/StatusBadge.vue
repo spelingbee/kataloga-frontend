@@ -19,35 +19,47 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'md'
 })
 
+const { t } = useI18n()
+
 // Computed properties
 const statusText = computed(() => {
-  const texts: Record<string, string> = {
-    'pending': 'Pending',
-    'confirmed': 'Confirmed',
-    'preparing': 'Preparing',
-    'ready': 'Ready',
-    'out-for-delivery': 'Out for Delivery',
-    'delivered': 'Delivered',
-    'cancelled': 'Cancelled',
-    'available': 'Available',
-    'unavailable': 'Unavailable'
+  const statusKey = props.status.toLowerCase().replace(/-/g, '_')
+  const localized = t(`orders.statuses.${statusKey}`)
+  
+  // Fallback to previous translations if new ones not present, or directly return status
+  if (localized && !localized.includes('orders.statuses')) {
+    return localized
   }
-  return texts[props.status.toLowerCase()] || props.status
+
+  const legacyTexts: Record<string, string> = {
+    'pending': t('orders.pending'),
+    'confirmed': t('orders.confirmed'),
+    'preparing': t('orders.preparing'),
+    'ready': t('orders.ready'),
+    'out_for_delivery': t('orders.inTransit'), // Adjusted to match ru.json
+    'delivered': t('orders.delivered'),
+    'cancelled': t('orders.cancelled'),
+    'available': t('common.success'),
+    'unavailable': t('common.error')
+  }
+  
+  return legacyTexts[statusKey] || props.status
 })
 
 const badgeVariant = computed((): 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' => {
+  const statusKey = props.status.toLowerCase().replace(/-/g, '_')
   const variants: Record<string, 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info'> = {
     'pending': 'warning',
     'confirmed': 'info',
     'preparing': 'warning',
     'ready': 'success',
-    'out-for-delivery': 'info',
+    'out_for_delivery': 'info',
     'delivered': 'success',
     'cancelled': 'error',
     'available': 'success',
     'unavailable': 'error'
   }
-  return variants[props.status.toLowerCase()] || 'secondary'
+  return variants[statusKey] || 'secondary'
 })
 </script>
 

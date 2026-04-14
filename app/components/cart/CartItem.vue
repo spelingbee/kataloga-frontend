@@ -2,7 +2,7 @@
   <div class="cart-item">
     <!-- Item Image -->
     <div class="cart-item__image">
-      <img 
+      <img
         :src="imageUrl"
         :alt="cartItem.menuItem.name"
         class="cart-item__img"
@@ -25,7 +25,7 @@
       <!-- Quantity Controls -->
       <div class="cart-item__controls">
         <div class="cart-item__quantity">
-          <button 
+          <button
             class="cart-item__quantity-btn"
             :disabled="cartItem.quantity <= 1"
             @click="decreaseQuantity"
@@ -33,21 +33,14 @@
             <BaseIcon name="minus" size="sm" />
           </button>
           <span class="cart-item__quantity-value">{{ cartItem.quantity }}</span>
-          <button 
-            class="cart-item__quantity-btn"
-            @click="increaseQuantity"
-          >
+          <button class="cart-item__quantity-btn" @click="increaseQuantity">
             <BaseIcon name="plus" size="sm" />
           </button>
         </div>
       </div>
     </div>
     <!-- Remove Button -->
-    <button
-      class="cart-item__remove"
-      @click="removeItem"
-      title="Remove item"
-    >
+    <button class="cart-item__remove" @click="removeItem" title="Remove item">
       <BaseIcon name="trash" size="sm" />
     </button>
   </div>
@@ -65,7 +58,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update-quantity': [menuItemId: string, quantity: number, customizations?: Record<string, any>]
-  'remove': [menuItemId: string, customizations?: Record<string, any>]
+  remove: [menuItemId: string, customizations?: Record<string, any>]
 }>()
 
 // Local state
@@ -153,11 +146,20 @@ const removeItem = () => {
 }
 
 .cart-item__price {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-primary);
+  flex-shrink: 0;
+  min-width: 80px;
   white-space: nowrap;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--color-primary);
   margin-left: 16px;
+}
+
+@media (max-width: 400px) {
+  .cart-item__price {
+    font-size: 14px;
+    min-width: 70px;
+  }
 }
 
 .cart-item__controls {

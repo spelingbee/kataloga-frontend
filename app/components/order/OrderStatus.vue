@@ -1,10 +1,10 @@
 <template>
-  <div class="order-status">
+  <div class="order-status" :class="{ 'order-status--compact': compact }">
     <!-- Order Header -->
-    <div class="order-status__header">
+    <div v-if="!hideHeader" class="order-status__header">
       <div class="order-status__header-info">
         <AppHeading level="h3" size="heading-md" class="order-status__title">
-          Order #{{ order.id }}
+          {{ $t('orders.orderNumber', { number: order.orderNumber || order.id.slice(-6).toUpperCase() }) }}
         </AppHeading>
         <AppText size="body-sm" class="order-status__date">
           {{ formatDate(order.createdAt) }}
@@ -127,18 +127,24 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Order, OrderStatus as OrderStatusEnum } from '~/types'
+import { useI18n } from 'vue-i18n'
+import type { Order} from '~/types';
+import { OrderStatus as OrderStatusEnum } from '~/types'
 import { useTenant } from '~/composables/useTenant'
 
 // Props & Emits
 interface Props {
   order: Order
   showActions?: boolean
+  hideHeader?: boolean
+  compact?: boolean
   loading?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showActions: true,
+  hideHeader: false,
+  compact: false,
   loading: false
 })
 
@@ -214,29 +220,29 @@ const getStatusIconColor = (status: OrderStatusEnum): string => {
 }
 
 const getStatusTitle = (status: OrderStatusEnum): string => {
-  const titles = {
-    [OrderStatusEnum.PENDING]: 'Order Received',
-    [OrderStatusEnum.CONFIRMED]: 'Order Confirmed',
-    [OrderStatusEnum.PREPARING]: 'Preparing Your Order',
-    [OrderStatusEnum.READY]: 'Order Ready',
-    [OrderStatusEnum.OUT_FOR_DELIVERY]: 'Out for Delivery',
-    [OrderStatusEnum.DELIVERED]: 'Order Delivered',
-    [OrderStatusEnum.CANCELLED]: 'Order Cancelled'
+  const titles: Record<string, string> = {
+    [OrderStatusEnum.PENDING]: 'orders.statuses.pending',
+    [OrderStatusEnum.CONFIRMED]: 'orders.statuses.confirmed',
+    [OrderStatusEnum.PREPARING]: 'orders.statuses.preparing',
+    [OrderStatusEnum.READY]: 'orders.statuses.ready',
+    [OrderStatusEnum.OUT_FOR_DELIVERY]: 'orders.statuses.out_for_delivery',
+    [OrderStatusEnum.DELIVERED]: 'orders.statuses.delivered',
+    [OrderStatusEnum.CANCELLED]: 'orders.statuses.cancelled'
   }
-  return titles[status] || 'Unknown Status'
+  return props.order.statusText || (titles[status] ? useI18n().t(titles[status]) : status)
 }
 
 const getStatusDescription = (status: OrderStatusEnum): string => {
-  const descriptions = {
-    [OrderStatusEnum.PENDING]: 'We have received your order and are processing it.',
-    [OrderStatusEnum.CONFIRMED]: 'Your order has been confirmed and will be prepared soon.',
-    [OrderStatusEnum.PREPARING]: 'Our chefs are preparing your delicious meal.',
-    [OrderStatusEnum.READY]: 'Your order is ready for pickup or delivery.',
-    [OrderStatusEnum.OUT_FOR_DELIVERY]: 'Your order is on its way to you.',
-    [OrderStatusEnum.DELIVERED]: 'Your order has been successfully delivered. Enjoy!',
-    [OrderStatusEnum.CANCELLED]: 'This order has been cancelled.'
+  const descriptions: Record<string, string> = {
+    [OrderStatusEnum.PENDING]: 'orders.descriptions.pending',
+    [OrderStatusEnum.CONFIRMED]: 'orders.descriptions.confirmed',
+    [OrderStatusEnum.PREPARING]: 'orders.descriptions.preparing',
+    [OrderStatusEnum.READY]: 'orders.descriptions.ready',
+    [OrderStatusEnum.OUT_FOR_DELIVERY]: 'orders.descriptions.out_for_delivery',
+    [OrderStatusEnum.DELIVERED]: 'orders.descriptions.delivered',
+    [OrderStatusEnum.CANCELLED]: 'orders.descriptions.cancelled'
   }
-  return descriptions[status] || 'Status information not available.'
+  return descriptions[status] ? useI18n().t(descriptions[status]) : ''
 }
 
 // Tenant context
@@ -278,11 +284,11 @@ const formatTime = (dateString: string): string => {
 
 const formatEstimatedTime = (minutes: number): string => {
   if (minutes < 60) {
-    return `${minutes} minutes remaining`
+    return `${minutes} мин.`
   } else {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return `${hours}h ${remainingMinutes}m remaining`
+    return `${hours}ч ${remainingMinutes}м`
   }
 }
 </script>
@@ -291,17 +297,25 @@ const formatEstimatedTime = (minutes: number): string => {
 @use '../../assets/scss/abstracts/variables' as *;
 
 .order-status {
-  background: rgba(var(--bg-primary), 0.5);
+  background: var(--bg-primary);
   border-radius: $radius-lg;
-  padding: $space-6;
-  border: 1px solid $color-border-subtle;
+  padding: $space-4;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+
+  &--compact {
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
 }
 
 .order-status__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $space-6;
+  margin-bottom: $space-4;
 }
 
 .order-status__header-info {
@@ -309,11 +323,11 @@ const formatEstimatedTime = (minutes: number): string => {
 }
 
 .order-status__title {
-  color: white;
+  color: var(--text-primary);
 }
 
 .order-status__date {
-  color: $color-neutral-20;
+  color: var(--text-secondary);
 }
 
 .order-status__progress {
@@ -331,7 +345,8 @@ const formatEstimatedTime = (minutes: number): string => {
   align-items: flex-start;
   gap: $space-4;
   padding: $space-4;
-  background: rgba(var(--bg-tertiary), 0.5);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: $radius-lg;
 }
 
@@ -345,12 +360,12 @@ const formatEstimatedTime = (minutes: number): string => {
 }
 
 .order-status__current-title {
-  color: white;
+  color: var(--text-primary);
   font-weight: $font-medium;
 }
 
 .order-status__current-description {
-  color: $color-neutral-20;
+  color: var(--text-secondary);
 }
 
 .order-status__estimated {
@@ -376,7 +391,7 @@ const formatEstimatedTime = (minutes: number): string => {
 }
 
 .order-status__updates-title {
-  color: $color-neutral-20;
+  color: var(--text-secondary);
   font-weight: $font-medium;
 }
 
@@ -406,7 +421,8 @@ const formatEstimatedTime = (minutes: number): string => {
   align-items: flex-start;
   gap: $space-4;
   padding: $space-2;
-  background: rgba(var(--bg-tertiary), 0.3);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: $radius-sm;
   font-size: $text-sm;
 }
@@ -428,11 +444,11 @@ const formatEstimatedTime = (minutes: number): string => {
 }
 
 .order-status__update-message {
-  color: white;
+  color: var(--text-primary);
 }
 
 .order-status__update-time {
-  color: $color-neutral-20;
+  color: var(--text-secondary);
 }
 
 .order-status__actions {

@@ -1,10 +1,10 @@
 <template>
-  <nav class="app-navigation bg-background-dark text-white" :class="navigationClasses">
+  <nav class="app-navigation" :class="navigationClasses">
     <div class="app-navigation__container">
       <NuxtLink
         v-for="item in navigationItems"
         :key="item.path"
-        :to="item.path"
+        :to="{ path: item.path, query: { ...route.query } }"
         :class="['app-navigation__item', { 'app-navigation__item--active': isActive(item.path) }]"
         @click="handleNavClick(item)"
       >
@@ -15,7 +15,7 @@
         <BaseBadge
           v-if="item.badge && item.badgeCount > 0"
           :count="item.badgeCount"
-          size="md"
+          size="sm"
           variant="error"
           class="app-navigation__badge"
           :aria-label="`${item.badgeCount} ${item.label.toLowerCase()}`"
@@ -67,7 +67,7 @@ const isTelegramApp = computed(() => telegram.isTelegram.value)
   const navigationItems = computed(() => {
     const defaultItems: NavigationItem[] = [
       {
-        path: '/',
+        path: '/menu',
         icon: 'menu-book',
         label: t('menu.title', 'Меню'),
         badge: false,
@@ -85,6 +85,13 @@ const isTelegramApp = computed(() => telegram.isTelegram.value)
         icon: 'shopping-cart',
         label: t('cart.title', 'Корзина'),
         badge: true,
+        badgeCount: 0,
+      },
+      {
+        path: '/profile',
+        icon: 'person',
+        label: t('profile.title', 'Профиль'),
+        badge: false,
         badgeCount: 0,
       },
     ]
@@ -137,91 +144,93 @@ const handleNavClick = (item: NavigationItem) => {
 <style scoped lang="scss">
 @use '../../assets/scss/tokens' as *;
 @use '../../assets/scss/abstracts/mixins' as *;
+@use '../../assets/scss/tokens/radius' as *;
 
 .app-navigation {
   background: var(--bg-primary);
   border-top: 1px solid var(--border-primary);
 
-  // Bottom navigation (mobile)
   &--bottom {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    padding-bottom: env(safe-area-inset-bottom);
+    bottom: $space-4;
+    left: $space-4;
+    right: $space-4;
+    z-index: 1000;
+    margin: 0 auto;
+    max-width: 500px;
+    padding-bottom: 0;
+    border-radius: $radius-2xl;
     backdrop-filter: blur(20px);
-    background: rgba(var(--bg-primary-rgb), 0.95);
-    border-top: 1px solid var(--border-primary);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    background: rgba(var(--bg-primary-rgb), 0.85);
+    border: 1px solid var(--border-primary);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 
     .app-navigation__container {
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding: var(--space-3) var(--space-4);
-      max-width: 100%;
+      padding: $space-2 $space-1;
     }
 
     .app-navigation__item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-1);
-      padding: var(--space-2);
-      min-width: 48px; // Improved touch target
-      min-height: 48px;
-      border-radius: var(--radius-lg);
+      gap: 1px;
+      padding: $space-2;
+      flex: 1;
+      min-width: 60px;
       text-decoration: none;
-      color: var(--text-secondary);
-      transition: all var(--transition-base);
+      color: var(--text-tertiary);
+      transition: all $transition-base-ease;
       position: relative;
-
-      // Touch-friendly interaction
-      @media (hover: hover) {
-        &:hover {
-          background: var(--bg-secondary);
-          color: var(--text-primary);
-          transform: translateY(-2px);
-        }
-      }
-
-      &:active {
-        transform: scale(0.95);
-      }
 
       &--active {
         color: var(--color-primary);
-        background: rgba(var(--color-primary-rgb), 0.1);
 
         .app-navigation__icon {
           color: var(--color-primary);
+          transform: translateY(-2px);
         }
 
         .app-navigation__label {
-          font-weight: var(--font-semibold);
+          font-weight: $font-bold;
+          color: var(--color-primary);
+        }
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 2px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: var(--color-primary);
+          box-shadow: 0 0 8px var(--color-primary);
         }
       }
     }
 
     .app-navigation__icon {
-      font-size: 1.375rem;
-      transition: all var(--transition-base);
+      font-size: 1.25rem;
+      transition: all $transition-base-ease;
     }
 
     .app-navigation__label {
-      font-size: var(--text-xs);
-      font-weight: var(--font-medium);
+      font-size: 10px;
+      font-weight: $font-medium;
       text-align: center;
       line-height: 1.2;
-      transition: all var(--transition-base);
     }
 
     .app-navigation__badge {
       position: absolute;
-      top: 0;
+      top: 0px;
       right: 0;
-      transform: translate(25%, -25%);
+      transform: translate(40%);
+      z-index: 10;
     }
   }
 

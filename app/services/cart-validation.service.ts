@@ -196,7 +196,7 @@ export class CartValidationService {
         return this.menuCache
       }
 
-      const tenantSlug = this.config.public.tenantSlug
+      const tenantSlug = this.apiClient.getCurrentTenant() || this.config.public.tenantSlug
       if (!tenantSlug) {
         console.error('Tenant slug not configured')
         return null

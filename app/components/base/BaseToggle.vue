@@ -7,7 +7,7 @@
     >
       {{ label }}
     </label>
-    
+
     <button
       :id="toggleId"
       type="button"
@@ -15,15 +15,12 @@
       :aria-checked="modelValue"
       :disabled="disabled"
       class="base-toggle__btn"
-      :class="[
-        `base-toggle__btn--${size}`,
-        { 'base-toggle__btn--active': modelValue }
-      ]"
+      :class="[`base-toggle__btn--${size}`, { 'base-toggle__btn--active': modelValue }]"
       @click="toggle"
     >
       <span class="base-toggle__thumb" />
     </button>
-    
+
     <label
       v-if="label && labelPosition === 'right'"
       :for="toggleId"
@@ -47,7 +44,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   labelPosition: 'right',
   size: 'md',
-  disabled: false
+  disabled: false,
 })
 
 const modelValue = defineModel<boolean>({ default: false })
@@ -68,9 +65,10 @@ const toggle = () => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens/spacing' as *;
-@use '../../assets/scss/tokens/radius' as *;
-@use '../../assets/scss/tokens/transitions' as *;
+@use '~/assets/scss/tokens/spacing' as *;
+@use '~/assets/scss/tokens/radius' as *;
+@use '~/assets/scss/tokens/transitions' as *;
+@use '~/assets/scss/tokens/typography' as *;
 
 .base-toggle {
   display: inline-flex;
@@ -84,8 +82,12 @@ const toggle = () => {
   cursor: pointer;
   user-select: none;
 
-  &--left { margin-right: $space-3; }
-  &--right { margin-left: $space-3; }
+  &--left {
+    margin-right: $space-3;
+  }
+  &--right {
+    margin-left: $space-3;
+  }
 }
 
 .base-toggle__btn {

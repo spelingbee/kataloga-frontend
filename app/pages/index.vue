@@ -131,8 +131,21 @@ const onItemSelected = (item: any) => {
 }
 
 onMounted(async () => {
-  if (menuStore.menuItems.length === 0) {
-    await menuStore.fetchMenu()
+  // Wait for tenant to be loaded before fetching menu to avoid redundant data
+  if (tenantStore.isTenantLoaded) {
+    if (menuStore.menuItems.length === 0) {
+      await menuStore.fetchMenu()
+    }
+  } else {
+    // Watch for tenant load
+    const unwatch = watch(() => tenantStore.isTenantLoaded, async (loaded) => {
+      if (loaded) {
+        if (menuStore.menuItems.length === 0) {
+          await menuStore.fetchMenu()
+        }
+        unwatch()
+      }
+    })
   }
 })
 </script>
@@ -179,7 +192,7 @@ onMounted(async () => {
 
 .home-categories-nav {
   position: sticky;
-  top: 0;
+  top: 56px;
   z-index: 100;
   background: rgba(var(--bg-primary-rgb), 0.8);
   backdrop-filter: blur(12px);
@@ -190,16 +203,25 @@ onMounted(async () => {
 .home-categories-nav__scroll {
   display: flex;
   overflow-x: auto;
-  gap: $space-2;
-  padding: 0 $space-4;
+  gap: $space-3;
+  padding: $space-1 $space-4;
   scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 
   &::-webkit-scrollbar {
     display: none;
   }
+
+  &::after {
+    content: '';
+    padding-right: $space-4;
+  }
 }
 
 .category-pill {
+  flex-shrink: 0;
+  scroll-snap-align: start;
   white-space: nowrap;
   padding: $space-2 $space-4;
   border-radius: $radius-full;

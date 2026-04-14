@@ -2,17 +2,12 @@
   <div :class="containerClasses">
     <!-- Currency Symbol -->
     <span :class="currencyClasses">{{ currencySymbol }}</span>
-    
+
     <!-- Price Amount -->
     <span :class="amountClasses">{{ formattedAmount }}</span>
-    
+
     <!-- Decimal Part -->
-    <span 
-      v-if="showDecimals && decimalPart"
-      :class="decimalClasses"
-    >
-      .{{ decimalPart }}
-    </span>
+    <span v-if="showDecimals && decimalPart" :class="decimalClasses">.{{ decimalPart }}</span>
 
     <!-- Discount Badge -->
     <BaseBadge
@@ -42,15 +37,19 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'md',
   currency: 'USD',
   showDecimals: true,
-  variant: 'default'
+  variant: 'default',
 })
 
 const currencySymbol = computed(() => {
   switch (props.currency) {
-    case 'USD': return '$'
-    case 'EUR': return '€'
-    case 'GBP': return '£'
-    default: return '$'
+    case 'USD':
+      return '$'
+    case 'EUR':
+      return '€'
+    case 'GBP':
+      return '£'
+    default:
+      return '$'
   }
 })
 
@@ -69,13 +68,13 @@ const discountPercentage = computed(() => {
 })
 
 const containerClasses = computed(() => [
-  'flex items-baseline font-semibold',
+  'flex items-baseline font-semibold flex-shrink-0 whitespace-nowrap',
   {
     'text-primary-green': props.variant === 'success',
     'text-primary-orange': props.variant === 'warning',
     'text-primary-red': props.variant === 'error',
-    'text-white': props.variant === 'default'
-  }
+    'text-white': props.variant === 'default',
+  },
 ])
 
 const currencyClasses = computed(() => [
@@ -85,8 +84,8 @@ const currencyClasses = computed(() => [
     'text-sm': props.size === 'sm',
     'text-base': props.size === 'md',
     'text-lg': props.size === 'lg',
-    'text-xl': props.size === 'xl'
-  }
+    'text-xl': props.size === 'xl',
+  },
 ])
 
 const amountClasses = computed(() => [
@@ -96,8 +95,8 @@ const amountClasses = computed(() => [
     'text-base': props.size === 'sm',
     'text-lg': props.size === 'md',
     'text-xl': props.size === 'lg',
-    'text-2xl': props.size === 'xl'
-  }
+    'text-2xl': props.size === 'xl',
+  },
 ])
 
 const decimalClasses = computed(() => [
@@ -106,7 +105,7 @@ const decimalClasses = computed(() => [
     'text-xs': props.size === 'xs',
     'text-sm': props.size === 'sm' || props.size === 'md',
     'text-base': props.size === 'lg',
-    'text-lg': props.size === 'xl'
-  }
+    'text-lg': props.size === 'xl',
+  },
 ])
 </script>

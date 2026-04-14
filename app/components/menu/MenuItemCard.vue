@@ -43,29 +43,33 @@
         <div class="product-card__price-wrapper">
           <AppPrice :amount="menuItem.price" class="product-card__price" />
         </div>
-        
-        <div v-if="qtyInCart > 0" class="product-card__qty-control" @click.stop>
-          <button class="product-card__qty-btn product-card__qty-btn--minus" @click="decreaseQty">
-            <BaseIcon name="minus" size="sm" />
-          </button>
-          <span class="product-card__qty-text">{{ qtyInCart }}</span>
-          <button class="product-card__qty-btn product-card__qty-btn--plus" @click="increaseQty">
-            <BaseIcon name="plus" size="sm" />
+
+        <div class="product-card__actions">
+          <div v-if="qtyInCart > 0" class="product-card__qty-control" @click.stop>
+            <button class="product-card__qty-btn product-card__qty-btn--minus" @click="decreaseQty">
+              <BaseIcon name="minus" size="sm" />
+            </button>
+            <span class="product-card__qty-text">{{ qtyInCart }}</span>
+            <button class="product-card__qty-btn product-card__qty-btn--plus" @click="increaseQty">
+              <BaseIcon name="plus" size="sm" />
+            </button>
+          </div>
+          <button
+            v-else
+            class="product-card__add-btn"
+            :class="{
+              'product-card__add-btn--added': isAdded,
+              'product-card__add-btn--disabled': !menuItem.isActive,
+            }"
+            :disabled="!menuItem.isActive"
+            @click.stop="addToCart"
+          >
+            <BaseIcon :name="isAdded ? 'check' : 'plus'" size="sm" class="product-card__add-icon" />
+            <span class="product-card__add-text">
+              {{ isAdded ? $t('common.added', 'В корзине') : $t('common.add', 'Добавить') }}
+            </span>
           </button>
         </div>
-        <button
-          v-else
-          class="product-card__add-btn"
-          :class="{
-            'product-card__add-btn--added': isAdded,
-            'product-card__add-btn--disabled': !menuItem.isActive,
-          }"
-          :disabled="!menuItem.isActive"
-          @click.stop="addToCart"
-        >
-          <BaseIcon :name="isAdded ? 'check' : 'plus'" size="sm" class="product-card__add-icon" />
-          <span class="product-card__add-text">{{ isAdded ? $t('common.added', 'В корзине') : $t('common.add', 'Добавить') }}</span>
-        </button>
       </div>
     </div>
   </div>
@@ -107,7 +111,7 @@ const imageUrl = computed(() => {
 })
 
 const cartItem = computed(() => {
-  return cartStore.items.find((i) => i.menuItem.id === props.menuItem.id)
+  return cartStore.items.find(i => i.menuItem.id === props.menuItem.id)
 })
 
 const qtyInCart = computed(() => {
@@ -170,6 +174,9 @@ const addToCart = async () => {
 @use '../../assets/scss/tokens/radius' as *;
 
 .product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background: var(--bg-primary);
   border: 1px solid var(--border-primary);
   border-radius: $radius-xl;
@@ -282,6 +289,7 @@ const addToCart = async () => {
   padding: $space-4;
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-height: 156px;
 }
 
@@ -315,20 +323,40 @@ const addToCart = async () => {
 
 .product-card__footer {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  gap: $space-3;
   margin-top: auto;
+  width: 100%;
 }
 
 .product-card__price-wrapper {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  width: 100%;
 }
 
 .product-card__price {
-  font-size: $text-lg;
-  font-weight: $font-bold;
+  flex-shrink: 0;
+  min-width: 80px;
+  white-space: nowrap;
+  font-weight: 600;
+  font-size: 16px;
   color: var(--text-primary);
+  text-align: center;
+}
+
+@media (max-width: 400px) {
+  .product-card__price {
+    font-size: 14px;
+    min-width: 70px;
+  }
+}
+
+.product-card__actions {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .product-card__add-btn {
@@ -338,6 +366,7 @@ const addToCart = async () => {
   border-radius: $radius-full;
   padding: $space-2 $space-5;
   height: 40px;
+  min-width: 140px;
   font-size: $text-sm;
   font-weight: $font-bold;
   display: flex;
@@ -346,7 +375,7 @@ const addToCart = async () => {
   gap: $space-2;
   cursor: pointer;
   transition: all $transition-base;
-  
+
   &:hover:not(&--disabled) {
     background: var(--color-primary);
     color: white;
@@ -365,12 +394,14 @@ const addToCart = async () => {
 .product-card__qty-control {
   display: flex;
   align-items: center;
-  gap: $space-4;
+  justify-content: center;
+  gap: $space-6;
+  width: 100%;
   background: transparent;
 
   .product-card__qty-btn {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: $radius-full;
     display: flex;
     align-items: center;
@@ -397,11 +428,10 @@ const addToCart = async () => {
     font-size: $text-base;
     font-weight: $font-bold;
     color: var(--text-primary);
-    min-width: 24px;
+    min-width: 32px;
     text-align: center;
   }
 }
-
 
 // Mobile optimizations
 @media (max-width: 640px) {
@@ -433,11 +463,11 @@ const addToCart = async () => {
     height: 36px;
     font-size: $text-xs;
   }
-  
+
   .product-card__add-text {
     display: none; // Collapse to icon only on very small screens if needed, or keep smaller text
   }
-  
+
   .product-card__add-btn {
     .product-card__add-text {
       display: inline; // Actually, keeping text is better for CTA. Let's override hide.

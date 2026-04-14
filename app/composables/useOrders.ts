@@ -108,6 +108,7 @@ export function useOrders() {
     const stats = {
       total: orderHistory.value.length,
       completed: 0,
+      active: 0,
       cancelled: 0,
       totalSpent: 0,
       averageOrderValue: 0,
@@ -115,22 +116,31 @@ export function useOrders() {
     }
 
     orderHistory.value.forEach(order => {
-      if (order.status === 'DELIVERED') {
-        stats.completed++
-        stats.totalSpent += order.total
-      } else if (order.status === 'CANCELLED') {
+      const isCancelled = order.status === 'CANCELLED'
+      
+      if (!isCancelled) {
+        stats.totalSpent += Number(order.total) || 0
+        if (order.status === 'DELIVERED') {
+          stats.completed++
+        } else {
+          stats.active++
+        }
+      } else {
         stats.cancelled++
       }
 
-      // Track favorite items
-      order.items.forEach(item => {
-        const itemName = item.menuItem.name
-        const currentCount = stats.favoriteItems.get(itemName) || 0
-        stats.favoriteItems.set(itemName, currentCount + item.quantity)
-      })
+      // Track favorite items for all non-cancelled orders
+      if (!isCancelled) {
+        (order.items || []).forEach(item => {
+          const itemName = item.product?.name || item.name || item.menuItem?.name || 'Unknown Item'
+          const currentCount = stats.favoriteItems.get(itemName) || 0
+          stats.favoriteItems.set(itemName, currentCount + item.quantity)
+        })
+      }
     })
 
-    stats.averageOrderValue = stats.completed > 0 ? stats.totalSpent / stats.completed : 0
+    const countForAverage = stats.total - stats.cancelled
+    stats.averageOrderValue = countForAverage > 0 ? stats.totalSpent / countForAverage : 0
 
     return {
       ...stats,
@@ -169,10 +179,10 @@ export function useOrders() {
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase()
         const matchesId = order.id.toLowerCase().includes(searchLower)
-        const matchesItems = order.items.some(item => 
-          item.menuItem.name.toLowerCase().includes(searchLower)
+        const matchesItems = (order.items || []).some(item => 
+          item.menuItem?.name?.toLowerCase()?.includes(searchLower)
         )
-        const matchesCustomer = order.customerInfo.name.toLowerCase().includes(searchLower)
+        const matchesCustomer = order.customerInfo?.name?.toLowerCase()?.includes(searchLower)
         
         if (!matchesId && !matchesItems && !matchesCustomer) return false
       }
@@ -192,7 +202,7 @@ export function useOrders() {
     const { useCart } = await import('./useCart')
     const { addItem } = useCart()
     
-    for (const orderItem of order.items) {
+    for (const orderItem of (order.items || [])) {
       addItem(orderItem.menuItem, orderItem.quantity, orderItem.customizations)
     }
 

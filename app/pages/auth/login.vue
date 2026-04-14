@@ -1,109 +1,91 @@
 <template>
   <div class="auth-page">
-    <div class="auth-container">
-      <div class="auth-header">
-        <h2 class="auth-header__title">
-          Войти в аккаунт
-        </h2>
-        <p class="auth-header__subtitle">
-          Или
-          <NuxtLink to="/auth/register" class="auth-header__link">
-            создайте новый аккаунт
-          </NuxtLink>
-        </p>
-      </div>
-      
-      <form class="auth-form" @submit.prevent="handleLogin">
-        <div class="auth-form__fields">
-          <div class="auth-form__field">
-            <label for="email" class="u-sr-only">Email адрес</label>
-            <input
-              id="email"
-              v-model="form.email"
-              name="email"
-              type="email"
-              autocomplete="email"
-              required
-              :class="[
-                'auth-form__input auth-form__input--top',
-                { 'auth-form__input--error': errors.email }
-              ]"
-              placeholder="Email адрес"
-            />
-            <p v-if="errors.email" class="auth-form__error">{{ errors.email }}</p>
-          </div>
+    <!-- Background Elements -->
+    <div class="auth-page__bg-blob auth-page__bg-blob--1"/>
+    <div class="auth-page__bg-blob auth-page__bg-blob--2"/>
+    
+    <div class="auth-page__container">
+      <!-- Back Navigation -->
+      <nav class="auth-page__nav">
+        <BaseButton
+          variant="ghost"
+          size="sm"
+          icon="arrow-left"
+          @click="router.push('/')"
+        >
+          На главную
+        </BaseButton>
+      </nav>
+
+      <main class="auth-page__card">
+        <header class="auth-page__header">
+          <h1 class="auth-page__title">Войти в аккаунт</h1>
+          <p class="auth-page__subtitle">
+            Нет аккаунта? 
+            <NuxtLink to="/auth/register" class="auth-page__link">Создать новый</NuxtLink>
+          </p>
+        </header>
+        
+        <form class="auth-page__form" @submit.prevent="handleLogin">
+          <BaseInput
+            v-model="form.email"
+            label="Email адрес"
+            type="email"
+            placeholder="example@mail.com"
+            required
+            :error="errors.email"
+            autocomplete="email"
+            prefix-icon="mail"
+            class="auth-page__input"
+          />
           
-          <div class="auth-form__field">
-            <label for="password" class="u-sr-only">Пароль</label>
-            <input
-              id="password"
-              v-model="form.password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              required
-              :class="[
-                'auth-form__input auth-form__input--bottom',
-                { 'auth-form__input--error': errors.password }
-              ]"
-              placeholder="Пароль"
-            />
-            <p v-if="errors.password" class="auth-form__error">{{ errors.password }}</p>
-          </div>
-        </div>
+          <BaseInput
+            v-model="form.password"
+            label="Пароль"
+            type="password"
+            placeholder="••••••••"
+            required
+            show-password-toggle
+            :error="errors.password"
+            autocomplete="current-password"
+            prefix-icon="lock"
+            class="auth-page__input"
+          />
 
-        <div class="auth-form__options">
-          <div class="auth-form__checkbox">
-            <input
-              id="remember-me"
-              v-model="form.rememberMe"
-              name="remember-me"
-              type="checkbox"
-              class="auth-form__checkbox-input"
-            />
-            <label for="remember-me" class="auth-form__checkbox-label">
+          <div class="auth-page__form-options">
+            <BaseCheckbox v-model="form.rememberMe">
               Запомнить меня
-            </label>
-          </div>
+            </BaseCheckbox>
 
-          <div class="auth-form__forgot">
-            <NuxtLink to="/auth/forgot-password" class="auth-form__forgot-link">
+            <NuxtLink to="/auth/forgot-password" class="auth-page__link auth-page__link--small">
               Забыли пароль?
             </NuxtLink>
           </div>
-        </div>
 
-        <div v-if="error" class="auth-form__error-alert">
-          <div class="auth-form__error-content">
-            <div class="auth-form__error-icon">
-              <svg class="u-h-5 u-w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
+          <!-- Error Message -->
+          <Transition name="fade">
+            <div v-if="error" class="auth-page__error">
+              <BaseIcon name="alert-circle" size="sm" />
+              <span>{{ error }}</span>
             </div>
-            <div class="auth-form__error-message">
-              <h3 class="auth-form__error-title">
-                {{ error }}
-              </h3>
-            </div>
+          </Transition>
+
+          <div class="auth-page__actions">
+            <BaseButton
+              type="submit"
+              variant="primary"
+              full-width
+              :loading="isLoading"
+            >
+              {{ isLoading ? 'Вход...' : 'Войти' }}
+            </BaseButton>
           </div>
-        </div>
-
-        <div class="auth-form__submit">
-          <button
-            type="submit"
-            :disabled="isLoading"
-            class="auth-form__submit-btn"
-          >
-            <span v-if="isLoading" class="auth-form__submit-spinner">
-              <svg class="auth-form__spinner-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="auth-form__spinner-track" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="auth-form__spinner-fill" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-              </svg>
-            </span>
-            {{ isLoading ? 'Вход...' : 'Войти' }}
-          </button>
-        </div>
-      </form>
+        </form>
+      </main>
+      
+      <footer class="auth-page__footer">
+        © {{ new Date().getFullYear() }} Kataloga. Все права защищены.
+      </footer>
     </div>
   </div>
 </template>
@@ -187,12 +169,194 @@ const handleLogin = async () => {
     isLoading.value = false
   }
 }
-
-// Auto-focus email field
-onMounted(() => {
-  const emailInput = document.getElementById('email')
-  if (emailInput) {
-    emailInput.focus()
-  }
-})
 </script>
+
+<style scoped lang="scss">
+@use '../../assets/scss/tokens/colors' as *;
+@use '../../assets/scss/tokens/spacing' as *;
+@use '../../assets/scss/tokens/radius' as *;
+@use '../../assets/scss/tokens/shadows' as *;
+@use '../../assets/scss/tokens/transitions' as *;
+@use '../../assets/scss/tokens/typography' as *;
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+  padding: $space-4;
+}
+
+.auth-page__bg-blob {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  filter: blur(80px);
+  opacity: 0.15;
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+  
+  &--1 {
+    background: var(--color-primary);
+    top: -100px;
+    right: -100px;
+  }
+  
+  &--2 {
+    background: var(--color-secondary);
+    bottom: -100px;
+    left: -100px;
+  }
+}
+
+.auth-page__container {
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+}
+
+.auth-page__nav {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.auth-page__card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: $radius-xl;
+  padding: $space-8;
+  box-shadow: $shadow-xl;
+  transition: $transition-base-ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-xl;
+  }
+}
+
+.auth-page__header {
+  text-align: center;
+  margin-bottom: $space-8;
+}
+
+.auth-page__title {
+  font-family: $font-secondary;
+  font-size: $text-3xl;
+  font-weight: $font-bold;
+  color: var(--text-primary);
+  margin-bottom: $space-2;
+}
+
+.auth-page__subtitle {
+  color: var(--text-secondary);
+  font-size: $text-sm;
+}
+
+.auth-page__link {
+  color: var(--color-primary);
+  font-weight: $font-semibold;
+  text-decoration: none;
+  transition: $transition-base-ease;
+  
+  &:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+  }
+
+  &--small {
+    font-size: $text-sm;
+  }
+}
+
+.auth-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+}
+
+.auth-page__form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -$space-2;
+}
+
+.auth-page__error {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-3;
+  background: rgba(var(--color-error-rgb), 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: $radius-md;
+  color: var(--color-error);
+  font-size: $text-sm;
+  font-weight: $font-medium;
+}
+
+.auth-page__actions {
+  margin-top: $space-2;
+}
+
+.auth-page__footer {
+  text-align: center;
+  font-size: $text-xs;
+  color: var(--text-tertiary);
+}
+
+// Transitions
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+// Deep overrides for glassmorphism
+.auth-page__input {
+  :deep(.base-input__field) {
+    background: rgba(255, 255, 255, 0.45);
+    border-color: rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(12px);
+    color: #1a1a1a;
+    
+    &::placeholder {
+      color: rgba(0, 0, 0, 0.45) !important;
+    }
+    
+    &:focus {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: var(--color-primary);
+    }
+  }
+
+  :deep(.base-input__prefix),
+  :deep(.base-input__suffix) {
+    color: rgba(0, 0, 0, 0.6) !important;
+  }
+
+  :deep(.base-input__floating-label--active)::before {
+    background-color: rgba(255, 255, 255, 0.9);
+    height: 4px;
+    border-radius: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page__card {
+    padding: $space-6 $space-5;
+  }
+}
+</style>

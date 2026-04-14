@@ -16,7 +16,7 @@
               </div>
               <h1 class="profile-page__name">{{ userDisplayName }}</h1>
               <p class="profile-page__email">{{ user.email }}</p>
-              
+
               <div class="profile-page__stats">
                 <div class="profile-page__stat">
                   <span class="profile-page__stat-value">{{ orderCount }}</span>
@@ -115,7 +115,7 @@ const { t } = useI18n()
 const userStore = useUserStore()
 
 // State
-const user = computed(() => userStore.user || {} as any)
+const user = computed(() => userStore.user || ({} as any))
 const isUpdating = ref(false)
 const orderCount = ref(0)
 const loyaltyPoints = ref(0)
@@ -124,7 +124,7 @@ const addresses = ref([])
 const profileForm = ref({
   firstName: user.value.firstName || '',
   lastName: user.value.lastName || '',
-  email: user.value.email || ''
+  email: user.value.email || '',
 })
 
 // Computed
@@ -145,7 +145,7 @@ const handleUpdateProfile = async () => {
   try {
     await userStore.updateProfile({
       firstName: profileForm.value.firstName,
-      lastName: profileForm.value.lastName
+      lastName: profileForm.value.lastName,
     })
     // Show success toast here if available
   } catch (error) {
@@ -170,13 +170,13 @@ onMounted(async () => {
   try {
     const [profile, locs] = await Promise.all([
       userStore.fetchProfile(),
-      userStore.fetchAddresses().catch(() => [])
+      userStore.fetchAddresses().catch(() => []),
     ])
-    
+
     if (locs) addresses.value = locs
-    
+
     // In a real app, these would come from the profile/loyalty service
-    loyaltyPoints.value = 150 
+    loyaltyPoints.value = 150
     orderCount.value = 5
   } catch (error) {
     console.error('Error fetching profile data:', error)
@@ -184,13 +184,13 @@ onMounted(async () => {
 })
 
 definePageMeta({
-  middleware: ['auth']
+  middleware: ['auth'],
 })
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens' as *;
-@use '../../assets/scss/abstracts/mixins' as *;
+@use '~/assets/scss/tokens' as *;
+@use '~/assets/scss/abstracts/mixins' as *;
 
 .profile-page {
   padding: var(--space-8) 0;

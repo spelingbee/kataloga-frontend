@@ -205,6 +205,8 @@ import { OrderStatus } from '~/types'
 import { useOrders } from '~/composables/useOrders'
 import { useOrderTracking } from '~/composables/useOrderTracking'
 import { useNotification } from '~/composables/useNotification'
+import AppText from '../../../components/base/AppText.vue'
+import AppHeading from '../../../components/base/AppHeading.vue'
 
 // Page setup
 definePageMeta({

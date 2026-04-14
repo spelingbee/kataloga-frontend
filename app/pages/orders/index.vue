@@ -4,397 +4,280 @@
     <!-- Not Authenticated State -->
     <div v-if="!isAuthenticated" class="orders-page__auth-prompt">
       <BaseIcon name="lock" size="xl" class="orders-page__auth-icon" />
-      <AppHeading level="h2" size="heading-lg" class="orders-page__auth-title">
-        Войдите, чтобы увидеть заказы
+      <AppHeading level="h2" align="center" size="heading-lg" class="orders-page__auth-title">
+        {{ $t('auth.loginRequired') }}
       </AppHeading>
-      <AppText class="orders-page__auth-subtitle">
-        Для просмотра истории заказов необходимо войти в аккаунт
+      <AppText class="orders-page__auth-subtitle"  align="center">
+        {{ $t('orders.emptyHistory') }}
       </AppText>
       <div class="orders-page__auth-actions">
         <NuxtLink to="/auth/login?redirect=/orders">
-          <BaseButton variant="primary">Войти</BaseButton>
+          <BaseButton variant="primary">{{ $t('auth.login') }}</BaseButton>
         </NuxtLink>
         <NuxtLink to="/auth/register?redirect=/orders">
-          <BaseButton variant="secondary">Создать аккаунт</BaseButton>
+          <BaseButton variant="secondary">{{ $t('auth.register') }}</BaseButton>
         </NuxtLink>
       </div>
     </div>
 
     <!-- Authenticated content -->
     <template v-else>
-    <!-- Header Section -->
-    <div class="orders-page__header">
-      <h1 class="orders-page__title">История заказов</h1>
-      <p class="orders-page__subtitle">
-        Отслеживайте заказы и повторяйте любимые
-      </p>
-    </div>
-
-    <!-- Filter and Search -->
-    <div class="orders-page__filters">
-      <div class="orders-page__search-row">
-        <!-- Search -->
-        <div class="orders-page__search">
-          <BaseInput
-            v-model="searchQuery"
-            placeholder="Search orders..."
-          >
-            <template #prefix>
-              <BaseIcon name="search" size="sm" />
-            </template>
-          </BaseInput>
-        </div>
-
-        <!-- Filters -->
-        <div class="orders-page__filter-controls">
-          <BaseSelect
-            v-model="statusFilter"
-            :options="[
-              { value: '', label: 'All Orders' },
-              { value: 'PENDING', label: 'Pending' },
-              { value: 'CONFIRMED', label: 'Confirmed' },
-              { value: 'PREPARING', label: 'Preparing' },
-              { value: 'READY', label: 'Ready' },
-              { value: 'DELIVERED', label: 'Delivered' },
-              { value: 'CANCELLED', label: 'Cancelled' }
-            ]"
-          />
-
-          <BaseSelect
-            v-model="timeFilter"
-            :options="[
-              { value: '', label: 'All Time' },
-              { value: 'today', label: 'Today' },
-              { value: 'week', label: 'This Week' },
-              { value: 'month', label: 'This Month' },
-              { value: 'year', label: 'This Year' }
-            ]"
-          />
-        </div>
+      <!-- Header Section -->
+      <div class="orders-page__header">
+        <h1 class="orders-page__title">{{ $t('orders.history') }}</h1>
+        <p class="orders-page__subtitle">
+          {{ $t('orders.subtitle') }}
+        </p>
       </div>
 
-      <!-- Quick Stats -->
-      <div class="orders-page__stats">
-        <BaseCard class="orders-page__stat-card">
-          <div class="orders-page__stat-value">{{ totalOrders }}</div>
-          <div class="orders-page__stat-label">Total Orders</div>
-        </BaseCard>
-        <BaseCard class="orders-page__stat-card">
-          <div class="orders-page__stat-value">${{ totalSpent }}</div>
-          <div class="orders-page__stat-label">Total Spent</div>
-        </BaseCard>
-        <BaseCard class="orders-page__stat-card">
-          <div class="orders-page__stat-value">{{ favoriteRestaurant }}</div>
-          <div class="orders-page__stat-label">Favorite</div>
-        </BaseCard>
-        <BaseCard class="orders-page__stat-card">
-          <div class="orders-page__stat-value">${{ averageOrderValue }}</div>
-          <div class="orders-page__stat-label">Avg. Order</div>
-        </BaseCard>
-      </div>
-    </div>
-
-    <!-- Active Orders -->
-    <div v-if="activeOrders.length > 0" class="px-6 mb-8">
-      <AppHeading level="h2" size="heading-xl" class="text-white mb-6">
-        Active Orders
-      </AppHeading>
-
-      <div class="space-y-4">
-        <div
-          v-for="order in activeOrders"
-          :key="order.id"
-          class="bg-background-card rounded-xl p-6 border border-primary-green/30"
-        >
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <div class="flex items-center gap-3 mb-2">
-                <AppHeading level="h3" size="heading-md" class="text-white">
-                  Order #{{ order.id }}
-                </AppHeading>
-                <StatusBadge :status="order.status" />
-              </div>
-              <AppText size="body-sm" class="text-neutral-20">
-                {{ formatDate(order.createdAt) }}
-              </AppText>
-            </div>
-            <AppPrice :price="order.total" size="lg" />
-          </div>
-
-          <!-- Order Progress -->
-          <div class="mb-4">
-            <OrderTracker :order="order" :compact="true" />
-          </div>
-
-          <!-- Order Items Preview -->
-          <div class="mb-4">
-            <AppText size="body-sm" class="text-neutral-20 mb-2">Items:</AppText>
-            <div class="flex flex-wrap gap-2">
-              <span
-                v-for="item in order.items.slice(0, 3)"
-                :key="item.id"
-                class="text-white text-sm"
-              >
-                {{ item.quantity }}× {{ item.menuItem.name }}
-              </span>
-              <span v-if="order.items.length > 3" class="text-neutral-20 text-sm">
-                +{{ order.items.length - 3 }} more
-              </span>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex gap-2">
-            <NuxtLink :to="`/orders/${order.id}`">
-              <BaseButton variant="primary" size="sm">
-                <BaseIcon name="eye" size="sm" class="mr-2" />
-                View Details
-              </BaseButton>
-            </NuxtLink>
-            <BaseButton
-              v-if="order.status === 'PENDING'"
-              variant="secondary"
-              size="sm"
-              @click="cancelOrder(order.id)"
+      <!-- Filter and Search -->
+      <div class="orders-page__filters">
+        <div class="orders-page__search-row">
+          <div class="orders-page__search">
+            <BaseInput
+              v-model="searchQuery"
+              :placeholder="$t('orders.searchPlaceholder')"
             >
-              <BaseIcon name="x" size="sm" class="mr-2" />
-              Cancel
-            </BaseButton>
-            <BaseButton
-              variant="ghost"
-              size="sm"
-              @click="trackOrder(order.id)"
-            >
-              <BaseIcon name="map" size="sm" class="mr-2" />
-              Track
-            </BaseButton>
+              <template #prefix>
+                <BaseIcon name="search" size="sm" />
+              </template>
+            </BaseInput>
+          </div>
+
+          <div class="orders-page__filter-controls">
+            <BaseSelect
+              v-model="statusFilter"
+              :options="statusOptions"
+            />
+            <BaseSelect
+              v-model="timeFilter"
+              :options="timeOptions"
+            />
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Order History -->
-    <div class="px-6">
-      <div class="flex items-center justify-between mb-6">
-        <AppHeading level="h2" size="heading-xl" class="text-white">
-          Order History
-        </AppHeading>
-        <div class="flex items-center gap-2">
-          <BaseButton
-            variant="ghost"
-            size="sm"
-            @click="showListView = !showListView"
-          >
-            <BaseIcon :name="showListView ? 'grid' : 'list'" size="sm" />
-          </BaseButton>
-          <BaseButton
-            variant="secondary"
-            size="sm"
-            @click="exportOrders"
-          >
-            <BaseIcon name="download" size="sm" class="mr-2" />
-            Export
-          </BaseButton>
+        <!-- Quick Stats -->
+        <div class="orders-page__stats">
+          <BaseCard class="orders-page__stat-card">
+            <div class="orders-page__stat-value">{{ totalOrders }}</div>
+            <div class="orders-page__stat-label">{{ $t('orders.stats.totalOrders') }}</div>
+          </BaseCard>
+          <BaseCard class="orders-page__stat-card">
+            <div class="orders-page__stat-value">{{ formatCurrency(totalSpent) }}</div>
+            <div class="orders-page__stat-label">{{ $t('orders.stats.totalSpent') }}</div>
+          </BaseCard>
+          <BaseCard class="orders-page__stat-card">
+            <div class="orders-page__stat-value">{{ favoriteItem }}</div>
+            <div class="orders-page__stat-label">{{ $t('orders.stats.favorite') }}</div>
+          </BaseCard>
+          <BaseCard class="orders-page__stat-card">
+            <div class="orders-page__stat-value">{{ formatCurrency(averageOrderValue) }}</div>
+            <div class="orders-page__stat-label">{{ $t('orders.stats.avgOrder') }}</div>
+          </BaseCard>
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="orderStore.loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading orders...</AppText>
-      </div>
-
-      <!-- Empty State -->
-      <div v-else-if="filteredOrders.length === 0" class="text-center py-16">
-        <BaseIcon name="receipt" size="4xl" class="text-neutral-80 mx-auto mb-6" />
-        <AppHeading level="h3" size="heading-lg" class="text-white mb-4">
-          {{ searchQuery || statusFilter || timeFilter ? 'No orders found' : 'No orders yet' }}
+      <!-- Active Orders -->
+      <div v-if="activeOrders.length > 0" class="orders-page__section">
+        <AppHeading level="h2" size="heading-xl" class="orders-page__section-title">
+          {{ $t('orders.activeOrders') }}
         </AppHeading>
-        <AppText class="text-neutral-20 mb-8 max-w-md mx-auto">
-          {{ searchQuery || statusFilter || timeFilter ?
-            'Try adjusting your search or filters to find orders.' :
-            'Start exploring our menu and place your first order!'
-          }}
-        </AppText>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <NuxtLink to="/menu">
-            <BaseButton variant="primary">
-              <BaseIcon name="utensils" size="sm" class="mr-2" />
-              Browse Menu
-            </BaseButton>
-          </NuxtLink>
-          <BaseButton
-            v-if="searchQuery || statusFilter || timeFilter"
-            variant="secondary"
-            @click="clearFilters"
-          >
-            Clear Filters
-          </BaseButton>
-        </div>
-      </div>
 
-      <!-- Orders List/Grid -->
-      <div v-else>
-        <!-- List View -->
-        <div v-if="showListView" class="space-y-4">
-          <div
-            v-for="order in filteredOrders"
+        <div class="orders-page__items">
+          <BaseCard
+            v-for="order in activeOrders"
             :key="order.id"
-            class="bg-background-card rounded-xl p-6 hover:bg-background-card/80 transition-colors"
+            class="orders-page__order-card orders-page__order-card--active"
           >
-            <div class="flex items-start justify-between mb-4">
-              <div>
-                <div class="flex items-center gap-3 mb-2">
-                  <AppHeading level="h4" size="heading-sm" class="text-white">
-                    Order #{{ order.id }}
-                  </AppHeading>
-                  <StatusBadge :status="order.status" size="sm" />
-                </div>
-                <AppText size="body-sm" class="text-neutral-20">
+            <div class="orders-page__order-header">
+              <div class="orders-page__order-id">
+                #{{ order.id.slice(-6).toUpperCase() }}
+              </div>
+              <StatusBadge :status="order.status" size="sm" />
+            </div>
+
+            <div class="orders-page__order-main">
+              <div class="orders-page__order-price-info">
+                <AppPrice :price="order.total" size="lg" color="orange" weight="bold" />
+                <AppText size="body-xs" class="orders-page__order-date">
                   {{ formatDate(order.createdAt) }}
                 </AppText>
               </div>
-              <AppPrice :price="order.total" size="md" />
-            </div>
 
-            <!-- Order Items -->
-            <div class="mb-4">
-              <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="item in order.items.slice(0, 4)"
-                  :key="item.id"
-                  class="text-white text-sm bg-neutral-80/20 px-2 py-1 rounded"
-                >
-                  {{ item.quantity }}× {{ item.menuItem.name }}
-                </span>
-                <span v-if="order.items.length > 4" class="text-neutral-20 text-sm px-2 py-1">
-                  +{{ order.items.length - 4 }} more
-                </span>
+              <!-- Progress Tracker -->
+              <div class="orders-page__order-progress">
+                <div 
+                  v-for="step in 4" 
+                  :key="step" 
+                  class="progress-dot"
+                  :class="{ 
+                    'progress-dot--active': getOrderStep(order.status) >= step,
+                    'progress-dot--current': getOrderStep(order.status) === step 
+                  }"
+                />
               </div>
             </div>
 
-            <!-- Actions -->
-            <div class="flex gap-2">
-              <NuxtLink :to="`/orders/${order.id}`">
-                <BaseButton variant="secondary" size="sm">
-                  <BaseIcon name="eye" size="sm" class="mr-2" />
-                  View
-                </BaseButton>
-              </NuxtLink>
-              <BaseButton
-                variant="ghost"
-                size="sm"
-                @click="reorderItems(order)"
-              >
-                <BaseIcon name="repeat" size="sm" class="mr-2" />
-                Reorder
-              </BaseButton>
-              <BaseButton
-                variant="ghost"
-                size="sm"
-                @click="shareOrder(order)"
-              >
-                <BaseIcon name="share" size="sm" />
-              </BaseButton>
-            </div>
-          </div>
-        </div>
-
-        <!-- Grid View -->
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div
-            v-for="order in filteredOrders"
-            :key="order.id"
-            class="bg-background-card rounded-xl p-6 hover:bg-background-card/80 transition-colors cursor-pointer"
-            @click="$router.push(`/orders/${order.id}`)"
-          >
-            <div class="flex items-center justify-between mb-4">
-              <StatusBadge :status="order.status" />
-              <AppText size="caption" class="text-neutral-20">
-                #{{ order.id }}
+            <div class="orders-page__order-items-minimal">
+              <div v-if="(order.items || []).length > 0" class="order-items-row">
+                <div 
+                  v-for="item in (order.items || []).slice(0, 4)" 
+                  :key="item.id" 
+                  class="order-item-chip"
+                >
+                  <AppText size="caption" weight="bold">{{ item.quantity }}×</AppText>
+                  {{ item.product?.name || item.name || item.title || $t('common.error') }}
+                </div>
+                <div v-if="(order.items || []).length > 4" class="order-items-more">
+                  +{{ (order.items || []).length - 4 }}
+                </div>
+              </div>
+              <AppText v-else size="body-xs" color="muted">
+                {{ $t('orders.loading') }}
               </AppText>
             </div>
 
-            <AppPrice :price="order.total" size="lg" class="mb-2" />
-            <AppText size="body-sm" class="text-neutral-20 mb-4">
-              {{ formatDate(order.createdAt) }}
-            </AppText>
-
-            <AppText size="body-sm" class="text-white mb-4">
-              {{ order.items.length }} item{{ order.items.length !== 1 ? 's' : '' }}
-            </AppText>
-
-            <div class="flex gap-2">
+            <div class="orders-page__order-footer">
+              <NuxtLink :to="`/orders/${order.id}`" class="flex-1">
+                <BaseButton variant="primary" size="md" class="w-full">
+                  <BaseIcon name="eye" size="sm" />
+                  {{ $t('orders.view') }}
+                </BaseButton>
+              </NuxtLink>
               <BaseButton
-                variant="secondary"
-                size="sm"
-                class="flex-1"
-                @click.stop="reorderItems(order)"
+                v-if="['PENDING', 'CONFIRMED'].includes(order.status)"
+                variant="ghost"
+                size="md"
+                class="orders-page__action-cancel"
+                @click.stop.prevent="cancelOrder(order.id)"
               >
-                <BaseIcon name="repeat" size="sm" class="mr-2" />
-                Reorder
+                {{ $t('common.cancel') }}
               </BaseButton>
             </div>
+          </BaseCard>
+        </div>
+      </div>
+
+      <!-- Order History -->
+      <div class="orders-page__section">
+        <div class="orders-page__section-header">
+          <AppHeading level="h2" size="heading-xl" class="orders-page__section-title">
+            {{ $t('orders.history') }}
+          </AppHeading>
+          <div class="orders-page__section-actions">
+            <BaseButton variant="ghost" size="sm" @click="showListView = !showListView">
+              <BaseIcon :name="showListView ? 'grid' : 'list'" size="sm" />
+            </BaseButton>
+            <BaseButton variant="secondary" size="sm" @click="exportOrders">
+              <BaseIcon name="download" size="sm" class="mr-2" />
+              {{ $t('orders.export') }}
+            </BaseButton>
           </div>
         </div>
 
-        <!-- Load More -->
-        <div v-if="hasMoreOrders" class="text-center mt-8">
-          <BaseButton
-            variant="secondary"
-            :disabled="loadingMore"
-            @click="loadMoreOrders"
-          >
-            <BaseIcon
-              v-if="loadingMore"
-              name="loader"
-              size="sm"
-              class="mr-2 animate-spin"
-            />
-            Load More Orders
-          </BaseButton>
+        <!-- Loading State -->
+        <div v-if="orderStore.loading" class="orders-page__loading">
+          <div class="orders-page__spinner"/>
+          <AppText>{{ $t('orders.loading') }}</AppText>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else-if="filteredOrders.length === 0" class="orders-page__empty">
+          <div class="orders-page__empty-content">
+            <BaseIcon name="receipt" size="4xl" class="orders-page__empty-icon" />
+            <AppHeading level="h3" size="heading-lg" class="orders-page__empty-title">
+              {{ searchQuery || statusFilter || timeFilter ? $t('orders.noResults') : $t('orders.noOrders') }}
+            </AppHeading>
+            <AppText class="orders-page__empty-text">
+              {{ searchQuery || statusFilter || timeFilter ? $t('orders.noResultsFilter') : $t('orders.emptyHistory') }}
+            </AppText>
+            <NuxtLink v-if="!searchQuery && !statusFilter && !timeFilter" to="/menu">
+              <BaseButton variant="primary" class="orders-page__empty-btn">{{ $t('menu.title') }}</BaseButton>
+            </NuxtLink>
+            <BaseButton v-else variant="secondary" @click="clearFilters">{{ $t('common.clear') }}</BaseButton>
+          </div>
+        </div>
+
+        <!-- Orders List/Grid -->
+        <div v-else>
+          <div :class="['orders-page__items', showListView ? 'orders-page__items--list' : 'orders-page__items--grid']">
+            <BaseCard
+              v-for="order in filteredOrders"
+              :key="order.id"
+              class="orders-page__order-card"
+              @click="showListView ? null : $router.push(`/orders/${order.id}`)"
+            >
+              <div class="orders-page__order-header">
+                <div class="orders-page__order-info">
+                  <div class="orders-page__order-id">
+                    #{{ order.orderNumber || order.id.slice(-6).toUpperCase() }}
+                  </div>
+                  <StatusBadge :status="order.status" size="sm" />
+                  <AppText size="body-sm" class="orders-page__order-date">
+                    {{ formatDate(order.createdAt) }}
+                  </AppText>
+                </div>
+                <AppPrice :price="order.total" size="md" />
+              </div>
+
+              <div class="orders-page__order-items">
+                <span v-for="item in (order.items || []).slice(0, showListView ? 4 : 2)" :key="item.id" class="orders-page__item-tag">
+                  {{ item.quantity }}× {{ item.product?.name || item.name || item.title || $t('common.error') }}
+                </span>
+                <span v-if="(order.items || []).length > (showListView ? 4 : 2)" class="orders-page__item-more">
+                  +{{ (order.items || []).length - (showListView ? 4 : 2) }}
+                </span>
+              </div>
+
+              <div v-if="showListView" class="orders-page__order-actions">
+                <NuxtLink :to="`/orders/${order.id}`">
+                  <BaseButton variant="secondary" size="sm">{{ $t('orders.view') }}</BaseButton>
+                </NuxtLink>
+                <BaseButton variant="ghost" size="sm" @click="reorderItems(order)">
+                  <BaseIcon name="repeat" size="sm" class="mr-2" />
+                  {{ $t('orders.reorder') }}
+                </BaseButton>
+              </div>
+            </BaseCard>
+          </div>
+
+          <!-- Load More -->
+          <div v-if="hasMoreOrders" class="orders-page__load-more">
+            <BaseButton variant="secondary" :disabled="loadingMore" @click="loadMoreOrders">
+              <BaseIcon v-if="loadingMore" name="loader" size="sm" class="mr-2 animate-spin" />
+              {{ $t('orders.loadMore') }}
+            </BaseButton>
+          </div>
         </div>
       </div>
-    </div>
     </template>
   </div>
 </template>
-<script setup lang="ts">
 
-import type { Order } from '~/types'
+<script setup lang="ts">
 import { useOrders } from '~/composables/useOrders'
-import { useCart } from '~/composables/useCart'
 import { useOrderStore } from '~/stores/order'
 import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
-import { useMenuStore } from '~/stores/menu'
-import { useTenantStore } from '~/stores/tenant'
-import AppHeading from '../../components/base/AppHeading.vue'
+import { useTenantSettings } from '~/composables/useTenant'
+import type { Order } from '~/types'
 import AppText from '../../components/base/AppText.vue'
+import AppHeading from '../../components/base/AppHeading.vue'
 import StatusBadge from '../../components/order/StatusBadge.vue'
 import AppPrice from '../../components/base/AppPrice.vue'
-// Page setup
-definePageMeta({
-  title: 'История заказов'
-})
 
-// Auth check
-const userStore = useUserStore()
-const isAuthenticated = computed(() => userStore.isLoggedIn || userStore.isAuthenticated)
-
-// Stores
+const { t, locale } = useI18n()
+const router = useRouter()
 const orderStore = useOrderStore()
 const cartStore = useCartStore()
+const userStore = useUserStore()
+const { formatCurrency } = useTenantSettings()
+
+// Auth check
+const isAuthenticated = computed(() => userStore.isAuthenticated)
 
 // Composables
-const {
-  orderHistory,
-  loading,
-  getOrderStats,
-} = useOrders()
-
-// const { addItem } = useCart()
-const router = useRouter()
+const { orderHistory, getOrderStats } = useOrders()
 
 // Reactive state
 const searchQuery = ref('')
@@ -402,58 +285,75 @@ const statusFilter = ref('')
 const timeFilter = ref('')
 const showListView = ref(true)
 const loadingMore = ref(false)
-const hasMoreOrders = ref(true)
+const hasMoreOrders = computed(() => orderStore.pagination?.hasNextPage || false)
+
+// Select Options
+const statusOptions = computed(() => [
+  { value: '', label: t('orders.allOrders') },
+  { value: 'PENDING', label: t('orders.pending') },
+  { value: 'CONFIRMED', label: t('orders.confirmed') },
+  { value: 'PREPARING', label: t('orders.preparing') },
+  { value: 'READY', label: t('orders.ready') },
+  { value: 'DELIVERED', label: t('orders.delivered') },
+  { value: 'CANCELLED', label: t('orders.cancelled') }
+])
+
+const timeOptions = computed(() => [
+  { value: '', label: t('orders.filters.allTime') },
+  { value: 'today', label: t('orders.filters.today') },
+  { value: 'week', label: t('orders.filters.week') },
+  { value: 'month', label: t('orders.filters.month') },
+  { value: 'year', label: t('orders.filters.year') }
+])
 
 // Computed
-const orders = computed(() => orderHistory.value)
 const orderStats = computed(() => getOrderStats())
-
 const totalOrders = computed(() => orderStats.value.total)
 const totalSpent = computed(() => orderStats.value.totalSpent)
-const favoriteRestaurant = computed(() => orderStats.value.favoriteItems[0]?.name || 'N/A')
-const averageOrderValue = computed(() => `$${orderStats.value.averageOrderValue.toFixed(2)}`)
+const favoriteItem = computed(() => orderStats.value.favoriteItems[0]?.name || '—')
+const averageOrderValue = computed(() => orderStats.value.averageOrderValue)
 
 const activeOrders = computed(() => {
-  return orders.value.filter(order =>
+  return orderHistory.value.filter(order =>
     ['PENDING', 'CONFIRMED', 'PREPARING', 'READY'].includes(order.status)
   )
 })
 
 const filteredOrders = computed(() => {
-  let filtered = orders.value.filter(order =>
+  let filtered = orderHistory.value.filter(order =>
     !['PENDING', 'CONFIRMED', 'PREPARING', 'READY'].includes(order.status)
   )
 
-  // Use the composable's filter method
-  const filters: any = {}
-
   if (statusFilter.value) {
-    filters.status = [statusFilter.value]
+    filtered = filtered.filter(order => order.status === statusFilter.value)
   }
 
   if (timeFilter.value) {
     const now = new Date()
+    let fromDate: Date
     switch (timeFilter.value) {
       case 'today':
-        filters.dateFrom = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        filters.dateTo = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
+        fromDate = new Date(now.setHours(0, 0, 0, 0))
         break
       case 'week':
-        filters.dateFrom = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        fromDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
         break
       case 'month':
-        filters.dateFrom = new Date(now.getFullYear(), now.getMonth(), 1)
+        fromDate = new Date(now.getFullYear(), now.getMonth(), 1)
         break
       case 'year':
-        filters.dateFrom = new Date(now.getFullYear(), 0, 1)
+        fromDate = new Date(now.getFullYear(), 0, 1)
         break
     }
+    filtered = filtered.filter(order => new Date(order.createdAt) >= fromDate!)
   }
 
   if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
     filtered = filtered.filter(order =>
-      order.id.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      order.customerInfo?.name?.toLowerCase().includes(searchQuery.value.toLowerCase())
+      order.id.toLowerCase().includes(q) ||
+      (order.orderNumber && order.orderNumber.toLowerCase().includes(q)) ||
+      (order.items || []).some(item => item.menuItem.name.toLowerCase().includes(q))
     )
   }
 
@@ -463,18 +363,10 @@ const filteredOrders = computed(() => {
 // Methods
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
-  const now = new Date()
-  const diffTime = Math.abs(now.getTime() - date.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 1) return 'Today'
-  if (diffDays === 2) return 'Yesterday'
-  if (diffDays <= 7) return `${diffDays - 1} days ago`
-
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(locale.value, {
     month: 'short',
     day: 'numeric',
-    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+    year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
   })
 }
 
@@ -485,12 +377,8 @@ const clearFilters = () => {
 }
 
 const cancelOrder = async (orderId: string) => {
-  if (confirm('Are you sure you want to cancel this order?')) {
-    try {
-      await orderStore.cancelOrder(orderId)
-    } catch (error) {
-      console.error('Failed to cancel order:', error)
-    }
+  if (confirm(t('orders.confirmCancel'))) {
+    await orderStore.cancelOrder(orderId)
   }
 }
 
@@ -499,156 +387,321 @@ const trackOrder = (orderId: string) => {
 }
 
 const reorderItems = (order: Order) => {
-  // Add all items from the order to cart
-  const orderCopy = JSON.parse(JSON.stringify(order))
-  orderCopy.items.forEach((item: any) => {
-    cartStore.addItem(item.menuItem, item.quantity)
+  (order.items || []).forEach(item => {
+    // Reconstruct minimal MenuItem from backend summary
+    const menuItem: any = {
+      id: (item as any).menuItemId || item.id,
+      productId: (item as any).productId,
+      name: item.product?.name || item.name || '',
+      price: item.price,
+      imageUrl: item.product?.imageUrl,
+      isActive: true
+    }
+    cartStore.addItem(menuItem, item.quantity)
   })
-
   router.push('/checkout')
 }
 
-const shareOrder = (order: Order) => {
-  const orderCopy = JSON.parse(JSON.stringify(order))
-  if (navigator.share) {
-    navigator.share({
-      title: `Order #${orderCopy.id}`,
-      text: `Check out my order from Menu Ordering App`,
-      url: `${window.location.origin}/orders/${orderCopy.id}`
-    })
-  } else {
-    // Fallback: copy to clipboard
-    navigator.clipboard.writeText(`${window.location.origin}/orders/${orderCopy.id}`)
-  }
-}
-
 const exportOrders = () => {
-  // Mock export functionality
-  console.log('Exporting orders...')
-  // In a real app, this would generate and download a CSV/PDF
+  console.log('Exporting...')
 }
 
-const loadMoreOrders = async () => {
-  loadingMore.value = true
-  try {
-    // Mock loading more orders
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    hasMoreOrders.value = false // No more orders for demo
-  } catch (error) {
-    console.error('Failed to load more orders:', error)
-  } finally {
-    loadingMore.value = false
+const getOrderStep = (status: string): number => {
+  const steps: Record<string, number> = {
+    'PENDING': 1,
+    'CONFIRMED': 2,
+    'PREPARING': 3,
+    'READY': 3,
+    'OUT_FOR_DELIVERY': 4,
+    'DELIVERED': 4
   }
+  return steps[status] || 1
 }
 
-// Initialize
 onMounted(() => {
-  orderStore.fetchOrderHistory()
+  orderStore.fetchOrderHistory(1)
 })
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens/colors' as *;
 @use '../../assets/scss/tokens/spacing' as *;
-@use '../../assets/scss/tokens/typography' as *;
+@use '../../assets/scss/tokens/colors' as *;
 @use '../../assets/scss/tokens/radius' as *;
 @use '../../assets/scss/tokens/shadows' as *;
+@use '../../assets/scss/tokens/typography' as *;
 @use '../../assets/scss/tokens/transitions' as *;
 
 .orders-page {
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: $space-8 $space-4;
+  padding: $space-6 $space-4;
 }
 
 .orders-page__header {
-  text-align: center;
   margin-bottom: $space-12;
+  text-align: left;
 }
 
 .orders-page__title {
-  font-family: $font-secondary;
-  font-size: $text-3xl;
-  font-weight: $font-bold;
+  font-size: 2.25rem;
+  font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: $space-4;
+  margin-bottom: $space-3;
+  letter-spacing: -0.025em;
 }
 
 .orders-page__subtitle {
-  font-size: $text-lg;
   color: var(--text-secondary);
-  line-height: $leading-relaxed;
+  font-size: 1.125rem;
+  max-width: 600px;
 }
 
 .orders-page__filters {
-  margin-bottom: $space-8;
+  margin-bottom: $space-12;
 }
 
 .orders-page__search-row {
   display: flex;
-  flex-direction: column;
   gap: $space-4;
-  margin-bottom: $space-6;
-
-  @media (min-width: 768px) {
-    flex-direction: row;
-    align-items: center;
-  }
+  margin-bottom: $space-8;
+  flex-wrap: wrap;
 }
 
 .orders-page__search {
   flex: 1;
-  max-width: 400px;
+  min-width: 250px;
 }
 
 .orders-page__filter-controls {
   display: flex;
-  gap: $space-3;
+  gap: $space-2;
 }
 
 .orders-page__stats {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: $space-4;
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: $space-3;
 }
 
 .orders-page__stat-card {
-  text-align: center;
-  padding: $space-6;
+  padding: $space-4;
+  text-align: left;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-xl;
+  box-shadow: var(--shadow-sm);
+  transition: all $transition-base;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 80px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary);
+    background: var(--bg-tertiary);
+  }
 }
 
 .orders-page__stat-value {
-  font-size: $text-2xl;
-  font-weight: $font-bold;
+  font-size: 1.125rem;
+  font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: $space-2;
+  margin-bottom: $space-1;
 }
 
 .orders-page__stat-label {
-  font-size: $text-sm;
+  font-size: 0.75rem;
   color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-// Responsive design
-@media (max-width: 768px) {
-  .orders-page {
-    padding: $space-4;
-  }
+.orders-page__section {
+  margin-bottom: $space-16;
+}
 
-  .orders-page__title {
-    font-size: $text-2xl;
-  }
+.orders-page__section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-8;
+}
 
-  .orders-page__filter-controls {
-    flex-direction: column;
+.orders-page__section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01e;
+}
+
+.orders-page__section-actions {
+  display: flex;
+  gap: $space-2;
+}
+
+.orders-page__items {
+  display: flex;
+  flex-direction: column;
+  gap: $space-6;
+}
+
+.orders-page__items--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.orders-page__order-card {
+  padding: $space-6;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  border-radius: $radius-xl;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: var(--primary-color);
+    box-shadow: $shadow-sm;
   }
 }
 
-// Auth prompt
+.orders-page__order-card--active {
+  border-left: 4px solid var(--primary-color);
+  background: var(--bg-card-active, var(--bg-card));
+}
+.orders-page__order-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $space-6;
+}
+
+.orders-page__order-price-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.orders-page__order-progress {
+  display: flex;
+  gap: $space-2;
+  align-items: center;
+}
+
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  transition: all $transition-base;
+
+  &--active {
+    background: var(--color-primary);
+    box-shadow: 0 0 8px rgba(var(--color-primary-rgb), 0.4);
+  }
+
+  &--current {
+    transform: scale(1.3);
+    border: 2px solid var(--bg-primary);
+  }
+}
+
+.orders-page__order-items-minimal {
+  margin-bottom: $space-6;
+}
+
+.order-items-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+}
+
+.order-item-chip {
+  padding: $space-1 $space-3;
+  background: var(--bg-secondary);
+  border-radius: $radius-lg;
+  font-size: 0.75rem;
+  font-weight: $font-medium;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: $space-1;
+}
+
+.order-items-more {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.orders-page__order-footer {
+  display: flex;
+  gap: $space-3;
+  margin-top: auto;
+}
+
+.orders-page__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $space-16;
+  gap: $space-4;
+}
+
+.orders-page__spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 4px solid var(--bg-secondary);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.orders-page__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  padding: $space-12 $space-4;
+  text-align: center;
+}
+
+.orders-page__empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 400px;
+}
+
+.orders-page__empty-icon {
+  color: var(--color-primary);
+  margin-bottom: $space-6;
+  opacity: 0.15;
+}
+
+.orders-page__empty-btn {
+  margin-top: $space-6;
+}
+
+.orders-page__empty-title {
+  margin-bottom: $space-4;
+  color: var(--text-primary);
+}
+
+.orders-page__empty-text {
+  color: var(--text-tertiary);
+  margin-bottom: $space-10;
+  max-width: 420px;
+  margin-inline: auto;
+  line-height: $leading-relaxed;
+  display: block;
+}
+
+.orders-page__load-more {
+  margin-top: $space-12;
+  text-align: center;
+}
+
 .orders-page__auth-prompt {
   display: flex;
   flex-direction: column;
@@ -656,29 +709,29 @@ onMounted(() => {
   justify-content: center;
   min-height: 60vh;
   text-align: center;
-  padding: $space-8;
 }
 
 .orders-page__auth-icon {
-  color: var(--text-secondary);
-  margin-bottom: $space-6;
-  opacity: 0.6;
-}
-
-.orders-page__auth-title {
-  color: var(--text-primary);
-  margin-bottom: $space-4;
-}
-
-.orders-page__auth-subtitle {
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin-bottom: $space-8;
-  max-width: 400px;
+  opacity: 0.4;
 }
 
-.orders-page__auth-actions {
-  display: flex;
-  gap: $space-4;
+.orders-page__auth-title { margin-bottom: $space-3; font-weight: 700; }
+.orders-page__auth-subtitle { margin-bottom: $space-10; color: var(--text-secondary); max-width: 320px; }
+.orders-page__auth-actions { display: flex; gap: $space-4; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .orders-page { padding: $space-4; }
+  .orders-page__title { font-size: 1.75rem; }
+  .orders-page__search-row { flex-direction: column; }
+  .orders-page__filter-controls { width: 100%; }
+  .orders-page__filter-controls > * { flex: 1; }
+  .orders-page__order-status-row { flex-direction: column; align-items: flex-start; gap: $space-3; }
 }
 </style>
 

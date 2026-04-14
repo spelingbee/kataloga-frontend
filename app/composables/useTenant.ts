@@ -531,7 +531,7 @@ export function useTenantSettings() {
 
   // Settings properties with fallbacks
   const currency = computed(() => {
-    return tenantStore.tenantSettings.currency || 'KGS'
+    return tenantStore.tenantSettings.currency || 'сом'
   })
 
   const timezone = computed(() => {
@@ -622,19 +622,22 @@ export function useTenantSettings() {
    */
   const formatCurrency = (amount: number, options?: Intl.NumberFormatOptions): string => {
     const defaultOptions: Intl.NumberFormatOptions = {
-      style: 'currency',
-      currency: currency.value,
-      minimumFractionDigits: 2,
+      style: (currency.value === 'сом' || currency.value === 'KGS') ? 'decimal' : 'currency',
+      currency: currency.value === 'сом' ? 'KGS' : currency.value,
+      minimumFractionDigits: 0, 
       maximumFractionDigits: 2,
       ...options
     }
 
     try {
-      return new Intl.NumberFormat(language.value, defaultOptions).format(amount)
+      const formattedNumber = new Intl.NumberFormat(language.value, defaultOptions).format(amount)
+      if (currency.value === 'сом' || currency.value === 'KGS') {
+        return `${formattedNumber} сом`
+      }
+      return formattedNumber
     } catch (error) {
       console.error('Error formatting currency:', error)
-      // Fallback to simple format
-      return `${currency.value} ${amount.toFixed(2)}`
+      return `${amount.toFixed(0)} сом`
     }
   }
 
