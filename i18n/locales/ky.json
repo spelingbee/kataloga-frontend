@@ -26,8 +26,13 @@
     "title": "Меню",
     "categories": "Категориялар",
     "allCategories": "Бардык категориялар",
+    "fullMenu": "Толук меню",
+    "browseSubtitle": "Категориялар боюнча бардык даамдуу тамактарды карап чыгыңыз",
     "searchPlaceholder": "Тамак издөө...",
     "filters": "Чыпкалар",
+    "itemsAvailable": "{count} тамак жеткиликтүү",
+    "noItemsAvailable": "Жеткиликтүү тамактар жок",
+    "allItems": "Бардык тамактар",
     "dietary": "Диета",
     "vegetarian": "Вегетариандык",
     "vegan": "Вегандык",
@@ -101,6 +106,8 @@
   },
   "orders": {
     "title": "Заказдар",
+    "subtitle": "Сиздин заказдарыңызды көзөмөлдөңүз жана башкарыңыз",
+    "activeOrders": "Активдүү заказдар",
     "history": "Заказдар тарыхы",
     "tracking": "Заказды көзөмөлдөө",
     "orderNumber": "Заказ №{number}",
@@ -122,7 +129,18 @@
     "priceChanged": "Кээ бир баалар өзгөрдү",
     "itemsUnavailable": "Кээ бир буюмдар жеткиликсиз",
     "noOrders": "Заказдар али жок",
-    "viewOrder": "Заказды көрүү"
+    "viewOrder": "Заказды көрүү",
+    "stats": {
+      "total": "Жалпы заказдар",
+      "completed": "Аяктаган",
+      "cancelled": "Жокко чыгарылган"
+    },
+    "filters": {
+      "all": "Бардыгы",
+      "active": "Активдүү",
+      "completed": "Аяктаган",
+      "cancelled": "Жокко чыгарылган"
+    }
   },
   "favorites": {
     "title": "Тандалмалар",
@@ -189,7 +207,43 @@
     "minutesAgo": "{count} мүнөт мурун",
     "justNow": "Азыр эле"
   },
+  "delivery": {
+    "title": "Жеткирүү",
+    "selectAddress": "Даректи тандаңыз",
+    "enterAddress": "Даректи киргизиңиз",
+    "currentLocation": "Учурдагы жайгашкан жер",
+    "savedAddresses": "Сакталган даректер",
+    "addNewAddress": "Жаңы дарек кошуу",
+    "deliveryTime": "Жеткирүү убактысы",
+    "estimatedDelivery": "Болжолдуу жеткирүү",
+    "deliveryInstructions": "Жеткирүү боюнча көрсөтмөлөр",
+    "deliveryFee": "Жеткирүү акысы",
+    "freeDelivery": "Акысыз жеткирүү",
+    "minimumOrder": "Минималдуу заказ"
+  },
+  "form": {
+    "firstName": "Аты",
+    "lastName": "Фамилиясы",
+    "email": "Email",
+    "phone": "Телефон",
+    "address": "Дарек",
+    "city": "Шаар",
+    "zipCode": "Почта индекси",
+    "notes": "Эскертүүлөр",
+    "required": "Милдеттүү",
+    "optional": "Каалаганыңызча"
+  },
+  "payment": {
+    "title": "Төлөм",
+    "method": "Төлөм ыкмасы",
+    "cash": "Накталай",
+    "card": "Карта",
+    "online": "Онлайн",
+    "payOnDelivery": "Жеткирүүдө төлөө",
+    "payNow": "Азыр төлөө"
+  },
   "currency": {
     "som": "сом"
   }
+}
 }
