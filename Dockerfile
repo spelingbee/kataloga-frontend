@@ -13,7 +13,7 @@ COPY package.json ./
 COPY pnpm-lock.yaml* ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile || pnpm install
+RUN pnpm config set node-linker hoisted && pnpm install
 
 # Development stage
 FROM base AS development

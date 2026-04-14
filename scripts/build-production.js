@@ -28,6 +28,30 @@ function preBuildOptimizations() {
     console.log('⚠️  No previous builds to clean')
   }
   
+  // Try to load variables from .env files if they exist
+  const envFiles = ['.env', '.env.production', '../../.env']
+  envFiles.forEach(file => {
+    const filePath = join(process.cwd(), file)
+    if (existsSync(filePath)) {
+      try {
+        const content = readFileSync(filePath, 'utf8')
+        content.split('\n').forEach(line => {
+          const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)$/)
+          if (match) {
+            const key = match[1]
+            let value = match[2].trim()
+            if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1)
+            if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1)
+            if (!process.env[key]) process.env[key] = value
+          }
+        })
+        console.log(`✅ Loaded environment variables from ${file}`)
+      } catch (error) {
+        console.warn(`⚠️  Could not load ${file}:`, error.message)
+      }
+    }
+  })
+
   // Verify environment variables
   const requiredEnvVars = [
     'NUXT_PUBLIC_API_BASE_URL',
@@ -38,11 +62,11 @@ function preBuildOptimizations() {
   const missingVars = requiredEnvVars.filter(varName => !process.env[varName])
   
   if (missingVars.length > 0) {
-    console.error('❌ Missing required environment variables:', missingVars.join(', '))
-    process.exit(1)
+    console.warn('⚠️  Missing environment variables:', missingVars.join(', '))
+    console.warn('   These should be provided at runtime for the application to function correctly.')
+  } else {
+    console.log('✅ Environment variables verified')
   }
-  
-  console.log('✅ Environment variables verified')
   
   // Check for production-specific files
   const productionFiles = [
