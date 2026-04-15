@@ -564,7 +564,10 @@ export class ApiClient {
 
         let response: Response
         try {
-          response = await fetch(url, requestInit)
+          response = await fetch(url, {
+            ...requestInit,
+            credentials: 'include'
+          })
         } catch (fetchError) {
           // Convert fetch errors to network errors
           const networkError = this.createNetworkError(fetchError as Error, url)

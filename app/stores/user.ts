@@ -89,10 +89,10 @@ export const useUserStore = defineStore('user', {
         const refreshToken = localStorage.getItem('refreshToken')
         const userStr = localStorage.getItem('user')
 
-        if (accessToken && refreshToken) {
-          this.accessToken = accessToken
-          this.refreshToken = refreshToken
-          this.isAuthenticated = true
+        if ((accessToken && refreshToken) || import.meta.client) {
+          if (accessToken) this.accessToken = accessToken
+          if (refreshToken) this.refreshToken = refreshToken
+          this.isAuthenticated = !!accessToken
 
           if (userStr) {
             try {
@@ -100,16 +100,7 @@ export const useUserStore = defineStore('user', {
             } catch (e) {}
           }
 
-          if (this.isTokenExpired()) {
-            try {
-              const refreshed = await (this as any).$apiClient.handleTokenRefresh()
-              if (!refreshed) throw new Error('Token refresh failed')
-            } catch (refreshError) {
-              this.clearTokens()
-              return
-            }
-          }
-
+          // Always try to fetch profile to verify session (cookie or token)
           await this.fetchUserProfile()
         }
       } catch (error) {
