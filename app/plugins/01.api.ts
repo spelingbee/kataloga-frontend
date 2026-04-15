@@ -12,7 +12,7 @@ export default defineNuxtPlugin({
 
     // Create API client with configuration
     const apiClient = createApiClient({
-      baseURL: config.public.apiBaseUrl,
+      baseURL: config.public.apiUrl,
       tenantSlug: config.public.tenantSlug,
       timeout: 10000,
       retries: 2,

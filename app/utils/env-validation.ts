@@ -17,7 +17,7 @@ export function validateEnvironmentConfig(): EnvironmentValidationResult {
   const warnings: string[] = []
 
   // Check API base URL
-  if (!config.public.apiBaseUrl) {
+  if (!config.public.apiUrl) {
     errors.push('NUXT_PUBLIC_API_BASE_URL is required')
   }
 

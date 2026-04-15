@@ -88,7 +88,7 @@ export default defineNuxtConfig({
   // Runtime config
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
+      apiUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
       tenantSlug: process.env.NUXT_PUBLIC_TENANT_SLUG || '',
       telegramBotToken: process.env.NUXT_PUBLIC_TELEGRAM_BOT_TOKEN || '',
       telegramBotUsername: process.env.NUXT_PUBLIC_TELEGRAM_BOT_USERNAME || '',

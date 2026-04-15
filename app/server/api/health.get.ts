@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     // Check API connectivity
     try {
       const config = useRuntimeConfig()
-      const apiUrl = config.public.apiBaseUrl
+      const apiUrl = config.public.apiUrl
       
       if (apiUrl && apiUrl !== 'http://localhost:3001') {
         const response = await $fetch(`${apiUrl}/health`, {

@@ -33,8 +33,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     user: new UserService(apiClient),
     map: new MapService(),
     notification: new NotificationService(config),
-    telegramAuth: new TelegramAuthService(config.public.apiBaseUrl),
-    telegramNotifications: new TelegramNotificationsService(config.public.apiBaseUrl)
+    telegramAuth: new TelegramAuthService(config.public.apiUrl),
+    telegramNotifications: new TelegramNotificationsService(config.public.apiUrl)
   }
 
   // Inject services into Nuxt app context
