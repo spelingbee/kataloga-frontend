@@ -88,7 +88,7 @@ export default defineNuxtConfig({
   // Runtime config
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
       tenantSlug: process.env.NUXT_PUBLIC_TENANT_SLUG || '',
       telegramBotToken: process.env.NUXT_PUBLIC_TELEGRAM_BOT_TOKEN || '',
       telegramBotUsername: process.env.NUXT_PUBLIC_TELEGRAM_BOT_USERNAME || '',
@@ -282,8 +282,8 @@ export default defineNuxtConfig({
     '/profile/**': { ssr: false },
 
     // API routes
+    // API routes - Proxy is mainly for development, in production we use direct API_URL
     '/api/**': {
-      proxy: 'http://localhost:3001/api/**',
       cors: true,
       headers: { 'Cache-Control': 's-maxage=60' },
     },
