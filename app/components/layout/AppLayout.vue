@@ -8,9 +8,9 @@
       <ResponsiveContainer>
         <div class="app-layout__header-content">
           <!-- Logo/Brand -->
-          <NuxtLink to="/" class="app-layout__brand">
-            <BaseIcon name="restaurant" size="lg" />
-            <span class="app-layout__brand-text">{{ brandName }}</span>
+          <NuxtLink :to="tPath('/')" class="app-layout__brand">
+            <BaseIcon :name="brandIcon" size="lg" />
+            <span class="app-layout__brand-text">{{ appName }}</span>
           </NuxtLink>
 
           <!-- Desktop Navigation -->
@@ -101,7 +101,7 @@
         <slot name="footer">
           <div class="app-layout__footer-content">
             <p class="app-layout__footer-text">
-              © {{ currentYear }} {{ brandName }}. All rights reserved.
+              © {{ currentYear }} {{ appName }}. All rights reserved.
             </p>
           </div>
         </slot>
@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import {useCartStore} from '~/stores/cart'
-import { useTenant } from '~/composables/useTenant'
+import { useTenant, useTenantBranding } from '~/composables/useTenant'
 import LanguageSwitcher from '../base/LanguageSwitcher.vue'
 import AppNavigation from './AppNavigation.vue'
 import StickyCartButton from '../cart/StickyCartButton.vue'
@@ -178,6 +178,16 @@ const props = withDefaults(defineProps<Props>(), {
 // Composables
 const { isDark, toggleTheme } = useTheme()
 const cartStore = useCartStore()
+const { appName, logo } = useTenantBranding()
+const { tPath, tenantSlug } = useTenant()
+
+// Dynamic Brand Icon logic
+const brandIcon = computed(() => {
+  if (tenantSlug.value?.includes('flower')) return 'local_florist'
+  if (tenantSlug.value?.includes('pizza')) return 'local_pizza'
+  if (tenantSlug.value?.includes('sushi')) return 'restaurant' // Fallback for sushi for now
+  return 'restaurant'
+})
 
 // Computed properties
 const layoutClasses = computed(() => [
@@ -201,7 +211,6 @@ const themeToggleLabel = computed(() =>
 
 // Methods
 const router = useRouter()
-const { tPath } = useTenant()
 
 const handleStickyCartClick = () => {
   router.push(tPath('/checkout'))

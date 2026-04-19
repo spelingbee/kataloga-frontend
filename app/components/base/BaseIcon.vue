@@ -63,7 +63,9 @@ const categoryIcons: Record<string, string> = {
   meat: '🥩',
   fastfood: '🍟',
   dessert: '🧁',
-  drinks: '🥤'
+  drinks: '🥤',
+  local_florist: '🌸',
+  local_pizza: '🍕'
 }
 
 // Action icons using SVG paths

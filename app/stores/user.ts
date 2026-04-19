@@ -195,6 +195,33 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    async fetchProfile() {
+      try {
+        const profile = await (this as any).$services.user.getProfile()
+        if (profile) {
+          this.user = profile
+          if (import.meta.client) {
+            localStorage.setItem('user', JSON.stringify(profile))
+          }
+        }
+        return profile
+      } catch (error: any) {
+        if (error.status === 401) {
+          this.clearTokens()
+        }
+        throw error
+      }
+    },
+
+    async fetchAddresses() {
+      try {
+        return await (this as any).$services.user.getAddresses()
+      } catch (error) {
+        console.error('Failed to fetch addresses:', error)
+        return []
+      }
+    },
+
     async changePassword(data: any) {
       return await (this as any).$apiClient.post('/auth/change-password', data)
     },
