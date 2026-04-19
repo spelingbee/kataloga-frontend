@@ -1,5 +1,4 @@
- * Handles lazy loading, WebP format conversion, and performance optimization
- */
+ /* Handles lazy loading, WebP format conversion, and performance optimization */
 import { useRuntimeConfig } from '#app'
 
 interface ImageOptimizationOptions {
