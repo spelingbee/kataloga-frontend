@@ -8,6 +8,7 @@ export interface TenantInfo {
   settings: TenantSettings
   locations: TenantLocation[]
   isActive: boolean
+  bankTransferQrCode?: string
   businessType: 'RESTAURANT' | 'CAFE' | 'FLOWERS' | 'SHOP' | 'OTHER'
   createdAt: string
   updatedAt: string

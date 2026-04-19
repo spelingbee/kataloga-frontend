@@ -34,6 +34,16 @@
         </div>
       </div>
 
+      <!-- QR Code Section -->
+      <div v-if="qrCodeUrl" class="transfer-payment-modal__qr-section">
+        <div class="transfer-payment-modal__qr-label">
+          {{ $t('payment.transfer.qrLabel') || 'Сканируйте QR-код для оплаты' }}
+        </div>
+        <div class="transfer-payment-modal__qr-container">
+          <img :src="qrCodeUrl" alt="Payment QR Code" class="transfer-payment-modal__qr-image" />
+        </div>
+      </div>
+
       <!-- Instructions -->
       <div class="transfer-payment-modal__instructions">
         <h4 class="transfer-payment-modal__instructions-title">
@@ -84,8 +94,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useTenantSettings } from '~/composables/useTenant'
+import { ref, computed } from 'vue'
+import { useTenant, useTenantSettings } from '~/composables/useTenant'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
 interface Props {
   modelValue: boolean
@@ -102,7 +113,14 @@ const emit = defineEmits<{
 }>()
 
 const { formatCurrency } = useTenantSettings()
+const { currentTenant } = useTenant()
 const showCopySuccess = ref(false)
+
+const qrCodeUrl = computed(() => {
+  return currentTenant.value?.bankTransferQrCode 
+    ? resolveImageUrl(currentTenant.value.bankTransferQrCode) 
+    : null
+})
 
 const copyPhoneNumber = async () => {
   if (!props.whatsappPhone) return
@@ -212,6 +230,34 @@ const formatAmount = (amount: number): string => {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
+}
+
+.transfer-payment-modal__qr-section {
+  margin-bottom: $space-8;
+  text-align: center;
+}
+
+.transfer-payment-modal__qr-label {
+  font-size: $text-sm;
+  font-weight: $font-medium;
+  color: var(--text-secondary);
+  margin-bottom: $space-4;
+}
+
+.transfer-payment-modal__qr-container {
+  display: inline-block;
+  padding: $space-4;
+  background: white;
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+}
+
+.transfer-payment-modal__qr-image {
+  display: block;
+  max-width: 200px;
+  height: auto;
+  border-radius: $radius-md;
 }
 
 .transfer-payment-modal__instructions {
