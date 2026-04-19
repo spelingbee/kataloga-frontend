@@ -263,23 +263,21 @@ export default defineNuxtConfig({
 
   // Route rules for performance
   routeRules: {
-    // Homepage - SSR for SEO
+    // Homepage - SSR for SEO (Landing Page)
     '/': { ssr: true },
 
     // Tenant selection page - SSR for SEO
     '/select-restaurant': { ssr: true },
 
-    // Menu pages - SSR for SEO and performance
-    '/menu': { ssr: true },
-    '/menu/**': { ssr: true },
-    '/dish/**': { ssr: true },
+    // Tenant-specific routes
+    '/t/**': { ssr: true },
+    '/t/*/orders/**': { ssr: false },
+    '/t/*/profile/**': { ssr: false },
+    '/t/*/favourites': { ssr: false },
+    '/t/*/notifications': { ssr: false },
 
-    // Auth pages - SPA for better UX
+    // Auth pages - SPA for better UX (Global)
     '/auth/**': { ssr: false },
-
-    // User pages - SPA
-    '/orders/**': { ssr: false },
-    '/profile/**': { ssr: false },
 
     // API routes
     // API routes - Proxy is mainly for development, in production we use direct API_URL

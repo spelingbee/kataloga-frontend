@@ -10,58 +10,47 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   if (import.meta.server) return
 
   const tenantStore = useTenantStore()
-  const config = useRuntimeConfig()
-
-  // Extract tenant slug from query parameter
+  
+  // 1. Extract tenant slug from path /t/[slug]
+  const tenantSlugFromParams = to.params.slug as string | undefined
+  
+  // 2. Extract tenant slug from legacy query parameter ?tenant=slug
   const tenantSlugFromQuery = to.query.tenant as string | undefined
-  const previousTenantSlug = from.query.tenant as string | undefined
 
-  // Handle tenant changes from URL
-  if (tenantSlugFromQuery && tenantSlugFromQuery !== tenantStore.tenantSlug) {
-    try {
-      // Validate and set new tenant
-      const isValid = await tenantStore.validateTenant(tenantSlugFromQuery)
-      
-      if (isValid) {
-        await tenantStore.setTenant(tenantSlugFromQuery)
-      } else {
-        console.warn(`Invalid tenant slug in URL: ${tenantSlugFromQuery}`)
-        
-        // Remove invalid tenant parameter from URL
-        const query = { ...to.query }
-        delete query.tenant
-        
-        return navigateTo({
-          path: to.path,
-          query,
-          replace: true
-        })
-      }
-    } catch (error) {
-      console.error('Error setting tenant from URL:', error)
-    }
-  }
+  // Handle redirection from legacy query param to new path format
+  if (tenantSlugFromQuery && !tenantSlugFromParams) {
+    const isValid = await tenantStore.validateTenant(tenantSlugFromQuery)
+    if (isValid) {
+      // Build new path: /t/slug/original-path (e.g., /menu -> /t/slug/menu)
+      const cleanPath = to.path === '/' ? '' : to.path
+      const query = { ...to.query }
+      delete query.tenant
 
-  // Preserve tenant in URL when navigating between routes
-  // Only if tenant is set and URL doesn't already have it
-  if (tenantStore.currentTenant && !tenantSlugFromQuery && tenantStore.isMultiTenant) {
-    // Check if we should preserve tenant in URL for this route
-    const shouldPreserveTenant = shouldPreserveTenantInUrl(to.path)
-    
-    if (shouldPreserveTenant) {
-      // Add tenant parameter to URL
       return navigateTo({
-        path: to.path,
-        query: {
-          ...to.query,
-          tenant: tenantStore.tenantSlug
-        },
+        path: `/t/${tenantSlugFromQuery}${cleanPath}`,
+        query,
         replace: true
       })
     }
   }
 
-  // Preservation logic for tenant in URL (removed the redundant / to /menu redirect)
+  // Handle tenant detection from the new path format
+  if (tenantSlugFromParams && tenantSlugFromParams !== tenantStore.tenantSlug) {
+    try {
+      const isValid = await tenantStore.validateTenant(tenantSlugFromParams)
+      
+      if (isValid) {
+        await tenantStore.setTenant(tenantSlugFromParams)
+      } else {
+        console.warn(`Invalid tenant slug in path: ${tenantSlugFromParams}`)
+        // Redirect to a safe place if slug is garbage
+        return navigateTo('/select-restaurant')
+      }
+    } catch (error) {
+      console.error('Error setting tenant from path:', error)
+    }
+  }
+
   return
 })
 

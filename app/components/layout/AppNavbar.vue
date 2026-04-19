@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { useUserStore } from '~/stores/user'
+import { useTenant } from '~/composables/useTenant'
 
 const route = useRoute()
 const userStore = useUserStore()
+const { tPath } = useTenant()
 
 const menuItems = [
   { path: '/', label: 'Меню', icon: 'menu-book' },
@@ -11,17 +13,18 @@ const menuItems = [
 ]
 
 const isActive = (path: string) => {
+  const dynamicPath = tPath(path)
   if (path === '/') {
-    return route.path === '/'
+    return route.path === dynamicPath || route.path === dynamicPath + '/'
   }
-  return route.path.startsWith(path)
+  return route.path.startsWith(dynamicPath)
 }
 </script>
 
 <template>
   <nav class="app-navbar">
     <div class="app-navbar__header">
-      <NuxtLink to="/" class="app-navbar__logo">
+      <NuxtLink :to="tPath('/')" class="app-navbar__logo">
         <BaseIcon name="restaurant" size="lg" class="app-navbar__logo-icon" />
         <span class="app-navbar__logo-text">Kataloga</span>
       </NuxtLink>
@@ -31,7 +34,7 @@ const isActive = (path: string) => {
       <NuxtLink
         v-for="item in menuItems"
         :key="item.path"
-        :to="item.path"
+        :to="tPath(item.path)"
         class="app-navbar__item"
         :class="{ 'app-navbar__item--active': isActive(item.path) }"
       >
@@ -41,7 +44,7 @@ const isActive = (path: string) => {
     </div>
 
     <div class="app-navbar__footer">
-      <NuxtLink v-if="userStore.isAuthenticated" to="/profile" class="app-navbar__item">
+      <NuxtLink v-if="userStore.isAuthenticated" :to="tPath('/profile')" class="app-navbar__item">
         <BaseIcon name="user" size="md" class="app-navbar__item-icon" />
         <span class="app-navbar__item-text">Профиль</span>
       </NuxtLink>

@@ -99,7 +99,8 @@ const handleClick = () => {
       // Silently fail if haptic feedback is not available
     }
     
-    router.push('/checkout')
+    const { tPath } = useTenant()
+    router.push(tPath('/checkout'))
   }
 }
 

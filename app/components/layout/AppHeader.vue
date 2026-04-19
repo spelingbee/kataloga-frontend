@@ -38,7 +38,7 @@
       </BaseButton>
 
       <!-- Logo/Brand -->
-      <NuxtLink to="/" class="app-header__logo">
+      <NuxtLink :to="tPath('/')" class="app-header__logo">
         <img
           v-if="tenantBranding?.logo"
           :src="tenantBranding.logo"
@@ -136,10 +136,10 @@
 
         <!-- User dropdown menu -->
         <div v-if="showUserMenu" class="app-header__dropdown">
-          <NuxtLink to="/profile" class="app-header__dropdown-item" @click="closeUserMenu">
+          <NuxtLink :to="tPath('/profile')" class="app-header__dropdown-item" @click="closeUserMenu">
             {{ $t('common.profile', 'Профиль') }}
           </NuxtLink>
-          <NuxtLink to="/orders" class="app-header__dropdown-item" @click="closeUserMenu">
+          <NuxtLink :to="tPath('/orders')" class="app-header__dropdown-item" @click="closeUserMenu">
             {{ $t('common.order_history', 'История заказов') }}
           </NuxtLink>
 
@@ -188,7 +188,7 @@ defineEmits<{
 }>()
 
 // Composables
-const { currentTenant, isMultiTenant, tenantBranding } = useTenant()
+const { currentTenant, isMultiTenant, tenantBranding, tPath } = useTenant()
 const telegram = useTelegram()
 
 // Stores
@@ -229,7 +229,7 @@ const closeMobileSearch = () => {
 }
 
 const openNotifications = () => {
-  $router.push('/notifications')
+  $router.push(tPath('/notifications'))
 }
 
 const logout = async () => {

@@ -140,12 +140,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useOrders } from '~/composables/useOrders'
 import type { Order } from '~/types'
+import { useTenant } from '~/composables/useTenant'
 
 const route = useRoute()
 const router = useRouter()
 const { getOrder, currentOrder, setCurrentOrder } = useOrders()
+const { tPath } = useTenant()
 
 // Telegram integration
 const telegram = useTelegram()
@@ -222,12 +223,12 @@ const formatEstimatedTime = (time: string | Date | number) => {
 // Navigation
 const goToOrderTracking = () => {
   if (order.value) {
-    router.push(`/orders/${order.value.id}`)
+    router.push(tPath(`/orders/${order.value.id}`))
   }
 }
 
 const goToMenu = () => {
-  router.push('/')
+  router.push(tPath('/'))
 }
 
 // Send Telegram notification

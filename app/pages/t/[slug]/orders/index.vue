@@ -11,10 +11,10 @@
         {{ $t('orders.emptyHistory') }}
       </AppText>
       <div class="orders-page__auth-actions">
-        <NuxtLink to="/auth/login?redirect=/orders">
+        <NuxtLink :to="`/auth/login?redirect=${tPath('/orders')}`">
           <BaseButton variant="primary">{{ $t('auth.login') }}</BaseButton>
         </NuxtLink>
-        <NuxtLink to="/auth/register?redirect=/orders">
+        <NuxtLink :to="`/auth/register?redirect=${tPath('/orders')}`">
           <BaseButton variant="secondary">{{ $t('auth.register') }}</BaseButton>
         </NuxtLink>
       </div>
@@ -138,7 +138,7 @@
             </div>
 
             <div class="orders-page__order-footer">
-              <NuxtLink :to="`/orders/${order.id}`" class="flex-1">
+              <NuxtLink :to="tPath(`/orders/${order.id}`)" class="flex-1">
                 <BaseButton variant="primary" size="md" class="w-full">
                   <BaseIcon name="eye" size="sm" />
                   {{ $t('orders.view') }}
@@ -191,7 +191,7 @@
             <AppText class="orders-page__empty-text">
               {{ searchQuery || statusFilter || timeFilter ? $t('orders.noResultsFilter') : $t('orders.emptyHistory') }}
             </AppText>
-            <NuxtLink v-if="!searchQuery && !statusFilter && !timeFilter" to="/menu">
+            <NuxtLink v-if="!searchQuery && !statusFilter && !timeFilter" :to="tPath('/menu')">
               <BaseButton variant="primary" class="orders-page__empty-btn">{{ $t('menu.title') }}</BaseButton>
             </NuxtLink>
             <BaseButton v-else variant="secondary" @click="clearFilters">{{ $t('common.clear') }}</BaseButton>
@@ -205,7 +205,7 @@
               v-for="order in filteredOrders"
               :key="order.id"
               class="orders-page__order-card"
-              @click="showListView ? null : $router.push(`/orders/${order.id}`)"
+              @click="showListView ? null : $router.push(tPath(`/orders/${order.id}`))"
             >
               <div class="orders-page__order-header">
                 <div class="orders-page__order-info">
@@ -230,7 +230,7 @@
               </div>
 
               <div v-if="showListView" class="orders-page__order-actions">
-                <NuxtLink :to="`/orders/${order.id}`">
+                <NuxtLink :to="tPath(`/orders/${order.id}`)">
                   <BaseButton variant="secondary" size="sm">{{ $t('orders.view') }}</BaseButton>
                 </NuxtLink>
                 <BaseButton variant="ghost" size="sm" @click="reorderItems(order)">
@@ -259,7 +259,7 @@ import { useOrders } from '~/composables/useOrders'
 import { useOrderStore } from '~/stores/order'
 import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
-import { useTenantSettings } from '~/composables/useTenant'
+import { useTenantSettings, useTenant } from '~/composables/useTenant'
 import type { Order } from '~/types'
 import AppText from '../../components/base/AppText.vue'
 import AppHeading from '../../components/base/AppHeading.vue'
@@ -272,6 +272,7 @@ const orderStore = useOrderStore()
 const cartStore = useCartStore()
 const userStore = useUserStore()
 const { formatCurrency } = useTenantSettings()
+const { tPath } = useTenant()
 
 // Auth check
 const isAuthenticated = computed(() => userStore.isAuthenticated)
@@ -383,7 +384,7 @@ const cancelOrder = async (orderId: string) => {
 }
 
 const trackOrder = (orderId: string) => {
-  router.push(`/orders/${orderId}?tab=tracking`)
+  router.push(tPath(`/orders/${orderId}?tab=tracking`))
 }
 
 const reorderItems = (order: Order) => {
@@ -399,7 +400,7 @@ const reorderItems = (order: Order) => {
     }
     cartStore.addItem(menuItem, item.quantity)
   })
-  router.push('/checkout')
+  router.push(tPath('/checkout'))
 }
 
 const exportOrders = () => {
@@ -424,12 +425,12 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens/spacing' as *;
-@use '../../assets/scss/tokens/colors' as *;
-@use '../../assets/scss/tokens/radius' as *;
-@use '../../assets/scss/tokens/shadows' as *;
-@use '../../assets/scss/tokens/typography' as *;
-@use '../../assets/scss/tokens/transitions' as *;
+@use '~/assets/scss/tokens/spacing' as *;
+@use '~/assets/scss/tokens/colors' as *;
+@use '~/assets/scss/tokens/radius' as *;
+@use '~/assets/scss/tokens/shadows' as *;
+@use '~/assets/scss/tokens/typography' as *;
+@use '~/assets/scss/tokens/transitions' as *;
 
 .orders-page {
   max-width: 900px;

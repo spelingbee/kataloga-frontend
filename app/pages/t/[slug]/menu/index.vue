@@ -19,7 +19,7 @@
         <BaseButton
           variant="secondary"
           class="menu-controls__search-button"
-          @click="$router.push('/menu/search')"
+          @click="$router.push(tPath('/menu/search'))"
         >
           <BaseIcon name="search" size="sm" />
         </BaseButton>
@@ -132,16 +132,15 @@
       </div>
     </section>
 
-    <!-- Quick Actions -->
     <section class="menu-actions">
       <div class="menu-actions__content">
-        <NuxtLink to="/favourites">
+        <NuxtLink :to="tPath('/favourites')">
           <BaseButton variant="secondary">
             <BaseIcon name="heart" size="sm" class="u-mr-2" />
             {{ $t('favorites.viewAll') }}
           </BaseButton>
         </NuxtLink>
-        <NuxtLink to="/orders">
+        <NuxtLink :to="tPath('/orders')">
           <BaseButton variant="secondary">
             <BaseIcon name="receipt" size="sm" class="u-mr-2" />
             {{ $t('orders.history') }}
@@ -162,6 +161,7 @@ import AppHeading from '../../components/base/AppHeading.vue'
 import LoadingWrapper from '../../components/base/LoadingWrapper.vue'
 import BasePagination from '../../components/base/BasePagination.vue'
 import { useI18n } from 'vue-i18n'
+import { useTenant } from '~/composables/useTenant'
 
 const { t } = useI18n()
 
@@ -173,6 +173,7 @@ definePageMeta({
 const menuStore = useMenuStore()
 const route = useRoute()
 const router = useRouter()
+const { tPath } = useTenant()
 
 // Reactive state
 const showFilters = ref(false)
@@ -200,7 +201,7 @@ const onCategorySelected = (categoryId: string | null) => {
 
 const onItemSelected = (item: MenuItem) => {
   menuStore.setSelectedDish(item)
-  router.push(`/dish/${item.id}`)
+  router.push(tPath(`/dish/${item.id}`))
 }
 
 const onAddToCart = (item: MenuItem) => {

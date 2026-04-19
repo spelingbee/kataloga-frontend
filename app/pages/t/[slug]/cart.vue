@@ -8,9 +8,12 @@
 import { useRouter } from 'vue-router'
 import { onMounted } from 'vue'
 
+import { useTenant } from '~/composables/useTenant'
+
 const router = useRouter()
+const { tPath } = useTenant()
 
 onMounted(() => {
-  router.replace('/checkout')
+  router.replace(tPath('/checkout'))
 })
 </script>

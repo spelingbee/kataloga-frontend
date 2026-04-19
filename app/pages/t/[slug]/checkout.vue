@@ -18,7 +18,7 @@
         <EmptyCart />
         <BaseButton
           variant="primary"
-          @click="navigateTo('/menu')"
+          @click="navigateTo(tPath('/menu'))"
         >
           Browse Menu
         </BaseButton>
@@ -90,6 +90,7 @@ import { useCartStore } from '~/stores/cart'
 import { useI18n } from 'vue-i18n'
 import CheckoutFlow from '~/components/checkout/CheckoutFlow.vue'
 import EmptyCart from '../components/base/EmptyCart.vue'
+import { useTenant } from '~/composables/useTenant'
 
 definePageMeta({
   layout: 'default',
@@ -99,6 +100,7 @@ definePageMeta({
 const { t } = useI18n()
 const cartStore = useCartStore()
 const router = useRouter()
+const { tPath } = useTenant()
 
 let timeoutId: ReturnType<typeof setTimeout> | null = null
 
@@ -137,17 +139,17 @@ const handleOrderComplete = async (createdOrder: any) => {
 
 const handleTrackOrder = () => {
   navigateTo({
-    path: '/orders/confirmation',
+    path: tPath('/orders/confirmation'),
     query: { orderId: lastOrderData.value?.id }
   })
 }
 
 const handleContinueShopping = () => {
-  navigateTo('/menu')
+  navigateTo(tPath('/menu'))
 }
 
 const handleViewOrders = () => {
-  navigateTo('/orders')
+  navigateTo(tPath('/orders'))
 }
 
 const retryOrderCreation = () => {
@@ -163,17 +165,17 @@ const closeErrorModal = () => {
 }
 
 const handleCancel = () => {
-  router.push('/checkout')
+  router.push(tPath('/checkout'))
 }
 </script>
 
 <style scoped lang="scss">
-@use '../assets/scss/tokens/colors' as *;
-@use '../assets/scss/tokens/spacing' as *;
-@use '../assets/scss/tokens/typography' as *;
-@use '../assets/scss/tokens/radius' as *;
-@use '../assets/scss/tokens/shadows' as *;
-@use '../assets/scss/tokens/transitions' as *;
+@use '~/assets/scss/tokens/colors' as *;
+@use '~/assets/scss/tokens/spacing' as *;
+@use '~/assets/scss/tokens/typography' as *;
+@use '~/assets/scss/tokens/radius' as *;
+@use '~/assets/scss/tokens/shadows' as *;
+@use '~/assets/scss/tokens/transitions' as *;
 
 .checkout-page {
   min-height: 100vh;

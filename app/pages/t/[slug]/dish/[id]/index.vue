@@ -19,7 +19,7 @@
         <BaseButton @click="$router.go(-1)">
           Go Back
         </BaseButton>
-        <NuxtLink to="/menu">
+        <NuxtLink :to="tPath('/menu')">
           <BaseButton variant="secondary">
             Browse Menu
           </BaseButton>
@@ -162,12 +162,13 @@
 import type { MenuItem } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
-import { useTenantSettings } from '~/composables/useTenant'
+import { useTenantSettings, useTenant } from '~/composables/useTenant'
 
 const route = useRoute()
 const router = useRouter()
 const menuStore = useMenuStore()
 const { formatCurrency } = useTenantSettings()
+const { tPath } = useTenant()
 
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -229,11 +230,11 @@ const onAddedToCart = () => {
   if (dish.value) {
     const cartStore = useCartStore()
     cartStore.addItem(dish.value, quantity.value)
-    router.push('/checkout')
+    router.push(tPath('/checkout'))
   }
 }
 
-const onRelatedDishSelected = (item: MenuItem) => router.push(`/dish/${item.id}`)
+const onRelatedDishSelected = (item: MenuItem) => router.push(tPath(`/dish/${item.id}`))
 const formatPriceDisplay = (price: number) => formatCurrency(price)
 
 onMounted(loadDish)
@@ -241,11 +242,11 @@ watch(() => dishId.value, loadDish)
 </script>
 
 <style lang="scss" scoped>
-@use '../../../assets/scss/tokens/spacing' as *;
-@use '../../../assets/scss/tokens/radius' as *;
-@use '../../../assets/scss/tokens/typography' as *;
-@use '../../../assets/scss/tokens/transitions' as *;
-@use '../../../assets/scss/tokens/shadows' as *;
+@use '~/assets/scss/tokens/spacing' as *;
+@use '~/assets/scss/tokens/radius' as *;
+@use '~/assets/scss/tokens/typography' as *;
+@use '~/assets/scss/tokens/transitions' as *;
+@use '~/assets/scss/tokens/shadows' as *;
 
 .product-page-container {
   min-height: 100vh;

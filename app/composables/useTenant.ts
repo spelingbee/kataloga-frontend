@@ -50,6 +50,7 @@ export interface UseTenantReturn {
   removeTenantFromUrl: () => Promise<void>
   getTenantFromUrl: () => string | null
   navigateWithTenant: (path: string, tenantSlug?: string) => Promise<void>
+  tPath: (path: string) => string
   
   // Utility methods
   isDataForCurrentTenant: (tenantId: string) => boolean
@@ -220,6 +221,25 @@ export function useTenant(): UseTenantReturn {
   }
 
   /**
+   * Resolve a path with the current tenant slug prefix
+   * 
+   * @param path - The path to resolve
+   * @returns The path with tenant prefix if available
+   */
+  const tPath = (path: string): string => {
+    const slug = tenantStore.tenantSlug
+    if (!slug) return path
+    
+    // Auth and general pages don't need tenant prefix
+    if (path.startsWith('/auth') || path === '/select-restaurant') {
+      return path
+    }
+
+    const cleanPath = path.startsWith('/') ? path.substring(1) : path
+    return `/t/${slug}/${cleanPath}`
+  }
+
+  /**
    * Check if data belongs to current tenant
    * Requirements: 4.1, 4.2, 4.4
    */
@@ -276,6 +296,7 @@ export function useTenant(): UseTenantReturn {
     removeTenantFromUrl,
     getTenantFromUrl,
     navigateWithTenant,
+    tPath,
     
     // Utility methods
     isDataForCurrentTenant,

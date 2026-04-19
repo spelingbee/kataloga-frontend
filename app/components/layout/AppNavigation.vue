@@ -4,10 +4,6 @@
       <NuxtLink
         v-for="item in navigationItems"
         :key="item.path"
-        :to="{ path: item.path, query: { ...route.query } }"
-        :class="['app-navigation__item', { 'app-navigation__item--active': isActive(item.path) }]"
-        @click="handleNavClick(item)"
-      >
         <BaseIcon :name="item.icon" size="md" class="app-navigation__icon" :aria-hidden="true" />
         <span class="app-navigation__label">
           {{ item.label }}
@@ -30,6 +26,7 @@ import { computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useNotificationStore } from '~/stores/notification'
 import { useTelegram } from '~/composables/useTelegram'
+import { useTenant } from '~/composables/useTenant'
 
 interface NavigationItem {
   path: string
@@ -61,6 +58,7 @@ const router = useRouter()
 
 const { t } = useI18n()
 const telegram = useTelegram()
+const { tPath } = useTenant()
 const isTelegramApp = computed(() => telegram.isTelegram.value)
 
 // Navigation items with dynamic badge counts
@@ -114,10 +112,11 @@ const navigationClasses = computed(() => [`app-navigation--${props.variant}`])
 
 // Methods
 const isActive = (path: string) => {
+  const dynamicPath = tPath(path)
   if (path === '/') {
-    return route.path === '/'
+    return route.path === dynamicPath || route.path === dynamicPath + '/'
   }
-  return route.path.startsWith(path)
+  return route.path.startsWith(dynamicPath)
 }
 
 const handleNavClick = (item: NavigationItem) => {
@@ -133,7 +132,7 @@ const handleNavClick = (item: NavigationItem) => {
   // Handle special navigation cases
   if (item.path === '/checkout' && cartStore.itemCount === 0) {
     // Show empty cart message or redirect to menu
-    router.push('/menu')
+    router.push(tPath('/menu'))
     return
   }
 

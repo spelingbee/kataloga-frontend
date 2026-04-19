@@ -69,7 +69,13 @@ export class TenantResolverService {
     tenant: TenantInfo | null
     requiresSelection: boolean
   }> {
-    // 1. From Query Parameter
+    // 1. From Path Parameter (/t/slug)
+    if (options.fromRoute) {
+      const tenant = await this.getTenantInfo(options.fromRoute)
+      if (tenant) return { tenant, requiresSelection: false }
+    }
+
+    // 2. From Query Parameter (?tenant=slug)
     if (options.fromQuery) {
       const tenant = await this.getTenantInfo(options.fromQuery)
       if (tenant) return { tenant, requiresSelection: false }
