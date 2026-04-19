@@ -20,7 +20,20 @@
     "retry": "Retry",
     "viewDetails": "View Details",
     "noResults": "No results found",
-    "selectLanguage": "Select Language"
+    "selectLanguage": "Select Language",
+    "save_changes": "Save Changes",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "email": "Email"
+  },
+  "profile": {
+    "title": "Profile",
+    "orders": "Orders",
+    "points": "Points",
+    "personal_info": "Personal Information",
+    "delivery_settings": "Delivery Settings",
+    "no_addresses": "No addresses found",
+    "add_address": "Add Address"
   },
   "menu": {
     "title": "Menu",
@@ -177,6 +190,28 @@
   "orders": {
     "title": "Orders",
     "history": "Order History",
+    "history_subtitle": "Track your orders and reorder your favorites",
+    "search_orders": "Search orders...",
+    "all_statuses": "All Statuses",
+    "all_time": "All Time",
+    "clear_filters": "Clear Filters",
+    "order_number": "Order #{number}",
+    "view_details": "View Details",
+    "reorder": "Reorder",
+    "reordering": "Reordering...",
+    "no_orders": "No orders yet",
+    "no_orders_text": "Start exploring our menu and place your first order!",
+    "browse_menu": "Browse Menu",
+    "loading_orders": "Loading your orders...",
+    "items_more": "+{count} more",
+    "price_changes": "Price Changes",
+    "price_changes_desc": "Prices have changed since your last order. The cart will reflect current prices.",
+    "unavailable_items": "Some Items Unavailable",
+    "unavailable_items_desc": "Some items from your order are no longer available and will be excluded.",
+    "continue_to_cart": "Continue to Cart",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "days_ago": "{count} days ago",
     "tracking": "Order Tracking",
     "orderNumber": "Order #{number}",
     "status": "Status",
@@ -229,7 +264,8 @@
     "forgotPassword": "Forgot Password?",
     "loginRequired": "Please login to continue",
     "loginSuccess": "Logged in successfully",
-    "logoutSuccess": "Logged out successfully"
+    "logoutSuccess": "Logged out successfully",
+    "linked_with_telegram": "Linked with Telegram"
   },
   "errors": {
     "generic": "Something went wrong",

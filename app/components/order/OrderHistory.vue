@@ -3,18 +3,18 @@
     <!-- Loading State -->
     <div v-if="loading && !orders.length" class="order-history__loading">
       <div class="order-history__spinner" />
-      <p class="order-history__loading-text">Loading your orders...</p>
+      <p class="order-history__loading-text">{{ t('orders.loading_orders') }}</p>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="!orders.length" class="order-history__empty">
-      <div class="order-history__empty-icon">??</div>
-      <h3 class="order-history__empty-title">No orders yet</h3>
+      <div class="order-history__empty-icon">?</div>
+      <h3 class="order-history__empty-title">{{ t('orders.no_orders') }}</h3>
       <p class="order-history__empty-text">
-        Start exploring our menu and place your first order!
+        {{ t('orders.no_orders_text') }}
       </p>
       <NuxtLink to="/" class="order-history__empty-button">
-        Browse Menu
+        {{ t('orders.browse_menu') }}
       </NuxtLink>
     </div>
 
@@ -28,14 +28,14 @@
         <!-- Order Header -->
         <div class="order-history__header">
           <div class="order-history__header-left">
-            <h4 class="order-history__order-number">Order #{{ order.id }}</h4>
+            <h4 class="order-history__order-number">{{ t('orders.order_number', { number: order.id.slice(-8).toUpperCase() }) }}</h4>
             <span class="order-history__date">{{ formatDate(order.createdAt) }}</span>
           </div>
           <div class="order-history__header-right">
             <span :class="['order-history__status', `order-history__status--${order.status.toLowerCase()}`]">
               {{ getStatusText(order.status) }}
             </span>
-            <span class="order-history__total">${{ order.total.toFixed(2) }}</span>
+            <span class="order-history__total">{{ order.total.toFixed(2) }} {{ t('currency.som') }}</span>
           </div>
         </div>
 
@@ -46,12 +46,12 @@
             :key="item.id"
             class="order-history__item-row"
           >
-            <span class="order-history__item-quantity">{{ item.quantity }}?</span>
-            <span class="order-history__item-name">{{ item.menuItem.name }}</span>
-            <span class="order-history__item-price">${{ item.subtotal.toFixed(2) }}</span>
+            <span class="order-history__item-quantity">{{ item.quantity }}x</span>
+            <span class="order-history__item-name">{{ item.menuItem?.name || item.product?.name }}</span>
+            <span class="order-history__item-price">{{ item.price.toFixed(2) }} {{ t('currency.som') }}</span>
           </div>
           <div v-if="order.items.length > 3" class="order-history__item-more">
-            +{{ order.items.length - 3 }} more item{{ order.items.length - 3 !== 1 ? 's' : '' }}
+            {{ t('orders.items_more', { count: order.items.length - 3 }) }}
           </div>
         </div>
 
@@ -61,15 +61,15 @@
             :to="`/orders/${order.id}`"
             class="order-history__action order-history__action--view"
           >
-            View Details
+            {{ t('orders.view_details') }}
           </NuxtLink>
           <button
             class="order-history__action order-history__action--reorder"
             :disabled="reorderingOrderId === order.id"
             @click="handleReorder(order)"
           >
-            <span v-if="reorderingOrderId === order.id">Reordering...</span>
-            <span v-else>Reorder</span>
+            <span v-if="reorderingOrderId === order.id">{{ t('orders.reordering') }}</span>
+            <span v-else>{{ t('orders.reorder') }}</span>
           </button>
         </div>
       </div>
@@ -82,7 +82,7 @@
         :disabled="currentPage === 1 || loading"
         @click="goToPage(currentPage - 1)"
       >
-        Previous
+        {{ t('common.previous') }}
       </button>
       
       <div class="order-history__pagination-pages">
@@ -105,7 +105,7 @@
         :disabled="currentPage === totalPages || loading"
         @click="goToPage(currentPage + 1)"
       >
-        Next
+        {{ t('common.next') }}
       </button>
     </div>
 
@@ -121,7 +121,7 @@
           
           <!-- Price Changes -->
           <div v-if="reorderNotification.priceChanges.length > 0" class="order-history__modal-section">
-            <h4 class="order-history__modal-subtitle">Price Changes:</h4>
+            <h4 class="order-history__modal-subtitle">{{ t('orders.price_changes') }}:</h4>
             <ul class="order-history__modal-list">
               <li
                 v-for="change in reorderNotification.priceChanges"
@@ -130,7 +130,7 @@
               >
                 <span>{{ change.itemName }}</span>
                 <span class="order-history__modal-price-change">
-                  ${{ change.oldPrice.toFixed(2) }} > ${{ change.newPrice.toFixed(2) }}
+                  {{ change.oldPrice.toFixed(2) }} > {{ change.newPrice.toFixed(2) }} {{ t('currency.som') }}
                 </span>
               </li>
             </ul>
@@ -138,7 +138,7 @@
 
           <!-- Unavailable Items -->
           <div v-if="reorderNotification.unavailableItems.length > 0" class="order-history__modal-section">
-            <h4 class="order-history__modal-subtitle">Unavailable Items:</h4>
+            <h4 class="order-history__modal-subtitle">{{ t('orders.unavailable_items') }}:</h4>
             <ul class="order-history__modal-list">
               <li
                 v-for="itemName in reorderNotification.unavailableItems"
@@ -152,10 +152,10 @@
         </div>
         <div class="order-history__modal-footer">
           <button class="order-history__modal-button order-history__modal-button--secondary" @click="closeReorderNotification">
-            Cancel
+            {{ t('common.cancel') }}
           </button>
           <button class="order-history__modal-button order-history__modal-button--primary" @click="confirmReorder">
-            Continue to Cart
+            {{ t('orders.continue_to_cart') }}
           </button>
         </div>
       </div>
@@ -164,9 +164,12 @@
 </template>
 
 <script setup lang="ts">
-import type { Order, MenuItem } from '~/types'
+import type { Order } from '~/types'
 import { useCartStore } from '~/stores/cart'
 import { useMenuStore } from '~/stores/menu'
+import { useI18n } from 'vue-i18n'
+
+const { t, locale } = useI18n()
 
 interface Props {
   orders: Order[]
@@ -227,14 +230,16 @@ const visiblePages = computed(() => {
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString)
   const now = new Date()
-  const diffTime = Math.abs(now.getTime() - date.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   
-  if (diffDays === 1) return 'Today'
-  if (diffDays === 2) return 'Yesterday'
-  if (diffDays <= 7) return `${diffDays - 1} days ago`
+  // Calculate differences
+  const diffTime = now.getTime() - date.getTime()
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
   
-  return date.toLocaleDateString('en-US', {
+  if (diffDays === 0) return t('orders.today')
+  if (diffDays === 1) return t('orders.yesterday')
+  if (diffDays <= 7) return t('orders.days_ago', { count: diffDays })
+  
+  return date.toLocaleDateString(locale.value, {
     month: 'short',
     day: 'numeric',
     year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
@@ -243,13 +248,13 @@ const formatDate = (dateString: string): string => {
 
 const getStatusText = (status: string): string => {
   const statusMap: Record<string, string> = {
-    PENDING: 'Pending',
-    CONFIRMED: 'Confirmed',
-    PREPARING: 'Preparing',
-    READY: 'Ready',
-    OUT_FOR_DELIVERY: 'Out for Delivery',
-    DELIVERED: 'Delivered',
-    CANCELLED: 'Cancelled',
+    PENDING: t('orders.pending'),
+    CONFIRMED: t('orders.confirmed'),
+    PREPARING: t('orders.preparing'),
+    READY: t('orders.ready'),
+    OUT_FOR_DELIVERY: t('orders.inTransit'),
+    DELIVERED: t('orders.delivered'),
+    CANCELLED: t('orders.cancelled'),
   }
   return statusMap[status] || status
 }
@@ -270,10 +275,10 @@ const handleReorder = async (order: Order): Promise<void> => {
     if (validation.hasChanges) {
       // Show notification modal
       reorderNotification.value = {
-        title: validation.unavailableItems.length > 0 ? 'Some Items Unavailable' : 'Price Changes Detected',
+        title: validation.unavailableItems.length > 0 ? t('orders.unavailable_items') : t('orders.price_changes'),
         message: validation.unavailableItems.length > 0
-          ? 'Some items from your order are no longer available and will be excluded.'
-          : 'Prices have changed since your last order. The cart will reflect current prices.',
+          ? t('orders.unavailable_items_desc')
+          : t('orders.price_changes_desc'),
         priceChanges: validation.priceChanges,
         unavailableItems: validation.unavailableItems,
         orderId: order.id,
@@ -286,7 +291,7 @@ const handleReorder = async (order: Order): Promise<void> => {
     }
   } catch (error) {
     console.error('Error reordering:', error)
-    alert('Failed to reorder. Please try again.')
+    // alert('Failed to reorder. Please try again.')
   } finally {
     reorderingOrderId.value = null
   }
@@ -298,18 +303,19 @@ const validateOrderItems = async (order: Order) => {
   
   for (const orderItem of order.items) {
     // Get current menu item
-    const currentMenuItem = await menuStore.getMenuItemById(orderItem.menuItemId)
+    const menuItemId = (orderItem as any).menuItemId || orderItem.productId
+    const currentMenuItem = await menuStore.getMenuItemById(menuItemId)
     
     if (!currentMenuItem || !currentMenuItem.isActive) {
-      unavailableItems.push(orderItem.menuItem.name)
+      unavailableItems.push(orderItem.menuItem?.name || orderItem.product?.name || 'Unknown')
       continue
     }
     
     // Check for price changes
-    if (currentMenuItem.price !== orderItem.menuItem.price) {
+    if (currentMenuItem.price !== orderItem.price) {
       priceChanges.push({
-        itemName: orderItem.menuItem.name,
-        oldPrice: orderItem.menuItem.price,
+        itemName: currentMenuItem.name,
+        oldPrice: orderItem.price,
         newPrice: currentMenuItem.price,
       })
     }
@@ -325,11 +331,12 @@ const validateOrderItems = async (order: Order) => {
 const addOrderToCart = async (order: Order): Promise<void> => {
   for (const orderItem of order.items) {
     // Get current menu item to ensure we have latest data
-    const currentMenuItem = await menuStore.getMenuItemById(orderItem.menuItemId)
+    const menuItemId = (orderItem as any).menuItemId || orderItem.productId
+    const currentMenuItem = await menuStore.getMenuItemById(menuItemId)
     
     if (currentMenuItem && currentMenuItem.isActive) {
       // Use current menu item with updated price
-      cartStore.addItem(currentMenuItem, orderItem.quantity, orderItem.customizations?.selectedModifiers || [])
+      cartStore.addItem(currentMenuItem, orderItem.quantity, (orderItem as any).customizations?.selectedModifiers || [])
     }
   }
 }

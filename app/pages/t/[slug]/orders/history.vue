@@ -2,9 +2,9 @@
   <div class="order-history-page">
     <!-- Header -->
     <div class="order-history-page__header">
-      <h1 class="order-history-page__title">Order History</h1>
+      <h1 class="order-history-page__title">{{ t('orders.history') }}</h1>
       <p class="order-history-page__subtitle">
-        Track your orders and reorder your favorites
+        {{ t('orders.history_subtitle') }}
       </p>
     </div>
 
@@ -14,29 +14,29 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search orders..."
+          :placeholder="t('orders.search_orders')"
           class="order-history-page__search-input"
         />
       </div>
       
       <div class="order-history-page__filter-group">
         <select v-model="statusFilter" class="order-history-page__select">
-          <option value="">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="CONFIRMED">Confirmed</option>
-          <option value="PREPARING">Preparing</option>
-          <option value="READY">Ready</option>
-          <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
-          <option value="DELIVERED">Delivered</option>
-          <option value="CANCELLED">Cancelled</option>
+          <option value="">{{ t('orders.all_statuses') }}</option>
+          <option value="PENDING">{{ t('orders.pending') }}</option>
+          <option value="CONFIRMED">{{ t('orders.confirmed') }}</option>
+          <option value="PREPARING">{{ t('orders.preparing') }}</option>
+          <option value="READY">{{ t('orders.ready') }}</option>
+          <option value="OUT_FOR_DELIVERY">{{ t('orders.inTransit') }}</option>
+          <option value="DELIVERED">{{ t('orders.delivered') }}</option>
+          <option value="CANCELLED">{{ t('orders.cancelled') }}</option>
         </select>
 
         <select v-model="timeFilter" class="order-history-page__select">
-          <option value="">All Time</option>
-          <option value="today">Today</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-          <option value="year">This Year</option>
+          <option value="">{{ t('orders.all_time') }}</option>
+          <option value="today">{{ t('date.today') }}</option>
+          <option value="week">{{ t('orders.filters.week') }}</option>
+          <option value="month">{{ t('orders.filters.month') }}</option>
+          <option value="year">{{ t('orders.filters.year') }}</option>
         </select>
 
         <button
@@ -44,7 +44,7 @@
           class="order-history-page__clear-filters"
           @click="clearFilters"
         >
-          Clear Filters
+          {{ t('orders.clear_filters') }}
         </button>
       </div>
     </div>
@@ -65,17 +65,21 @@ import type { Order, OrderStatus } from '~/types'
 import { useOrderStore } from '~/stores/order'
 import { useUserStore } from '~/stores/user'
 import OrderHistory from '~/components/order/OrderHistory.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 // Page metadata
 definePageMeta({
   middleware: 'auth',
-  title: 'Order History',
 })
 
 // Stores
 const orderStore = useOrderStore()
 const authStore = useUserStore()
 const router = useRouter()
+const route = useRoute()
+const { isTelegram } = useTelegram()
 
 // State
 const searchQuery = ref('')
@@ -98,7 +102,7 @@ const filteredOrders = computed(() => {
     filtered = filtered.filter(order =>
       order.id.toLowerCase().includes(query) ||
       order.customerInfo?.name?.toLowerCase().includes(query) ||
-      order.items.some(item => item.menuItem.name.toLowerCase().includes(query))
+      order.items.some(item => (item.menuItem?.name || item.product?.name || '').toLowerCase().includes(query))
     )
   }
 
@@ -147,7 +151,7 @@ const totalPages = computed(() => {
     filtered = filtered.filter(order =>
       order.id.toLowerCase().includes(query) ||
       order.customerInfo?.name?.toLowerCase().includes(query) ||
-      order.items.some(item => item.menuItem.name.toLowerCase().includes(query))
+      order.items.some(item => (item.menuItem?.name || item.product?.name || '').toLowerCase().includes(query))
     )
   }
 
@@ -199,16 +203,33 @@ const clearFilters = () => {
   currentPage.value = 1
 }
 
+const fetchHistory = async () => {
+  if (authStore.isAuthenticated) {
+    await orderStore.fetchOrderHistory(1, 100) // Fetch more for client-side pagination
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   // Check authentication
   if (!authStore.isAuthenticated) {
-    router.push('/login?redirect=/orders/history')
+    if (isTelegram.value) {
+      // In TG, we expect auto-auth to happen. Just wait.
+      return
+    }
+    router.push(`/auth/login?redirect=${route.fullPath}`)
     return
   }
 
   // Fetch order history
-  await orderStore.fetchOrderHistory(1, 100) // Fetch more for client-side pagination
+  await fetchHistory()
+})
+
+// Watch for authentication status (especially for Telegram auto-login)
+watch(() => authStore.isAuthenticated, async (newVal) => {
+  if (newVal) {
+    await fetchHistory()
+  }
 })
 
 // Watch filters to reset page

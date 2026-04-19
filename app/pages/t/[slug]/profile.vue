@@ -46,13 +46,13 @@
                     <BaseInput
                       v-model="profileForm.firstName"
                       :label="t('common.first_name')"
-                      placeholder="Имя"
+                      :placeholder="t('common.first_name')"
                       required
                     />
                     <BaseInput
                       v-model="profileForm.lastName"
                       :label="t('common.last_name')"
-                      placeholder="Фамилия"
+                      :placeholder="t('common.last_name')"
                       required
                     />
                   </div>
@@ -63,6 +63,10 @@
                     placeholder="email@example.com"
                     disabled
                   />
+                  <div v-if="user.telegramId" class="profile-page__telegram-info u-mb-4">
+                    <BaseIcon name="telegram" size="sm" class="u-mr-2" />
+                    <span>{{ t('auth.linked_with_telegram') }} (ID: {{ user.telegramId }})</span>
+                  </div>
                   <div class="profile-page__form-actions">
                     <BaseButton type="submit" :loading="isUpdating">
                       {{ t('common.save_changes') }}

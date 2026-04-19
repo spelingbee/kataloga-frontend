@@ -21,7 +21,20 @@
     "viewDetails": "Подробнее",
     "noResults": "Ничего не найдено",
     "selectLanguage": "Выберите язык",
-    "items": "Товары"
+    "items": "Товары",
+    "save_changes": "Сохранить изменения",
+    "first_name": "Имя",
+    "last_name": "Фамилия",
+    "email": "Email"
+  },
+  "profile": {
+    "title": "Профиль",
+    "orders": "Заказы",
+    "points": "Баллы",
+    "personal_info": "Личная информация",
+    "delivery_settings": "Настройки доставки",
+    "no_addresses": "Адреса не найдены",
+    "add_address": "Добавить адрес"
   },
   "menu": {
     "title": "Меню",
@@ -179,8 +192,28 @@
   "orders": {
     "title": "История заказов",
     "history": "История заказов",
-    "subtitle": "Отслеживайте заказы и повторяйте любимые",
-    "tracking": "Отслеживание заказа",
+    "history_subtitle": "Отслеживайте заказы и повторяйте любимые",
+    "search_orders": "Поиск заказов...",
+    "all_statuses": "Все статусы",
+    "all_time": "За все время",
+    "clear_filters": "Очистить фильтры",
+    "order_number": "Заказ №{number}",
+    "view_details": "Подробнее",
+    "reorder": "Повторить",
+    "reordering": "Повторение...",
+    "no_orders": "Заказов пока нет",
+    "no_orders_text": "Начните знакомство с меню и оформите свой первый заказ!",
+    "browse_menu": "Перейти в меню",
+    "loading_orders": "Загрузка ваших заказов...",
+    "items_more": "+{count} еще",
+    "price_changes": "Изменения цен",
+    "price_changes_desc": "Цены на некоторые товары изменились. В корзине будут актуальные цены.",
+    "unavailable_items": "Товары недоступны",
+    "unavailable_items_desc": "Некоторые товары из этого заказа больше недоступны и будут исключены.",
+    "continue_to_cart": "Перейти в корзину",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "days_ago": "{count} дн. назад",
     "orderNumber": "Заказ №{number}",
     "status": "Статус",
     "pending": "Ожидает",
@@ -287,7 +320,8 @@
     "forgotPassword": "Забыли пароль?",
     "loginRequired": "Пожалуйста, войдите для продолжения",
     "loginSuccess": "Вход выполнен успешно",
-    "logoutSuccess": "Выход выполнен успешно"
+    "logoutSuccess": "Выход выполнен успешно",
+    "linked_with_telegram": "Привязано к Telegram"
   },
   "errors": {
     "generic": "Что-то пошло не так",
