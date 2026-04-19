@@ -11,6 +11,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   const tenantStore = useTenantStore()
   
+  // 0. Skip transformation for excluded routes (auth, selector, etc.)
+  const excludedRoutes = ['/auth', '/select-restaurant', '/error', '/offline']
+  if (excludedRoutes.some(route => to.path.startsWith(route))) {
+    return
+  }
+
   // 1. Extract tenant slug from path /t/[slug]
   const tenantSlugFromParams = to.params.slug as string | undefined
   

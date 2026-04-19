@@ -13,6 +13,11 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const tenantStore = useTenantStore()
   
   // 1. Determine the tenant slug to persist
+  const excludedRoutes = ['/auth', '/select-restaurant', '/error', '/offline']
+  if (excludedRoutes.some(route => to.path.startsWith(route))) {
+    return
+  }
+
   const queryTenant = to.query.tenant as string | undefined
   const fromQueryTenant = from.query.tenant as string | undefined
   

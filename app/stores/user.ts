@@ -252,11 +252,13 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       try {
         this.detectPlatform()
+        
         if (this.platform === Platform.TELEGRAM) {
           await this.initializeTelegramUser()
-        } else {
-          await this.initializeAuth()
         }
+        
+        // Always attempt to initialize auth from storage (even in Telegram)
+        await this.initializeAuth()
         
         if (this.isAuthenticated) {
           await Promise.allSettled([
@@ -305,7 +307,8 @@ export const useUserStore = defineStore('user', {
             updatedAt: new Date().toISOString(),
             telegramId: tUser.id.toString(),
           }
-          this.isAuthenticated = true
+          // Note: We don't set isAuthenticated = true here anymore.
+          // Real authentication happens via initializeAuth (tokens) or loginWithTelegram plugin.
           this.platform = Platform.TELEGRAM
         }
       }

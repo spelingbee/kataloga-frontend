@@ -12,9 +12,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const tenantStore = useTenantStore()
 
   // Initialize authentication on first load
-  if (!isAuthenticated.value && !isTelegram.value) {
-    await initializeAuth()
-  }
+  // Always initialize auth to ensure tokens are picked up from storage
+  await initializeAuth()
 
   // Ensure tenant is initialized for tenant-specific routes
   const tenantSpecificRoutes = ['/orders', '/favourites', '/menu', '/cart', '/checkout']
@@ -38,7 +37,16 @@ export default defineNuxtRouteMiddleware(async (to) => {
   ]
 
   // Check if current route requires authentication
-  const matchedRoute = protectedRoutes.find(route => to.path.startsWith(route.path))
+  // Use a more robust check that handles /t/:slug/ prefix
+  const matchedRoute = protectedRoutes.find(route => {
+    // Exact match for root paths (non-tenant)
+    if (to.path === route.path || to.path.startsWith(`${route.path}/`)) {
+      return true
+    }
+    // Match tenant-prefixed paths: /t/[slug]/path
+    const tenantPattern = new RegExp(`^/t/[^/]+${route.path}(/|$)`)
+    return tenantPattern.test(to.path)
+  })
 
   if (matchedRoute) {
     // In Telegram, users are automatically authenticated

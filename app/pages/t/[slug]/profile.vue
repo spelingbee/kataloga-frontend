@@ -41,7 +41,7 @@
             <section class="profile-page__section">
               <h2 class="profile-page__section-title">{{ t('profile.personal_info') }}</h2>
               <BaseCard padding="lg">
-                <form @submit.prevent="handleUpdateProfile" class="profile-page__form">
+                <form class="profile-page__form" @submit.prevent="handleUpdateProfile">
                   <div class="profile-page__form-grid">
                     <BaseInput
                       v-model="profileForm.firstName"
@@ -76,7 +76,7 @@
             <section class="profile-page__section">
               <h2 class="profile-page__section-title">{{ t('profile.delivery_settings') }}</h2>
               <BaseCard padding="lg">
-                <div class="profile-page__address-list" v-if="addresses.length > 0">
+                <div v-if="addresses.length > 0" class="profile-page__address-list">
                   <div v-for="addr in addresses" :key="addr.id" class="profile-page__address-item">
                     <BaseIcon name="location-on" class="profile-page__address-icon" />
                     <div class="profile-page__address-info">
@@ -161,11 +161,6 @@ const handleLogout = async () => {
 }
 
 onMounted(async () => {
-  if (!userStore.isAuthenticated) {
-    await navigateTo('/auth/login')
-    return
-  }
-
   // Fetch additional profile data
   try {
     const [profile, locs] = await Promise.all([

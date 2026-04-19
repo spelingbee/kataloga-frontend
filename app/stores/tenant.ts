@@ -102,7 +102,7 @@ export const useTenantStore = defineStore('tenant', {
      * Requirements: 2.4, 5.4
      */
     tenantName: (state): string => {
-      return state.currentTenant?.name || 'Restaurant'
+      return state.currentTenant?.name || ''
     },
 
     /**
