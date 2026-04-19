@@ -1,4 +1,4 @@
-export default defineNuxtPlugin(async () => {
+export default defineNuxtPlugin((nuxtApp) => {
   // Only run on client side
   if (import.meta.server) return
 
@@ -6,21 +6,20 @@ export default defineNuxtPlugin(async () => {
     // Check if running in Telegram Web App with actual context
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
-      
+
       // Determine if we are actually INSIDE Telegram (initData is present)
       // or if the script is just loaded in a regular browser.
       const isActuallyTelegram = !!tg.initData
-      
+
       if (!isActuallyTelegram) {
         console.log('Telegram script detected, but running in standard browser environment')
         return
       }
 
-      // Initialize Telegram Web App
+      // Initialize Telegram Web App immediately (UI setup, no auth yet)
       tg.ready()
-      
       console.log('Telegram Web App initialized successfully')
-      
+
       // Expand viewport for better UX
       try {
         tg.expand()
@@ -73,28 +72,52 @@ export default defineNuxtPlugin(async () => {
         }
       }
 
-      // Automatically authenticate with Telegram if not already logged in
-      try {
-        const { useUserStore } = await import('~/stores/user')
-        const authStore = useUserStore()
-        
-        if (!authStore.isLoggedIn) {
-          console.log('User not logged in, attempting Telegram authentication...')
-          const { useTelegramAuth } = await import('~/composables/useTelegramAuth')
-          const { loginWithTelegram } = useTelegramAuth()
-          
-          const success = await loginWithTelegram()
-          if (success) {
-            console.log('Telegram authentication successful')
-          } else {
-            console.warn('Telegram authentication failed or was skipped')
+      // Defer authentication to app:mounted so that 01.api.ts has already
+      // configured apiClient.setTokenStore(authStore). Without this, tokens
+      // saved by loginWithTelegram() are not picked up by the API client and
+      // the very first authenticated request (e.g. /auth/profile) returns 401.
+      nuxtApp.hook('app:mounted', async () => {
+        try {
+          const { useUserStore } = await import('~/stores/user')
+          const authStore = useUserStore()
+
+          // Wait for 01.api.ts to finish initializeAuth() before attempting
+          // Telegram login. Both hooks run on app:mounted; 01.api.ts registers
+          // first (by filename order) so its initializeAuth() is already in
+          // flight. We poll authReady to avoid a race condition.
+          if (!authStore.authReady) {
+            await new Promise<void>((resolve) => {
+              const stop = watch(
+                () => authStore.authReady,
+                (ready) => {
+                  if (ready) {
+                    stop()
+                    resolve()
+                  }
+                },
+                { immediate: true }
+              )
+            })
           }
-        } else {
-          console.log('User already logged in')
+
+          if (!authStore.isLoggedIn) {
+            console.log('🔐 [Telegram] User not logged in, attempting Telegram authentication...')
+            const { useTelegramAuth } = await import('~/composables/useTelegramAuth')
+            const { loginWithTelegram } = useTelegramAuth()
+
+            const success = await loginWithTelegram()
+            if (success) {
+              console.log('✅ [Telegram] Authentication successful')
+            } else {
+              console.warn('⚠️ [Telegram] Authentication failed or was skipped')
+            }
+          } else {
+            console.log('✅ [Telegram] User already logged in')
+          }
+        } catch (authErr) {
+          console.error('❌ [Telegram] Error during automatic authentication:', authErr)
         }
-      } catch (authErr) {
-        console.error('Error during automatic Telegram authentication:', authErr)
-      }
+      })
     } else {
       console.log('Not running in Telegram Web App environment')
     }

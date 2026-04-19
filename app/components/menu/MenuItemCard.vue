@@ -81,6 +81,7 @@ import { useCartStore } from '~/stores/cart'
 import { useNotification } from '~/composables/useNotification'
 import type { MenuItem } from '~/types'
 import AppPrice from '../base/AppPrice.vue'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
 interface Props {
   menuItem: MenuItem
@@ -107,7 +108,7 @@ const isPopular = computed(() => {
 })
 
 const imageUrl = computed(() => {
-  return props.menuItem.imageUrl || '/images/placeholder-dish.svg'
+  return resolveImageUrl(props.menuItem.imageUrl) || '/images/placeholder-dish.svg'
 })
 
 const cartItem = computed(() => {

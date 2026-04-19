@@ -99,27 +99,43 @@ function optimizeImageUrl(
 }
 
 /**
- * Resolve absolute image URL from relative path
+ * Resolve absolute image URL from relative path or any backend URL.
+ *
+ * Handles three cases:
+ * 1. Relative upload path (/uploads/...) → prepend backend base URL
+ * 2. Absolute URL pointing to any host (/uploads/ in pathname) → extract
+ *    pathname and prepend correct backend base URL (fixes stale localhost URLs)
+ * 3. Everything else (data:, /icons/, etc.) → return as-is
  */
 export function resolveImageUrl(src: string): string {
   if (!src) return ''
-  
-  // Return as is if already absolute or data URL
-  if (src.startsWith('http') || src.startsWith('data:')) {
+
+  // Data URLs and non-upload local assets — return as-is
+  if (src.startsWith('data:')) return src
+
+  const config = useRuntimeConfig()
+  const apiBaseUrl = (config.public.apiBaseUrl as string || '').replace(/\/$/, '')
+
+  // Absolute URL — check if it's an upload path on any host
+  if (src.startsWith('http')) {
+    try {
+      const parsed = new URL(src)
+      if (parsed.pathname.startsWith('/uploads/')) {
+        // Re-attach to the correct backend origin
+        return `${apiBaseUrl}${parsed.pathname}`
+      }
+    } catch {
+      // malformed URL — fall through
+    }
     return src
   }
 
-  const config = useRuntimeConfig()
-  const apiBaseUrl = config.public.apiBaseUrl as string || ''
-  
-  // If it's an upload path, prepend backend base URL
-  if (src.startsWith('/uploads')) {
-    // Ensure no double slashes
-    const base = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl
-    return `${base}${src}`
+  // Relative upload path
+  if (src.startsWith('/uploads/')) {
+    return `${apiBaseUrl}${src}`
   }
-  
-  // Default to returning as is (e.g. for local assets like /icon.png)
+
+  // Other relative paths (local assets)
   return src
 }
 

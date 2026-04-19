@@ -56,7 +56,7 @@
         <div class="product-page__hero">
           <div class="product-page__image-wrapper">
             <img 
-              :src="dish.imageUrl || '/images/placeholder-dish.svg'" 
+              :src="resolveImageUrl(dish.imageUrl) || '/images/placeholder-dish.svg'" 
               :alt="dish.name" 
               class="product-page__image" 
             />
@@ -164,6 +164,7 @@ import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
 import { useTenantSettings, useTenant } from '~/composables/useTenant'
 import { useTelegram } from '~/composables/useTelegram'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
 const route = useRoute()
 const router = useRouter()

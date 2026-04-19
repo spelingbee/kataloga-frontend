@@ -25,22 +25,35 @@ export class TelegramAuthService {
   constructor(private apiBaseUrl: string) {}
 
   /**
-   * Authenticate user with Telegram init data
+   * Authenticate user with Telegram init data.
+   * Requires X-Tenant-Slug header — resolved from the current URL slug.
    */
   async authenticateWithTelegram(authData: TelegramAuthData): Promise<TelegramAuthResponse> {
+    // Extract tenant slug from URL path: /t/:slug/...
+    let tenantSlug = ''
+    if (typeof window !== 'undefined') {
+      const match = window.location.pathname.match(/^\/t\/([^/]+)/)
+      if (match) tenantSlug = match[1]
+    }
+
     try {
-      const response = await $fetch<TelegramAuthResponse>(`${this.apiBaseUrl}/auth/telegram`, {
+      const headers: Record<string, string> = {}
+      if (tenantSlug) headers['X-Tenant-Slug'] = tenantSlug
+
+      const raw = await $fetch<any>(`${this.apiBaseUrl}/auth/telegram`, {
         method: 'POST',
+        headers,
         body: {
           initData: authData.initData,
-          initDataUnsafe: authData.initDataUnsafe
-        }
+        },
       })
 
+      // Backend wraps response in { success, data, ... } via ResponseTransformInterceptor
+      const response: TelegramAuthResponse = raw?.data ?? raw
       return response
     } catch (error: any) {
       console.error('Telegram authentication failed:', error)
-      throw new Error(error.data?.message || 'Failed to authenticate with Telegram')
+      throw new Error(error.data?.message || error.message || 'Failed to authenticate with Telegram')
     }
   }
 

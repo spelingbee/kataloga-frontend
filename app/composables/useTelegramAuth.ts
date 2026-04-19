@@ -40,12 +40,7 @@ export const useTelegramAuth = () => {
         throw new Error('Failed to get Telegram init data')
       }
 
-      // Validate init data
-      if (!($telegramAuthService as any).validateInitData(initData)) {
-        throw new Error('Invalid Telegram init data')
-      }
-
-      // Authenticate with backend
+      // Authenticate with backend (signature verified server-side via HMAC-SHA256)
       const response = await ($telegramAuthService as any).authenticateWithTelegram({
         initData,
         initDataUnsafe

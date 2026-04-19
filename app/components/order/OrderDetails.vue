@@ -29,7 +29,7 @@
           <div class="order-details__item-image">
             <img 
               v-if="item.menuItem.imageUrl" 
-              :src="item.menuItem.imageUrl" 
+              :src="resolveImageUrl(item.menuItem.imageUrl)" 
               :alt="item.menuItem.name"
               class="order-details__item-img"
             />
@@ -173,6 +173,7 @@
 import { computed } from 'vue'
 import type { Order } from '~/types'
 import { useTenant, useTenantSettings } from '~/composables/useTenant'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
 // Props & Emits
 interface Props {

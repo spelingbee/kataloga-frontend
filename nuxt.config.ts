@@ -312,6 +312,10 @@ export default defineNuxtConfig({
           target: 'http://localhost:3001', // Возвращаем на localhost для скорости
           changeOrigin: true,
         },
+        '/uploads': {
+          target: 'http://localhost:3001',
+          changeOrigin: true,
+        },
       },
     },
     build: {

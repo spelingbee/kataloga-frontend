@@ -21,6 +21,9 @@ interface UserState {
   platform: Platform
   loading: boolean
   error: ApiError | null
+
+  // Initialization flag — set to true once initializeAuth() completes
+  authReady: boolean
 }
 
 export const useUserStore = defineStore('user', {
@@ -42,6 +45,7 @@ export const useUserStore = defineStore('user', {
     platform: Platform.WEB,
     loading: false,
     error: null,
+    authReady: false,
   }),
 
   getters: {
@@ -115,6 +119,7 @@ export const useUserStore = defineStore('user', {
         this.clearTokens()
       } finally {
         this.loading = false
+        this.authReady = true
       }
     },
 

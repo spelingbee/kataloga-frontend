@@ -49,6 +49,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { CartItem } from '~/types'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
 interface Props {
   cartItem: CartItem
@@ -66,7 +67,7 @@ const imageError = ref(false)
 
 // Computed
 const imageUrl = computed(() => {
-  return props.cartItem.menuItem.imageUrl || '/images/placeholder-dish.svg'
+  return resolveImageUrl(props.cartItem.menuItem.imageUrl) || '/images/placeholder-dish.svg'
 })
 
 // Methods
