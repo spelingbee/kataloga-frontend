@@ -7,25 +7,25 @@ RUN npm install -g pnpm
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package.json ./
-# Copy pnpm-lock.yaml if it exists, otherwise skip
-COPY pnpm-lock.yaml* ./
+# Copy root workspace files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Install dependencies
-RUN pnpm config set node-linker hoisted && pnpm install
+# Copy the specific package and app needed for the build
+COPY packages/api-types ./packages/api-types
+COPY apps/frontend ./apps/frontend
+
+# Install dependencies for the frontend and its workspace dependencies
+RUN pnpm install --filter frontend...
 
 # Development stage
 FROM base AS development
-COPY . .
+WORKDIR /app/apps/frontend
 EXPOSE 3000
 CMD ["pnpm", "dev"]
 
 # Build stage
 FROM base AS build
-
-# Copy source code
-COPY . .
+WORKDIR /app/apps/frontend
 
 # Build the application
 RUN pnpm run build:production
@@ -41,8 +41,8 @@ RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nuxt -u 1001
 
 # Copy built application
-COPY --from=build --chown=nuxt:nodejs /app/.output /app/.output
-COPY --from=build --chown=nuxt:nodejs /app/package.json /app/package.json
+COPY --from=build --chown=nuxt:nodejs /app/apps/frontend/.output /app/.output
+COPY --from=build --chown=nuxt:nodejs /app/apps/frontend/package.json /app/package.json
 
 # Set environment variables
 ENV NODE_ENV=production

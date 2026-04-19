@@ -62,6 +62,7 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@kataloga/api-types": "workspace:*",
     "@nuxt/test-utils": "^3.21.0",
     "@types/node": "^25.0.0",
     "@types/qrcode": "^1.5.6",
