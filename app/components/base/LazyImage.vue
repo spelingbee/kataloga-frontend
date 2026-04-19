@@ -38,6 +38,8 @@
 </template>
 
 <script setup lang="ts">
+import { resolveImageUrl } from '~/utils/image-optimization'
+
 interface Props {
   src: string
   alt: string
@@ -109,7 +111,7 @@ const loadImage = () => {
   const img = new Image()
   
   img.onload = () => {
-    currentSrc.value = props.src
+    currentSrc.value = resolveImageUrl(props.src)
     loaded.value = true
   }
   
@@ -134,7 +136,7 @@ const loadImage = () => {
     currentSrc.value = props.placeholder
   }
   
-  img.src = props.src
+  img.src = resolveImageUrl(props.src)
 }
 
 const onLoad = () => {
@@ -162,7 +164,7 @@ onMounted(() => {
     // Intersection observer will handle loading
   } else {
     // Use native lazy loading
-    currentSrc.value = props.src
+    currentSrc.value = resolveImageUrl(props.src)
   }
 })
 </script>

@@ -1,7 +1,6 @@
-/**
- * Image optimization utilities
  * Handles lazy loading, WebP format conversion, and performance optimization
  */
+import { useRuntimeConfig } from '#app'
 
 interface ImageOptimizationOptions {
   quality?: number
@@ -98,6 +97,31 @@ function optimizeImageUrl(
   const separator = src.includes('?') ? '&' : '?'
   
   return queryString ? `${src}${separator}${queryString}` : src
+}
+
+/**
+ * Resolve absolute image URL from relative path
+ */
+export function resolveImageUrl(src: string): string {
+  if (!src) return ''
+  
+  // Return as is if already absolute or data URL
+  if (src.startsWith('http') || src.startsWith('data:')) {
+    return src
+  }
+
+  const config = useRuntimeConfig()
+  const apiBaseUrl = config.public.apiBaseUrl as string || ''
+  
+  // If it's an upload path, prepend backend base URL
+  if (src.startsWith('/uploads')) {
+    // Ensure no double slashes
+    const base = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl
+    return `${base}${src}`
+  }
+  
+  // Default to returning as is (e.g. for local assets like /icon.png)
+  return src
 }
 
 /**

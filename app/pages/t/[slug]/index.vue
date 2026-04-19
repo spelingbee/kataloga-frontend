@@ -10,7 +10,7 @@
       <template v-else>
         <img
           v-if="tenantStore.isTenantLoaded && tenantStore.tenantBranding?.logo"
-          :src="tenantStore.tenantBranding.logo"
+          :src="resolveImageUrl(tenantStore.tenantBranding.logo)"
           :alt="tenantStore.tenantName"
           class="home-hero__logo"
         />
@@ -96,6 +96,7 @@ import { useRouter } from 'vue-router'
 import { useMenuStore } from '~/stores/menu'
 import { useTenantStore } from '~/stores/tenant'
 import { useTenant } from '~/composables/useTenant'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
 definePageMeta({
   title: 'Home',

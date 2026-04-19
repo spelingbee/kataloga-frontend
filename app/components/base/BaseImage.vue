@@ -56,6 +56,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
 interface Props {
   src: string
@@ -113,7 +114,7 @@ const optimizedSrc = computed(() => {
   
   // In a real app, you would integrate with Nuxt Image or similar service
   // For now, just return the original src
-  let url = props.src
+  let url = resolveImageUrl(props.src)
   
   // Add quality parameter if supported
   if (props.quality && props.quality !== 80) {
