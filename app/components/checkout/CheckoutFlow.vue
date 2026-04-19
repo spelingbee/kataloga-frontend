@@ -5,7 +5,7 @@
       <OrderConfirmation
         :order-number="orderNumber"
         :order-type="orderData.orderType"
-        :order-items="mappedOrderItems"
+        :order-items="capturedOrderItems"
         :total-amount="finalTotal"
         :estimated-time="estimatedDeliveryTime"
         :delivery-info="getDeliveryInfo()"
@@ -157,7 +157,7 @@
     <TransferPaymentModal
       v-model="showTransferModal"
       :whatsapp-phone="tenantWhatsappPhone"
-      :order-total="cartTotal"
+      :order-total="finalTotal || cartTotal"
       :order-number="orderNumber"
       @confirm="handleTransferConfirm"
       @close="handleTransferCancel"
@@ -240,6 +240,7 @@ const validationErrors = ref<Record<string, string>>({})
 const showValidationWarning = ref(false)
 const validationMessage = ref('')
 const finalTotal = ref(0)
+const capturedOrderItems = ref<any[]>([])
 
 let isMainButtonVisible = false
 
@@ -492,6 +493,7 @@ const submitOrder = async () => {
       // Set the order number from the created order
       orderNumber.value = createdOrder.id.slice(-8).toUpperCase()
       finalTotal.value = createdOrder.total
+      capturedOrderItems.value = [...mappedOrderItems.value]
 
       // Store in localStorage for guest tracking if not logged in
       if (!isAuthenticated.value && !telegram.user.value) {
