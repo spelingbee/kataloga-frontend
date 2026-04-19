@@ -55,6 +55,13 @@ export const useUserStore = defineStore('user', {
   actions: {
     // --- Auth Actions ---
     
+    setUser(user: User) {
+      this.user = user
+      if (import.meta.client) {
+        localStorage.setItem('user', JSON.stringify(user))
+      }
+    },
+
     setTokens(accessToken: string, refreshToken: string) {
       this.accessToken = accessToken
       this.refreshToken = refreshToken

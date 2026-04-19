@@ -286,7 +286,11 @@ const statusFilter = ref('')
 const timeFilter = ref('')
 const showListView = ref(true)
 const loadingMore = ref(false)
-const hasMoreOrders = computed(() => orderStore.pagination?.hasNextPage || false)
+const hasMoreOrders = computed(() => {
+  const p = orderStore.pagination
+  if (!p) return false
+  return p.page < p.totalPages
+})
 
 // Select Options
 const statusOptions = computed(() => [
@@ -417,6 +421,17 @@ const getOrderStep = (status: string): number => {
     'DELIVERED': 4
   }
   return steps[status] || 1
+}
+
+const loadMoreOrders = async () => {
+  if (loadingMore.value || !orderStore.pagination) return
+  const nextPage = orderStore.pagination.page + 1
+  loadingMore.value = true
+  try {
+    await orderStore.fetchOrderHistory(nextPage)
+  } finally {
+    loadingMore.value = false
+  }
 }
 
 onMounted(() => {
