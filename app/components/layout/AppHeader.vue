@@ -188,7 +188,7 @@ defineEmits<{
 }>()
 
 // Composables
-const { currentTenant, isMultiTenant, tenantBranding, tPath } = useTenant()
+const { currentTenant, isMultiTenant, tenantBranding, tPath, isTenantHome } = useTenant()
 const telegram = useTelegram()
 
 // Stores
@@ -204,7 +204,10 @@ const showMobileSearch = ref(false)
 
 // Computed properties
 const isTelegramApp = computed(() => telegram.isTelegram.value)
-const isHomePage = computed(() => useRoute().path === '/')
+const isHomePage = computed(() => {
+  if (useRoute().path === '/') return true
+  return isTenantHome.value
+})
 const userName = computed(() => userStore.user?.name || 'Гость')
 const cartItemCount = computed(() => cartStore.itemCount)
 const unreadNotifications = computed(() => notificationStore.unreadCount)

@@ -37,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTenant } from '~/composables/useTenant'
 interface Props {
   variant?: 'default' | 'compact' | 'minimal'
   title?: string
@@ -67,8 +68,10 @@ defineEmits<{
 
 const router = useRouter()
 
+const { tPath } = useTenant()
+
 const handleGoHome = () => {
-  router.push('/')
+  router.push(tPath('/'))
 }
 </script>
 

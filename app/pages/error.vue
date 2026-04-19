@@ -72,6 +72,7 @@
 <script setup lang="ts">
 import type { NuxtError } from '#app'
 import { attemptErrorRecovery, getErrorMessageWithRecovery } from '~/utils/error-recovery'
+import { useTenant } from '~/composables/useTenant'
 
 const props = defineProps<{
   error: NuxtError
@@ -136,8 +137,10 @@ const handleRetry = async () => {
   }
 }
 
+const { tPath } = useTenant()
+
 const handleGoHome = () => {
-  router.push('/')
+  router.push(tPath('/'))
 }
 
 const handleAutoRecover = async () => {

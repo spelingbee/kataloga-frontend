@@ -30,9 +30,10 @@ export interface UseTenantReturn {
   tenantName: ComputedRef<string>
   tenantDomain: ComputedRef<string | undefined>
   isTenantActive: ComputedRef<boolean>
-  isTenantLoaded: ComputedRef<boolean>
-  canSwitchTenant: ComputedRef<boolean>
-  hasError: ComputedRef<boolean>
+  isTenantLoaded: computedRef<boolean>
+  canSwitchTenant: computedRef<boolean>
+  hasError: computedRef<boolean>
+  isTenantHome: ComputedRef<boolean>
   
   // Branding and settings
   tenantBranding: ComputedRef<TenantBranding>
@@ -108,6 +109,15 @@ export function useTenant(): UseTenantReturn {
   // Branding and settings
   const tenantBranding = computed(() => tenantStore.tenantBranding)
   const tenantSettings = computed(() => tenantStore.tenantSettings)
+
+  /**
+   * Check if current route is the tenant's home page
+   */
+  const isTenantHome = computed(() => {
+    const slug = tenantStore.tenantSlug
+    if (!slug) return route.path === '/'
+    return route.path === `/t/${slug}` || route.path === `/t/${slug}/`
+  })
 
   /**
    * Set tenant by slug
@@ -231,8 +241,13 @@ export function useTenant(): UseTenantReturn {
     if (!slug) return path
     
     // Auth and general pages don't need tenant prefix
-    if (path.startsWith('/auth') || path === '/select-restaurant') {
+    if (path.startsWith('/auth') || path === '/select-restaurant' || path.startsWith('/t/')) {
       return path
+    }
+
+    // Handle root path
+    if (path === '/' || path === '') {
+      return `/t/${slug}/`
     }
 
     const cleanPath = path.startsWith('/') ? path.substring(1) : path
@@ -279,6 +294,7 @@ export function useTenant(): UseTenantReturn {
     isTenantLoaded,
     canSwitchTenant,
     hasError,
+    isTenantHome,
     
     // Branding and settings
     tenantBranding,

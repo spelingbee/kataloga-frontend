@@ -34,7 +34,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useTelegramHaptic } from '~/composables/useTelegramHaptic'
-import { useTenantSettings } from '~/composables/useTenant'
+import { useTenant, useTenantSettings } from '~/composables/useTenant'
 
 interface Props {
   /** Show button only on mobile devices */

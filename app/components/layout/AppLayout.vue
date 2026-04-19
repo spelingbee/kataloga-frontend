@@ -9,7 +9,12 @@
         <div class="app-layout__header-content">
           <!-- Logo/Brand -->
           <NuxtLink :to="tPath('/')" class="app-layout__brand">
-            <BaseIcon :name="brandIcon" size="lg" />
+            <template v-if="brandLogo">
+              <img :src="resolveImageUrl(brandLogo)" :alt="appName" class="app-layout__logo" />
+            </template>
+            <template v-else>
+              <BaseIcon :name="brandIcon" size="lg" />
+            </template>
             <span class="app-layout__brand-text">{{ appName }}</span>
           </NuxtLink>
 
@@ -40,7 +45,7 @@
               <!-- Cart Button -->
               <NuxtLink
                 v-if="showCartButton"
-                to="/checkout"
+                :to="tPath('/checkout')"
                 class="app-layout__cart-button"
                 :aria-label="`Cart with ${cartItemCount} items`"
               >
@@ -114,6 +119,7 @@
 import { computed } from 'vue'
 import {useCartStore} from '~/stores/cart'
 import { useTenant, useTenantBranding } from '~/composables/useTenant'
+import { resolveImageUrl } from '~/utils/image-optimization'
 import LanguageSwitcher from '../base/LanguageSwitcher.vue'
 import AppNavigation from './AppNavigation.vue'
 import StickyCartButton from '../cart/StickyCartButton.vue'
@@ -178,7 +184,7 @@ const props = withDefaults(defineProps<Props>(), {
 // Composables
 const { isDark, toggleTheme } = useTheme()
 const cartStore = useCartStore()
-const { appName, logo } = useTenantBranding()
+const { appName, logo: brandLogo } = useTenantBranding()
 const { tPath, tenantSlug } = useTenant()
 
 // Dynamic Brand Icon logic
@@ -304,6 +310,12 @@ const handleStickyCartClick = () => {
   &:hover {
     color: var(--color-primary);
   }
+}
+
+.app-layout__logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
 }
 
 .app-layout__brand-text {

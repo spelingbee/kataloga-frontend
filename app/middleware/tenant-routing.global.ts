@@ -51,6 +51,31 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     }
   }
 
+  // 3. Handle specific redirections within tenant context
+  if (tenantSlugFromParams) {
+    // Redirect /t/[slug]/menu to /t/[slug]/ to avoid duplication and 404 confusion
+    if (to.path.endsWith('/menu') || to.path.endsWith('/menu/')) {
+      const targetPath = to.path.replace(/\/menu\/?$/, '') || `/t/${tenantSlugFromParams}/`
+      return navigateTo({
+        path: targetPath,
+        query: to.query,
+        replace: true
+      })
+    }
+  }
+
+  // 4. Fallback: If at a root legacy path and we have a tenant, redirect
+  if (!tenantSlugFromParams && tenantStore.tenantSlug) {
+    const rootPaths = ['/cart', '/checkout', '/orders', '/profile', '/favourites']
+    if (rootPaths.some(p => to.path === p)) {
+      return navigateTo({
+        path: `/t/${tenantStore.tenantSlug}${to.path}`,
+        query: to.query,
+        replace: true
+      })
+    }
+  }
+
   return
 })
 
