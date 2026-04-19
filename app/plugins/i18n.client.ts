@@ -2,9 +2,27 @@
  * i18n plugin for client-side initialization
  * Handles locale detection from Telegram and browser
  */
-export default defineNuxtPlugin((nuxtApp) => {
-  // Access i18n instance directly from nuxtApp
-  const i18n = nuxtApp.$i18n
+export default defineNuxtPlugin(async (nuxtApp) => {
+  // Use useI18n to get the current i18n instance
+  const { setLocale, locale } = nuxtApp.$i18n
+
+  const updateLocale = async (newLocale: string) => {
+    if (locale.value === newLocale) return
+    
+    try {
+      if (typeof setLocale === 'function') {
+        await setLocale(newLocale)
+      } else {
+        locale.value = newLocale
+      }
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user-locale', newLocale)
+      }
+    } catch (error) {
+      console.error(`[i18n] Failed to set locale: ${newLocale}`, error)
+    }
+  }
 
   // Try to detect locale from Telegram if available
   if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -21,7 +39,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       }
 
       const mappedLang = langMap[tgLang] || 'en'
-      i18n.locale.value = mappedLang
+      await updateLocale(mappedLang)
     }
   }
 
@@ -29,12 +47,12 @@ export default defineNuxtPlugin((nuxtApp) => {
   if (typeof window !== 'undefined') {
     const savedLocale = localStorage.getItem('user-locale')
     if (savedLocale && ['en', 'ru', 'ky'].includes(savedLocale)) {
-      i18n.locale.value = savedLocale
+      await updateLocale(savedLocale)
     }
   }
 
   // Store locale preference in localStorage when it changes
-  watch(() => i18n.locale.value, (newLocale) => {
+  watch(() => locale.value, (newLocale) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('user-locale', newLocale)
     }

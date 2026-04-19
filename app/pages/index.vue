@@ -9,9 +9,12 @@
           <i data-lucide="shopping-bag" class="landing-logo__icon"/>
           Kataloga
         </div>
-        <NuxtLink to="/auth/login" class="btn ghost landing-header__login-btn">
-          {{ $t('common.login', 'Вход') }}
-        </NuxtLink>
+        <div class="landing-header__actions">
+          <LanguageSwitcher class="landing-header__lang" />
+          <NuxtLink to="/auth/login" class="btn ghost landing-header__login-btn">
+            {{ $t('common.login', 'Вход') }}
+          </NuxtLink>
+        </div>
       </div>
     </header>
 
@@ -203,6 +206,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import LanguageSwitcher from '~/components/base/LanguageSwitcher.vue'
 
 definePageMeta({
   layout: false
@@ -419,6 +423,24 @@ p { color: var(--text-muted); }
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.landing-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.landing-header__lang {
+  :deep(.language-switcher__button) {
+    background: transparent;
+    border-color: rgba(229, 231, 235, 0.5);
+    height: 40px;
+    padding: 0 12px;
+    
+    &:hover {
+      background: rgba(13, 148, 136, 0.05);
+      border-color: var(--accent-primary);
+    }
+  }
 }
 .landing-logo {
   font-size: 1.25rem;

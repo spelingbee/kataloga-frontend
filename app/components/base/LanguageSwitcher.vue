@@ -86,73 +86,79 @@ onMounted(() => {
 .language-switcher__button {
   display: flex;
   align-items: center;
-  gap: $space-1;
-  padding: $space-2 $space-4;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: $radius-md;
-  color: white;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--surface-color, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  color: var(--text-main, #111827);
   cursor: pointer;
-  transition: all $transition-base;
+  transition: all 0.2s ease;
+  font-family: inherit;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-primary, #0d9488);
+    background-color: var(--accent-light, #f0fdfa);
   }
 
   &:focus {
-    outline: 2px solid var(--color-success);
+    outline: 2px solid var(--accent-primary, #0d9488);
     outline-offset: 2px;
   }
 }
 
 .language-switcher__current {
-  font-size: $text-sm;
-  font-weight: $font-medium;
-  color: inherit;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .language-switcher__icon {
-  transition: transform $transition-base;
+  transition: transform 0.2s ease;
+  color: var(--text-muted, #4b5563);
 
   &--open {
     transform: rotate(180deg);
+    color: var(--accent-primary, #0d9488);
   }
 }
 
 .language-switcher__dropdown {
   position: absolute;
-  top: calc(100% + $space-1);
+  top: calc(100% + 8px);
   right: 0;
-  min-width: 150px;
-  background: var(--bg-primary);
-  border: 1px solid $border-color;
-  border-radius: $radius-md;
-  box-shadow: $shadow-lg;
+  min-width: 140px;
+  background: var(--surface-color, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   z-index: 1000;
+  padding: 4px;
 }
 
 .language-switcher__option {
   display: block;
   width: 100%;
-  padding: $space-2 $space-4;
+  padding: 10px 12px;
   text-align: left;
   background: transparent;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background $transition-base;
-  font-size: $text-sm;
-  color: $text-primary;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  color: var(--text-main, #111827);
+  font-family: inherit;
 
   &:hover {
-    background: var(--bg-secondary);
+    background: var(--bg-color, #f9fafb);
+    color: var(--accent-primary, #0d9488);
   }
 
   &--active {
-    background: var(--bg-secondary);
-    font-weight: $font-semibold;
-    color: var(--color-success);
+    background: var(--accent-light, #f0fdfa);
+    font-weight: 600;
+    color: var(--accent-primary, #0d9488);
   }
 }
 

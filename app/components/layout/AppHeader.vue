@@ -179,7 +179,7 @@ import { useTenant } from '~/composables/useTenant'
 import { useTelegram } from '~/composables/useTelegram'
 import { onClickOutside } from '@vueuse/core'
 import { useNotificationStore } from '~/stores/notification'
-import LanguageSwitcher from '../base/LanguageSwitcher.vue'
+import LanguageSwitcher from '~/components/base/LanguageSwitcher.vue'
 
 // Emits
 defineEmits<{

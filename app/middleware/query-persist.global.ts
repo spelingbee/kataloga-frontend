@@ -13,20 +13,26 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const tenantStore = useTenantStore()
   
   // 1. Determine the tenant slug to persist
-  // Priority: 
-  // - Target route query (already present)
-  // - Current route query (propagating forward)
-  // - Store (fallback)
-  const tenant = to.query.tenant || from.query.tenant || tenantStore.tenantSlug
+  const queryTenant = to.query.tenant as string | undefined
+  const fromQueryTenant = from.query.tenant as string | undefined
+  
+  // Skip persistence on root path if no tenant is explicitly requested in current query
+  // This allows the landing page to load without tenant context
+  if (to.path === '/' && !queryTenant) {
+    return
+  }
+
+  const tenant = queryTenant || fromQueryTenant || tenantStore.tenantSlug
 
   // 2. If we have a tenant but it's not in the target route, redirect with it
-  if (tenant && to.query.tenant !== tenant) {
+  if (tenant && queryTenant !== tenant) {
+    // Only persist if we're not explicitly trying to clear it
     return navigateTo({
       path: to.path,
       query: {
         ...to.query,
         tenant: String(tenant)
       }
-    }, { replace: true }) // Use replace to avoid polluting browser history with intermediate states
+    }, { replace: true })
   }
 })
