@@ -156,10 +156,10 @@ import type { MenuItem } from '~/types'
 
 // Stores
 import { useMenuStore } from '~/stores/menu'
-import AppText from '../../components/base/AppText.vue'
-import AppHeading from '../../components/base/AppHeading.vue'
-import LoadingWrapper from '../../components/base/LoadingWrapper.vue'
-import BasePagination from '../../components/base/BasePagination.vue'
+import AppText from '~/components/base/AppText.vue'
+import AppHeading from '~/components/base/AppHeading.vue'
+import LoadingWrapper from '~/components/base/LoadingWrapper.vue'
+import BasePagination from '~/components/base/BasePagination.vue'
 import { useI18n } from 'vue-i18n'
 import { useTenant } from '~/composables/useTenant'
 

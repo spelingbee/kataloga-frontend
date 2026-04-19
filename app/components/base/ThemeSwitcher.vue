@@ -3,9 +3,9 @@
     <BaseButton
       variant="ghost"
       size="sm"
-      @click="toggleTheme"
       :aria-label="themeToggleLabel"
       class="theme-switcher__button"
+      @click="toggleTheme"
     >
       <BaseIcon :name="themeIcon" size="md" />
       <span v-if="showLabel" class="theme-switcher__label">
@@ -20,9 +20,9 @@
         :key="option.value"
         variant="ghost"
         size="sm"
-        @click="setTheme(option.value)"
         :class="{ 'theme-switcher__option--active': currentTheme === option.value }"
         class="theme-switcher__option"
+        @click="setTheme(option.value)"
       >
         <BaseIcon :name="option.icon" size="sm" />
         <span>{{ option.label }}</span>
@@ -76,7 +76,7 @@ const currentThemeLabel = computed(() => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens' as *;
+@use '~/assets/scss/tokens' as *;
 
 .theme-switcher {
   position: relative;

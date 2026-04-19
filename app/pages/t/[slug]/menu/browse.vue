@@ -251,7 +251,7 @@ useHead({
 </script>
 
 <style lang="scss" scoped>
-@use '../../assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/variables' as *;
 
 .menu-browse {
   max-width: 1400px;

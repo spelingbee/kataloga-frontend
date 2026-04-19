@@ -89,7 +89,7 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '~/stores/cart'
 import { useI18n } from 'vue-i18n'
 import CheckoutFlow from '~/components/checkout/CheckoutFlow.vue'
-import EmptyCart from '../components/base/EmptyCart.vue'
+import EmptyCart from '~/components/base/EmptyCart.vue'
 import { useTenant } from '~/composables/useTenant'
 
 definePageMeta({

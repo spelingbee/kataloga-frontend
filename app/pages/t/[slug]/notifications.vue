@@ -156,9 +156,9 @@ import { usePushNotifications } from '~/composables/usePushNotifications'
 
 // Stores
 import { useNotificationStore } from '~/stores/notification'
-import PushNotificationSettings from '../components/notifications/PushNotificationSettings.vue'
-import AppHeading from '../components/base/AppHeading.vue'
-import AppText from '../components/base/AppText.vue'
+import PushNotificationSettings from '~/components/notifications/PushNotificationSettings.vue'
+import AppHeading from '~/components/base/AppHeading.vue'
+import AppText from '~/components/base/AppText.vue'
 
 // Page setup
 definePageMeta({

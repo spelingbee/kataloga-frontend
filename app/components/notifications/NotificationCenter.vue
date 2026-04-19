@@ -211,7 +211,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@use '../../assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/variables' as *;
 
 .notification-center {
   position: relative;

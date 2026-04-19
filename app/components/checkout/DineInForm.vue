@@ -145,7 +145,7 @@ watch(() => props.modelValue, (newValue) => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/variables' as *;
 
 .dine-in-form {
   display: flex;

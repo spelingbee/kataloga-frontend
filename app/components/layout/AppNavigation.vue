@@ -4,6 +4,7 @@
       <NuxtLink
         v-for="item in navigationItems"
         :key="item.path"
+      >
         <BaseIcon :name="item.icon" size="md" class="app-navigation__icon" :aria-hidden="true" />
         <span class="app-navigation__label">
           {{ item.label }}
@@ -141,7 +142,7 @@ const handleNavClick = (item: NavigationItem) => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens' as *;
+@use '~/assets/scss/tokens' as *;
 @use '../../assets/scss/abstracts/mixins' as *;
 @use '../../assets/scss/tokens/radius' as *;
 

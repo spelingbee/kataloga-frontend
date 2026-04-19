@@ -133,7 +133,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens' as *;
+@use '~/assets/scss/tokens' as *;
 
 .sticky-cart-button {
   position: fixed;

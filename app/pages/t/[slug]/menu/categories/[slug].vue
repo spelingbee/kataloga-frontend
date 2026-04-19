@@ -171,9 +171,9 @@
 <script setup lang="ts">
 import type { MenuItem, Category } from '~/types'
 import { useMenuStore } from '~/stores/menu'
-import AppText from '../../../components/base/AppText.vue'
-import CategoryIcon from '../../../components/menu/CategoryIcon.vue'
-import AppHeading from '../../../components/base/AppHeading.vue'
+import AppText from '~/components/base/AppText.vue'
+import CategoryIcon from '~/components/menu/CategoryIcon.vue'
+import AppHeading from '~/components/base/AppHeading.vue'
 
 import { useTenantStore } from '~/stores/tenant'
 import { useTenantSettings } from '~/composables/useTenant'
@@ -304,12 +304,12 @@ watchEffect(() => {
 </script>
 
 <style scoped lang="scss">
-@use '../../../assets/scss/tokens/colors' as *;
-@use '../../../assets/scss/tokens/typography' as *;
-@use '../../../assets/scss/tokens/spacing' as *;
-@use '../../../assets/scss/tokens/transitions' as *;
-@use '../../../assets/scss/tokens/radius' as *;
-@use '../../../assets/scss/tokens/shadows' as *;
+@use '~/assets/scss/tokens/colors' as *;
+@use '~/assets/scss/tokens/typography' as *;
+@use '~/assets/scss/tokens/spacing' as *;
+@use '~/assets/scss/tokens/transitions' as *;
+@use '~/assets/scss/tokens/radius' as *;
+@use '~/assets/scss/tokens/shadows' as *;
 
 .category-page {
   min-height: 100vh;

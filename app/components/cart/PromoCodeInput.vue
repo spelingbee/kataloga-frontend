@@ -109,7 +109,7 @@ const removeCode = () => {
 </script>
 
 <style lang="scss" scoped>
-@use '../../assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/variables' as *;
 
 .promo-code-input {
   display: flex;

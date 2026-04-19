@@ -147,7 +147,7 @@ const handleTouchEnd = (event: TouchEvent) => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens' as *;
+@use '~/assets/scss/tokens' as *;
 @use '../../assets/scss/abstracts/mixins' as *;
 
 .touch-optimized-container {

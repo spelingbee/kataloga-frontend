@@ -59,8 +59,8 @@ const handleSkipClick = (event: Event) => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens' as *;
-@use '../../assets/scss/abstracts/mixins' as *;
+@use '~/assets/scss/tokens' as *;
+@use '~/assets/scss/abstracts/mixins' as *;
 
 .skip-links {
   position: absolute;

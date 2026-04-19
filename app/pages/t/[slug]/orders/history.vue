@@ -218,7 +218,7 @@ watch([searchQuery, statusFilter, timeFilter], () => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/variables' as *;
 
 .order-history-page {
   max-width: 1200px;

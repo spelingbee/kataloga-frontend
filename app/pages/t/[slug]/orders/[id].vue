@@ -427,10 +427,10 @@ import { useOrderStore } from '~/stores/order'
 import { useCartStore } from '~/stores/cart'
 import { useTenantSettings } from '~/composables/useTenant'
 import { OrderStatus } from '~/types'
-import AppHeading from '../../components/base/AppHeading.vue'
-import AppText from '../../components/base/AppText.vue'
-import AppPrice from '../../components/base/AppPrice.vue'
-import StatusBadge from '../../components/order/StatusBadge.vue'
+import AppHeading from '~/components/base/AppHeading.vue'
+import AppText from '~/components/base/AppText.vue'
+import AppPrice from '~/components/base/AppPrice.vue'
+import StatusBadge from '~/components/order/StatusBadge.vue'
 
 // Page setup
 definePageMeta({

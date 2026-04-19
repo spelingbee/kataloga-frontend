@@ -235,7 +235,7 @@ const formatCustomizations = (customizations: Record<string, any>): string => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/variables' as *;
 
 .order-details {
   width: 100%;

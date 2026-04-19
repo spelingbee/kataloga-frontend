@@ -205,8 +205,8 @@ import { OrderStatus } from '~/types'
 import { useOrders } from '~/composables/useOrders'
 import { useOrderTracking } from '~/composables/useOrderTracking'
 import { useNotification } from '~/composables/useNotification'
-import AppText from '../../../components/base/AppText.vue'
-import AppHeading from '../../../components/base/AppHeading.vue'
+import AppText from '~/components/base/AppText.vue'
+import AppHeading from '~/components/base/AppHeading.vue'
 
 // Page setup
 definePageMeta({
@@ -405,7 +405,7 @@ watch(() => order.value?.status, (newStatus, oldStatus) => {
 </script>
 
 <style scoped lang="scss">
-@use '../../../assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/variables' as *;
 
 .order-tracking-page {
   min-height: 100vh;

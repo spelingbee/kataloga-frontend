@@ -291,7 +291,7 @@ const getStatusText = (): string => {
 </script>
 
 <style lang="scss" scoped>
-@use '../../assets/scss/abstracts/variables' as *;
+@use '~/assets/scss/abstracts/variables' as *;
 
 .push-notification-settings {
   width: 100%;

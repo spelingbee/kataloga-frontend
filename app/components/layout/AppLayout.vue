@@ -205,7 +205,7 @@ const handleStickyCartClick = () => {
 </script>
 
 <style scoped lang="scss">
-@use '../../assets/scss/tokens' as *;
+@use '~/assets/scss/tokens' as *;
 @use '../../assets/scss/abstracts/mixins' as *;
 
 .app-layout {

@@ -261,10 +261,10 @@ import { useCartStore } from '~/stores/cart'
 import { useUserStore } from '~/stores/user'
 import { useTenantSettings, useTenant } from '~/composables/useTenant'
 import type { Order } from '~/types'
-import AppText from '../../components/base/AppText.vue'
-import AppHeading from '../../components/base/AppHeading.vue'
-import StatusBadge from '../../components/order/StatusBadge.vue'
-import AppPrice from '../../components/base/AppPrice.vue'
+import AppText from '~/components/base/AppText.vue'
+import AppHeading from '~/components/base/AppHeading.vue'
+import StatusBadge from '~/components/order/StatusBadge.vue'
+import AppPrice from '~/components/base/AppPrice.vue'
 
 const { t, locale } = useI18n()
 const router = useRouter()
