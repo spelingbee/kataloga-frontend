@@ -163,12 +163,14 @@ import type { MenuItem } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
 import { useTenantSettings, useTenant } from '~/composables/useTenant'
+import { useTelegram } from '~/composables/useTelegram'
 
 const route = useRoute()
 const router = useRouter()
 const menuStore = useMenuStore()
 const { formatCurrency } = useTenantSettings()
 const { tPath } = useTenant()
+const telegram = useTelegram()
 
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -176,6 +178,7 @@ const quantity = ref(1)
 const dishId = computed(() => route.params.id as string)
 const dish = ref<MenuItem | null>(null)
 const relatedDishes = ref<MenuItem[]>([])
+let cleanupBackButton: (() => void) | null = null
 
 const isFavourite = computed(() => {
   return dish.value ? menuStore.favourites.some(fav => fav.id === dish.value!.id) : false
@@ -237,7 +240,23 @@ const onAddedToCart = () => {
 const onRelatedDishSelected = (item: MenuItem) => router.push(tPath(`/dish/${item.id}`))
 const formatPriceDisplay = (price: number) => formatCurrency(price)
 
-onMounted(loadDish)
+onMounted(() => {
+  loadDish()
+  
+  if (telegram.isTelegram.value) {
+    cleanupBackButton = telegram.showBackButton(() => {
+      router.go(-1)
+    })
+  }
+})
+
+onUnmounted(() => {
+  if (cleanupBackButton) {
+    cleanupBackButton()
+  }
+  telegram.hideBackButton()
+})
+
 watch(() => dishId.value, loadDish)
 </script>
 

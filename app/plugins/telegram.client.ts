@@ -122,7 +122,7 @@ function applyTelegramTheme(themeParams: any) {
     secondary_bg_color: '--tg-secondary-bg-color'
   }
 
-  // Apply theme colors
+  // Apply theme colors to internal Telegram variables
   Object.entries(themeMapping).forEach(([param, cssVar]) => {
     const value = themeParams[param]
     if (value) {
@@ -130,28 +130,13 @@ function applyTelegramTheme(themeParams: any) {
     }
   })
 
-  // Apply theme colors to main app colors (optional override)
-  if (themeParams.bg_color) {
-    root.style.setProperty('--bg-primary', themeParams.bg_color)
-  }
-  if (themeParams.secondary_bg_color) {
-    root.style.setProperty('--bg-secondary', themeParams.secondary_bg_color)
-  }
-  if (themeParams.text_color) {
-    root.style.setProperty('--text-primary', themeParams.text_color)
-  }
-  if (themeParams.hint_color) {
-    root.style.setProperty('--text-secondary', themeParams.hint_color)
-  }
-  if (themeParams.link_color) {
-    root.style.setProperty('--primary-color', themeParams.link_color)
-  }
-  if (themeParams.button_color) {
-    root.style.setProperty('--button-bg', themeParams.button_color)
-  }
-  if (themeParams.button_text_color) {
-    root.style.setProperty('--button-text', themeParams.button_text_color)
-  }
+  /**
+   * NOTE: We previously overwrote main app variables (--bg-primary, --primary-color, etc.)
+   * directly with Telegram colors. This was causing conflict with custom tenant branding.
+   * 
+   * We now ONLY set the --tg- variables. The application can choose to use them 
+   * via CSS fallbacks if needed, but the main site branding remains authoritative.
+   */
 
-  console.log('Telegram theme applied successfully')
+  console.log('Telegram theme variables set successfully')
 }

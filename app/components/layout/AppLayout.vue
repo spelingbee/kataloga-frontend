@@ -113,6 +113,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import {useCartStore} from '~/stores/cart'
+import { useTenant } from '~/composables/useTenant'
 import LanguageSwitcher from '../base/LanguageSwitcher.vue'
 import AppNavigation from './AppNavigation.vue'
 import StickyCartButton from '../cart/StickyCartButton.vue'
@@ -124,7 +125,8 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const isCartOrCheckoutPage = computed(() => {
-  return route.path.startsWith('/cart') || route.path.startsWith('/checkout')
+  const path = route.path
+  return path.includes('/cart') || path.includes('/checkout')
 })
 
 interface BreadcrumbItem {
@@ -199,8 +201,10 @@ const themeToggleLabel = computed(() =>
 
 // Methods
 const router = useRouter()
+const { tPath } = useTenant()
+
 const handleStickyCartClick = () => {
-  router.push('/checkout')
+  router.push(tPath('/checkout'))
 }
 </script>
 

@@ -4,6 +4,10 @@
       <NuxtLink
         v-for="item in navigationItems"
         :key="item.path"
+        :to="tPath(item.path)"
+        class="app-navigation__item"
+        :class="{ 'app-navigation__item--active': isActive(item.path) }"
+        @click="handleNavClick(item)"
       >
         <BaseIcon :name="item.icon" size="md" class="app-navigation__icon" :aria-hidden="true" />
         <span class="app-navigation__label">

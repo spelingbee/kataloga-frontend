@@ -199,8 +199,9 @@ const selectedModifiers = ref<Modifier[]>([])
 const hasValidationErrors = ref(false)
 const validationErrors = ref<string[]>([])
 
-// Telegram MainButton cleanup function
+// Telegram integration
 let cleanupMainButton: (() => void) | null = null
+let cleanupBackButton: (() => void) | null = null
 
 // Computed properties
 const isFavorite = computed(() => {
@@ -320,6 +321,11 @@ watch(() => props.modelValue, (isOpen) => {
     if (telegram.isTelegram.value) {
       const buttonText = `Add to Cart - $${totalPrice.value.toFixed(2)}`
       cleanupMainButton = telegram.showMainButton(buttonText, handleAddToCart)
+      
+      // Setup Telegram BackButton
+      cleanupBackButton = telegram.showBackButton(() => {
+        handleClose()
+      })
     }
   } else {
     // Cleanup Telegram MainButton
@@ -328,6 +334,13 @@ watch(() => props.modelValue, (isOpen) => {
       cleanupMainButton = null
     }
     telegram.hideMainButton()
+    
+    // Cleanup Telegram BackButton
+    if (cleanupBackButton) {
+      cleanupBackButton()
+      cleanupBackButton = null
+    }
+    telegram.hideBackButton()
   }
 })
 
@@ -349,6 +362,11 @@ onUnmounted(() => {
     cleanupMainButton()
   }
   telegram.hideMainButton()
+  
+  if (cleanupBackButton) {
+    cleanupBackButton()
+  }
+  telegram.hideBackButton()
 })
 </script>
 
