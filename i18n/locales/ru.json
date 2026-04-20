@@ -34,7 +34,8 @@
     "personal_info": "Личная информация",
     "delivery_settings": "Настройки доставки",
     "no_addresses": "Адреса не найдены",
-    "add_address": "Добавить адрес"
+    "add_address": "Добавить адрес",
+    "email_verification_sent": "Ссылка для подтверждения отправлена на вашу новую почту."
   },
   "menu": {
     "title": "Меню",

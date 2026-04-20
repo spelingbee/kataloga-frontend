@@ -176,6 +176,37 @@ export const useUserStore = defineStore('user', {
       }
     },
 
+    async verifyEmail(data: { token: string; email: string; tenantSlug?: string }) {
+      this.loading = true
+      this.error = null
+      try {
+        const tenantStore = useTenantStore()
+        const slug = data.tenantSlug || tenantStore.tenantSlug
+        
+        if (!slug) {
+          throw new Error('Tenant context missing.')
+        }
+        
+        const endpoint = `/public/${slug}/auth/verify-email`
+        const result = await (this as any).$apiClient.post(endpoint, {
+          token: data.token,
+          email: data.email
+        })
+        
+        // Refresh profile if user is logged in
+        if (this.isAuthenticated) {
+          await this.fetchUserProfile()
+        }
+        
+        return result
+      } catch (error) {
+        this.error = error as ApiError
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
     async logout() {
       this.loading = true
       try {

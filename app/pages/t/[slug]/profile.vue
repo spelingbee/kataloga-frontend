@@ -1,5 +1,5 @@
 <template>
-  <AppLayout :title="t('profile.title')">
+  <div>
     <div class="profile-page">
       <ResponsiveContainer>
         <div class="profile-page__grid">
@@ -61,7 +61,6 @@
                     :label="t('common.email')"
                     type="email"
                     placeholder="email@example.com"
-                    disabled
                   />
                   <div v-if="user.telegramId" class="profile-page__telegram-info u-mb-4">
                     <BaseIcon name="telegram" size="sm" class="u-mr-2" />
@@ -105,14 +104,14 @@
         </div>
       </ResponsiveContainer>
     </div>
-  </AppLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '~/stores/user'
 import { useI18n } from 'vue-i18n'
-import AppLayout from '~/components/layout/AppLayout.vue'
+
 import ResponsiveContainer from '~/components/layout/ResponsiveContainer.vue'
 
 const { t } = useI18n()
@@ -131,6 +130,11 @@ const profileForm = ref({
   email: user.value.email || '',
 })
 
+// Set page head
+useHead({
+  title: t('profile.title')
+})
+
 // Computed
 const userDisplayName = computed(() => {
   if (!user.value.firstName && !user.value.lastName) return 'User'
@@ -145,13 +149,22 @@ const userInitials = computed(() => {
 
 // Methods
 const handleUpdateProfile = async () => {
+  if (!profileForm.value.email) return
+
   isUpdating.value = true
   try {
+    const isEmailChanged = profileForm.value.email !== user.value.email
+
     await userStore.updateProfile({
       firstName: profileForm.value.firstName,
       lastName: profileForm.value.lastName,
+      email: profileForm.value.email,
     })
-    // Show success toast here if available
+    
+    if (isEmailChanged) {
+      // In a real app, use a notification plugin
+      alert(t('profile.email_verification_sent'))
+    }
   } catch (error) {
     console.error('Failed to update profile:', error)
   } finally {
