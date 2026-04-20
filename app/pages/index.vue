@@ -6,14 +6,14 @@
     <header class="landing-header">
       <div class="container landing-header__container">
         <div class="landing-logo">
-          <i data-lucide="shopping-bag" class="landing-logo__icon"/>
+          <Icon name="shopping-bag" class="landing-logo__icon"/>
           Kataloga
         </div>
         <div class="landing-header__actions">
           <LanguageSwitcher class="landing-header__lang" />
-          <NuxtLink to="/auth/login" class="btn ghost landing-header__login-btn">
+          <a :href="adminUrl + '/login'" class="btn ghost landing-header__login-btn">
             {{ $t('common.login', 'Вход') }}
-          </NuxtLink>
+          </a>
         </div>
       </div>
     </header>
@@ -30,11 +30,11 @@
               Kataloga превращает хаотичные заказы из WhatsApp в структурированный магазин с каталогом, оплатой и уведомлениями. Никаких таблиц и долгих переписок.
             </p>
             <div class="hero-actions fade-up delay-2">
-              <button class="btn primary" @click="scrollToPricing">
+              <a :href="adminUrl + '/onboarding'" class="btn primary">
                 Попробовать бесплатно
-              </button>
+              </a>
               <button class="btn ghost">
-                Смотреть демо <i data-lucide="play-circle" size="20"/>
+                Смотреть демо <Icon name="play-circle" size="20"/>
               </button>
             </div>
           </div>
@@ -42,7 +42,7 @@
           <div class="hero-mockup-container fade-up delay-3">
             <div class="mockup-frame">
               <div class="mockup-header">
-                <div class="mockup-avatar"><i data-lucide="bot" size="24"/></div>
+                <div class="mockup-avatar"><Icon name="bot" size="24"/></div>
                 <div>
                   <div class="mockup-title">Kataloga Bot</div>
                   <div class="mockup-subtitle">bot</div>
@@ -85,19 +85,19 @@
           <div class="comp-card fade-up">
             <h3>Как было раньше</h3>
             <ul class="comp-list bad">
-              <li><i data-lucide="x-circle"/> Хаотичные чаты, голосовые сообщения и скрины</li>
-              <li><i data-lucide="x-circle"/> Потерянные заказы в потоке переписок</li>
-              <li><i data-lucide="x-circle"/> Ручной учёт и копирование реквизитов для оплаты</li>
-              <li><i data-lucide="x-circle"/> Долгие ответы клиентам, снижающие конверсию</li>
+              <li><Icon name="x-circle"/> Хаотичные чаты, голосовые сообщения и скрины</li>
+              <li><Icon name="x-circle"/> Потерянные заказы в потоке переписок</li>
+              <li><Icon name="x-circle"/> Ручной учёт и копирование реквизитов для оплаты</li>
+              <li><Icon name="x-circle"/> Долгие ответы клиентам, снижающие конверсию</li>
             </ul>
           </div>
           <div class="comp-card good fade-up delay-1">
             <h3>Как стало с Kataloga</h3>
             <ul class="comp-list good">
-              <li><i data-lucide="check-circle-2"/> Единый и красивый каталог товаров с корзиной</li>
-              <li><i data-lucide="check-circle-2"/> Автоматический сбор и четкая структура заказов</li>
-              <li><i data-lucide="check-circle-2"/> Интегрированная оплата и моментальные уведомления</li>
-              <li><i data-lucide="check-circle-2"/> Время на развитие бизнеса, а не на рутину в чатах</li>
+              <li><Icon name="check-circle-2"/> Единый и красивый каталог товаров с корзиной</li>
+              <li><Icon name="check-circle-2"/> Автоматический сбор и четкая структура заказов</li>
+              <li><Icon name="check-circle-2"/> Интегрированная оплата и моментальные уведомления</li>
+              <li><Icon name="check-circle-2"/> Время на развитие бизнеса, а не на рутину в чатах</li>
             </ul>
           </div>
         </div>
@@ -109,17 +109,17 @@
           <h2 class="fade-up">Всё для успешных продаж</h2>
           <div class="bento-grid">
             <div class="feature-card fade-up">
-              <div class="feature-icon"><i data-lucide="package" size="24"/></div>
+              <div class="feature-icon"><Icon name="package" size="24"/></div>
               <h3>Каталог товаров</h3>
               <p>Загрузите свои позиции, а клиент удобно выберет их прямо внутри Telegram-бота без перехода в сторонний браузер.</p>
             </div>
             <div class="feature-card fade-up delay-1">
-              <div class="feature-icon"><i data-lucide="shopping-cart" size="24"/></div>
+              <div class="feature-icon"><Icon name="shopping-cart" size="24"/></div>
               <h3>Приём заказов</h3>
               <p>Все заказы приходят в едином стандарте. Больше не нужно выяснять детали доставки в долгой переписке.</p>
             </div>
             <div class="feature-card fade-up delay-2">
-              <div class="feature-icon"><i data-lucide="credit-card" size="24"/></div>
+              <div class="feature-icon"><Icon name="credit-card" size="24"/></div>
               <h3>Оплата и уведомления</h3>
               <p>Клиент оплачивает заказ удобным способом, а вы моментально получаете уведомление об успешной транзакции.</p>
             </div>
@@ -157,7 +157,7 @@
         <div class="faq-list fade-up delay-1">
           <div v-for="(item, index) in faq" :key="index" class="faq-item" :class="{ active: activeFaq === index }">
             <button class="faq-question" @click="toggleFaq(index)">
-              {{ item.question }} <i data-lucide="plus"/>
+              {{ item.question }} <Icon name="plus"/>
             </button>
             <div class="faq-answer-wrapper">
               <div class="faq-answer-inner">
@@ -177,7 +177,7 @@
           <h3>Простой тариф для всех</h3>
           <div class="price">$15 <span>/ мес</span></div>
           <p>7 дней бесплатно. Полный доступ ко всем функциям без скрытых платежей и комиссий за заказы.</p>
-          <NuxtLink to="/auth/register" class="btn primary" style="width: 100%;">Начать бесплатно</NuxtLink>
+          <a :href="adminUrl + '/onboarding'" class="btn primary" style="width: 100%;">Начать бесплатно</a>
         </div>
       </section>
     </main>
@@ -186,7 +186,7 @@
     <footer class="landing-footer">
       <div class="container footer-grid">
         <div class="landing-logo">
-          <i data-lucide="shopping-bag" class="landing-logo__icon"/>
+          <Icon name="shopping-bag" class="landing-logo__icon"/>
           Kataloga
         </div>
         <div class="footer-links">
@@ -207,6 +207,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import LanguageSwitcher from '~/components/base/LanguageSwitcher.vue'
+import Icon from '~/components/ui/Icon.vue'
 
 definePageMeta({
   layout: false
@@ -249,24 +250,28 @@ const toggleFaq = (index: number) => {
   activeFaq.value = activeFaq.value === index ? null : index
 }
 
+const adminUrl = computed(() => {
+  if (process.client) {
+    const host = window.location.hostname
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:3001'
+    }
+    // For production, point to admin subdomain
+    const domainParts = host.split('.')
+    if (domainParts.length >= 2) {
+      const baseDomain = domainParts.slice(-2).join('.')
+      return `https://admin.${baseDomain}`
+    }
+  }
+  return 'https://admin.kataloga.org'
+})
+
 const scrollToPricing = () => {
   document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
 }
 
 onMounted(() => {
-  // 1. Load Lucide Icons
-  if (!(window as any).lucide) {
-    const script = document.createElement('script')
-    script.src = 'https://unpkg.com/lucide@latest'
-    script.onload = () => {
-      (window as any).lucide.createIcons()
-    }
-    document.head.appendChild(script)
-  } else {
-    (window as any).lucide.createIcons()
-  }
-
-  // 2. Intersection Observer (fade-up)
+  // 1. Intersection Observer (fade-up)
   const fadeElements = document.querySelectorAll('.fade-up')
   const fadeObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
