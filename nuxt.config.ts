@@ -88,8 +88,8 @@ export default defineNuxtConfig({
   // Runtime config
   runtimeConfig: {
     public: {
-      apiUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'http://localhost:3001',
+      apiUrl: process.env.NUXT_PUBLIC_API_URL || process.env.NUXT_PUBLIC_API_BASE_URL || 'https://api.kataloga.org/api',
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'https://api.kataloga.org',
       tenantSlug: process.env.NUXT_PUBLIC_TENANT_SLUG || '',
       telegramBotToken: process.env.NUXT_PUBLIC_TELEGRAM_BOT_TOKEN || '',
       telegramBotUsername: process.env.NUXT_PUBLIC_TELEGRAM_BOT_USERNAME || '',

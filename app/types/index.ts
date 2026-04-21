@@ -258,6 +258,7 @@ export enum OrderStatus {
 
 export interface CreateOrderDto {
   userId?: string
+  tenantId: string
   items: {
     productId: string
     quantity: number
@@ -266,8 +267,10 @@ export interface CreateOrderDto {
   }[]
   customerInfo: CustomerInfo
   paymentMethod: 'STRIPE' | 'CASH' | 'TRANSFER'
+  deliveryType: 'PICKUP' | 'DELIVERY'
   notes?: string
   deliveryAddress?: string
+  total: number
 }
 
 // Promotion types

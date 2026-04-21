@@ -190,7 +190,7 @@ const telegram = useTelegram()
 const { formatCurrency, contactInfo, deliverySettings } = useTenantSettings()
 
 type OrderType = 'delivery' | 'pickup' | 'dine-in'
-type PaymentMethodType = 'CASH' | 'TRANSFER'
+type PaymentMethodType = 'CASH' | 'TRANSFER' | 'STRIPE'
 
 interface Props {
   cart: CartItem[]
@@ -467,6 +467,7 @@ const submitOrder = async () => {
 
     const createOrderDto: CreateOrderDto = {
       userId: user.value?.id,
+      tenantId: tenantStore.tenantId!,
       items: props.cart.map(cartItem => ({
         productId: cartItem.productId,
         quantity: cartItem.quantity,
@@ -475,6 +476,7 @@ const submitOrder = async () => {
       })),
       customerInfo,
       paymentMethod: orderData.value.paymentMethod,
+      deliveryType: orderData.value.orderType === 'delivery' ? 'DELIVERY' : 'PICKUP',
       notes:
         orderData.value.deliveryDetails?.instructions ||
         orderData.value.pickupDetails?.instructions ||
