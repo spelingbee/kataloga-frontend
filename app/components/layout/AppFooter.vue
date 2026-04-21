@@ -67,9 +67,24 @@
 
       <!-- Bottom Section -->
       <div class="border-t border-border-subtle mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-        <AppText class="text-neutral-80 text-body-sm">
-          © {{ currentYear }} {{ appName }}. All rights reserved.
-        </AppText>
+        <div class="flex flex-col items-center md:items-start">
+          <AppText class="text-neutral-80 text-body-sm">
+            © {{ currentYear }} {{ appName }}. All rights reserved.
+          </AppText>
+          
+          <NuxtLink 
+            v-if="showBranding"
+            :to="brandingUrl"
+            target="_blank"
+            class="mt-2 flex items-center space-x-2 group transition-all duration-500"
+          >
+            <span class="text-[10px] uppercase tracking-[0.2em] text-neutral-80 group-hover:text-neutral-40 transition-colors">Made with</span>
+            <div class="relative overflow-hidden">
+               <span class="text-xs font-black tracking-tighter text-neutral-80 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-[#3b82f6] group-hover:to-[#22c55e] group-hover:bg-clip-text transition-all duration-500 transform group-hover:scale-110 inline-block">KATALOGA</span>
+               <div class="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/10 blur-xl transition-all duration-500 rounded-full"></div>
+            </div>
+          </NuxtLink>
+        </div>
         <div class="flex space-x-6 mt-4 md:mt-0">
           <NuxtLink
             v-for="legal in legalLinks"
@@ -87,6 +102,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useTenantStore } from '~/stores/tenant'
+import AppText from '../base/AppText.vue'
+import AppHeading from '../base/AppHeading.vue'
+
+const tenantStore = useTenantStore()
+const showBranding = computed(() => tenantStore.currentTenant?.showBranding !== false)
+const brandingUrl = computed(() => tenantStore.currentTenant?.brandingUrl || 'https://kataloga.org')
 
 // Computed properties
 const appName = computed(() => useRuntimeConfig().public.appName)

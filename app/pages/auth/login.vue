@@ -1,18 +1,13 @@
 <template>
   <div class="auth-page">
     <!-- Background Elements -->
-    <div class="auth-page__bg-blob auth-page__bg-blob--1"/>
-    <div class="auth-page__bg-blob auth-page__bg-blob--2"/>
-    
+    <div class="auth-page__bg-blob auth-page__bg-blob--1" />
+    <div class="auth-page__bg-blob auth-page__bg-blob--2" />
+
     <div class="auth-page__container">
       <!-- Back Navigation -->
       <nav class="auth-page__nav">
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          icon="arrow-left"
-          @click="router.push('/')"
-        >
+        <BaseButton variant="ghost" size="sm" icon="arrow-left" @click="router.push('/')">
           На главную
         </BaseButton>
       </nav>
@@ -21,11 +16,11 @@
         <header class="auth-page__header">
           <h1 class="auth-page__title">Войти в аккаунт</h1>
           <p class="auth-page__subtitle">
-            Нет аккаунта? 
+            Нет аккаунта?
             <NuxtLink to="/auth/register" class="auth-page__link">Создать новый</NuxtLink>
           </p>
         </header>
-        
+
         <form class="auth-page__form" @submit.prevent="handleLogin">
           <BaseInput
             v-model="form.email"
@@ -38,7 +33,7 @@
             prefix-icon="mail"
             class="auth-page__input"
           />
-          
+
           <BaseInput
             v-model="form.password"
             label="Пароль"
@@ -53,9 +48,7 @@
           />
 
           <div class="auth-page__form-options">
-            <BaseCheckbox v-model="form.rememberMe">
-              Запомнить меня
-            </BaseCheckbox>
+            <BaseCheckbox v-model="form.rememberMe">Запомнить меня</BaseCheckbox>
 
             <NuxtLink to="/auth/forgot-password" class="auth-page__link auth-page__link--small">
               Забыли пароль?
@@ -71,32 +64,26 @@
           </Transition>
 
           <div class="auth-page__actions">
-            <BaseButton
-              type="submit"
-              variant="primary"
-              full-width
-              :loading="isLoading"
-            >
+            <BaseButton type="submit" variant="primary" full-width :loading="isLoading">
               {{ isLoading ? 'Вход...' : 'Войти' }}
             </BaseButton>
           </div>
         </form>
       </main>
-      
-      <footer class="auth-page__footer">
-        © {{ new Date().getFullYear() }} Kataloga. Все права защищены.
-      </footer>
+
+      <BrandingFooter />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user'
+import BrandingFooter from '~/components/layout/BrandingFooter.vue'
 
 // Meta
 definePageMeta({
   layout: false,
-  middleware: 'guest'
+  middleware: 'guest',
 })
 
 // Composables
@@ -108,12 +95,12 @@ const router = useRouter()
 const form = reactive({
   email: '',
   password: '',
-  rememberMe: false
+  rememberMe: false,
 })
 
 const errors = reactive({
   email: '',
-  password: ''
+  password: '',
 })
 
 const error = ref('')
@@ -122,11 +109,11 @@ const isLoading = ref(false)
 // Methods
 const validateForm = () => {
   let isValid = true
-  
+
   // Reset errors
   errors.email = ''
   errors.password = ''
-  
+
   // Email validation
   if (!form.email) {
     errors.email = 'Email обязателен'
@@ -135,7 +122,7 @@ const validateForm = () => {
     errors.email = 'Введите корректный email'
     isValid = false
   }
-  
+
   // Password validation
   if (!form.password) {
     errors.password = 'Пароль обязателен'
@@ -144,22 +131,22 @@ const validateForm = () => {
     errors.password = 'Пароль должен содержать минимум 6 символов'
     isValid = false
   }
-  
+
   return isValid
 }
 
 const handleLogin = async () => {
   if (!validateForm()) return
-  
+
   isLoading.value = true
   error.value = ''
-  
+
   try {
     await authStore.login({
       email: form.email,
-      password: form.password
+      password: form.password,
     })
-    
+
     // Redirect to intended page or home
     const redirectTo = (route.query.redirect as string) || '/'
     await router.push(redirectTo)
@@ -199,13 +186,13 @@ const handleLogin = async () => {
   border-radius: 50%;
   z-index: 0;
   pointer-events: none;
-  
+
   &--1 {
     background: var(--color-primary);
     top: -100px;
     right: -100px;
   }
-  
+
   &--2 {
     background: var(--color-secondary);
     bottom: -100px;
@@ -236,7 +223,7 @@ const handleLogin = async () => {
   padding: $space-8;
   box-shadow: $shadow-xl;
   transition: $transition-base-ease;
-  
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: $shadow-xl;
@@ -266,7 +253,7 @@ const handleLogin = async () => {
   font-weight: $font-semibold;
   text-decoration: none;
   transition: $transition-base-ease;
-  
+
   &:hover {
     color: var(--color-primary-dark);
     text-decoration: underline;
@@ -307,11 +294,7 @@ const handleLogin = async () => {
   margin-top: $space-2;
 }
 
-.auth-page__footer {
-  text-align: center;
-  font-size: $text-xs;
-  color: var(--text-tertiary);
-}
+// Footer styles moved to BrandingFooter component
 
 // Transitions
 .fade-enter-active,
@@ -331,11 +314,11 @@ const handleLogin = async () => {
     border-color: rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(12px);
     color: #1a1a1a;
-    
+
     &::placeholder {
       color: rgba(0, 0, 0, 0.45) !important;
     }
-    
+
     &:focus {
       background: rgba(255, 255, 255, 0.6);
       border-color: var(--color-primary);

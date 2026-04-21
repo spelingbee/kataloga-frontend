@@ -30,7 +30,7 @@
               Kataloga превращает хаотичные заказы из WhatsApp в структурированный магазин с каталогом, оплатой и уведомлениями. Никаких таблиц и долгих переписок.
             </p>
             <div class="hero-actions fade-up delay-2">
-              <a :href="adminUrl + '/onboarding'" class="btn primary">
+              <a :href="adminUrl + '/login'" class="btn primary">
                 Попробовать бесплатно
               </a>
               <button class="btn ghost">
@@ -106,22 +106,37 @@
       <!-- Секция 4: FEATURES -->
       <section id="features" class="features">
         <div class="container">
-          <h2 class="fade-up">Всё для успешных продаж</h2>
+          <h2 class="fade-up">Полный набор инструментов для вашего бизнеса</h2>
           <div class="bento-grid">
             <div class="feature-card fade-up">
               <div class="feature-icon"><Icon name="package" size="24"/></div>
-              <h3>Каталог товаров</h3>
-              <p>Загрузите свои позиции, а клиент удобно выберет их прямо внутри Telegram-бота без перехода в сторонний браузер.</p>
+              <h3>Telegram Web App</h3>
+              <p>Полноценный интерактивный магазин прямо внутри Telegram. Клиенту не нужно переходить по внешним ссылкам.</p>
             </div>
             <div class="feature-card fade-up delay-1">
-              <div class="feature-icon"><Icon name="shopping-cart" size="24"/></div>
-              <h3>Приём заказов</h3>
-              <p>Все заказы приходят в едином стандарте. Больше не нужно выяснять детали доставки в долгой переписке.</p>
+              <div class="feature-icon"><Icon name="settings" size="24"/></div>
+              <h3>Мощная панель управления</h3>
+              <p>Удобный интерфейс для управления товарами (модификаторы, размеры), просмотра аналитики и статусов заказов.</p>
             </div>
             <div class="feature-card fade-up delay-2">
               <div class="feature-icon"><Icon name="credit-card" size="24"/></div>
-              <h3>Оплата и уведомления</h3>
-              <p>Клиент оплачивает заказ удобным способом, а вы моментально получаете уведомление об успешной транзакции.</p>
+              <h3>Гибкая оплата (Карты и QR)</h3>
+              <p>Оплата через банковские карты (Stripe) или прямые переводы по QR коду со скриншотом чека в бота.</p>
+            </div>
+            <div class="feature-card fade-up">
+              <div class="feature-icon"><Icon name="bell" size="24"/></div>
+              <h3>Мгновенные уведомления</h3>
+              <p>Вы и ваши сотрудники моментально получаете уведомления о новых заказах прямо в Telegram или на Email.</p>
+            </div>
+            <div class="feature-card fade-up delay-1">
+              <div class="feature-icon"><Icon name="globe" size="24"/></div>
+              <h3>Многоязычность</h3>
+              <p>Интерфейс доступен на Русском, Английском и Кыргызском языках, чтобы каждый клиент чувствовал себя комфортно.</p>
+            </div>
+            <div class="feature-card fade-up delay-2">
+              <div class="feature-icon"><Icon name="layout-dashboard" size="24"/></div>
+              <h3>Современный дизайн и удобство</h3>
+              <p>Добавьте свои товары и категории — система сама соберет удобный и красивый каталог без программирования.</p>
             </div>
           </div>
         </div>
@@ -177,7 +192,7 @@
           <h3>Простой тариф для всех</h3>
           <div class="price">$15 <span>/ мес</span></div>
           <p>7 дней бесплатно. Полный доступ ко всем функциям без скрытых платежей и комиссий за заказы.</p>
-          <a :href="adminUrl + '/onboarding'" class="btn primary" style="width: 100%;">Начать бесплатно</a>
+          <a :href="adminUrl + '/login'" class="btn primary" style="width: 100%;">Начать бесплатно</a>
         </div>
       </section>
     </main>

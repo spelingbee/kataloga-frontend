@@ -1,18 +1,13 @@
 <template>
   <div class="register-page">
     <!-- Background Elements -->
-    <div class="register-page__bg-blob register-page__bg-blob--1"/>
-    <div class="register-page__bg-blob register-page__bg-blob--2"/>
-    
+    <div class="register-page__bg-blob register-page__bg-blob--1" />
+    <div class="register-page__bg-blob register-page__bg-blob--2" />
+
     <div class="register-page__container">
       <!-- Back Navigation -->
       <nav class="register-page__nav">
-        <BaseButton
-          variant="ghost"
-          size="sm"
-          icon="arrow-left"
-          @click="router.push('/')"
-        >
+        <BaseButton variant="ghost" size="sm" icon="arrow-left" @click="router.push('/')">
           На главную
         </BaseButton>
       </nav>
@@ -21,11 +16,11 @@
         <header class="register-page__header">
           <h1 class="register-page__title">Создать аккаунт</h1>
           <p class="register-page__subtitle">
-            Уже есть аккаунт? 
+            Уже есть аккаунт?
             <NuxtLink to="/auth/login" class="register-page__link">Войти</NuxtLink>
           </p>
         </header>
-        
+
         <form class="register-page__form" @submit.prevent="handleRegister">
           <div class="register-page__form-grid">
             <BaseInput
@@ -37,7 +32,7 @@
               autocomplete="given-name"
               class="register-page__input"
             />
-            
+
             <BaseInput
               v-model="form.lastName"
               label="Фамилия"
@@ -48,7 +43,7 @@
               class="register-page__input"
             />
           </div>
-          
+
           <BaseInput
             v-model="form.email"
             label="Email адрес"
@@ -60,7 +55,7 @@
             prefix-icon="mail"
             class="register-page__input"
           />
-          
+
           <BaseInput
             v-model="form.phone"
             label="Телефон"
@@ -71,7 +66,7 @@
             prefix-icon="phone"
             class="register-page__input"
           />
-          
+
           <div class="register-page__form-grid">
             <BaseInput
               v-model="form.password"
@@ -85,7 +80,7 @@
               prefix-icon="lock"
               class="register-page__input"
             />
-            
+
             <BaseInput
               v-model="form.confirmPassword"
               label="Подтвердите пароль"
@@ -106,9 +101,9 @@
               required
               :error="error && !form.agreeTerms ? 'Вы должны согласиться с условиями' : ''"
             >
-              Я согласен с 
+              Я согласен с
               <a href="#" class="register-page__link" @click.stop>условиями</a>
-              и 
+              и
               <a href="#" class="register-page__link" @click.stop>политикой конфиденциальности</a>
             </BaseCheckbox>
           </div>
@@ -134,23 +129,21 @@
           </div>
         </form>
       </main>
-      
-      <footer class="register-page__footer">
-        © {{ new Date().getFullYear() }} Kataloga. Все права защищены.
-      </footer>
+
+      <BrandingFooter />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user'
+import BrandingFooter from '~/components/layout/BrandingFooter.vue'
 
 // Meta
 definePageMeta({
-  middleware: 'guest'
+  middleware: 'guest',
 })
 
-// Composables
 const authStore = useUserStore()
 const router = useRouter()
 
@@ -162,7 +155,7 @@ const form = reactive({
   phone: '',
   password: '',
   confirmPassword: '',
-  agreeTerms: false
+  agreeTerms: false,
 })
 
 const errors = reactive({
@@ -171,7 +164,7 @@ const errors = reactive({
   email: '',
   phone: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
 
 const error = ref('')
@@ -180,12 +173,12 @@ const isLoading = ref(false)
 // Methods
 const validateForm = () => {
   let isValid = true
-  
+
   // Reset errors
   Object.keys(errors).forEach(key => {
     errors[key as keyof typeof errors] = ''
   })
-  
+
   // First name validation
   if (!form.firstName.trim()) {
     errors.firstName = 'Имя обязательно'
@@ -194,7 +187,7 @@ const validateForm = () => {
     errors.firstName = 'Имя должно содержать минимум 2 символа'
     isValid = false
   }
-  
+
   // Last name validation
   if (!form.lastName.trim()) {
     errors.lastName = 'Фамилия обязательна'
@@ -203,7 +196,7 @@ const validateForm = () => {
     errors.lastName = 'Фамилия должна содержать минимум 2 символа'
     isValid = false
   }
-  
+
   // Email validation
   if (!form.email) {
     errors.email = 'Email обязателен'
@@ -212,13 +205,13 @@ const validateForm = () => {
     errors.email = 'Введите корректный email'
     isValid = false
   }
-  
+
   // Phone validation (optional)
   if (form.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/[\s\-\(\)]/g, ''))) {
     errors.phone = 'Введите корректный номер телефона'
     isValid = false
   }
-  
+
   // Password validation
   if (!form.password) {
     errors.password = 'Пароль обязателен'
@@ -230,7 +223,7 @@ const validateForm = () => {
     errors.password = 'Пароль должен содержать строчные и заглавные буквы, а также цифры'
     isValid = false
   }
-  
+
   // Confirm password validation
   if (!form.confirmPassword) {
     errors.confirmPassword = 'Подтверждение пароля обязательно'
@@ -239,25 +232,25 @@ const validateForm = () => {
     errors.confirmPassword = 'Пароли не совпадают'
     isValid = false
   }
-  
+
   return isValid
 }
 
 const handleRegister = async () => {
   if (!validateForm()) return
-  
+
   isLoading.value = true
   error.value = ''
-  
+
   try {
     await authStore.register({
       email: form.email,
       password: form.password,
       firstName: form.firstName,
       lastName: form.lastName,
-      phone: form.phone || undefined
+      phone: form.phone || undefined,
     })
-    
+
     // Redirect to home page after successful registration
     await router.push('/')
   } catch (err: any) {
@@ -296,13 +289,13 @@ const handleRegister = async () => {
   border-radius: 50%;
   z-index: 0;
   pointer-events: none;
-  
+
   &--1 {
     background: var(--color-primary);
     top: -100px;
     right: -100px;
   }
-  
+
   &--2 {
     background: var(--color-secondary);
     bottom: -100px;
@@ -334,7 +327,7 @@ const handleRegister = async () => {
   padding: $space-8;
   box-shadow: $shadow-xl;
   transition: $transition-base-ease;
-  
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: $shadow-xl;
@@ -364,7 +357,7 @@ const handleRegister = async () => {
   font-weight: $font-semibold;
   text-decoration: none;
   transition: $transition-base-ease;
-  
+
   &:hover {
     color: var(--color-primary-dark);
     text-decoration: underline;
@@ -381,7 +374,7 @@ const handleRegister = async () => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: $space-4;
-  
+
   @media (max-width: 540px) {
     grid-template-columns: 1fr;
   }
@@ -408,12 +401,7 @@ const handleRegister = async () => {
   margin-top: $space-4;
 }
 
-.register-page__footer {
-  text-align: center;
-  font-size: $text-xs;
-  color: var(--text-tertiary);
-  margin-bottom: $space-4;
-}
+// Footer styles moved to BrandingFooter component
 
 // Transitions
 .fade-enter-active,
@@ -433,11 +421,11 @@ const handleRegister = async () => {
     border-color: rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(12px);
     color: #1a1a1a;
-    
+
     &::placeholder {
       color: rgba(0, 0, 0, 0.45) !important;
     }
-    
+
     &:focus {
       background: rgba(255, 255, 255, 0.6);
       border-color: var(--color-primary);

@@ -10,6 +10,8 @@ export interface TenantInfo {
   isActive: boolean
   bankTransferQrCode?: string
   businessType: 'RESTAURANT' | 'CAFE' | 'FLOWERS' | 'SHOP' | 'OTHER'
+  showBranding?: boolean
+  brandingUrl?: string
   createdAt: string
   updatedAt: string
 }

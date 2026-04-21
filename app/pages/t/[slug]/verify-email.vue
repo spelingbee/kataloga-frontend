@@ -33,8 +33,8 @@
             <BaseButton
               variant="outline"
               full-width
-              @click="handleRetry"
               class="u-mb-4"
+              @click="handleRetry"
             >
               Вернуться назад
             </BaseButton>
@@ -49,9 +49,7 @@
         </div>
       </main>
       
-      <footer class="auth-page__footer">
-        © {{ new Date().getFullYear() }} Kataloga. Все права защищены.
-      </footer>
+      <BrandingFooter />
     </div>
   </div>
 </template>
@@ -60,6 +58,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '~/stores/user'
 import { useTenant } from '~/composables/useTenant'
+import BrandingFooter from '~/components/layout/BrandingFooter.vue'
 
 const userStore = useUserStore()
 const route = useRoute()
@@ -228,11 +227,7 @@ definePageMeta({
   color: var(--text-secondary);
 }
 
-.auth-page__footer {
-  text-align: center;
-  font-size: $text-xs;
-  color: var(--text-tertiary);
-}
+// Footer styles moved to BrandingFooter component
 
 .u-mb-4 {
   margin-bottom: $space-4;
