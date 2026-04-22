@@ -27,15 +27,15 @@
               Ваш магазин прямо в <span class="text-accent">Telegram</span>
             </h1>
             <p class="fade-up delay-1">
-              Kataloga превращает хаотичные заказы из WhatsApp в структурированный магазин с каталогом, оплатой и уведомлениями. Никаких таблиц и долгих переписок.
+              Kataloga превращает хаотичные заказы из WhatsApp и Instagram DM в удобный магазин с каталогом, оплатой и уведомлениями. Для кафе, кондитеров, магазинов и любого бизнеса.
             </p>
             <div class="hero-actions fade-up delay-2">
               <a :href="adminUrl + '/login'" class="btn primary">
-                Попробовать бесплатно
+                Начать бесплатно
               </a>
-              <button class="btn ghost">
-                Смотреть демо <Icon name="play-circle" size="20"/>
-              </button>
+              <a href="https://t.me/kataloga_bot" target="_blank" class="btn ghost">
+                Открыть демо <Icon name="play-circle" size="20"/>
+              </a>
             </div>
           </div>
           
@@ -68,13 +68,13 @@
       <!-- Секция 2: SOCIAL PROOF BAR -->
       <section id="social-proof" class="social-proof fade-up">
         <div class="container">
-          <p>Выбор современных предпринимателей в Бишкеке и СНГ</p>
+          <p>Создано для предпринимателей Кыргызстана 🇰🇬</p>
           <div class="logo-row">
-            <div class="logo-circle">B</div>
-            <div class="logo-circle">M</div>
-            <div class="logo-circle">C</div>
-            <div class="logo-circle">L</div>
-            <div class="logo-circle">K</div>
+            <div class="social-proof-stat">🍕 Кафе</div>
+            <div class="social-proof-stat">🎂 Кондитеры</div>
+            <div class="social-proof-stat">💐 Цветы</div>
+            <div class="social-proof-stat">🛍️ Магазины</div>
+            <div class="social-proof-stat">✨ Handmade</div>
           </div>
         </div>
       </section>
@@ -120,8 +120,8 @@
             </div>
             <div class="feature-card fade-up delay-2">
               <div class="feature-icon"><Icon name="credit-card" size="24"/></div>
-              <h3>Гибкая оплата (Карты и QR)</h3>
-              <p>Оплата через банковские карты (Stripe) или прямые переводы по QR коду со скриншотом чека в бота.</p>
+              <h3>Гибкая оплата (QR и наличные)</h3>
+              <p>Оплата через банковский перевод по QR-коду, наличными при получении или скриншотом чека прямо в бота.</p>
             </div>
             <div class="feature-card fade-up">
               <div class="feature-icon"><Icon name="bell" size="24"/></div>
@@ -187,12 +187,52 @@
 
       <!-- Секция 7: PRICING -->
       <section id="pricing" class="pricing container">
-        <div class="pricing-card fade-up">
-          <div class="pricing-badge">Самый популярный</div>
-          <h3>Простой тариф для всех</h3>
-          <div class="price">$15 <span>/ мес</span></div>
-          <p>7 дней бесплатно. Полный доступ ко всем функциям без скрытых платежей и комиссий за заказы.</p>
-          <a :href="adminUrl + '/login'" class="btn primary" style="width: 100%;">Начать бесплатно</a>
+        <h2 class="fade-up">Тарифы</h2>
+        <p class="pricing-subtitle fade-up delay-1">7 недель бесплатно на любом тарифе. 0% комиссий с заказов.</p>
+        <div class="pricing-grid fade-up delay-2">
+          <!-- FREE -->
+          <div class="pricing-card">
+            <h3>Бесплатный</h3>
+            <div class="price">0 <span>сом / мес</span></div>
+            <ul class="pricing-features">
+              <li><Icon name="check" size="16"/> До 15 товаров</li>
+              <li><Icon name="check" size="16"/> До 30 заказов / мес</li>
+              <li><Icon name="check" size="16"/> Общий бот @kataloga_bot</li>
+              <li><Icon name="check" size="16"/> Уведомления владельцу</li>
+              <li class="pricing-features__disabled"><Icon name="x" size="16"/> Фото товаров</li>
+              <li class="pricing-features__disabled"><Icon name="x" size="16"/> Аналитика</li>
+            </ul>
+            <a :href="adminUrl + '/login'" class="btn ghost" style="width: 100%;">Начать бесплатно</a>
+          </div>
+          <!-- START -->
+          <div class="pricing-card pricing-card--popular">
+            <div class="pricing-badge">Популярный</div>
+            <h3>Старт</h3>
+            <div class="price">500 <span>сом / мес</span></div>
+            <ul class="pricing-features">
+              <li><Icon name="check" size="16"/> До 100 товаров</li>
+              <li><Icon name="check" size="16"/> До 500 заказов / мес</li>
+              <li><Icon name="check" size="16"/> Свой Telegram-бот</li>
+              <li><Icon name="check" size="16"/> Фото товаров</li>
+              <li><Icon name="check" size="16"/> QR-оплата</li>
+              <li><Icon name="check" size="16"/> Базовая аналитика</li>
+            </ul>
+            <a :href="adminUrl + '/login'" class="btn primary" style="width: 100%;">Попробовать 7 недель</a>
+          </div>
+          <!-- PRO -->
+          <div class="pricing-card">
+            <h3>Про</h3>
+            <div class="price">1 500 <span>сом / мес</span></div>
+            <ul class="pricing-features">
+              <li><Icon name="check" size="16"/> Безлимит товаров</li>
+              <li><Icon name="check" size="16"/> Безлимит заказов</li>
+              <li><Icon name="check" size="16"/> Свой бот + брендинг</li>
+              <li><Icon name="check" size="16"/> До 10 сотрудников</li>
+              <li><Icon name="check" size="16"/> Полная аналитика + экспорт</li>
+              <li><Icon name="check" size="16"/> Приоритетная поддержка</li>
+            </ul>
+            <a :href="adminUrl + '/login'" class="btn ghost" style="width: 100%;">Попробовать 7 недель</a>
+          </div>
         </div>
       </section>
     </main>
@@ -237,7 +277,7 @@ const faq = [
   },
   {
     question: 'Сколько это стоит?',
-    answer: 'Первая неделя абсолютно бесплатна. Затем стоимость составляет $15 в месяц. Это окупается уже с первых сохраненных заказов. Никаких скрытых комиссий с продаж мы не берем.'
+    answer: 'Есть бесплатный тариф навсегда (до 15 товаров и 30 заказов). Платные тарифы начинаются от 500 сом/мес. Первые 7 недель бесплатны на любом тарифе. Никаких скрытых комиссий с заказов — 0%.'
   },
   {
     question: 'Подходит ли это для моего бизнеса?',
@@ -522,7 +562,9 @@ p { color: var(--text-muted); }
 /* Social Proof */
 .social-proof { padding: 60px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); background: var(--surface-color); text-align: center; }
 .social-proof p { margin-bottom: 24px; font-weight: 500; color: var(--text-muted); font-size: 0.95rem; }
-.logo-row { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+.logo-row { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.social-proof-stat { display: flex; align-items: center; justify-content: center; padding: 8px 20px; border-radius: 12px; background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-muted); font-weight: 500; font-size: 0.9rem; transition: all var(--transition); box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+.social-proof-stat:hover { transform: translateY(-2px); border-color: var(--accent-primary); color: var(--accent-primary); box-shadow: 0 4px 6px rgba(13, 148, 136, 0.1); }
 .logo-circle { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; background: var(--surface-color); border: 1px solid var(--border-color); color: var(--text-muted); font-weight: 600; font-size: 14px; transition: all var(--transition); box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
 .logo-circle:hover { transform: translateY(-2px); border-color: var(--accent-primary); color: var(--accent-primary); box-shadow: 0 4px 6px rgba(13, 148, 136, 0.1); }
 
@@ -578,10 +620,22 @@ p { color: var(--text-muted); }
 
 /* Pricing */
 .pricing { padding: 80px 0 120px; text-align: center; }
-.pricing-card { max-width: 480px; margin: 0 auto; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 32px; padding: 56px 40px; box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05); position: relative; }
-.pricing-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--accent-light); color: var(--accent-primary); border: 1px solid var(--accent-border); padding: 4px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; }
-.price { font-size: 3.5rem; font-weight: 700; margin: 24px 0; color: var(--text-main); }
-.price span { font-size: 1.25rem; color: var(--text-muted); font-weight: 500; }
+.pricing-subtitle { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 48px; }
+.pricing-grid { display: grid; grid-template-columns: 1fr; gap: 24px; max-width: 1100px; margin: 0 auto; }
+@media (min-width: 768px) { .pricing-grid { grid-template-columns: repeat(3, 1fr); } }
+.pricing-card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 24px; padding: 40px 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); position: relative; text-align: left; transition: all var(--transition); }
+.pricing-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1); }
+.pricing-card--popular { border: 2px solid var(--accent-primary); box-shadow: 0 20px 40px -10px rgba(13, 148, 136, 0.15); }
+.pricing-card--popular:hover { box-shadow: 0 25px 50px -10px rgba(13, 148, 136, 0.2); }
+.pricing-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--accent-light); color: var(--accent-primary); border: 1px solid var(--accent-border); padding: 4px 16px; border-radius: 20px; font-size: 0.875rem; font-weight: 600; white-space: nowrap; }
+.pricing-card h3 { font-size: 1.5rem; margin-bottom: 8px; color: var(--text-main); }
+.price { font-size: 3rem; font-weight: 700; margin: 16px 0 24px; color: var(--text-main); }
+.price span { font-size: 1rem; color: var(--text-muted); font-weight: 500; }
+.pricing-features { list-style: none; padding: 0; margin: 0 0 32px; }
+.pricing-features li { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 0.95rem; color: var(--text-main); }
+.pricing-features li i, .pricing-features li svg { flex-shrink: 0; color: var(--accent-primary); }
+.pricing-features__disabled { color: var(--text-light) !important; }
+.pricing-features__disabled i, .pricing-features__disabled svg { color: var(--text-light) !important; }
 
 /* Footer */
 .landing-footer { border-top: 1px solid var(--border-color); padding: 60px 0 40px; background: var(--surface-color); }

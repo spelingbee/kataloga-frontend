@@ -1,256 +1,87 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="ingredients-page">
     <!-- Header -->
-    <div class="px-6 py-4 border-b border-neutral-80/20">
-      <div class="flex items-center gap-4">
-        <BaseButton 
-          variant="ghost" 
-          @click="$router.go(-1)"
-        >
-          <BaseIcon name="arrow-left" size="md" />
-        </BaseButton>
-        <div>
-          <AppHeading level="h1" size="heading-lg" class="text-white">
-            Ingredients
-          </AppHeading>
-          <AppText class="text-neutral-20">
-            {{ dish?.name }}
-          </AppText>
-        </div>
+    <header class="ingredients-page__header">
+      <button class="ingredients-page__back" @click="$router.go(-1)">
+        <BaseIcon name="arrow-left" size="md" />
+      </button>
+      <div>
+        <h1 class="ingredients-page__title">{{ $t('common.ingredients', 'Состав') }}</h1>
+        <p class="ingredients-page__subtitle">{{ dish?.name }}</p>
       </div>
-    </div>
+    </header>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center py-16">
-      <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading ingredients...</AppText>
-      </div>
+    <div v-if="loading" class="ingredients-page__state">
+      <div class="ingredients-page__spinner" />
+      <p>{{ $t('common.loading', 'Загрузка...') }}</p>
     </div>
 
-    <!-- Main Content -->
-    <div v-else class="px-6 py-8">
-      <!-- Dish Summary -->
-      <div class="mb-8 p-4 bg-background-card rounded-xl">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 bg-neutral-80/20 rounded-full flex items-center justify-center">
-            <BaseIcon name="utensils" size="lg" class="text-neutral-80" />
-          </div>
-          <div class="flex-1">
-            <AppHeading level="h3" size="heading-md" class="text-white mb-1">
-              {{ dish?.name }}
-            </AppHeading>
-            <AppText size="body-sm" class="text-neutral-20">
-              {{ ingredients.length }} ingredients • {{ totalCalories }} calories
-            </AppText>
-          </div>
-          <div class="text-right">
-            <AppPrice :price="dish?.price || 0" size="lg" />
-          </div>
-        </div>
-      </div>
+    <!-- No Data State -->
+    <div v-else-if="!dish || !ingredients.length" class="ingredients-page__state">
+      <BaseIcon name="package" size="4xl" class="ingredients-page__empty-icon" />
+      <h2>{{ $t('common.no_ingredients', 'Состав не указан') }}</h2>
+      <p>{{ $t('common.no_ingredients_desc', 'Информация о составе для этого блюда пока не добавлена.') }}</p>
+      <button class="ingredients-page__action-btn" @click="$router.go(-1)">
+        {{ $t('common.back_to_dish', 'Назад к блюду') }}
+      </button>
+    </div>
 
-      <!-- Filter Options -->
-      <div class="mb-6">
-        <div class="flex flex-wrap gap-2">
-          <BaseButton
-            :variant="activeFilter === 'all' ? 'primary' : 'secondary'"
-            size="sm"
-            @click="setFilter('all')"
-          >
-            All Ingredients
-          </BaseButton>
-          <BaseButton
-            :variant="activeFilter === 'main' ? 'primary' : 'secondary'"
-            size="sm"
-            @click="setFilter('main')"
-          >
-            Main Ingredients
-          </BaseButton>
-          <BaseButton
-            :variant="activeFilter === 'allergens' ? 'primary' : 'secondary'"
-            size="sm"
-            @click="setFilter('allergens')"
-          >
-            Allergens
-          </BaseButton>
-          <BaseButton
-            :variant="activeFilter === 'optional' ? 'primary' : 'secondary'"
-            size="sm"
-            @click="setFilter('optional')"
-          >
-            Optional
-          </BaseButton>
+    <!-- Ingredients Content -->
+    <div v-else class="ingredients-page__content">
+      <!-- Dish Image -->
+      <div v-if="dish.imageUrl" class="ingredients-page__dish-preview">
+        <img :src="resolveImageUrl(dish.imageUrl)" :alt="dish.name" class="ingredients-page__dish-image" />
+        <div class="ingredients-page__dish-overlay">
+          <span class="ingredients-page__dish-name">{{ dish.name }}</span>
         </div>
       </div>
 
       <!-- Ingredients List -->
-      <div class="space-y-4 mb-8">
-        <div
-          v-for="ingredient in filteredIngredients"
-          :key="ingredient.id"
-          class="bg-background-card rounded-xl p-4"
-        >
-          <div class="flex items-start gap-4">
-            <!-- Ingredient Image/Icon -->
-            <div class="w-12 h-12 bg-neutral-80/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <BaseIcon :name="ingredient.icon" size="md" :class="ingredient.iconColor" />
-            </div>
+      <section class="ingredients-page__section">
+        <h2 class="ingredients-page__section-title">
+          <BaseIcon name="list" size="sm" />
+          {{ $t('common.ingredients_list', 'Список ингредиентов') }}
+        </h2>
+        <ul class="ingredients-page__list">
+          <li v-for="(ingredient, index) in ingredients" :key="index" class="ingredients-page__item">
+            <span class="ingredients-page__item-dot" />
+            <span class="ingredients-page__item-name">{{ ingredient }}</span>
+          </li>
+        </ul>
+      </section>
 
-            <!-- Ingredient Info -->
-            <div class="flex-1 min-w-0">
-              <div class="flex items-start justify-between mb-2">
-                <div>
-                  <AppHeading level="h4" size="heading-sm" class="text-white mb-1">
-                    {{ ingredient.name }}
-                  </AppHeading>
-                  <AppText size="body-sm" class="text-neutral-20">
-                    {{ ingredient.description }}
-                  </AppText>
-                </div>
-                
-                <!-- Badges -->
-                <div class="flex flex-wrap gap-1 ml-4">
-                  <BaseBadge
-                    v-if="ingredient.isAllergen"
-                    variant="warning"
-                    size="sm"
-                  >
-                    <BaseIcon name="alert-triangle" size="xs" class="mr-1" />
-                    Allergen
-                  </BaseBadge>
-                  <BaseBadge
-                    v-if="ingredient.isOptional"
-                    variant="secondary"
-                    size="sm"
-                  >
-                    Optional
-                  </BaseBadge>
-                  <BaseBadge
-                    v-if="ingredient.isOrganic"
-                    variant="success"
-                    size="sm"
-                  >
-                    <BaseIcon name="leaf" size="xs" class="mr-1" />
-                    Organic
-                  </BaseBadge>
-                </div>
-              </div>
-
-              <!-- Nutrition Info -->
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                <div>
-                  <AppText size="caption" class="text-neutral-20">Calories</AppText>
-                  <AppText size="body-sm" class="text-white">{{ ingredient.calories }}</AppText>
-                </div>
-                <div v-if="ingredient.protein">
-                  <AppText size="caption" class="text-neutral-20">Protein</AppText>
-                  <AppText size="body-sm" class="text-white">{{ ingredient.protein }}g</AppText>
-                </div>
-                <div v-if="ingredient.carbs">
-                  <AppText size="caption" class="text-neutral-20">Carbs</AppText>
-                  <AppText size="body-sm" class="text-white">{{ ingredient.carbs }}g</AppText>
-                </div>
-                <div v-if="ingredient.fat">
-                  <AppText size="caption" class="text-neutral-20">Fat</AppText>
-                  <AppText size="body-sm" class="text-white">{{ ingredient.fat }}g</AppText>
-                </div>
-              </div>
-
-              <!-- Source Info -->
-              <div v-if="ingredient.source" class="flex items-center gap-2">
-                <BaseIcon name="map-pin" size="sm" class="text-neutral-80" />
-                <AppText size="caption" class="text-neutral-20">
-                  Source: {{ ingredient.source }}
-                </AppText>
-              </div>
-            </div>
-          </div>
+      <!-- Allergens Section -->
+      <section v-if="allergens.length > 0" class="ingredients-page__section ingredients-page__section--allergens">
+        <h2 class="ingredients-page__section-title">
+          <BaseIcon name="alert-triangle" size="sm" />
+          {{ $t('common.allergens', 'Аллергены') }}
+        </h2>
+        <div class="ingredients-page__allergens-grid">
+          <span v-for="allergen in allergens" :key="allergen" class="ingredients-page__allergen-badge">
+            {{ allergen }}
+          </span>
         </div>
-      </div>
+      </section>
 
-      <!-- Allergen Warning -->
-      <div v-if="allergenIngredients.length > 0" class="mb-8 p-4 bg-primary-red/10 border border-primary-red/30 rounded-xl">
-        <div class="flex items-start gap-3">
-          <BaseIcon name="alert-triangle" size="md" class="text-primary-red mt-1" />
-          <div>
-            <AppHeading level="h4" size="heading-sm" class="text-white mb-2">
-              Allergen Information
-            </AppHeading>
-            <AppText size="body-sm" class="text-neutral-20 mb-3">
-              This dish contains the following allergens:
-            </AppText>
-            <div class="flex flex-wrap gap-2">
-              <BaseBadge
-                v-for="allergen in allergenIngredients"
-                :key="allergen.id"
-                variant="warning"
-                size="sm"
-              >
-                {{ allergen.name }}
-              </BaseBadge>
-            </div>
-          </div>
+      <!-- Preparation Time -->
+      <section v-if="dish.preparationTime" class="ingredients-page__section">
+        <h2 class="ingredients-page__section-title">
+          <BaseIcon name="clock" size="sm" />
+          {{ $t('common.preparation_time', 'Время приготовления') }}
+        </h2>
+        <div class="ingredients-page__prep-time">
+          <span class="ingredients-page__prep-value">{{ dish.preparationTime }}</span>
+          <span class="ingredients-page__prep-unit">{{ $t('common.minutes', 'мин') }}</span>
         </div>
-      </div>
+      </section>
 
-      <!-- Nutritional Summary -->
-      <div class="mb-8 bg-background-card rounded-xl p-6">
-        <AppHeading level="h3" size="heading-md" class="text-white mb-4">
-          Nutritional Summary
-        </AppHeading>
-        
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <div class="text-center">
-            <div class="w-16 h-16 bg-primary-orange/20 rounded-full flex items-center justify-center mx-auto mb-2">
-              <FireIcon size="lg" />
-            </div>
-            <AppText size="body-lg" class="text-white font-semibold">{{ totalCalories }}</AppText>
-            <AppText size="caption" class="text-neutral-20">Calories</AppText>
-          </div>
-          
-          <div class="text-center">
-            <div class="w-16 h-16 bg-primary-green/20 rounded-full flex items-center justify-center mx-auto mb-2">
-              <BaseIcon name="activity" size="lg" class="text-primary-green" />
-            </div>
-            <AppText size="body-lg" class="text-white font-semibold">{{ totalProtein }}g</AppText>
-            <AppText size="caption" class="text-neutral-20">Protein</AppText>
-          </div>
-          
-          <div class="text-center">
-            <div class="w-16 h-16 bg-primary-red/20 rounded-full flex items-center justify-center mx-auto mb-2">
-              <BaseIcon name="zap" size="lg" class="text-primary-red" />
-            </div>
-            <AppText size="body-lg" class="text-white font-semibold">{{ totalCarbs }}g</AppText>
-            <AppText size="caption" class="text-neutral-20">Carbs</AppText>
-          </div>
-          
-          <div class="text-center">
-            <div class="w-16 h-16 bg-neutral-80/20 rounded-full flex items-center justify-center mx-auto mb-2">
-              <BaseIcon name="droplet" size="lg" class="text-neutral-80" />
-            </div>
-            <AppText size="body-lg" class="text-white font-semibold">{{ totalFat }}g</AppText>
-            <AppText size="caption" class="text-neutral-20">Fat</AppText>
-          </div>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex flex-col sm:flex-row gap-4">
-        <NuxtLink :to="`/dish/${dishId}/change-ingredients`" class="flex-1">
-          <BaseButton variant="primary" size="lg" class="w-full">
-            <BaseIcon name="edit" size="sm" class="mr-2" />
-            Customize Ingredients
-          </BaseButton>
-        </NuxtLink>
-        
-        <BaseButton 
-          variant="secondary"
-          size="lg"
-          @click="$router.push(`/dish/${dishId}`)"
-        >
-          Back to Dish
-        </BaseButton>
+      <!-- Back to Dish CTA -->
+      <div class="ingredients-page__footer">
+        <button class="ingredients-page__action-btn" @click="$router.go(-1)">
+          <BaseIcon name="arrow-left" size="sm" />
+          {{ $t('common.back_to_dish', 'Назад к блюду') }}
+        </button>
       </div>
     </div>
   </div>
@@ -258,210 +89,59 @@
 
 <script setup lang="ts">
 import type { MenuItem } from '~/types'
+import { useMenuStore } from '~/stores/menu'
+import { useTenant } from '~/composables/useTenant'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
-// Page setup
 definePageMeta({
-  title: 'Ingredients - Menu Ordering App'
+  title: 'Ingredients'
 })
 
-// Route and stores
 const route = useRoute()
-const router = useRouter()
+const menuStore = useMenuStore()
+const { tPath } = useTenant()
 
-// Reactive state
 const loading = ref(true)
-const activeFilter = ref('all')
-
-// Get dish ID from route
 const dishId = computed(() => route.params.id as string)
-
-// Mock dish data
 const dish = ref<MenuItem | null>(null)
 
-// Mock ingredients data
-const ingredients = ref([
-  {
-    id: '1',
-    name: 'Beef Patty',
-    description: 'Premium ground beef, 100% grass-fed',
-    calories: 250,
-    protein: 20,
-    carbs: 0,
-    fat: 18,
-    isMain: true,
-    isAllergen: false,
-    isOptional: false,
-    isOrganic: true,
-    source: 'Local Farm, Texas',
-    icon: 'beef',
-    iconColor: 'text-primary-red'
-  },
-  {
-    id: '2',
-    name: 'Sesame Bun',
-    description: 'Freshly baked brioche bun with sesame seeds',
-    calories: 150,
-    protein: 5,
-    carbs: 28,
-    fat: 3,
-    isMain: true,
-    isAllergen: true,
-    isOptional: false,
-    isOrganic: false,
-    source: 'Local Bakery',
-    icon: 'bread',
-    iconColor: 'text-primary-orange'
-  },
-  {
-    id: '3',
-    name: 'Cheddar Cheese',
-    description: 'Aged cheddar cheese slice',
-    calories: 80,
-    protein: 5,
-    carbs: 1,
-    fat: 6,
-    isMain: true,
-    isAllergen: true,
-    isOptional: false,
-    isOrganic: false,
-    source: 'Wisconsin Dairy',
-    icon: 'cheese',
-    iconColor: 'text-primary-orange'
-  },
-  {
-    id: '4',
-    name: 'Lettuce',
-    description: 'Fresh iceberg lettuce leaves',
-    calories: 5,
-    protein: 0,
-    carbs: 1,
-    fat: 0,
-    isMain: false,
-    isAllergen: false,
-    isOptional: true,
-    isOrganic: true,
-    source: 'Organic Farm, California',
-    icon: 'leaf',
-    iconColor: 'text-primary-green'
-  },
-  {
-    id: '5',
-    name: 'Tomato',
-    description: 'Ripe tomato slices',
-    calories: 10,
-    protein: 0,
-    carbs: 2,
-    fat: 0,
-    isMain: false,
-    isAllergen: false,
-    isOptional: true,
-    isOrganic: true,
-    source: 'Local Greenhouse',
-    icon: 'tomato',
-    iconColor: 'text-primary-red'
-  },
-  {
-    id: '6',
-    name: 'Red Onion',
-    description: 'Thinly sliced red onion',
-    calories: 8,
-    protein: 0,
-    carbs: 2,
-    fat: 0,
-    isMain: false,
-    isAllergen: false,
-    isOptional: true,
-    isOrganic: false,
-    source: 'Regional Supplier',
-    icon: 'onion',
-    iconColor: 'text-neutral-80'
-  },
-  {
-    id: '7',
-    name: 'Special Sauce',
-    description: 'Our signature burger sauce with herbs and spices',
-    calories: 45,
-    protein: 0,
-    carbs: 3,
-    fat: 4,
-    isMain: false,
-    isAllergen: true,
-    isOptional: false,
-    isOrganic: false,
-    source: 'House Made',
-    icon: 'sauce',
-    iconColor: 'text-primary-orange'
-  },
-  {
-    id: '8',
-    name: 'Pickles',
-    description: 'Crispy dill pickle slices',
-    calories: 2,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
-    isMain: false,
-    isAllergen: false,
-    isOptional: true,
-    isOrganic: false,
-    source: 'Local Producer',
-    icon: 'pickle',
-    iconColor: 'text-primary-green'
+const ingredients = computed<string[]>(() => {
+  if (!dish.value?.ingredients) return []
+  // ingredients is stored as JSON — could be string[] or already parsed
+  const raw = dish.value.ingredients
+  if (Array.isArray(raw)) return raw
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw) } catch { return [] }
   }
-])
+  return []
+})
 
-// Computed
-const filteredIngredients = computed(() => {
-  switch (activeFilter.value) {
-    case 'main':
-      return ingredients.value.filter(ing => ing.isMain)
-    case 'allergens':
-      return ingredients.value.filter(ing => ing.isAllergen)
-    case 'optional':
-      return ingredients.value.filter(ing => ing.isOptional)
-    default:
-      return ingredients.value
+const allergens = computed<string[]>(() => {
+  if (!dish.value?.allergens) return []
+  const raw = dish.value.allergens
+  if (Array.isArray(raw)) return raw
+  if (typeof raw === 'string') {
+    try { return JSON.parse(raw) } catch { return [] }
   }
+  return []
 })
 
-const allergenIngredients = computed(() => {
-  return ingredients.value.filter(ing => ing.isAllergen)
-})
-
-const totalCalories = computed(() => {
-  return ingredients.value.reduce((total, ing) => total + ing.calories, 0)
-})
-
-const totalProtein = computed(() => {
-  return ingredients.value.reduce((total, ing) => total + (ing.protein || 0), 0)
-})
-
-const totalCarbs = computed(() => {
-  return ingredients.value.reduce((total, ing) => total + (ing.carbs || 0), 0)
-})
-
-const totalFat = computed(() => {
-  return ingredients.value.reduce((total, ing) => total + (ing.fat || 0), 0)
-})
-
-// Methods
 const loadDish = async () => {
   loading.value = true
-  
   try {
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    dish.value = {
-      id: dishId.value,
-      name: 'Delicious Burger',
-      description: 'A mouth-watering burger',
-      price: 15.99,
-      categoryId: 'fastfood',
-      isActive: true,
-      calories: totalCalories.value
+    // Try from store cache first
+    const cached = menuStore.getMenuItemById(dishId.value)
+    if (cached) {
+      dish.value = cached
     }
-    
+    // Always try fetching fresh data from API
+    const slug = route.params.slug as string
+    if (slug) {
+      const { data } = await useFetch(`/api/public/menu/${slug}/items/${dishId.value}`)
+      if (data.value) {
+        dish.value = data.value as MenuItem
+      }
+    }
   } catch (error) {
     console.error('Error loading dish:', error)
   } finally {
@@ -469,21 +149,217 @@ const loadDish = async () => {
   }
 }
 
-const setFilter = (filter: string) => {
-  activeFilter.value = filter
-}
+onMounted(() => loadDish())
 
-// Initialize
-onMounted(() => {
-  loadDish()
-})
-
-// Update page title
 watchEffect(() => {
   if (dish.value) {
     useHead({
-      title: `Ingredients - ${dish.value.name} - Menu Ordering App`
+      title: `${dish.value.name} — Состав`
     })
   }
 })
 </script>
+
+<style scoped>
+.ingredients-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.ingredients-page__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.ingredients-page__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.ingredients-page__back:hover { background: var(--bg-tertiary, #e5e7eb); }
+
+.ingredients-page__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.ingredients-page__subtitle {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.ingredients-page__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+.ingredients-page__state h2 { margin: 16px 0 8px; color: var(--text-primary); }
+
+.ingredients-page__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-primary);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.ingredients-page__empty-icon { color: var(--text-tertiary); margin-bottom: 8px; }
+
+.ingredients-page__content {
+  padding: 0 20px 100px;
+}
+
+.ingredients-page__dish-preview {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 20px 0;
+  max-height: 200px;
+}
+.ingredients-page__dish-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+.ingredients-page__dish-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+}
+.ingredients-page__dish-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.ingredients-page__section {
+  margin: 24px 0;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 20px;
+}
+.ingredients-page__section--allergens {
+  border: 1px solid #fbbf24;
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.ingredients-page__section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ingredients-page__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ingredients-page__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+.ingredients-page__item:last-child { border-bottom: none; }
+
+.ingredients-page__item-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.ingredients-page__item-name {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.ingredients-page__allergens-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ingredients-page__allergen-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(251, 191, 36, 0.15);
+  color: #92400e;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.ingredients-page__prep-time {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.ingredients-page__prep-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+.ingredients-page__prep-unit {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.ingredients-page__footer {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.ingredients-page__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.ingredients-page__action-btn:hover { opacity: 0.9; }
+</style>
+

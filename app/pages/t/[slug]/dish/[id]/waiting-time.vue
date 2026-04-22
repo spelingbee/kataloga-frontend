@@ -1,286 +1,94 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="waiting-page">
     <!-- Header -->
-    <div class="px-6 py-4 border-b border-neutral-80/20">
-      <div class="flex items-center gap-4">
-        <BaseButton 
-          variant="ghost" 
-          @click="$router.go(-1)"
-        >
-          <BaseIcon name="arrow-left" size="md" />
-        </BaseButton>
-        <div>
-          <AppHeading level="h1" size="heading-lg" class="text-white">
-            Preparation Time
-          </AppHeading>
-          <AppText class="text-neutral-20">
-            {{ dish?.name }}
-          </AppText>
-        </div>
+    <header class="waiting-page__header">
+      <button class="waiting-page__back" @click="$router.go(-1)">
+        <BaseIcon name="arrow-left" size="md" />
+      </button>
+      <div>
+        <h1 class="waiting-page__title">{{ $t('common.preparation_time', 'Время приготовления') }}</h1>
+        <p class="waiting-page__subtitle">{{ dish?.name }}</p>
       </div>
-    </div>
+    </header>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center py-16">
-      <div class="text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading preparation details...</AppText>
-      </div>
+    <div v-if="loading" class="waiting-page__state">
+      <div class="waiting-page__spinner" />
+      <p>{{ $t('common.loading', 'Загрузка...') }}</p>
     </div>
 
-    <!-- Main Content -->
-    <div v-else class="px-6 py-8">
-      <!-- Current Preparation Time -->
-      <div class="mb-8 text-center">
-        <div class="w-32 h-32 bg-primary-green/20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <div class="text-center">
-            <AppText size="display-lg" class="text-primary-green font-bold">
-              {{ currentPrepTime }}
-            </AppText>
-            <AppText size="body-sm" class="text-primary-green">
-              minutes
-            </AppText>
+    <!-- No Data State -->
+    <div v-else-if="!dish || !dish.preparationTime" class="waiting-page__state">
+      <BaseIcon name="clock" size="4xl" class="waiting-page__empty-icon" />
+      <h2>{{ $t('common.no_prep_time', 'Время не указано') }}</h2>
+      <p>{{ $t('common.no_prep_time_desc', 'Информация о времени приготовления для этого блюда пока не добавлена.') }}</p>
+      <button class="waiting-page__action-btn" @click="$router.go(-1)">
+        {{ $t('common.back_to_dish', 'Назад к блюду') }}
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div v-else class="waiting-page__content">
+      <!-- Main Timer Display -->
+      <div class="waiting-page__timer-card">
+        <div class="waiting-page__timer-ring">
+          <svg viewBox="0 0 120 120" class="waiting-page__ring-svg">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="var(--border-primary)" stroke-width="6" />
+            <circle 
+              cx="60" cy="60" r="52" fill="none" 
+              stroke="var(--color-primary)" stroke-width="6" 
+              stroke-linecap="round"
+              :stroke-dasharray="circumference"
+              :stroke-dashoffset="dashOffset"
+              class="waiting-page__ring-progress"
+            />
+          </svg>
+          <div class="waiting-page__timer-inner">
+            <span class="waiting-page__timer-value">{{ dish.preparationTime }}</span>
+            <span class="waiting-page__timer-unit">{{ $t('common.min', 'мин') }}</span>
           </div>
         </div>
-        
-        <AppHeading level="h2" size="heading-xl" class="text-white mb-2">
-          Estimated Preparation Time
-        </AppHeading>
-        <AppText class="text-neutral-20">
-          Based on current kitchen load and dish complexity
-        </AppText>
+        <p class="waiting-page__timer-label">
+          {{ $t('common.estimated_time', 'Приблизительное время приготовления') }}
+        </p>
       </div>
 
       <!-- Time Breakdown -->
-      <div class="mb-8 bg-background-card rounded-xl p-6">
-        <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-          Preparation Breakdown
-        </AppHeading>
-        
-        <div class="space-y-4">
-          <div
-            v-for="step in preparationSteps"
-            :key="step.id"
-            class="flex items-center gap-4"
-          >
-            <!-- Step Icon -->
-            <div class="w-10 h-10 bg-primary-green/20 rounded-full flex items-center justify-center flex-shrink-0">
-              <BaseIcon :name="step.icon" size="md" class="text-primary-green" />
-            </div>
-            
-            <!-- Step Info -->
-            <div class="flex-1">
-              <AppText size="body-md" class="text-white font-medium">
-                {{ step.name }}
-              </AppText>
-              <AppText size="body-sm" class="text-neutral-20">
-                {{ step.description }}
-              </AppText>
-            </div>
-            
-            <!-- Step Time -->
-            <div class="text-right">
-              <AppText size="body-md" class="text-primary-green font-semibold">
-                {{ step.time }} min
-              </AppText>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Total Time -->
-        <div class="mt-6 pt-4 border-t border-neutral-80/20">
-          <div class="flex items-center justify-between">
-            <AppText size="body-lg" class="text-white font-semibold">
-              Total Preparation Time
-            </AppText>
-            <AppText size="body-lg" class="text-primary-green font-bold">
-              {{ totalStepTime }} minutes
-            </AppText>
-          </div>
-        </div>
-      </div>
-
-      <!-- Kitchen Status -->
-      <div class="mb-8 bg-background-card rounded-xl p-6">
-        <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-          Current Kitchen Status
-        </AppHeading>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Queue Status -->
-          <div class="text-center">
-            <div class="w-16 h-16 bg-primary-orange/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <BaseIcon name="users" size="lg" class="text-primary-orange" />
-            </div>
-            <AppText size="body-lg" class="text-white font-semibold">{{ queueLength }}</AppText>
-            <AppText size="caption" class="text-neutral-20">Orders in queue</AppText>
-          </div>
-          
-          <!-- Kitchen Load -->
-          <div class="text-center">
-            <div class="w-16 h-16 bg-primary-red/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <BaseIcon name="activity" size="lg" class="text-primary-red" />
-            </div>
-            <AppText size="body-lg" class="text-white font-semibold">{{ kitchenLoad }}%</AppText>
-            <AppText size="caption" class="text-neutral-20">Kitchen capacity</AppText>
-          </div>
-          
-          <!-- Staff Available -->
-          <div class="text-center">
-            <div class="w-16 h-16 bg-primary-green/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <BaseIcon name="chef-hat" size="lg" class="text-primary-green" />
-            </div>
-            <AppText size="body-lg" class="text-white font-semibold">{{ availableChefs }}</AppText>
-            <AppText size="caption" class="text-neutral-20">Chefs available</AppText>
-          </div>
-        </div>
-        
-        <!-- Status Message -->
-        <div class="mt-6 p-4 rounded-lg" :class="statusMessageClass">
-          <div class="flex items-center gap-3">
-            <BaseIcon :name="statusIcon" size="md" :class="statusIconClass" />
+      <section class="waiting-page__section">
+        <h2 class="waiting-page__section-title">
+          <BaseIcon name="info" size="sm" />
+          {{ $t('common.details', 'Подробнее') }}
+        </h2>
+        <div class="waiting-page__info-grid">
+          <div class="waiting-page__info-item">
+            <BaseIcon name="chef-hat" size="md" class="waiting-page__info-icon" />
             <div>
-              <AppText size="body-sm" class="font-medium" :class="statusTextClass">
-                {{ statusMessage }}
-              </AppText>
-              <AppText size="caption" class="text-neutral-20">
-                {{ statusDescription }}
-              </AppText>
+              <span class="waiting-page__info-label">{{ $t('common.cooking', 'Приготовление') }}</span>
+              <span class="waiting-page__info-value">~{{ dish.preparationTime }} {{ $t('common.min', 'мин') }}</span>
+            </div>
+          </div>
+          <div class="waiting-page__info-item">
+            <BaseIcon name="package" size="md" class="waiting-page__info-icon" />
+            <div>
+              <span class="waiting-page__info-label">{{ $t('common.packaging', 'Упаковка') }}</span>
+              <span class="waiting-page__info-value">~2-3 {{ $t('common.min', 'мин') }}</span>
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- Note -->
+      <div class="waiting-page__note">
+        <BaseIcon name="info" size="sm" />
+        <p>{{ $t('common.time_note', 'Фактическое время может отличаться в зависимости от загруженности кухни и количества заказов.') }}</p>
       </div>
 
-      <!-- Time Options -->
-      <div class="mb-8 bg-background-card rounded-xl p-6">
-        <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-          Delivery Options
-        </AppHeading>
-        
-        <div class="space-y-4">
-          <label
-            v-for="option in timeOptions"
-            :key="option.id"
-            class="flex items-center gap-4 p-4 rounded-lg border border-neutral-80/30 hover:border-primary-green/50 transition-colors cursor-pointer"
-            :class="{ 'border-primary-green bg-primary-green/10': selectedTimeOption === option.id }"
-          >
-            <input
-              v-model="selectedTimeOption"
-              :value="option.id"
-              type="radio"
-              class="sr-only"
-            />
-            
-            <!-- Option Icon -->
-            <div
-class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                 :class="option.iconBg">
-              <BaseIcon :name="option.icon" size="md" :class="option.iconColor" />
-            </div>
-            
-            <!-- Option Info -->
-            <div class="flex-1">
-              <AppText size="body-md" class="text-white font-medium">
-                {{ option.name }}
-              </AppText>
-              <AppText size="body-sm" class="text-neutral-20">
-                {{ option.description }}
-              </AppText>
-              <AppText size="caption" class="text-neutral-20">
-                {{ option.time }} • {{ option.price ? formatPrice(option.price) : 'No extra cost' }}
-              </AppText>
-            </div>
-            
-            <!-- Selection Indicator -->
-            <div 
-              v-if="selectedTimeOption === option.id"
-              class="w-6 h-6 bg-primary-green rounded-full flex items-center justify-center"
-            >
-              <BaseIcon name="check" size="sm" class="text-white" />
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <!-- Rush Order Info -->
-      <div class="mb-8 p-4 bg-primary-orange/10 border border-primary-orange/30 rounded-xl">
-        <div class="flex items-start gap-3">
-          <BaseIcon name="zap" size="md" class="text-primary-orange mt-1" />
-          <div>
-            <AppHeading level="h4" size="heading-sm" class="text-white mb-2">
-              Need it faster?
-            </AppHeading>
-            <AppText size="body-sm" class="text-neutral-20 mb-3">
-              Rush orders are prepared with priority but may incur additional charges. 
-              Available during non-peak hours only.
-            </AppText>
-            <BaseButton 
-              variant="secondary" 
-              size="sm"
-              :disabled="!canRushOrder"
-              @click="requestRushOrder"
-            >
-              <BaseIcon name="zap" size="sm" class="mr-2" />
-              Request Rush Order
-            </BaseButton>
-          </div>
-        </div>
-      </div>
-
-      <!-- Historical Data -->
-      <div class="mb-8 bg-background-card rounded-xl p-6">
-        <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-          Historical Performance
-        </AppHeading>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <AppText size="body-sm" class="text-neutral-20 mb-2">Average Preparation Time</AppText>
-            <AppText size="body-lg" class="text-white font-semibold">{{ averagePrepTime }} minutes</AppText>
-            <AppText size="caption" class="text-neutral-20">Based on last 30 orders</AppText>
-          </div>
-          
-          <div>
-            <AppText size="body-sm" class="text-neutral-20 mb-2">On-Time Delivery Rate</AppText>
-            <AppText size="body-lg" class="text-white font-semibold">{{ onTimeRate }}%</AppText>
-            <AppText size="caption" class="text-neutral-20">Orders delivered on time</AppText>
-          </div>
-        </div>
-        
-        <!-- Time Chart Placeholder -->
-        <div class="mt-6 h-32 bg-neutral-80/10 rounded-lg flex items-center justify-center">
-          <AppText class="text-neutral-80">Preparation time chart</AppText>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex flex-col sm:flex-row gap-4">
-        <BaseButton 
-          variant="primary"
-          size="lg"
-          class="flex-1"
-          @click="confirmTimeSelection"
-        >
-          <BaseIcon name="check" size="sm" class="mr-2" />
-          Confirm Time Selection
-        </BaseButton>
-        
-        <BaseButton 
-          variant="secondary"
-          size="lg"
-          @click="setReminder"
-        >
-          <BaseIcon name="bell" size="sm" class="mr-2" />
-          Set Reminder
-        </BaseButton>
-        
-        <BaseButton 
-          variant="ghost"
-          size="lg"
-          @click="$router.push(`/dish/${dishId}`)"
-        >
-          Back to Dish
-        </BaseButton>
+      <!-- Back Button -->
+      <div class="waiting-page__footer">
+        <button class="waiting-page__action-btn" @click="$router.go(-1)">
+          <BaseIcon name="arrow-left" size="sm" />
+          {{ $t('common.back_to_dish', 'Назад к блюду') }}
+        </button>
       </div>
     </div>
   </div>
@@ -288,164 +96,43 @@ class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
 
 <script setup lang="ts">
 import type { MenuItem } from '~/types'
+import { useMenuStore } from '~/stores/menu'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
-// Page setup
 definePageMeta({
-  title: 'Preparation Time - Menu Ordering App'
+  title: 'Preparation Time'
 })
 
-// Route and stores
 const route = useRoute()
-const router = useRouter()
+const menuStore = useMenuStore()
 
-// Reactive state
 const loading = ref(true)
-const selectedTimeOption = ref('standard')
-
-// Get dish ID from route
 const dishId = computed(() => route.params.id as string)
-
-// Mock dish data
 const dish = ref<MenuItem | null>(null)
 
-// Mock preparation data
-const currentPrepTime = ref(18)
-const queueLength = ref(3)
-const kitchenLoad = ref(75)
-const availableChefs = ref(4)
-const averagePrepTime = ref(16)
-const onTimeRate = ref(94)
-
-const preparationSteps = ref([
-  {
-    id: '1',
-    name: 'Order Processing',
-    description: 'Receiving and confirming your order',
-    time: 2,
-    icon: 'clipboard'
-  },
-  {
-    id: '2',
-    name: 'Ingredient Preparation',
-    description: 'Gathering and preparing fresh ingredients',
-    time: 5,
-    icon: 'knife'
-  },
-  {
-    id: '3',
-    name: 'Cooking',
-    description: 'Cooking your dish to perfection',
-    time: 8,
-    icon: 'flame'
-  },
-  {
-    id: '4',
-    name: 'Plating & Quality Check',
-    description: 'Final presentation and quality assurance',
-    time: 3,
-    icon: 'check-circle'
-  }
-])
-
-const timeOptions = ref([
-  {
-    id: 'standard',
-    name: 'Standard Preparation',
-    description: 'Normal preparation time with quality focus',
-    time: '15-20 minutes',
-    price: 0,
-    icon: 'clock',
-    iconColor: 'text-primary-green',
-    iconBg: 'bg-primary-green/20'
-  },
-  {
-    id: 'express',
-    name: 'Express Service',
-    description: 'Faster preparation with priority handling',
-    time: '10-15 minutes',
-    price: 3.00,
-    icon: 'zap',
-    iconColor: 'text-primary-orange',
-    iconBg: 'bg-primary-orange/20'
-  },
-  {
-    id: 'scheduled',
-    name: 'Scheduled Preparation',
-    description: 'Choose your preferred pickup/delivery time',
-    time: 'Your choice',
-    price: 0,
-    icon: 'calendar',
-    iconColor: 'text-primary-red',
-    iconBg: 'bg-primary-red/20'
-  }
-])
-
-// Computed
-const totalStepTime = computed(() => {
-  return preparationSteps.value.reduce((total, step) => total + step.time, 0)
+// SVG ring animation
+const circumference = 2 * Math.PI * 52
+const maxTime = 60 // max 60 min for visual scale
+const dashOffset = computed(() => {
+  if (!dish.value?.preparationTime) return circumference
+  const progress = Math.min(dish.value.preparationTime / maxTime, 1)
+  return circumference * (1 - progress)
 })
 
-const canRushOrder = computed(() => {
-  return kitchenLoad.value < 80 && queueLength.value < 5
-})
-
-const statusMessage = computed(() => {
-  if (kitchenLoad.value < 50) return 'Kitchen running smoothly'
-  if (kitchenLoad.value < 80) return 'Moderate kitchen activity'
-  return 'High kitchen activity'
-})
-
-const statusDescription = computed(() => {
-  if (kitchenLoad.value < 50) return 'Your order will be prepared quickly'
-  if (kitchenLoad.value < 80) return 'Slight delays possible during peak times'
-  return 'Extended preparation times expected'
-})
-
-const statusIcon = computed(() => {
-  if (kitchenLoad.value < 50) return 'check-circle'
-  if (kitchenLoad.value < 80) return 'clock'
-  return 'alert-circle'
-})
-
-const statusIconClass = computed(() => {
-  if (kitchenLoad.value < 50) return 'text-primary-green'
-  if (kitchenLoad.value < 80) return 'text-primary-orange'
-  return 'text-primary-red'
-})
-
-const statusTextClass = computed(() => {
-  if (kitchenLoad.value < 50) return 'text-primary-green'
-  if (kitchenLoad.value < 80) return 'text-primary-orange'
-  return 'text-primary-red'
-})
-
-const statusMessageClass = computed(() => {
-  if (kitchenLoad.value < 50) return 'bg-primary-green/10 border border-primary-green/30'
-  if (kitchenLoad.value < 80) return 'bg-primary-orange/10 border border-primary-orange/30'
-  return 'bg-primary-red/10 border border-primary-red/30'
-})
-
-// Methods
 const loadDish = async () => {
   loading.value = true
-  
   try {
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    dish.value = {
-      id: dishId.value,
-      name: 'Delicious Burger',
-      description: 'A mouth-watering burger',
-      price: 15.99,
-      categoryId: 'fastfood',
-      isActive: true,
-      preparationTime: currentPrepTime.value
+    const cached = menuStore.getMenuItemById(dishId.value)
+    if (cached) {
+      dish.value = cached
     }
-    
-    // Simulate real-time updates
-    updateKitchenStatus()
-    
+    const slug = route.params.slug as string
+    if (slug) {
+      const { data } = await useFetch(`/api/public/menu/${slug}/items/${dishId.value}`)
+      if (data.value) {
+        dish.value = data.value as MenuItem
+      }
+    }
   } catch (error) {
     console.error('Error loading dish:', error)
   } finally {
@@ -453,75 +140,224 @@ const loadDish = async () => {
   }
 }
 
-const updateKitchenStatus = () => {
-  // Simulate real-time kitchen status updates
-  setInterval(() => {
-    // Randomly update kitchen metrics
-    queueLength.value = Math.max(0, queueLength.value + Math.floor(Math.random() * 3) - 1)
-    kitchenLoad.value = Math.max(20, Math.min(100, kitchenLoad.value + Math.floor(Math.random() * 10) - 5))
-    currentPrepTime.value = Math.max(10, Math.min(30, currentPrepTime.value + Math.floor(Math.random() * 4) - 2))
-  }, 30000) // Update every 30 seconds
-}
+onMounted(() => loadDish())
 
-const requestRushOrder = () => {
-  if (canRushOrder.value) {
-    selectedTimeOption.value = 'express'
-    // Show confirmation or additional options
-  }
-}
-
-const confirmTimeSelection = () => {
-  const selectedOption = timeOptions.value.find(opt => opt.id === selectedTimeOption.value)
-  
-  // Pass time selection back to dish page
-  router.push({
-    path: `/dish/${dishId.value}`,
-    query: { 
-      timeOption: selectedTimeOption.value,
-      estimatedTime: currentPrepTime.value.toString()
-    }
-  })
-}
-
-const setReminder = () => {
-  // Set up notification reminder
-  if ('Notification' in window) {
-    Notification.requestPermission().then(permission => {
-      if (permission === 'granted') {
-        setTimeout(() => {
-          new Notification('Order Ready Soon!', {
-            body: `Your ${dish.value?.name} will be ready in 5 minutes`,
-            icon: '/icon-192x192.png'
-          })
-        }, (currentPrepTime.value - 5) * 60 * 1000) // 5 minutes before ready
-      }
-    })
-  }
-}
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(price)
-}
-
-// Initialize
-onMounted(() => {
-  loadDish()
-})
-
-// Cleanup interval on unmount
-onUnmounted(() => {
-  // Clear any intervals if needed
-})
-
-// Update page title
 watchEffect(() => {
   if (dish.value) {
     useHead({
-      title: `Preparation Time - ${dish.value.name} - Menu Ordering App`
+      title: `${dish.value.name} — Время приготовления`
     })
   }
 })
 </script>
+
+<style scoped>
+.waiting-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.waiting-page__header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.waiting-page__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.waiting-page__back:hover { background: var(--bg-tertiary, #e5e7eb); }
+
+.waiting-page__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.waiting-page__subtitle {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.waiting-page__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+}
+.waiting-page__state h2 { margin: 16px 0 8px; color: var(--text-primary); }
+
+.waiting-page__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-primary);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.waiting-page__empty-icon { color: var(--text-tertiary); margin-bottom: 8px; }
+
+.waiting-page__content {
+  padding: 0 20px 100px;
+}
+
+/* Timer Card */
+.waiting-page__timer-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  margin: 24px 0;
+  background: var(--bg-secondary);
+  border-radius: 24px;
+}
+
+.waiting-page__timer-ring {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  margin-bottom: 20px;
+}
+.waiting-page__ring-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.waiting-page__ring-progress {
+  transition: stroke-dashoffset 1.5s ease-out;
+}
+
+.waiting-page__timer-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.waiting-page__timer-value {
+  display: block;
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  line-height: 1;
+}
+.waiting-page__timer-unit {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.waiting-page__timer-label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Section */
+.waiting-page__section {
+  margin: 24px 0;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.waiting-page__section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.waiting-page__info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.waiting-page__info-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  background: var(--bg-primary);
+  border-radius: 12px;
+}
+.waiting-page__info-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+.waiting-page__info-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.waiting-page__info-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Note */
+.waiting-page__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  margin: 24px 0;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+.waiting-page__note p { margin: 0; }
+
+/* Footer */
+.waiting-page__footer {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.waiting-page__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.waiting-page__action-btn:hover { opacity: 0.9; }
+</style>
