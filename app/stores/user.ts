@@ -298,6 +298,10 @@ export const useUserStore = defineStore('user', {
         
         if (this.platform === Platform.TELEGRAM) {
           await this.initializeTelegramUser()
+          // Auto-login with Telegram if not already authenticated
+          if (!this.isAuthenticated) {
+            await this.loginSilentWithTelegram()
+          }
         }
         
         // Always attempt to initialize auth from storage (even in Telegram)
@@ -354,6 +358,32 @@ export const useUserStore = defineStore('user', {
           // Real authentication happens via initializeAuth (tokens) or loginWithTelegram plugin.
           this.platform = Platform.TELEGRAM
         }
+      }
+    },
+
+    async loginSilentWithTelegram() {
+      if (!import.meta.client) return
+      const win = window as any
+      const tg = win.Telegram?.WebApp
+      
+      if (!tg || !tg.initData) return
+
+      try {
+        const result = await (this as any).$apiClient.post('/auth/telegram', {
+          initData: tg.initData,
+          initDataUnsafe: tg.initDataUnsafe
+        })
+
+        if (result.accessToken) {
+          this.setTokens(result.accessToken, result.refreshToken)
+          this.user = result.user
+          if (import.meta.client) {
+            localStorage.setItem('user', JSON.stringify(result.user))
+          }
+          console.log('[UserStore] ✅ Silent Telegram login successful')
+        }
+      } catch (error) {
+        console.error('[UserStore] ❌ Silent Telegram login failed:', error)
       }
     },
 

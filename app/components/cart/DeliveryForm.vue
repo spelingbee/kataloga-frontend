@@ -1,12 +1,9 @@
 <template>
   <div class="delivery-form">
-
     <!-- Delivery Address (only for delivery) -->
     <div v-if="localDeliveryInfo.type === 'delivery'" class="form-group">
-      <label for="delivery-address" class="form-label">
-        {{ $t('delivery.address') }} *
-      </label>
-      
+      <label for="delivery-address" class="form-label">{{ $t('delivery.address') }} *</label>
+
       <!-- Address input mode toggle -->
       <div class="input-mode-toggle">
         <BaseButton
@@ -42,7 +39,7 @@
           @blur="validateField('address')"
           @input="clearError('address')"
         />
-        
+
         <div class="mt-2">
           <BaseButton
             variant="ghost"
@@ -97,7 +94,9 @@
       <BaseSelect
         id="delivery-time"
         v-model="localDeliveryInfo.deliveryTime"
-        :label="localDeliveryInfo.type === 'delivery' ? $t('delivery.time') : $t('delivery.timePickup')"
+        :label="
+          localDeliveryInfo.type === 'delivery' ? $t('delivery.time') : $t('delivery.timePickup')
+        "
         :options="timeOptions"
         @change="updateDeliveryInfo"
       />
@@ -144,16 +143,30 @@
     <!-- Contact Information -->
     <div class="form-group">
       <label for="delivery-phone" class="form-label">
-        {{ $t('form.phone') }} <span v-if="!isTelegram">*</span><span v-else>(Optional)</span>
+        {{ $t('form.phone') }}
+        <span v-if="!isTelegram">*</span>
+        <span v-else>(Optional)</span>
       </label>
-      <BaseInput
-        id="delivery-phone"
-        v-model="localDeliveryInfo.phone"
-        type="tel"
-        :placeholder="$t('form.phonePlaceholder')"
-        :error="errors.phone"
-        @input="updateDeliveryInfo"
-      />
+      <div class="phone-input-group">
+        <BaseInput
+          id="delivery-phone"
+          v-model="localDeliveryInfo.phone"
+          type="tel"
+          :placeholder="$t('form.phonePlaceholder')"
+          :error="errors.phone"
+          @input="updateDeliveryInfo"
+        />
+        <BaseButton
+          v-if="isTelegram"
+          variant="secondary"
+          size="sm"
+          class="phone-request-btn"
+          @click="requestTelegramContact"
+        >
+          <BaseIcon name="smartphone" size="sm" />
+          {{ $t('checkout.get_from_tg', 'Из Telegram') }}
+        </BaseButton>
+      </div>
       <p class="hint-text">
         {{ $t('form.phoneHint', 'Мы перезвоним вам при необходимости') }}
       </p>
@@ -162,7 +175,9 @@
     <div v-if="localDeliveryInfo.type === 'delivery' && deliveryFee !== undefined" class="fee-card">
       <div class="fee-row">
         <span>{{ $t('delivery.fee') }}</span>
-        <span class="fee-amount">{{ deliveryFee === 0 ? $t('delivery.free') : formatPrice(deliveryFee) }}</span>
+        <span class="fee-amount">
+          {{ deliveryFee === 0 ? $t('delivery.free') : formatPrice(deliveryFee) }}
+        </span>
       </div>
       <p v-if="deliveryFee === 0" class="fee-hint">
         {{ $t('delivery.freeThreshold', { amount: formatPrice(500) }) }}
@@ -175,6 +190,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTenantStore } from '~/stores/tenant'
+import { useUserStore } from '~/stores/user'
 import { useTelegram } from '~/composables/useTelegram'
 import type { Coordinates } from '../../types/delivery'
 import AppText from '../base/AppText.vue'
@@ -182,6 +198,7 @@ import MapPicker from '../checkout/MapPicker.vue'
 
 const { t } = useI18n()
 const tenantStore = useTenantStore()
+const userStore = useUserStore()
 const { isTelegram } = useTelegram()
 
 // Props & Emits
@@ -205,7 +222,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  errors: () => ({})
+  errors: () => ({}),
 })
 
 const emit = defineEmits<{
@@ -215,7 +232,7 @@ const emit = defineEmits<{
 }>()
 
 // Local state
-const localDeliveryInfo = ref<DeliveryInfo>({ 
+const localDeliveryInfo = ref<DeliveryInfo>({
   type: 'delivery',
   address: '',
   pickupLocation: '',
@@ -223,8 +240,8 @@ const localDeliveryInfo = ref<DeliveryInfo>({
   customDate: '',
   customTime: '',
   instructions: '',
-  phone: '',
-  ...props.modelValue 
+  phone: props.modelValue.phone || userStore.user?.phone || '',
+  ...props.modelValue,
 })
 
 const errors = reactive<Record<string, string>>({ ...props.errors })
@@ -263,7 +280,7 @@ const deliveryFee = computed(() => {
 const locationOptions = computed(() => {
   return tenantStore.locations.map(loc => ({
     label: `${loc.name} - ${loc.address}`,
-    value: loc.id
+    value: loc.id,
   }))
 })
 
@@ -272,7 +289,7 @@ const timeOptions = computed(() => [
   { label: t('delivery.in30min'), value: '30min' },
   { label: t('delivery.in1hour'), value: '1hour' },
   { label: t('delivery.in2hours'), value: '2hours' },
-  { label: t('delivery.customTime'), value: 'custom' }
+  { label: t('delivery.customTime'), value: 'custom' },
 ])
 
 // Methods
@@ -340,6 +357,38 @@ const updateDeliveryInfo = () => {
   emit('update:modelValue', { ...localDeliveryInfo.value })
 }
 
+const requestTelegramContact = () => {
+  if (!isTelegram.value) return
+
+  // @ts-ignore
+  const webApp = window.Telegram?.WebApp
+  if (webApp?.requestContact) {
+    webApp.requestContact(async (status: boolean, data: any) => {
+      if (status && data?.contact?.phone_number) {
+        const phoneNumber = data.contact.phone_number
+        localDeliveryInfo.value.phone = phoneNumber
+        updateDeliveryInfo()
+
+        // Save to database immediately if user is logged in
+        if (userStore.isAuthenticated && userStore.user) {
+          try {
+            await userStore.updateProfile({
+              phone: phoneNumber,
+              firstName: userStore.user.firstName,
+              lastName: userStore.user.lastName
+            })
+          } catch (error) {
+            console.error('Failed to save phone to profile:', error)
+          }
+        }
+      }
+    })
+  } else {
+    // Fallback if not supported
+    alert(t('errors.not_supported', 'Ваш клиент Telegram не поддерживает эту функцию'))
+  }
+}
+
 const getCurrentLocation = async () => {
   if (!navigator.geolocation) return
   gettingLocation.value = true
@@ -372,7 +421,7 @@ const formatPrice = (price: number) => {
   return new Intl.NumberFormat('ru-KG', {
     style: 'currency',
     currency: 'KGS',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
   }).format(price)
 }
 
@@ -384,17 +433,25 @@ onMounted(() => {
 })
 
 // Watchers
-watch(localDeliveryInfo, (newValue) => {
-  // Prevent infinite loop by checking if data actually changed
-  const hasChanged = JSON.stringify(newValue) !== JSON.stringify(props.modelValue)
-  if (hasChanged) {
-    emit('update:modelValue', { ...newValue })
-  }
-}, { deep: true })
+watch(
+  localDeliveryInfo,
+  newValue => {
+    // Prevent infinite loop by checking if data actually changed
+    const hasChanged = JSON.stringify(newValue) !== JSON.stringify(props.modelValue)
+    if (hasChanged) {
+      emit('update:modelValue', { ...newValue })
+    }
+  },
+  { deep: true }
+)
 
-watch(() => props.errors, (newErrors) => {
-  Object.assign(errors, newErrors)
-}, { deep: true })
+watch(
+  () => props.errors,
+  newErrors => {
+    Object.assign(errors, newErrors)
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped lang="scss">
@@ -412,6 +469,22 @@ watch(() => props.errors, (newErrors) => {
   display: flex;
   flex-direction: column;
   gap: $space-2;
+}
+
+.phone-input-group {
+  display: flex;
+  gap: $space-2;
+  align-items: flex-start;
+
+  :deep(.base-input) {
+    flex: 1;
+  }
+}
+
+.phone-request-btn {
+  white-space: nowrap;
+  height: 44px; // Align with input height
+  margin-top: 0;
 }
 
 .form-label {
@@ -478,7 +551,7 @@ watch(() => props.errors, (newErrors) => {
   .mode-button {
     flex: 1;
     background: var(--bg-tertiary);
-    
+
     &.active {
       background: rgba(16, 185, 129, 0.1);
       color: var(--color-success);
@@ -538,4 +611,3 @@ watch(() => props.errors, (newErrors) => {
   color: var(--color-error);
 }
 </style>
-

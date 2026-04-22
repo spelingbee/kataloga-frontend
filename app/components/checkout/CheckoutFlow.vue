@@ -265,7 +265,6 @@ const orderData = ref({
     customDate: '',
     customTime: '',
     phone: '',
-    writeToTelegram: false,
     instructions: '',
   },
   dineInDetails: {
@@ -623,8 +622,10 @@ watch(
 function updateMainButtonState() {
   if (!telegram.isTelegram.value || isSuccess.value) return
 
-  const disabled = !canSubmit.value
-  const text = `Оформить заказ • ${formatCurrency(totalWithDelivery.value)}`
+  const disabled = !canSubmit.value || submitting.value
+  const text = submitting.value 
+    ? 'Оформление заказа...' 
+    : `Оформить заказ • ${formatCurrency(totalWithDelivery.value)}`
 
   if (!isMainButtonVisible) {
     telegram.showMainButton(text, handleSubmit)

@@ -40,10 +40,11 @@
       <!-- Logo/Brand -->
       <NuxtLink :to="tPath('/')" class="app-header__logo">
         <img
-          v-if="tenantBranding?.logo"
+          v-if="tenantBranding?.logo && !logoError"
           :src="tenantBranding.logo"
           :alt="tenantBranding.appName || appName"
           class="app-header__logo-image"
+          @error="logoError = true"
         />
         <BaseIcon v-else name="logo" size="lg" class="u-text-primary-red" />
         <AppHeading level="h1" size="heading-lg" class="app-header__brand">
@@ -160,12 +161,12 @@
         <MenuSearch @close="closeMobileSearch" />
       </div>
     </div>
-  </header>
+  </div></header>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter, useRuntimeConfig, useNuxtApp } from '#app'
+import { useRoute, useRouter, useRuntimeConfig, useNuxtApp, useHead  } from '#app'
 import { useUserStore } from '~/stores/user'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
@@ -173,13 +174,14 @@ import { useTenantStore } from '~/stores/tenant'
 import { useAnimations } from '~/composables/useAnimations'
 import { useResponsive } from '~/composables/useResponsive'
 import SkipLinks from '~/components/base/SkipLinks.vue'
-import { useHead } from '#app'
+
 import { useI18n } from 'vue-i18n'
 import { useTenant } from '~/composables/useTenant'
 import { useTelegram } from '~/composables/useTelegram'
 import { onClickOutside } from '@vueuse/core'
 import { useNotificationStore } from '~/stores/notification'
 import LanguageSwitcher from '~/components/base/LanguageSwitcher.vue'
+import AppHeading from '../base/AppHeading.vue'
 
 // Emits
 defineEmits<{
@@ -201,6 +203,7 @@ const { $router } = useNuxtApp()
 // Reactive state
 const showUserMenu = ref(false)
 const showMobileSearch = ref(false)
+const logoError = ref(false)
 
 // Computed properties
 const isTelegramApp = computed(() => telegram.isTelegram.value)

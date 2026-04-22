@@ -12,26 +12,10 @@
         <span>{{ $t('payment.transfer.orderCreated', { number: orderNumber }) }}</span>
       </div>
 
-      <!-- WhatsApp Phone Display -->
-      <div class="transfer-payment-modal__phone-section">
-        <div class="transfer-payment-modal__phone-label">
-          {{ $t('payment.transfer.phoneLabel') }}
-        </div>
-        <div class="transfer-payment-modal__phone-display">
-          <div class="transfer-payment-modal__phone-icon">
-            <BaseIcon name="smartphone" size="lg" />
-          </div>
-          <div class="transfer-payment-modal__phone-number">
-            {{ whatsappPhone || $t('payment.transfer.notAvailable') }}
-          </div>
-          <button
-            v-if="whatsappPhone"
-            class="transfer-payment-modal__copy-button"
-            @click="copyPhoneNumber"
-          >
-            <BaseIcon name="copy" size="sm" />
-          </button>
-        </div>
+      <!-- Instruction about sending receipt to Bot -->
+      <div class="transfer-payment-modal__bot-instruction">
+        <BaseIcon name="telegram" size="md" class="u-text-primary" />
+        <p>{{ $t('payment.transfer.sendToBot', 'Пришлите скриншот чека прямо в этот чат Telegram') }}</p>
       </div>
 
       <!-- QR Code Section -->
@@ -171,8 +155,22 @@ const formatAmount = (amount: number): string => {
   font-weight: $font-medium;
 }
 
-.transfer-payment-modal__phone-section {
-  margin-bottom: $space-8;
+.transfer-payment-modal__bot-instruction {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-4;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-card;
+  margin-bottom: $space-6;
+  color: var(--text-primary);
+  font-size: $text-sm;
+
+  p {
+    margin: 0;
+    line-height: $leading-relaxed;
+  }
 }
 
 .transfer-payment-modal__phone-label {
@@ -202,6 +200,10 @@ const formatAmount = (amount: number): string => {
   color: white;
   border-radius: $radius-md;
   flex-shrink: 0;
+
+  &--whatsapp {
+    background: #25D366; // WhatsApp Green
+  }
 }
 
 .transfer-payment-modal__phone-number {

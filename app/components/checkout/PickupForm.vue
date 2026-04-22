@@ -46,7 +46,7 @@
     </div>
 
     <!-- Pickup Time -->
-    <div class="form-group">
+    <div class="form-group form-group--time">
       <BaseSelect
         id="pickup-time"
         v-model="localData.pickupTime"
@@ -87,30 +87,31 @@
       <label for="pickup-phone" class="form-label">
         {{ $t('form.phone') }} <span v-if="!isTelegram">*</span><span v-else>(Optional)</span>
       </label>
-      <BaseInput
-        id="pickup-phone"
-        v-model="localData.phone"
-        type="tel"
-        :placeholder="$t('form.phonePlaceholder')"
-        :error="errors.phone"
-        @input="handleChange"
-      />
+      <div class="phone-input-group">
+        <BaseInput
+          id="pickup-phone"
+          v-model="localData.phone"
+          type="tel"
+          :placeholder="$t('form.phonePlaceholder')"
+          :error="errors.phone"
+          @input="handleChange"
+        />
+        <BaseButton
+          v-if="isTelegram"
+          variant="secondary"
+          size="sm"
+          class="phone-request-btn"
+          @click="requestTelegramContact"
+        >
+          <BaseIcon name="smartphone" size="sm" />
+          {{ $t('checkout.get_from_tg', 'Из Telegram') }}
+        </BaseButton>
+      </div>
       <p class="hint-text">
         {{ $t('form.phoneHint', 'Мы перезвоним вам при необходимости') }}
       </p>
     </div>
 
-    <!-- Contact Preference (Only in Telegram) -->
-    <div v-if="isTelegram" class="form-group checkbox-group">
-      <label class="checkbox-label">
-        <input 
-          type="checkbox" 
-          v-model="localData.writeToTelegram" 
-          @change="handleChange"
-        />
-        <span>{{ $t('checkout.contactTelegram', 'Связаться через Telegram') }}</span>
-      </label>
-    </div>
 
     <!-- Special Instructions -->
     <div class="form-group">
@@ -170,7 +171,25 @@ const emit = defineEmits<{
   'submit': [data: PickupData]
 }>()
 
-const localData = ref<PickupData>({ ...props.modelValue })
+const localData = ref<PickupData>({ 
+  ...props.modelValue,
+  phone: props.modelValue.phone || userStore.user?.phone || ''
+})
+
+// Pre-fill and auto-select logic
+onMounted(() => {
+  // Pre-fill phone if missing in modelValue but exists in store
+  if (!localData.value.phone && userStore.user?.phone) {
+    localData.value.phone = userStore.user.phone
+    handleChange()
+  }
+
+  // Auto-select location if only one exists
+  if (props.locations.length === 1 && !localData.value.locationId) {
+    localData.value.locationId = props.locations[0].id
+    handleChange()
+  }
+})
 
 const today = computed(() => {
   return new Date().toISOString().split('T')[0]
@@ -217,6 +236,38 @@ const selectLocation = (id: string) => {
   handleChange()
 }
 
+const requestTelegramContact = () => {
+  if (!isTelegram.value) return
+
+  // @ts-ignore
+  const webApp = window.Telegram?.WebApp
+  if (webApp?.requestContact) {
+    webApp.requestContact(async (status: boolean, data: any) => {
+      if (status && data?.contact?.phone_number) {
+        const phoneNumber = data.contact.phone_number
+        localData.value.phone = phoneNumber
+        handleChange()
+
+        // Save to database immediately if user is logged in
+        if (userStore.isAuthenticated && userStore.user) {
+          try {
+            await userStore.updateProfile({
+              phone: phoneNumber,
+              firstName: userStore.user.firstName,
+              lastName: userStore.user.lastName
+            })
+          } catch (error) {
+            console.error('Failed to save phone to profile:', error)
+          }
+        }
+      }
+    })
+  } else {
+    // Fallback if not supported
+    alert(t('errors.not_supported', 'Ваш клиент Telegram не поддерживает эту функцию'))
+  }
+}
+
 const handleChange = () => {
   emit('update:modelValue', { ...localData.value })
 }
@@ -239,10 +290,28 @@ watch(() => props.modelValue, (newValue) => {
   gap: $space-4;
 }
 
-.form-group {
+.pickup-form__field {
+  margin-bottom: $space-2;
+}
+
+.form-group--time {
+  margin-top: $space-4;
+}
+
+.phone-input-group {
   display: flex;
-  flex-direction: column;
   gap: $space-2;
+  align-items: flex-start;
+
+  :deep(.base-input) {
+    flex: 1;
+  }
+}
+
+.phone-request-btn {
+  white-space: nowrap;
+  height: 44px; // Align with input height
+  margin-top: 0;
 }
 
 .pickup-form__label {
