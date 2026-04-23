@@ -220,21 +220,31 @@ watch(() => props.modelValue, (newValue) => {
   border-radius: 50%;
 }
 
-.payment-method-selector__info {
+.payment-method-selector__info-banner {
   display: flex;
-  align-items: center;
-  gap: $space-2;
-  margin-top: $space-4;
-  padding: $space-3 $space-4;
-  background: var(--bg-tertiary);
-  border-radius: $radius-md;
-  font-size: 0.875rem;
+  align-items: flex-start;
+  gap: $space-3;
+  margin-top: $space-6;
+  padding: $space-4;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-lg;
   color: var(--text-secondary);
-  border: 1px dashed var(--border-primary);
+  font-size: $text-sm;
+  line-height: $leading-relaxed;
 
-  svg {
+  .info-icon {
     color: var(--color-primary);
+    margin-top: 2px;
     flex-shrink: 0;
+  }
+
+  .info-content {
+    flex: 1;
+  }
+
+  .info-text {
+    margin: 0;
   }
 }
 

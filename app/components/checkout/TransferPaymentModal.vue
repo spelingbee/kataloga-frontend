@@ -18,6 +18,28 @@
         <p>{{ $t('payment.transfer.sendToBot', 'Пришлите скриншот чека прямо в этот чат Telegram') }}</p>
       </div>
 
+      <!-- Phone Section -->
+      <div v-if="whatsappPhone" class="transfer-payment-modal__phone-section">
+        <div class="transfer-payment-modal__phone-label">
+          {{ $t('payment.transfer.phoneLabel') || 'Реквизиты для перевода (номер телефона):' }}
+        </div>
+        <div class="transfer-payment-modal__phone-display">
+          <div class="transfer-payment-modal__phone-icon">
+            <BaseIcon name="smartphone" size="md" />
+          </div>
+          <div class="transfer-payment-modal__phone-number">
+            {{ whatsappPhone }}
+          </div>
+          <button 
+            class="transfer-payment-modal__copy-button"
+            :title="$t('common.copy')"
+            @click="copyPhoneNumber"
+          >
+            <BaseIcon name="copy" size="sm" />
+          </button>
+        </div>
+      </div>
+
       <!-- QR Code Section -->
       <div v-if="qrCodeUrl" class="transfer-payment-modal__qr-section">
         <div class="transfer-payment-modal__qr-label">

@@ -58,20 +58,22 @@
             {{ $t('checkout.yourOrder', 'Ваш заказ') }}
             <span class="checkout-section__title-count">({{ cart.length }})</span>
           </h3>
-          <BaseIcon 
-            :name="isOrderExpanded ? 'chevron-up' : 'chevron-down'" 
-            size="sm" 
+          <BaseIcon
+            :name="isOrderExpanded ? 'chevron-up' : 'chevron-down'"
+            size="sm"
             class="checkout-section__toggle"
           />
         </div>
-        
+
         <Transition name="expand">
           <div v-if="isOrderExpanded" class="checkout-section__body">
             <div class="order-summary-list">
               <div v-for="item in cart" :key="item.menuItem.id" class="order-summary-item">
                 <div class="order-summary-item__info">
                   <span class="order-summary-item__name">{{ item.menuItem.name }}</span>
-                  <span v-if="item.quantity > 1" class="order-summary-item__qty">× {{ item.quantity }}</span>
+                  <span v-if="item.quantity > 1" class="order-summary-item__qty">
+                    × {{ item.quantity }}
+                  </span>
                 </div>
                 <div class="order-summary-item__price">
                   {{ formatCurrency(item.menuItem.price * item.quantity) }}
@@ -90,7 +92,9 @@
       <section class="checkout-section">
         <!-- Delivery Form -->
         <div v-if="orderData.orderType === 'delivery'">
-          <h3 class="checkout-section__title">{{ $t('checkout.deliveryInfo', 'Детали доставки') }}</h3>
+          <h3 class="checkout-section__title">
+            {{ $t('checkout.deliveryInfo', 'Детали доставки') }}
+          </h3>
           <DeliveryForm
             v-model="orderData.deliveryDetails"
             :errors="validationErrors"
@@ -101,7 +105,9 @@
 
         <!-- Pickup Form -->
         <div v-if="orderData.orderType === 'pickup'">
-          <h3 class="checkout-section__title">{{ $t('checkout.pickupInfo', 'Детали самовывоза') }}</h3>
+          <h3 class="checkout-section__title">
+            {{ $t('checkout.pickupInfo', 'Детали самовывоза') }}
+          </h3>
           <PickupForm
             v-model="orderData.pickupDetails"
             :errors="validationErrors"
@@ -149,7 +155,8 @@
           :disabled="!canSubmit"
           @click="handleSubmit"
         >
-          {{ $t('checkout.placeOrder', 'Оформить заказ') }} • {{ formatCurrency(totalWithDelivery) }}
+          {{ $t('checkout.placeOrder', 'Оформить заказ') }} •
+          {{ formatCurrency(totalWithDelivery) }}
         </BaseButton>
       </div>
     </div>
@@ -182,6 +189,8 @@ import { useTenantStore } from '~/stores/tenant'
 import { useUserStore } from '~/stores/user'
 import { storeToRefs } from 'pinia'
 import type { CartItem, CreateOrderDto } from '~/types'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 const userStore = useUserStore()
 const { user, isAuthenticated } = storeToRefs(userStore)
@@ -216,12 +225,8 @@ const isOrderExpanded = ref(false)
 const isTelegramApp = computed(() => telegram.isTelegram.value)
 
 // Cart validation
-const {
-  requiresAcknowledgment,
-  acknowledged,
-  validateBeforeCheckout,
-  acknowledgeValidation,
-} = useCartValidation()
+const { requiresAcknowledgment, acknowledged, validateBeforeCheckout, acknowledgeValidation } =
+  useCartValidation()
 
 const mappedOrderItems = computed(() => {
   return props.cart.map(item => ({
@@ -354,7 +359,7 @@ const validateForm = (showErrors = true): boolean => {
       errors.locationId = 'Выберите точку самовывоза'
       isValid = false
     }
-    
+
     if (!isTelegramApp.value && !orderData.value.pickupDetails.phone?.trim()) {
       errors.phone = 'Номер телефона обязателен'
       isValid = false
@@ -448,13 +453,14 @@ const submitOrder = async () => {
   updateMainButtonState()
 
   try {
-
     const customerInfo = {
       name:
         isAuthenticated.value && user.value
           ? [user.value.firstName, user.value.lastName].filter(Boolean).join(' ')
           : telegram.isTelegram.value && telegram.user.value
-            ? [telegram.user.value.firstName, telegram.user.value.lastName].filter(Boolean).join(' ')
+            ? [telegram.user.value.firstName, telegram.user.value.lastName]
+                .filter(Boolean)
+                .join(' ')
             : 'Guest User',
       phone:
         orderData.value.pickupDetails.phone ||
@@ -476,16 +482,21 @@ const submitOrder = async () => {
       paymentMethod: orderData.value.paymentMethod,
       deliveryType: orderData.value.orderType === 'delivery' ? 'DELIVERY' : 'PICKUP',
       notes: [
-        orderData.value.orderType === 'pickup' ? `Pickup Time: ${orderData.value.pickupDetails.pickupTime}` : null,
+        orderData.value.orderType === 'pickup'
+          ? `Pickup Time: ${orderData.value.pickupDetails.pickupTime}`
+          : null,
         orderData.value.deliveryDetails?.instructions ||
-        orderData.value.pickupDetails?.instructions ||
-        orderData.value.dineInDetails?.instructions
-      ].filter(Boolean).join('\n'),
+          orderData.value.pickupDetails?.instructions ||
+          orderData.value.dineInDetails?.instructions,
+      ]
+        .filter(Boolean)
+        .join('\n'),
       deliveryAddress:
         orderData.value.orderType === 'delivery'
           ? orderData.value.deliveryDetails.address
           : orderData.value.orderType === 'pickup'
-            ? pickupLocations.value.find(loc => loc.id === orderData.value.pickupDetails.locationId)?.address
+            ? pickupLocations.value.find(loc => loc.id === orderData.value.pickupDetails.locationId)
+                ?.address
             : undefined,
       total: totalWithDelivery.value,
     }
@@ -531,27 +542,33 @@ const submitOrder = async () => {
     }
   } catch (error: any) {
     console.error('Order creation failed:', error)
-    
+
     // Specifically handle "Product not found" during checkout
     const errorMessageStr = error.message || ''
-    const isProductError = 
-      errorMessageStr.toLowerCase().includes('product') || 
+    const isProductError =
+      errorMessageStr.toLowerCase().includes('product') ||
       errorMessageStr.toLowerCase().includes('not found') ||
       error.statusCode === 404 ||
       error.code === 'USER_NOT_FOUND' // Backend quirk
 
     if (isProductError) {
-      errorMessage.value = 'Некоторые товары в вашей корзине стали недоступны. Сейчас мы обновим корзину.'
-      
+      errorMessage.value =
+        'Некоторые товары в вашей корзине стали недоступны. Сейчас мы обновим корзину.'
+
       // Trigger a forced validation to clean up the cart
       setTimeout(async () => {
         const result = await validateCartBeforePayment()
         if (!result) {
-          errorMessage.value = 'Корзина обновлена. Пожалуйста, проверьте изменения перед оформлением заказа.'
+          errorMessage.value =
+            'Корзина обновлена. Пожалуйста, проверьте изменения перед оформлением заказа.'
         }
       }, 1500)
     } else {
-      errorMessage.value = error.message || 'Ошибка оформления заказа.'
+      // Extract detailed error message if available
+      const rawError = error.response?._data || error.data || error
+      const message =
+        rawError.message || error.message || t('checkout.orderFailed', 'Ошибка оформления заказа.')
+      errorMessage.value = Array.isArray(message) ? message[0] : message
     }
   } finally {
     submitting.value = false
@@ -583,15 +600,16 @@ const getDeliveryInfo = () => {
         address: orderData.value.deliveryDetails.address,
         instructions: orderData.value.deliveryDetails.instructions,
       }
-    case 'pickup':
-      { const location = pickupLocations.value.find(
+    case 'pickup': {
+      const location = pickupLocations.value.find(
         loc => loc.id === orderData.value.pickupDetails.locationId
       )
       return {
         location: location?.name,
         phone: orderData.value.pickupDetails.phone,
         instructions: orderData.value.pickupDetails.instructions,
-      } }
+      }
+    }
     case 'dine-in':
       return {
         tableNumber: orderData.value.dineInDetails.tableNumber,
@@ -626,8 +644,8 @@ function updateMainButtonState() {
   if (!telegram.isTelegram.value || isSuccess.value) return
 
   const disabled = !canSubmit.value || submitting.value
-  const text = submitting.value 
-    ? 'Оформление заказа...' 
+  const text = submitting.value
+    ? 'Оформление заказа...'
     : `Оформить заказ • ${formatCurrency(totalWithDelivery.value)}`
 
   if (!isMainButtonVisible) {

@@ -98,12 +98,12 @@
         />
         <BaseButton
           v-if="isTelegram"
-          variant="secondary"
+          variant="primary"
           size="sm"
-          class="phone-request-btn"
+          class="phone-request-btn phone-request-btn--telegram"
           @click="requestTelegramContact"
         >
-          <BaseIcon name="smartphone" size="sm" />
+          <BaseIcon name="telegram" size="sm" />
           {{ $t('checkout.get_from_tg', 'Из Telegram') }}
         </BaseButton>
       </div>
@@ -248,18 +248,18 @@ const requestTelegramContact = () => {
         localData.value.phone = phoneNumber
         handleChange()
 
-        // Save to database immediately if user is logged in
-        if (userStore.isAuthenticated && userStore.user) {
+        // Wait a bit for backend to process the message and refresh profile
+        setTimeout(async () => {
           try {
-            await userStore.updateProfile({
-              phone: phoneNumber,
-              firstName: userStore.user.firstName,
-              lastName: userStore.user.lastName
-            })
-          } catch (error) {
-            console.error('Failed to save phone to profile:', error)
+            await userStore.fetchUserProfile()
+            if (userStore.user?.phone) {
+              localData.value.phone = userStore.user.phone
+              handleChange()
+            }
+          } catch (e) {
+            console.error('Failed to refresh profile:', e)
           }
-        }
+        }, 1000)
       }
     })
   } else {
@@ -312,7 +312,26 @@ watch(() => props.modelValue, (newValue) => {
   white-space: nowrap;
   height: 44px; // Align with input height
   margin-top: 0;
+  
+  &--telegram {
+    background: linear-gradient(135deg, #2AABEE 0%, #229ED9 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(34, 158, 217, 0.2);
+
+    &:hover {
+      background: linear-gradient(135deg, #229ED9 0%, #1c8cc2 100%);
+      box-shadow: 0 4px 8px rgba(34, 158, 217, 0.3);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
 }
+
 
 .pickup-form__label {
   font-size: 0.875rem;
