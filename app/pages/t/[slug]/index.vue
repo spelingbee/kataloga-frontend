@@ -205,7 +205,7 @@ onMounted(async () => {
   z-index: 100;
   background: rgba(var(--bg-primary-rgb), 0.8);
   backdrop-filter: blur(12px);
-  padding: $space-3 0;
+  padding: $space-4 0; // Increased vertical padding to prevent shadow clipping
   border-bottom: 1px solid var(--border-primary);
 }
 
@@ -213,7 +213,7 @@ onMounted(async () => {
   display: flex;
   overflow-x: auto;
   gap: $space-3;
-  padding: $space-2 $space-6; // Increased horizontal and vertical padding
+  padding: $space-2 $space-8; // Even more horizontal padding
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -224,7 +224,7 @@ onMounted(async () => {
 
   &::after {
     content: '';
-    padding-right: $space-4;
+    padding-right: $space-8;
   }
 }
 

@@ -41,7 +41,7 @@
       <NuxtLink :to="tPath('/')" class="app-header__logo">
         <img
           v-if="tenantBranding?.logo && !logoError"
-          :src="tenantBranding.logo"
+          :src="resolveImageUrl(tenantBranding.logo)"
           :alt="tenantBranding.appName || appName"
           class="app-header__logo-image"
           @error="logoError = true"

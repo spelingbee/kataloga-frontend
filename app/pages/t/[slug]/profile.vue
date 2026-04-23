@@ -8,17 +8,24 @@
             <BaseCard class="profile-page__user-card" padding="lg">
               <div class="profile-page__avatar-wrapper">
                 <div class="profile-page__avatar">
-                  <img v-if="user.avatarUrl" :src="user.avatarUrl" :alt="userDisplayName" class="profile-page__avatar-img" />
+                  <img
+                    v-if="user.avatarUrl"
+                    :src="resolveImageUrl(user.avatarUrl)"
+                    :alt="userDisplayName"
+                    class="profile-page__avatar-img"
+                  />
                   <span v-else>{{ userInitials }}</span>
                 </div>
               </div>
-              <div class="profile-page__name-wrapper">
+              <div class="profile-page__info">
                 <h1 class="profile-page__name">{{ userDisplayName }}</h1>
-                <div class="profile-page__role-badge">
-                  {{ user.role }}
+                <div class="profile-page__role-badge-wrapper">
+                  <div class="profile-page__role-badge">
+                    {{ user.role }}
+                  </div>
                 </div>
+                <p class="profile-page__email">{{ user.email }}</p>
               </div>
-              <p class="profile-page__email">{{ user.email }}</p>
 
               <div class="profile-page__stats">
                 <div class="profile-page__stat">
@@ -114,6 +121,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '~/stores/user'
 import { useI18n } from 'vue-i18n'
+import { resolveImageUrl } from '~/utils/image-optimization'
 
 import ResponsiveContainer from '~/components/layout/ResponsiveContainer.vue'
 
@@ -242,7 +250,8 @@ definePageMeta({
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-6); // Increased gap
+  padding: var(--space-8) var(--space-4); // More padding
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-lg);
   background: rgba(var(--bg-primary-rgb), 0.8);
@@ -274,18 +283,31 @@ definePageMeta({
   object-fit: cover;
 }
 
+.profile-page__info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.profile-page__role-badge-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: var(--space-1) 0;
+}
+
 .profile-page__role-badge {
   background: var(--bg-tertiary);
   color: var(--text-primary);
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-4);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
   border: 1px solid var(--border-primary);
   text-transform: uppercase;
   white-space: nowrap;
-  display: inline-block;
-  margin-top: var(--space-2);
 }
 
 .profile-page__name {

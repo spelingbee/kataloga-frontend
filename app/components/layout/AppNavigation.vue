@@ -9,7 +9,7 @@
         :class="{ 'app-navigation__item--active': isActive(item.path) }"
         @click="handleNavClick(item)"
       >
-        <BaseIcon :name="item.icon" size="md" class="app-navigation__icon" :aria-hidden="true" />
+        <BaseIcon :name="item.icon" :size="props.variant === 'bottom' ? 'sm' : 'md'" class="app-navigation__icon" :aria-hidden="true" />
         <span class="app-navigation__label">
           {{ item.label }}
         </span>
@@ -183,7 +183,7 @@ const handleNavClick = (item: NavigationItem) => {
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding: $space-1 $space-1; // Reduced from $space-2
+      padding: 2px 4px; // Extremely tight padding
     }
 
     .app-navigation__item {
@@ -191,9 +191,9 @@ const handleNavClick = (item: NavigationItem) => {
       flex-direction: column;
       align-items: center;
       gap: 1px;
-      padding: $space-1; // Reduced from $space-2
+      padding: 4px;
       flex: 1;
-      min-width: 60px;
+      min-width: 50px; // Smaller width
       text-decoration: none;
       color: var(--text-tertiary);
       transition: all $transition-base-ease;
@@ -222,7 +222,7 @@ const handleNavClick = (item: NavigationItem) => {
           height: 4px;
           border-radius: 50%;
           background: var(--color-primary);
-          box-shadow: 0 0 8px var(--color-primary);
+          box-shadow: 0 0 6px var(--color-primary);
         }
       }
     }
@@ -233,7 +233,7 @@ const handleNavClick = (item: NavigationItem) => {
     }
 
     .app-navigation__label {
-      font-size: 10px;
+      font-size: 9px; // Even smaller text
       font-weight: $font-medium;
       text-align: center;
       line-height: 1.1;
