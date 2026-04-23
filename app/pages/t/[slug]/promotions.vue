@@ -1,162 +1,163 @@
 <template>
-  <div class="min-h-screen bg-background-dark">
+  <div class="promotions-page">
     <!-- Header Section -->
-    <div class="px-6 py-8">
-      <div class="flex items-center gap-3 mb-4">
-        <BaseIcon name="tag" size="lg" class="text-primary-orange" />
-        <AppHeading level="h1" size="display-md" class="text-white">
-          Promotions & Special Offers
-        </AppHeading>
+    <header class="promotions-header">
+      <div class="promotions-header__content">
+        <div class="promotions-header__title-group">
+          <BaseIcon name="tag" size="lg" class="promotions-header__icon" />
+          <AppHeading level="h1" size="display-md" class="promotions-header__title">
+            {{ $t('promotions.title', 'Акции и спецпредложения') }}
+          </AppHeading>
+        </div>
+        <AppText size="body-lg" class="promotions-header__subtitle">
+          {{ $t('promotions.subtitle', 'Экономьте с нашими эксклюзивными предложениями') }}
+        </AppText>
       </div>
-      <AppText size="body-lg" class="text-neutral-20">
-        Save money with our exclusive deals and limited-time offers
-      </AppText>
-    </div>
+    </header>
 
     <!-- Featured Promotion -->
-    <div v-if="featuredPromotion" class="px-6 mb-8">
-      <div class="relative bg-gradient-to-r from-primary-orange to-primary-red rounded-2xl p-8 overflow-hidden">
-        <!-- Background Pattern -->
-        <div class="absolute inset-0 opacity-10">
-          <div class="absolute top-4 right-4 w-32 h-32 bg-white rounded-full"/>
-          <div class="absolute bottom-4 left-4 w-24 h-24 bg-white rounded-full"/>
+    <section v-if="featuredPromotion" class="promotions-featured">
+      <div class="featured-card">
+        <div class="featured-card__pattern">
+          <div class="pattern-circle pattern-circle--1" />
+          <div class="pattern-circle pattern-circle--2" />
         </div>
         
-        <div class="relative z-10">
-          <div class="flex items-center gap-2 mb-4">
+        <div class="featured-card__content">
+          <div class="featured-card__badges">
             <BaseBadge variant="success" size="lg">
-              <BaseIcon name="star" size="sm" class="mr-2" />
-              Featured Deal
+              <BaseIcon name="star" size="sm" class="u-mr-2" />
+              {{ $t('promotions.featured', 'Лучшее предложение') }}
             </BaseBadge>
             <BaseBadge variant="warning" size="sm">
-              Limited Time
+              {{ $t('promotions.limited', 'Ограничено') }}
             </BaseBadge>
           </div>
           
-          <AppHeading level="h2" size="display-md" class="text-white mb-4">
+          <AppHeading level="h2" size="display-md" class="featured-card__title">
             {{ featuredPromotion.title }}
           </AppHeading>
           
-          <AppText size="body-lg" class="text-white/90 mb-6 max-w-2xl">
+          <AppText size="body-lg" class="featured-card__description">
             {{ featuredPromotion.description }}
           </AppText>
           
-          <div class="flex flex-col sm:flex-row gap-4 items-start">
-            <div class="flex items-center gap-4">
-              <div class="text-center">
-                <AppText size="display-lg" class="text-white font-bold">
+          <div class="featured-card__footer">
+            <div class="featured-card__stats">
+              <div class="stat-item">
+                <AppText size="display-lg" class="stat-item__value">
                   {{ featuredPromotion.discountValue }}{{ featuredPromotion.discountType === 'percentage' ? '%' : '$' }}
                 </AppText>
-                <AppText size="body-sm" class="text-white/80">
-                  {{ featuredPromotion.discountType === 'percentage' ? 'OFF' : 'DISCOUNT' }}
+                <AppText size="body-sm" class="stat-item__label">
+                  {{ featuredPromotion.discountType === 'percentage' ? 'СКИДКА' : 'ЭКОНОМИЯ' }}
                 </AppText>
               </div>
               
-              <div class="text-center">
-                <AppText size="body-lg" class="text-white font-semibold">
+              <div class="stat-item">
+                <AppText size="body-lg" class="stat-item__value">
                   {{ getTimeRemaining(featuredPromotion.validTo) }}
                 </AppText>
-                <AppText size="body-sm" class="text-white/80">
-                  Time Left
+                <AppText size="body-sm" class="stat-item__label">
+                  {{ $t('promotions.timeLeft', 'Осталось') }}
                 </AppText>
               </div>
             </div>
             
-            <div class="flex gap-3">
+            <div class="featured-card__actions">
               <BaseButton 
                 variant="secondary"
                 size="lg"
-                class="bg-white text-primary-orange hover:bg-white/90"
+                class="featured-card__btn-primary"
                 @click="usePromotion(featuredPromotion)"
               >
-                <BaseIcon name="shopping-cart" size="sm" class="mr-2" />
-                Use Now
+                <BaseIcon name="shopping-cart" size="sm" class="u-mr-2" />
+                {{ $t('promotions.useNow', 'Использовать') }}
               </BaseButton>
               <BaseButton 
                 variant="ghost"
                 size="lg"
-                class="text-white border-white/30 hover:bg-white/10"
+                class="featured-card__btn-ghost"
                 @click="sharePromotion(featuredPromotion)"
               >
-                <BaseIcon name="share" size="sm" class="mr-2" />
-                Share
+                <BaseIcon name="share" size="sm" class="u-mr-2" />
+                {{ $t('common.share', 'Поделиться') }}
               </BaseButton>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- Filter Options -->
-    <div class="px-6 mb-8">
-      <div class="flex flex-wrap gap-2 mb-4">
+    <div class="promotions-filters">
+      <div class="promotions-filters__scroll">
         <BaseButton
           :variant="activeFilter === 'all' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('all')"
         >
-          All Offers
+          {{ $t('common.all', 'Все акции') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'active' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('active')"
         >
-          Active Now
+          {{ $t('promotions.active', 'Активные') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'percentage' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('percentage')"
         >
-          Percentage Off
+          {{ $t('promotions.filterPercent', '% Скидки') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'fixed' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('fixed')"
         >
-          Fixed Amount
+          {{ $t('promotions.filterFixed', 'Сумма') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'expiring' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('expiring')"
         >
-          Expiring Soon
+          {{ $t('promotions.filterExpiring', 'Сгорают') }}
         </BaseButton>
       </div>
       
-      <AppText size="body-sm" class="text-neutral-20">
-        {{ filteredPromotions.length }} offer{{ filteredPromotions.length !== 1 ? 's' : '' }} available
+      <AppText size="body-sm" class="promotions-filters__count">
+        {{ filteredPromotions.length }} {{ $t('promotions.offersFound', 'предложений найдено') }}
       </AppText>
     </div>
 
     <!-- Promotions Grid -->
-    <div class="px-6">
+    <div class="promotions-grid-container">
       <!-- Loading State -->
-      <div v-if="loading" class="text-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading promotions...</AppText>
+      <div v-if="loading" class="promotions-state promotions-state--loading">
+        <div class="promotions-state__spinner"/>
+        <AppText>{{ $t('common.loading', 'Загрузка...') }}</AppText>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="filteredPromotions.length === 0" class="text-center py-16">
-        <BaseIcon name="tag" size="4xl" class="text-neutral-80 mx-auto mb-6" />
-        <AppHeading level="h3" size="heading-lg" class="text-white mb-4">
-          No promotions found
+      <div v-else-if="filteredPromotions.length === 0" class="promotions-state promotions-state--empty">
+        <BaseIcon name="tag" size="4xl" class="promotions-state__icon" />
+        <AppHeading level="h3" size="heading-lg" class="promotions-state__title">
+          {{ $t('promotions.notFound', 'Ничего не найдено') }}
         </AppHeading>
-        <AppText class="text-neutral-20 mb-8 max-w-md mx-auto">
+        <AppText class="promotions-state__desc">
           {{ activeFilter === 'all' ? 
-            'Check back later for new deals and special offers.' : 
-            `No ${activeFilter} promotions are currently available.` 
+            $t('promotions.emptyAll', 'Следите за обновлениями, новые акции скоро появятся.') : 
+            $t('promotions.emptyFilter', 'Нет подходящих акций в данный момент.') 
           }}
         </AppText>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <NuxtLink to="/menu">
+        <div class="promotions-state__actions">
+          <NuxtLink :to="tPath('/menu')">
             <BaseButton variant="primary">
-              <BaseIcon name="utensils" size="sm" class="mr-2" />
-              Browse Menu
+              <BaseIcon name="utensils" size="sm" class="u-mr-2" />
+              {{ $t('common.browseMenu', 'В меню') }}
             </BaseButton>
           </NuxtLink>
           <BaseButton 
@@ -164,164 +165,164 @@
             variant="secondary"
             @click="setFilter('all')"
           >
-            View All Offers
+            {{ $t('promotions.showAll', 'Все акции') }}
           </BaseButton>
         </div>
       </div>
 
       <!-- Promotions List -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-else class="promotions-grid">
         <div
           v-for="promotion in filteredPromotions"
           :key="promotion.id"
-          class="bg-background-card rounded-xl overflow-hidden hover:bg-background-card/80 transition-all duration-300 hover:scale-105"
+          class="promotion-card"
         >
           <!-- Promotion Header -->
-          <div class="p-6 pb-4">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-2">
-                <BaseBadge 
-                  :variant="promotion.isActive ? 'success' : 'secondary'"
-                  size="sm"
-                >
-                  {{ promotion.isActive ? 'Active' : 'Inactive' }}
-                </BaseBadge>
-                <BaseBadge 
-                  v-if="isExpiringSoon(promotion.validTo)"
-                  variant="warning"
-                  size="sm"
-                >
-                  <BaseIcon name="clock" size="xs" class="mr-1" />
-                  Expiring Soon
-                </BaseBadge>
-              </div>
-              
-              <BaseButton
-                variant="ghost"
+          <div class="promotion-card__header">
+            <div class="promotion-card__badges">
+              <BaseBadge 
+                :variant="promotion.isActive ? 'success' : 'secondary'"
                 size="sm"
-                @click="sharePromotion(promotion)"
               >
-                <BaseIcon name="share" size="sm" />
-              </BaseButton>
+                {{ promotion.isActive ? $t('promotions.statusActive', 'Активна') : $t('promotions.statusInactive', 'Истекла') }}
+              </BaseBadge>
+              <BaseBadge 
+                v-if="isExpiringSoon(promotion.validTo)"
+                variant="warning"
+                size="sm"
+              >
+                <BaseIcon name="clock" size="xs" class="u-mr-1" />
+                {{ $t('promotions.expiringSoon', 'Скоро сгорит') }}
+              </BaseBadge>
             </div>
+            
+            <BaseButton
+              variant="ghost"
+              size="sm"
+              class="promotion-card__share"
+              @click="sharePromotion(promotion)"
+            >
+              <BaseIcon name="share" size="sm" />
+            </BaseButton>
+          </div>
 
-            <!-- Discount Display -->
-            <div class="text-center mb-4">
-              <div class="w-20 h-20 bg-primary-orange/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <AppText size="heading-lg" class="text-primary-orange font-bold">
-                  {{ promotion.discountValue }}{{ promotion.discountType === 'percentage' ? '%' : '$' }}
-                </AppText>
-              </div>
-              <AppText size="caption" class="text-neutral-20">
-                {{ promotion.discountType === 'percentage' ? 'Discount' : 'Off Your Order' }}
+          <!-- Discount Display -->
+          <div class="promotion-card__main">
+            <div class="discount-badge">
+              <AppText size="heading-lg" class="discount-badge__value">
+                {{ promotion.discountValue }}{{ promotion.discountType === 'percentage' ? '%' : '$' }}
               </AppText>
             </div>
+            <AppText size="caption" class="discount-badge__label">
+              {{ promotion.discountType === 'percentage' ? $t('promotions.discount', 'Скидка') : $t('promotions.offOrder', 'Минус от счета') }}
+            </AppText>
+          </div>
 
-            <!-- Promotion Details -->
-            <AppHeading level="h3" size="heading-md" class="text-white mb-2 text-center">
+          <!-- Promotion Details -->
+          <div class="promotion-card__info">
+            <AppHeading level="h3" size="heading-md" class="promotion-card__title">
               {{ promotion.title }}
             </AppHeading>
             
-            <AppText size="body-sm" class="text-neutral-20 text-center mb-4">
+            <AppText size="body-sm" class="promotion-card__desc">
               {{ promotion.description }}
             </AppText>
 
             <!-- Validity Period -->
-            <div class="text-center mb-4">
-              <AppText size="caption" class="text-neutral-20">
-                Valid until {{ formatDate(promotion.validTo) }}
+            <div class="promotion-card__validity">
+              <AppText size="caption" class="validity-date">
+                {{ $t('promotions.validUntil', 'До') }} {{ formatDate(promotion.validTo) }}
               </AppText>
-              <AppText size="caption" class="text-primary-orange">
-                {{ getTimeRemaining(promotion.validTo) }} remaining
+              <AppText size="caption" class="validity-remaining">
+                {{ getTimeRemaining(promotion.validTo) }} {{ $t('promotions.remaining', 'осталось') }}
               </AppText>
             </div>
           </div>
 
           <!-- Promotion Actions -->
-          <div class="px-6 pb-6">
-            <div class="flex gap-2">
-              <BaseButton 
-                variant="primary"
-                size="sm"
-                class="flex-1"
-                :disabled="!promotion.isActive"
-                @click="usePromotion(promotion)"
-              >
-                <BaseIcon name="shopping-cart" size="sm" class="mr-2" />
-                {{ promotion.isActive ? 'Use Now' : 'Expired' }}
-              </BaseButton>
-              <BaseButton 
-                variant="ghost"
-                size="sm"
-                @click="savePromotion(promotion)"
-              >
-                <BaseIcon name="bookmark" size="sm" />
-              </BaseButton>
-            </div>
+          <div class="promotion-card__actions">
+            <BaseButton 
+              variant="primary"
+              size="sm"
+              class="u-flex-1"
+              :disabled="!promotion.isActive"
+              @click="usePromotion(promotion)"
+            >
+              <BaseIcon name="shopping-cart" size="sm" class="u-mr-2" />
+              {{ promotion.isActive ? $t('promotions.useNow', 'Применить') : $t('promotions.expired', 'Истекла') }}
+            </BaseButton>
+            <BaseButton 
+              variant="ghost"
+              size="sm"
+              @click="savePromotion(promotion)"
+            >
+              <BaseIcon name="bookmark" size="sm" />
+            </BaseButton>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Newsletter Signup -->
-    <div class="px-6 py-12 mt-12 border-t border-neutral-80/20">
-      <div class="max-w-2xl mx-auto text-center">
-        <BaseIcon name="mail" size="4xl" class="text-primary-green mx-auto mb-6" />
-        <AppHeading level="h2" size="heading-xl" class="text-white mb-4">
-          Never Miss a Deal
+    <div class="promotions-newsletter">
+      <div class="newsletter-container">
+        <BaseIcon name="mail" size="4xl" class="newsletter-container__icon" />
+        <AppHeading level="h2" size="heading-xl" class="newsletter-container__title">
+          {{ $t('promotions.newsletterTitle', 'Не пропускайте выгоду!') }}
         </AppHeading>
-        <AppText class="text-neutral-20 mb-8">
-          Subscribe to our newsletter and be the first to know about exclusive promotions and special offers.
+        <AppText class="newsletter-container__desc">
+          {{ $t('promotions.newsletterDesc', 'Подпишитесь на нашу рассылку и первыми узнавайте об эксклюзивных акциях и спецпредложениях.') }}
         </AppText>
         
-        <form class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto" @submit.prevent="subscribeNewsletter">
+        <form class="newsletter-form" @submit.prevent="subscribeNewsletter">
           <BaseInput
             v-model="newsletterEmail"
             type="email"
-            placeholder="Enter your email"
-            class="flex-1"
+            :placeholder="$t('promotions.emailPlaceholder', 'Ваш email')"
+            class="newsletter-form__input"
             required
           />
           <BaseButton 
             type="submit"
             variant="primary"
+            class="newsletter-form__btn"
             :disabled="subscribing"
           >
             <BaseIcon 
               v-if="subscribing"
               name="loader" 
               size="sm" 
-              class="mr-2 animate-spin" 
+              class="u-mr-2 u-animate-spin" 
             />
-            Subscribe
+            {{ $t('promotions.subscribe', 'Подписаться') }}
           </BaseButton>
         </form>
         
-        <AppText size="caption" class="text-neutral-20 mt-4">
-          You can unsubscribe at any time. We respect your privacy.
+        <AppText size="caption" class="newsletter-container__privacy">
+          {{ $t('promotions.privacy', 'Вы можете отписаться в любое время. Мы уважаем вашу конфиденциальность.') }}
         </AppText>
       </div>
     </div>
 
     <!-- Quick Actions -->
-    <div class="px-6 py-8 border-t border-neutral-80/20">
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <NuxtLink to="/menu">
+    <div class="promotions-quick-actions">
+      <div class="quick-actions-container">
+        <NuxtLink :to="tPath('/menu')">
           <BaseButton variant="secondary">
-            <BaseIcon name="utensils" size="sm" class="mr-2" />
-            Browse Menu
+            <BaseIcon name="utensils" size="sm" class="u-mr-2" />
+            {{ $t('common.browseMenu', 'В меню') }}
           </BaseButton>
         </NuxtLink>
-        <NuxtLink to="/orders">
+        <NuxtLink :to="tPath('/orders')">
           <BaseButton variant="ghost">
-            <BaseIcon name="receipt" size="sm" class="mr-2" />
-            Order History
+            <BaseIcon name="receipt" size="sm" class="u-mr-2" />
+            {{ $t('common.orders', 'История заказов') }}
           </BaseButton>
         </NuxtLink>
-        <NuxtLink to="/notifications">
+        <NuxtLink :to="tPath('/notifications')">
           <BaseButton variant="ghost">
-            <BaseIcon name="bell" size="sm" class="mr-2" />
-            Notifications
+            <BaseIcon name="bell" size="sm" class="u-mr-2" />
+            {{ $t('common.notifications', 'Уведомления') }}
           </BaseButton>
         </NuxtLink>
       </div>
@@ -340,6 +341,9 @@ definePageMeta({
 
 // Stores
 const router = useRouter()
+const { t } = useI18n()
+const { tPath } = useTenant()
+const { showSuccess, showError } = useNotification()
 
 // Reactive state
 const loading = ref(false)
@@ -492,7 +496,7 @@ const usePromotion = (promotion: Promotion) => {
   // Store the promotion code or apply it to the cart
   // For now, just navigate to menu
   router.push({
-    path: '/menu',
+    path: tPath('/menu'),
     query: { promo: promotion.id }
   })
 }
@@ -527,12 +531,18 @@ const subscribeNewsletter = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     // Show success message
-    alert('Successfully subscribed to newsletter!')
+    showSuccess(
+      t('promotions.successTitle', 'Успешно!'),
+      t('promotions.successDesc', 'Вы подписались на нашу рассылку.')
+    )
     newsletterEmail.value = ''
     
   } catch (error) {
     console.error('Failed to subscribe:', error)
-    alert('Failed to subscribe. Please try again.')
+    showError(
+      t('promotions.errorTitle', 'Ошибка'),
+      t('promotions.errorDesc', 'Не удалось подписаться. Попробуйте позже.')
+    )
   } finally {
     subscribing.value = false
   }
@@ -552,3 +562,424 @@ onMounted(() => {
   }
 })
 </script>
+
+<style lang="scss" scoped>
+@use '../../../assets/scss/tokens/colors' as *;
+@use '../../../assets/scss/tokens/spacing' as *;
+@use '../../../assets/scss/tokens/typography' as *;
+@use '../../../assets/scss/tokens/radius' as *;
+@use '../../../assets/scss/tokens/shadows' as *;
+@use '../../../assets/scss/tokens/transitions' as *;
+@use '../../../assets/scss/abstracts/mixins' as *;
+
+.promotions-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  padding-bottom: $space-12;
+}
+
+.promotions-header {
+  padding: $space-8 $space-6;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  
+  &__content {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  &__title-group {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    margin-bottom: $space-4;
+  }
+
+  &__icon {
+    color: var(--color-warning);
+  }
+
+  &__title {
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  &__subtitle {
+    color: var(--text-secondary);
+  }
+}
+
+.promotions-featured {
+  padding: 0 $space-6;
+  margin-bottom: $space-8;
+}
+
+.featured-card {
+  position: relative;
+  background: linear-gradient(135deg, var(--color-warning) 0%, var(--color-error) 100%);
+  border-radius: $radius-2xl;
+  padding: $space-8;
+  overflow: hidden;
+  color: white;
+  box-shadow: $shadow-lg;
+
+  &__pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.1;
+    pointer-events: none;
+  }
+
+  .pattern-circle {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    
+    &--1 {
+      top: 10%;
+      right: 5%;
+      width: 128px;
+      height: 128px;
+    }
+    
+    &--2 {
+      bottom: 10%;
+      left: 5%;
+      width: 96px;
+      height: 96px;
+    }
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  &__badges {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    margin-bottom: $space-4;
+  }
+
+  &__title {
+    color: white;
+    margin-bottom: $space-4;
+  }
+
+  &__description {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: $space-8;
+    max-width: 800px;
+  }
+
+  &__footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-8;
+    align-items: flex-end;
+  }
+
+  &__stats {
+    display: flex;
+    gap: $space-8;
+  }
+
+  .stat-item {
+    text-align: center;
+    
+    &__value {
+      color: white;
+      font-weight: $font-bold;
+      margin-bottom: $space-1;
+    }
+    
+    &__label {
+      color: rgba(255, 255, 255, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-3;
+  }
+
+  &__btn-primary {
+    background: white;
+    color: var(--color-warning);
+    border: none;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  &__btn-ghost {
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+.promotions-filters {
+  padding: 0 $space-6;
+  margin-bottom: $space-8;
+
+  &__scroll {
+    display: flex;
+    gap: $space-2;
+    overflow-x: auto;
+    padding-bottom: $space-4;
+    -webkit-overflow-scrolling: touch;
+    
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__count {
+    color: var(--text-secondary);
+    margin-top: $space-2;
+  }
+}
+
+.promotions-grid-container {
+  padding: 0 $space-6;
+}
+
+.promotions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $space-6;
+}
+
+.promotion-card {
+  background: var(--bg-card);
+  border-radius: $radius-xl;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  transition: all $transition-base;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-md;
+    border-color: var(--color-primary);
+  }
+
+  &__header {
+    padding: $space-6 $space-6 $space-4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__badges {
+    display: flex;
+    gap: $space-2;
+  }
+
+  &__share {
+    color: var(--text-secondary);
+    
+    &:hover {
+      color: var(--color-primary);
+    }
+  }
+
+  &__main {
+    padding: $space-4;
+    text-align: center;
+  }
+
+  .discount-badge {
+    width: 80px;
+    height: 80px;
+    background: rgba(var(--color-warning-rgb), 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto $space-3;
+    
+    &__value {
+      color: var(--color-warning);
+      font-weight: $font-bold;
+    }
+    
+    &__label {
+      color: var(--text-secondary);
+    }
+  }
+
+  &__info {
+    padding: 0 $space-6 $space-6;
+    flex-grow: 1;
+    text-align: center;
+  }
+
+  &__title {
+    color: var(--text-primary);
+    margin-bottom: $space-2;
+  }
+
+  &__desc {
+    color: var(--text-secondary);
+    margin-bottom: $space-4;
+  }
+
+  &__validity {
+    .validity-date {
+      color: var(--text-secondary);
+      display: block;
+    }
+    
+    .validity-remaining {
+      color: var(--color-warning);
+      font-weight: $font-medium;
+    }
+  }
+
+  &__actions {
+    padding: $space-6;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    gap: $space-2;
+  }
+}
+
+.promotions-state {
+  text-align: center;
+  padding: $space-16 0;
+
+  &--loading {
+    color: var(--text-secondary);
+  }
+
+  &__spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--bg-secondary);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto $space-4;
+  }
+
+  &--empty {
+    .promotions-state__icon {
+      color: var(--text-muted);
+      margin-bottom: $space-6;
+    }
+    
+    .promotions-state__title {
+      color: var(--text-primary);
+      margin-bottom: $space-4;
+    }
+    
+    .promotions-state__desc {
+      color: var(--text-secondary);
+      margin-bottom: $space-8;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .promotions-state__actions {
+      display: flex;
+      gap: $space-4;
+      justify-content: center;
+    }
+  }
+}
+
+.promotions-newsletter {
+  padding: $space-12 $space-6;
+  margin-top: $space-12;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.newsletter-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+
+  &__icon {
+    color: var(--color-success);
+    margin-bottom: $space-6;
+  }
+
+  &__title {
+    color: var(--text-primary);
+    margin-bottom: $space-4;
+  }
+
+  &__desc {
+    color: var(--text-secondary);
+    margin-bottom: $space-8;
+  }
+
+  &__privacy {
+    color: var(--text-muted);
+    margin-top: $space-4;
+  }
+}
+
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+  max-width: 500px;
+  margin: 0 auto;
+
+  @include tablet-up {
+    flex-direction: row;
+  }
+
+  &__input {
+    flex-grow: 1;
+  }
+}
+
+.promotions-quick-actions {
+  padding: $space-8 $space-6;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.quick-actions-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-4;
+  justify-content: center;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 640px) {
+  .featured-card {
+    padding: $space-6;
+    
+    &__stats {
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    &__actions {
+      width: 100%;
+      flex-direction: column;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+}
+</style>
