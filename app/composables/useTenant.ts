@@ -610,7 +610,7 @@ export function useTenantSettings() {
   })
 
   const isPickupEnabled = computed(() => {
-    return features.value.pickupEnabled
+    return features.value.pickupEnabled && !!contactInfo.value?.address
   })
 
   const isOnlineOrderingEnabled = computed(() => {

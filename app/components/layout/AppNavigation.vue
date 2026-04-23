@@ -80,9 +80,10 @@ const isTelegramApp = computed(() => telegram.isTelegram.value)
         path: '/orders',
         icon: 'receipt',
         label: t('orders.title', 'Заказы'),
-        badge: true,
+        badge: false,
         badgeCount: 0,
       },
+
       {
         path: '/checkout',
         icon: 'shopping-cart',

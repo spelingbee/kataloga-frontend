@@ -46,10 +46,11 @@
           class="app-header__logo-image"
           @error="logoError = true"
         />
-        <BaseIcon v-else name="logo" size="lg" class="u-text-primary-red" />
+        <BaseIcon v-else name="utensils" size="lg" class="u-text-primary-red" />
         <AppHeading level="h1" size="heading-lg" class="app-header__brand">
           {{ tenantBranding?.appName || appName }}
         </AppHeading>
+
       </NuxtLink>
 
       <!-- Tenant Indicator (multi-tenant mode only) -->

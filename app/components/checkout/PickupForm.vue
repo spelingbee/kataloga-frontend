@@ -134,9 +134,10 @@
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTelegram } from '~/composables/useTelegram'
-
+import { useUserStore } from '~/stores/user'
 const { t } = useI18n()
 const { isTelegram } = useTelegram()
+const userStore = useUserStore()
 
 interface PickupLocation {
   id: string
@@ -151,7 +152,6 @@ interface PickupData {
   customDate: string
   customTime: string
   phone: string
-  writeToTelegram?: boolean
   instructions: string
 }
 

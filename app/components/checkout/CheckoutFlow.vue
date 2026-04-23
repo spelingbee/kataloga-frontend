@@ -459,8 +459,7 @@ const submitOrder = async () => {
       phone:
         orderData.value.pickupDetails.phone ||
         orderData.value.deliveryDetails.phone ||
-        user.value?.phone ||
-        (orderData.value.pickupDetails.writeToTelegram ? 'via Telegram' : ''),
+        user.value?.phone,
       email: user.value?.email || '',
     }
 
@@ -585,14 +584,14 @@ const getDeliveryInfo = () => {
         instructions: orderData.value.deliveryDetails.instructions,
       }
     case 'pickup':
-      const location = pickupLocations.value.find(
+      { const location = pickupLocations.value.find(
         loc => loc.id === orderData.value.pickupDetails.locationId
       )
       return {
         location: location?.name,
         phone: orderData.value.pickupDetails.phone,
         instructions: orderData.value.pickupDetails.instructions,
-      }
+      } }
     case 'dine-in':
       return {
         tableNumber: orderData.value.dineInDetails.tableNumber,

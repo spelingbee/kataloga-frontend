@@ -130,6 +130,9 @@
             <AppText size="body-sm" class="order-tracker__info-value">
               {{ tenantSettings?.name || order.restaurantName || 'Main Restaurant' }}
             </AppText>
+            <AppText v-if="order.deliveryAddress" size="body-xs" class="order-tracker__info-address mt-1">
+              {{ order.deliveryAddress }}
+            </AppText>
           </div>
         </div>
 
@@ -301,8 +304,8 @@ let refreshTimer: NodeJS.Timeout | null = null
 
 // Computed properties
 const isDeliveryOrder = computed(() => {
-  // Determine if this is a delivery order based on order data
-  return !!(props.order.deliveryAddress || props.order.customerInfo?.address)
+  // Determine if this is a delivery order based on orderType
+  return props.order.orderType === 'delivery'
 })
 
 const { tenantSettings } = useTenant()
