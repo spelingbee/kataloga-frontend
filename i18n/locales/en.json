@@ -24,7 +24,19 @@
     "save_changes": "Save Changes",
     "first_name": "First Name",
     "last_name": "Last Name",
-    "email": "Email"
+    "email": "Email",
+    "unavailable": "Out of Stock"
+  },
+  "terminology": {
+    "menu": "Menu",
+    "catalog": "Catalog",
+    "dish": "Dish",
+    "product": "Product",
+    "dishes": "Dishes",
+    "products": "Products",
+    "category": "Category",
+    "ingredients": "Ingredients",
+    "characteristics": "Characteristics"
   },
   "profile": {
     "title": "Profile",

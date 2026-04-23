@@ -116,10 +116,10 @@
         <!-- Guest Auth Buttons -->
         <div v-if="!userStore.isAuthenticated" class="u-flex u-items-center u-gap-2">
           <NuxtLink to="/auth/login" class="app-header__link">
-            <BaseButton variant="ghost" size="sm">Войти</BaseButton>
+            <BaseButton variant="ghost" size="sm">{{ $t('auth.login', 'Войти') }}</BaseButton>
           </NuxtLink>
           <NuxtLink to="/auth/register" class="app-header__link">
-            <BaseButton variant="primary" size="sm">Регистрация</BaseButton>
+            <BaseButton variant="primary" size="sm">{{ $t('auth.register', 'Регистрация') }}</BaseButton>
           </NuxtLink>
         </div>
 

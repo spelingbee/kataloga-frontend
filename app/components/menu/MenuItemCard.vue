@@ -16,18 +16,18 @@
 
       <!-- Fallback Icon -->
       <div v-if="imageError" class="product-card__image-fallback">
-        <BaseIcon name="utensils" size="lg" class="product-card__fallback-icon" />
+        <BaseIcon :name="itemIcon" size="lg" class="product-card__fallback-icon" />
       </div>
 
       <!-- Popular Badge -->
       <div v-if="isPopular" class="product-card__badge">
         <BaseIcon name="fire" size="xs" class="product-card__badge-icon" />
-        <span class="product-card__badge-text">Popular</span>
+        <span class="product-card__badge-text">{{ $t('menu.popular', 'Популярное') }}</span>
       </div>
 
       <!-- Unavailable Overlay -->
       <div v-if="!menuItem.isActive" class="product-card__unavailable-overlay">
-        <span class="product-card__unavailable-text">Unavailable</span>
+        <span class="product-card__unavailable-text">{{ $t('common.unavailable', 'Нет в наличии') }}</span>
       </div>
     </div>
 
@@ -79,6 +79,7 @@
 import { ref, computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useNotification } from '~/composables/useNotification'
+import { useTerminology } from '~/composables/useTerminology'
 import type { MenuItem } from '~/types'
 import AppPrice from '../base/AppPrice.vue'
 import { resolveImageUrl } from '~/utils/image-optimization'
@@ -97,6 +98,7 @@ const emit = defineEmits<{
 // Stores and composables
 const cartStore = useCartStore()
 const { showSuccess } = useNotification()
+const { itemIcon } = useTerminology()
 
 // Local state
 const imageError = ref(false)

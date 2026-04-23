@@ -32,6 +32,8 @@ import { useCartStore } from '~/stores/cart'
 import { useNotificationStore } from '~/stores/notification'
 import { useTelegram } from '~/composables/useTelegram'
 import { useTenant } from '~/composables/useTenant'
+import { useTerminology } from '~/composables/useTerminology'
+import { useI18n } from 'vue-i18n'
 
 interface NavigationItem {
   path: string
@@ -64,6 +66,7 @@ const router = useRouter()
 const { t } = useI18n()
 const telegram = useTelegram()
 const { tPath } = useTenant()
+const { catalogLabel, primaryIcon } = useTerminology()
 const isTelegramApp = computed(() => telegram.isTelegram.value)
 
 // Navigation items with dynamic badge counts
@@ -71,8 +74,8 @@ const isTelegramApp = computed(() => telegram.isTelegram.value)
     const defaultItems: NavigationItem[] = [
       {
         path: '/menu',
-        icon: 'menu-book',
-        label: t('menu.title', 'Меню'),
+        icon: primaryIcon.value,
+        label: catalogLabel.value,
         badge: false,
         badgeCount: 0,
       },

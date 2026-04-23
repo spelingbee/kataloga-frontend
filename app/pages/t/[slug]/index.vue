@@ -21,7 +21,7 @@
           class="home-hero__logo"
         />
         <h1 class="home-hero__title">
-          {{ tenantStore.tenantName || $t('common.catalog', 'Каталог') }}
+          {{ tenantStore.tenantName || catalogLabel }}
         </h1>
         <p class="home-hero__subtitle">
           {{
@@ -61,7 +61,7 @@
         <h2 class="home-menu__title">
           {{ selectedCategoryName }}
           <span class="home-menu__count">
-            {{ displayItems.length }} {{ $t('common.items_count', 'товаров') }}
+            {{ displayItems.length }} {{ itemsLabel.toLowerCase() }}
           </span>
         </h2>
       </div>
@@ -69,7 +69,7 @@
       <!-- Loading/Error States -->
       <div v-if="menuStore.loading && displayItems.length === 0" class="home-menu__state">
         <div class="spinner" />
-        <p>{{ $t('common.loading', 'Загрузка меню...') }}</p>
+        <p>{{ $t('common.loading', 'Загрузка...') }}</p>
       </div>
 
       <div
@@ -102,6 +102,7 @@ import { useRouter } from 'vue-router'
 import { useMenuStore } from '~/stores/menu'
 import { useTenantStore } from '~/stores/tenant'
 import { useTenant } from '~/composables/useTenant'
+import { useTerminology } from '~/composables/useTerminology'
 import { resolveImageUrl } from '~/utils/image-optimization'
 
 definePageMeta({
@@ -112,6 +113,7 @@ const menuStore = useMenuStore()
 const tenantStore = useTenantStore()
 const router = useRouter()
 const { tPath } = useTenant()
+const { catalogLabel, itemsLabel } = useTerminology()
 
 // UI State
 const selectedCategoryId = ref<string | null>(null)
@@ -126,8 +128,8 @@ const displayItems = computed(() => {
 })
 
 const selectedCategoryName = computed(() => {
-  if (!selectedCategoryId.value) return 'Меню'
-  return categories.value.find(c => c.id === selectedCategoryId.value)?.name || 'Категория'
+  if (!selectedCategoryId.value) return catalogLabel.value
+  return categories.value.find(c => c.id === selectedCategoryId.value)?.name || $t('terminology.category', 'Категория')
 })
 
 // Methods

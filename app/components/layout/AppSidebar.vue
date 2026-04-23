@@ -3,7 +3,7 @@
     <!-- Sidebar Header -->
     <div class="app-sidebar__header">
       <AppHeading level="h2" size="heading-md" class="u-text-neutral-20">
-        Categories
+        {{ $t('menu.categories', 'Категории') }}
       </AppHeading>
     </div>
 
@@ -29,14 +29,14 @@
     <!-- Sidebar Footer (optional) -->
     <div class="app-sidebar__footer">
       <div class="app-sidebar__footer-content">
-        <span>{{ totalItems }} items</span>
+        <span>{{ totalItems }} {{ itemsLabel.toLowerCase() }}</span>
         <BaseButton
           variant="ghost"
           size="sm"
           class="u-text-caption"
           @click="clearFilters"
         >
-          Clear filters
+          {{ $t('menu.clearFilters', 'Очистить фильтры') }}
         </BaseButton>
       </div>
     </div>
@@ -46,6 +46,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useMenuStore } from '~/stores/menu'
+import { useTerminology } from '~/composables/useTerminology'
+
+const { itemsLabel } = useTerminology()
 
 // Stores
 const menuStore = useMenuStore()

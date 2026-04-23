@@ -61,9 +61,9 @@
         </AppText>
         
         <!-- Allergen Information -->
-        <div v-if="menuItem.allergens && menuItem.allergens.length > 0" class="menu-item-detail__allergens">
+        <div v-if="isFoodBusiness && menuItem.allergens && menuItem.allergens.length > 0" class="menu-item-detail__allergens">
           <AppText size="body-sm" color="white" class="font-semibold">
-            Allergens:
+            {{ $t('menu.allergens', 'Аллергены') }}:
           </AppText>
           <div class="menu-item-detail__allergen-list">
             <BaseBadge
@@ -78,31 +78,31 @@
         </div>
         
         <!-- Nutrition Information -->
-        <div v-if="menuItem.nutritionInfo" class="menu-item-detail__nutrition">
+        <div v-if="isFoodBusiness && menuItem.nutritionInfo" class="menu-item-detail__nutrition">
           <AppText size="body-sm" color="white" class="font-semibold mb-2">
-            Nutrition Information:
+            {{ $t('menu.nutrition', 'Пищевая ценность') }}:
           </AppText>
           <div class="menu-item-detail__nutrition-grid">
             <div class="menu-item-detail__nutrition-item">
-              <AppText size="caption" color="muted">Calories</AppText>
+              <AppText size="caption" color="muted">{{ $t('menu.calories', 'Калории') }}</AppText>
               <AppText size="body-sm" color="white" class="font-medium">
                 {{ menuItem.nutritionInfo.calories }} cal
               </AppText>
             </div>
             <div class="menu-item-detail__nutrition-item">
-              <AppText size="caption" color="muted">Protein</AppText>
+              <AppText size="caption" color="muted">{{ $t('menu.protein', 'Белки') }}</AppText>
               <AppText size="body-sm" color="white" class="font-medium">
                 {{ menuItem.nutritionInfo.protein }}g
               </AppText>
             </div>
             <div class="menu-item-detail__nutrition-item">
-              <AppText size="caption" color="muted">Carbs</AppText>
+              <AppText size="caption" color="muted">{{ $t('menu.carbs', 'Углеводы') }}</AppText>
               <AppText size="body-sm" color="white" class="font-medium">
                 {{ menuItem.nutritionInfo.carbs }}g
               </AppText>
             </div>
             <div class="menu-item-detail__nutrition-item">
-              <AppText size="caption" color="muted">Fat</AppText>
+              <AppText size="caption" color="muted">{{ $t('menu.fat', 'Жиры') }}</AppText>
               <AppText size="body-sm" color="white" class="font-medium">
                 {{ menuItem.nutritionInfo.fat }}g
               </AppText>
@@ -123,7 +123,7 @@
         <!-- Quantity Selector -->
         <div class="menu-item-detail__quantity">
           <AppText size="body-sm" color="white" class="font-semibold">
-            Quantity:
+            {{ $t('menu.quantity', 'Количество') }}:
           </AppText>
           <QuantitySelector
             v-model="quantity"
@@ -136,7 +136,7 @@
         <!-- Price and Add to Cart -->
         <div class="menu-item-detail__footer">
           <div class="menu-item-detail__price-section">
-            <AppText size="caption" color="muted">Total Price</AppText>
+            <AppText size="caption" color="muted">{{ $t('cart.total', 'Итого') }}</AppText>
             <AppPrice :amount="totalPrice" size="xl" />
           </div>
           
@@ -148,14 +148,14 @@
             @click="handleAddToCart"
           >
             <BaseIcon name="shopping-cart" size="sm" />
-            Add to Cart
+            {{ $t('cart.checkout', 'Оформить заказ') }}
           </BaseButton>
         </div>
         
         <!-- Validation Error Message -->
         <div v-if="hasValidationErrors" class="menu-item-detail__error">
           <AppText size="body-sm" color="red">
-            Please select all required options before adding to cart
+            {{ $t('menu.selectRequired', 'Пожалуйста, выберите все обязательные опции') }}
           </AppText>
         </div>
       </div>
@@ -167,6 +167,8 @@
 import type { MenuItem, ModifierGroup, Modifier } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
+import { useTerminology } from '~/composables/useTerminology'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   modelValue: boolean
@@ -184,6 +186,7 @@ const emit = defineEmits<{
 // Stores
 const menuStore = useMenuStore()
 const cartStore = useCartStore()
+const { t } = useI18n()
 
 // Telegram integration
 const telegram = useTelegram()
@@ -202,6 +205,8 @@ const validationErrors = ref<string[]>([])
 // Telegram integration
 let cleanupMainButton: (() => void) | null = null
 let cleanupBackButton: (() => void) | null = null
+
+const { isFoodBusiness } = useTerminology()
 
 // Computed properties
 const isFavorite = computed(() => {
@@ -319,7 +324,7 @@ watch(() => props.modelValue, (isOpen) => {
     
     // Setup Telegram MainButton if in Telegram
     if (telegram.isTelegram.value) {
-      const buttonText = `Add to Cart - $${totalPrice.value.toFixed(2)}`
+      const buttonText = `${t('menu.addToCart', 'В корзину')} - ${totalPrice.value.toFixed(2)}`
       cleanupMainButton = telegram.showMainButton(buttonText, handleAddToCart)
       
       // Setup Telegram BackButton
@@ -347,7 +352,7 @@ watch(() => props.modelValue, (isOpen) => {
 // Watch for price changes to update MainButton text
 watch(totalPrice, (newPrice) => {
   if (telegram.isTelegram.value && props.modelValue) {
-    const buttonText = `Add to Cart - $${newPrice.toFixed(2)}`
+    const buttonText = `${t('menu.addToCart', 'В корзину')} - ${newPrice.toFixed(2)}`
     // Update button text by recreating it
     if (cleanupMainButton) {
       cleanupMainButton()

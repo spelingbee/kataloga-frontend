@@ -25,7 +25,19 @@
     "save_changes": "Сохранить изменения",
     "first_name": "Имя",
     "last_name": "Фамилия",
-    "email": "Email"
+    "email": "Email",
+    "unavailable": "Нет в наличии"
+  },
+  "terminology": {
+    "menu": "Меню",
+    "catalog": "Каталог",
+    "dish": "Блюдо",
+    "product": "Товар",
+    "dishes": "Блюда",
+    "products": "Товары",
+    "category": "Категория",
+    "ingredients": "Состав",
+    "characteristics": "Характеристики"
   },
   "profile": {
     "title": "Профиль",

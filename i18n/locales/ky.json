@@ -1,4 +1,4 @@
-﻿{
+{
   "common": {
     "loading": "Р–ТЇРєС‚У©Р»ТЇТЇРґУ©...",
     "error": "РљР°С‚Р°",
@@ -24,7 +24,19 @@
     "save_changes": "УЁР·РіУ©СЂС‚ТЇТЇР»У©СЂРґТЇ СЃР°РєС‚РѕРѕ",
     "first_name": "РђС‚С‹",
     "last_name": "Р¤Р°РјРёР»РёСЏСЃС‹",
-    "email": "Email"
+    "email": "Email",
+    "unavailable": "Жок"
+  },
+  "terminology": {
+    "menu": "Меню",
+    "catalog": "Каталог",
+    "dish": "Тамак",
+    "product": "Товар",
+    "dishes": "Тамактар",
+    "products": "Товарлор",
+    "category": "Категория",
+    "ingredients": "Курамы",
+    "characteristics": "Мүнөздөмөлөрү"
   },
   "profile": {
     "title": "РџСЂРѕС„РёР»СЊ",
