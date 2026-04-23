@@ -8,7 +8,8 @@
             <BaseCard class="profile-page__user-card" padding="lg">
               <div class="profile-page__avatar-wrapper">
                 <div class="profile-page__avatar">
-                  {{ userInitials }}
+                  <img v-if="user.avatarUrl" :src="user.avatarUrl" :alt="userDisplayName" class="profile-page__avatar-img" />
+                  <span v-else>{{ userInitials }}</span>
                 </div>
                 <div class="profile-page__role-badge">
                   {{ user.role }}
@@ -187,9 +188,10 @@ onMounted(async () => {
 
     if (locs) addresses.value = locs
 
-    // In a real app, these would come from the profile/loyalty service
-    loyaltyPoints.value = 150
-    orderCount.value = 5
+    if (profile) {
+      loyaltyPoints.value = profile.loyaltyPoints || 0
+      orderCount.value = profile.orderCount || 0
+    }
   } catch (error) {
     console.error('Error fetching profile data:', error)
   }
@@ -262,12 +264,20 @@ definePageMeta({
   font-weight: var(--font-bold);
   border-radius: 50%;
   box-shadow: 0 8px 16px rgba(var(--color-primary-rgb), 0.3);
+  overflow: hidden;
+}
+
+.profile-page__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .profile-page__role-badge {
   position: absolute;
-  bottom: 0;
-  right: -8px;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
   background: var(--bg-tertiary);
   color: var(--text-primary);
   padding: var(--space-1) var(--space-3);
@@ -276,6 +286,8 @@ definePageMeta({
   font-weight: var(--font-bold);
   border: 2px solid var(--bg-primary);
   text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
 }
 
 .profile-page__name {
