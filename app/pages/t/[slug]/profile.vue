@@ -11,11 +11,13 @@
                   <img v-if="user.avatarUrl" :src="user.avatarUrl" :alt="userDisplayName" class="profile-page__avatar-img" />
                   <span v-else>{{ userInitials }}</span>
                 </div>
+              </div>
+              <div class="profile-page__name-wrapper">
+                <h1 class="profile-page__name">{{ userDisplayName }}</h1>
                 <div class="profile-page__role-badge">
                   {{ user.role }}
                 </div>
               </div>
-              <h1 class="profile-page__name">{{ userDisplayName }}</h1>
               <p class="profile-page__email">{{ user.email }}</p>
 
               <div class="profile-page__stats">
@@ -248,8 +250,7 @@ definePageMeta({
 }
 
 .profile-page__avatar-wrapper {
-  position: relative;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .profile-page__avatar {
@@ -274,20 +275,17 @@ definePageMeta({
 }
 
 .profile-page__role-badge {
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
   background: var(--bg-tertiary);
   color: var(--text-primary);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
-  border: 2px solid var(--bg-primary);
+  border: 1px solid var(--border-primary);
   text-transform: uppercase;
   white-space: nowrap;
-  box-shadow: var(--shadow-sm);
+  display: inline-block;
+  margin-top: var(--space-2);
 }
 
 .profile-page__name {

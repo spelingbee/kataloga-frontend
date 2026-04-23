@@ -14,6 +14,12 @@
           :alt="tenantStore.tenantName"
           class="home-hero__logo"
         />
+        <img
+          v-else
+          src="/images/logo-kataloga.png"
+          alt="Kataloga"
+          class="home-hero__logo"
+        />
         <h1 class="home-hero__title">
           {{ tenantStore.tenantName || $t('common.catalog', 'Каталог') }}
         </h1>
@@ -207,7 +213,7 @@ onMounted(async () => {
   display: flex;
   overflow-x: auto;
   gap: $space-3;
-  padding: $space-1 $space-4;
+  padding: $space-2 $space-6; // Increased horizontal and vertical padding
   scrollbar-width: none;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -248,7 +254,8 @@ onMounted(async () => {
     background: var(--color-primary) !important;
     border-color: var(--color-primary);
     color: white !important;
-    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+    box-shadow: 0 4px 16px rgba(var(--color-primary-rgb), 0.4); // More prominent shadow
+    transform: translateY(-1px); // Subtle lift
 
     .category-pill__count {
       color: rgba(255, 255, 255, 0.8);

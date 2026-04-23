@@ -23,6 +23,7 @@ export interface User {
   tenantId: string
   isActive: boolean
   emailVerified: boolean
+  avatarUrl?: string
   preferences?: UserPreferences
   createdAt: string
   updatedAt: string

@@ -119,10 +119,19 @@ const navigationClasses = computed(() => [`app-navigation--${props.variant}`])
 // Methods
 const isActive = (path: string) => {
   const dynamicPath = tPath(path)
-  if (path === '/') {
-    return route.path === dynamicPath || route.path === dynamicPath + '/'
+  const currentPath = route.path.replace(/\/$/, '') // Remove trailing slash
+  
+  if (path === '/menu') {
+    // Menu is active on its own path OR on the tenant home page
+    const homePath = tPath('/').replace(/\/$/, '')
+    return currentPath === dynamicPath || currentPath === homePath
   }
-  return route.path.startsWith(dynamicPath)
+  
+  if (path === '/') {
+    return currentPath === dynamicPath
+  }
+  
+  return currentPath.startsWith(dynamicPath)
 }
 
 const handleNavClick = (item: NavigationItem) => {
@@ -157,7 +166,7 @@ const handleNavClick = (item: NavigationItem) => {
 
   &--bottom {
     position: fixed;
-    bottom: $space-4;
+    bottom: $space-2; // Reduced from $space-4
     left: $space-4;
     right: $space-4;
     z-index: 1000;
@@ -174,7 +183,7 @@ const handleNavClick = (item: NavigationItem) => {
       display: flex;
       justify-content: space-around;
       align-items: center;
-      padding: $space-2 $space-1;
+      padding: $space-1 $space-1; // Reduced from $space-2
     }
 
     .app-navigation__item {
@@ -182,7 +191,7 @@ const handleNavClick = (item: NavigationItem) => {
       flex-direction: column;
       align-items: center;
       gap: 1px;
-      padding: $space-2;
+      padding: $space-1; // Reduced from $space-2
       flex: 1;
       min-width: 60px;
       text-decoration: none;
@@ -227,7 +236,8 @@ const handleNavClick = (item: NavigationItem) => {
       font-size: 10px;
       font-weight: $font-medium;
       text-align: center;
-      line-height: 1.2;
+      line-height: 1.1;
+      margin-top: -2px;
     }
 
     .app-navigation__badge {

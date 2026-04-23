@@ -13,7 +13,7 @@
               <img :src="resolveImageUrl(brandLogo)" :alt="appName" class="app-layout__logo" />
             </template>
             <template v-else>
-              <BaseIcon :name="brandIcon" size="lg" />
+              <img src="/images/logo-kataloga.png" :alt="appName" class="app-layout__logo" />
             </template>
             <span class="app-layout__brand-text">{{ appName }}</span>
           </NuxtLink>
@@ -259,7 +259,7 @@ const handleStickyCartClick = () => {
   }
 
   &--with-mobile-nav {
-    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
 
     @include tablet-up {
       padding-bottom: 0;
@@ -320,7 +320,8 @@ const handleStickyCartClick = () => {
 
 .app-layout__brand-text {
   @include mobile-only {
-    display: none;
+    display: block; // Keep app name visible on mobile if desired, or at least the logo
+    font-size: var(--text-sm);
   }
 }
 

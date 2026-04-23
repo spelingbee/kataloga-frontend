@@ -46,7 +46,7 @@
           class="app-header__logo-image"
           @error="logoError = true"
         />
-        <BaseIcon v-else name="utensils" size="lg" class="u-text-primary-red" />
+        <img v-else src="/images/logo-kataloga.png" :alt="appName" class="app-header__logo-image" />
         <AppHeading level="h1" size="heading-lg" class="app-header__brand">
           {{ tenantBranding?.appName || appName }}
         </AppHeading>
