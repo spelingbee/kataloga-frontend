@@ -58,31 +58,39 @@
         </div>
 
         <!-- Delivery/Pickup Details -->
-        <div v-if="order.deliveryDetails" class="order-confirmation__details">
+        <div v-if="order.deliveryType === 'DELIVERY' || order.deliveryDetails" class="order-confirmation__details">
           <h3 class="order-confirmation__details-title">Delivery Details</h3>
           <p class="order-confirmation__details-text">
             <BaseIcon name="map-pin" size="sm" />
-            {{ order.deliveryDetails.address }}
+            {{ order.deliveryAddress || order.deliveryDetails?.address }}
           </p>
-          <p v-if="order.deliveryDetails.phone" class="order-confirmation__details-text">
+          <p v-if="order.customerPhone || order.deliveryDetails?.phone" class="order-confirmation__details-text">
             <BaseIcon name="phone" size="sm" />
-            {{ order.deliveryDetails.phone }}
+            {{ order.customerPhone || order.deliveryDetails?.phone }}
           </p>
-          <p v-if="order.deliveryDetails.instructions" class="order-confirmation__details-text">
+          <p v-if="order.notes" class="order-confirmation__details-text">
             <BaseIcon name="message" size="sm" />
-            {{ order.deliveryDetails.instructions }}
+            {{ order.notes }}
           </p>
         </div>
 
-        <div v-if="order.pickupDetails" class="order-confirmation__details">
+        <div v-else-if="order.deliveryType === 'PICKUP' || order.pickupDetails" class="order-confirmation__details">
           <h3 class="order-confirmation__details-title">Pickup Details</h3>
+          <p v-if="order.deliveryAddress" class="order-confirmation__details-text">
+            <BaseIcon name="store" size="sm" />
+            {{ order.deliveryAddress }}
+          </p>
           <p class="order-confirmation__details-text">
             <BaseIcon name="clock" size="sm" />
-            Pickup Time: {{ formatPickupTime(order.pickupDetails.pickupTime) }}
+            {{ getPickupTimeDisplay(order) }}
           </p>
-          <p v-if="order.pickupDetails.phone" class="order-confirmation__details-text">
+          <p v-if="order.customerPhone || order.pickupDetails?.phone" class="order-confirmation__details-text">
             <BaseIcon name="phone" size="sm" />
-            {{ order.pickupDetails.phone }}
+            {{ order.customerPhone || order.pickupDetails?.phone }}
+          </p>
+          <p v-if="order.notes && !order.notes.startsWith('Pickup Time:')" class="order-confirmation__details-text">
+            <BaseIcon name="message" size="sm" />
+            {{ order.notes }}
           </p>
         </div>
 
@@ -158,7 +166,7 @@ const error = ref<string | null>(null)
 
 // Get order ID from route query or current order
 const orderId = computed(() => {
-  return route.query.orderId as string || currentOrder.value?.id
+  return (route.query.orderId as string) || (currentOrder.value?.id as string)
 })
 
 // Load order details
@@ -197,8 +205,19 @@ const calculateSubtotal = (order: Order) => {
   return order.items.reduce((sum, item) => sum + item.subtotal, 0)
 }
 
+const getPickupTimeDisplay = (order: any) => {
+  if (order.pickupDetails?.pickupTime) {
+    return `Pickup Time: ${formatPickupTime(order.pickupDetails.pickupTime)}`
+  }
+  if (order.notes?.startsWith('Pickup Time:')) {
+    return order.notes.split('\n')[0]
+  }
+  return 'Pickup Time: ASAP'
+}
+
 const formatPickupTime = (time: string | Date) => {
   const date = new Date(time)
+  if (isNaN(date.getTime())) return time // Return raw string if invalid date (e.g. "asap")
   return date.toLocaleString('en-US', {
     weekday: 'short',
     month: 'short',

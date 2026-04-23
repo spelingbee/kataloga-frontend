@@ -476,14 +476,18 @@ const submitOrder = async () => {
       customerInfo,
       paymentMethod: orderData.value.paymentMethod,
       deliveryType: orderData.value.orderType === 'delivery' ? 'DELIVERY' : 'PICKUP',
-      notes:
+      notes: [
+        orderData.value.orderType === 'pickup' ? `Pickup Time: ${orderData.value.pickupDetails.pickupTime}` : null,
         orderData.value.deliveryDetails?.instructions ||
         orderData.value.pickupDetails?.instructions ||
-        orderData.value.dineInDetails?.instructions,
+        orderData.value.dineInDetails?.instructions
+      ].filter(Boolean).join('\n'),
       deliveryAddress:
         orderData.value.orderType === 'delivery'
           ? orderData.value.deliveryDetails.address
-          : undefined,
+          : orderData.value.orderType === 'pickup'
+            ? pickupLocations.value.find(loc => loc.id === orderData.value.pickupDetails.locationId)?.address
+            : undefined,
       total: totalWithDelivery.value,
     }
 
