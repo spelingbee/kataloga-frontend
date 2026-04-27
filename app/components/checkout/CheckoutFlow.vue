@@ -465,7 +465,8 @@ const submitOrder = async () => {
       phone:
         orderData.value.pickupDetails.phone ||
         orderData.value.deliveryDetails.phone ||
-        user.value?.phone,
+        user.value?.phone ||
+        '',
       email: user.value?.email || '',
     }
 
