@@ -80,7 +80,9 @@
     "selectRequired": "Please select all required options",
     "addToCart": "Add to Cart",
     "quantity": "Quantity",
-    "price": "Price"
+    "price": "Price",
+    "variants": "Variants",
+    "selectVariant": "Select Variant"
   },
   "cart": {
     "title": "Cart",

@@ -683,6 +683,14 @@ onMounted(async () => {
     })
     updateMainButtonState()
   }
+
+  // Pre-fill user data if authenticated
+  if (isAuthenticated.value && user.value) {
+    if (user.value.phone) {
+      orderData.value.deliveryDetails.phone = user.value.phone
+      orderData.value.pickupDetails.phone = user.value.phone
+    }
+  }
 })
 
 onUnmounted(() => {

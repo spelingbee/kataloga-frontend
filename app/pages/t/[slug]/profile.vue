@@ -72,6 +72,12 @@
                     type="email"
                     placeholder="email@example.com"
                   />
+                  <BaseInput
+                    v-model="profileForm.phone"
+                    :label="t('common.phone')"
+                    type="tel"
+                    placeholder="+7 (999) 123-4567"
+                  />
                   <div v-if="user.telegramId" class="profile-page__telegram-info u-mb-4">
                     <BaseIcon name="telegram" size="sm" class="u-mr-2" />
                     <span>{{ t('auth.linked_with_telegram') }} (ID: {{ user.telegramId }})</span>
@@ -139,6 +145,7 @@ const profileForm = ref({
   firstName: user.value.firstName || '',
   lastName: user.value.lastName || '',
   email: user.value.email || '',
+  phone: user.value.phone || '',
 })
 
 // Set page head
@@ -170,6 +177,7 @@ const handleUpdateProfile = async () => {
       firstName: profileForm.value.firstName,
       lastName: profileForm.value.lastName,
       email: profileForm.value.email,
+      phone: profileForm.value.phone,
     })
     
     if (isEmailChanged) {

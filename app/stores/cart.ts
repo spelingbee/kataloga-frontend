@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { CartItem, MenuItem, ApiError } from '~/types'
+import type { CartItem, MenuItem, ApiError, ProductVariant } from '~/types'
 import { useTenantStore } from '~/stores/tenant'
 interface CartState {
   items: CartItem[]
@@ -56,13 +56,15 @@ export const useCartStore = defineStore('cart', {
   },
 
   actions: {
-    addItem(menuItem: MenuItem, quantity: number = 1, selectedModifiers: any[] = [], customizations?: Record<string, any>) {
+    addItem(menuItem: MenuItem, quantity: number = 1, selectedModifiers: any[] = [], customizations?: Record<string, any>, variant?: ProductVariant) {
       const modifierPrice = selectedModifiers.reduce((sum, mod) => sum + (mod.priceAdjustment || 0), 0)
-      const itemPrice = menuItem.price + modifierPrice
+      const baseItemPrice = variant?.price ?? menuItem.price
+      const itemPrice = baseItemPrice + modifierPrice
       
       const existingItemIndex = this.items.findIndex(
         item =>
           item.menuItem.id === menuItem.id &&
+          item.variantId === variant?.id &&
           JSON.stringify(item.selectedModifiers) === JSON.stringify(selectedModifiers) &&
           JSON.stringify(item.customizations) === JSON.stringify(customizations)
       )
@@ -74,6 +76,8 @@ export const useCartStore = defineStore('cart', {
       } else {
         const cartItem: CartItem = {
           productId: menuItem.productId,
+          variantId: variant?.id,
+          variant,
           menuItem,
           quantity,
           selectedModifiers,
@@ -91,6 +95,7 @@ export const useCartStore = defineStore('cart', {
       const itemIndex = this.items.findIndex(
         item =>
           item.menuItem.id === menuItemId &&
+          item.variantId === customizations?.variantId &&
           JSON.stringify(item.customizations) === JSON.stringify(customizations)
       )
 
@@ -104,6 +109,7 @@ export const useCartStore = defineStore('cart', {
       const item = this.items.find(
         item =>
           item.menuItem.id === menuItemId &&
+          item.variantId === customizations?.variantId &&
           JSON.stringify(item.customizations) === JSON.stringify(customizations)
       )
 
@@ -113,7 +119,8 @@ export const useCartStore = defineStore('cart', {
         } else {
           item.quantity = quantity
           const modifierPrice = item.selectedModifiers.reduce((sum, mod) => sum + (mod.priceAdjustment || 0), 0)
-          const itemPrice = item.menuItem.price + modifierPrice
+          const baseItemPrice = item.variant?.price ?? item.menuItem.price
+          const itemPrice = baseItemPrice + modifierPrice
           item.subtotal = Math.round((quantity * itemPrice) * 100) / 100
           // this.syncCartWithServer()
         }
@@ -175,8 +182,9 @@ export const useCartStore = defineStore('cart', {
         const orderData = {
           items: this.items.map(item => ({
             productId: item.productId,
+            variantId: item.variantId,
             quantity: item.quantity,
-            price: item.menuItem.price,
+            price: item.variant?.price ?? item.menuItem.price,
             customizations: item.customizations,
           })),
           customerInfo,

@@ -109,6 +109,28 @@
             </div>
           </div>
         </div>
+
+        <!-- Variants -->
+        <div v-if="variants.length > 0" class="menu-item-detail__variants">
+          <AppText size="body-sm" color="white" class="font-semibold mb-2">
+            {{ $t('menu.variants', 'Варианты') }}:
+          </AppText>
+          <div class="u-flex u-flex-wrap u-gap-2">
+            <BaseButton
+              v-for="variant in variants"
+              :key="variant.id"
+              :variant="selectedVariant?.id === variant.id ? 'primary' : 'outline'"
+              size="sm"
+              class="u-flex-1"
+              @click="handleVariantSelect(variant)"
+            >
+              {{ variant.name }}
+              <span v-if="variant.price" class="u-ml-1 u-opacity-70">
+                ({{ variant.price }})
+              </span>
+            </BaseButton>
+          </div>
+        </div>
         
         <!-- Modifiers -->
         <ModifierSelector
@@ -164,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MenuItem, ModifierGroup, Modifier } from '~/types'
+import type { MenuItem, ModifierGroup, Modifier, ProductVariant } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
 import { useTerminology } from '~/composables/useTerminology'
@@ -199,8 +221,11 @@ const isOpen = computed({
 
 const quantity = ref(1)
 const selectedModifiers = ref<Modifier[]>([])
+const selectedVariant = ref<ProductVariant | null>(null)
 const hasValidationErrors = ref(false)
 const validationErrors = ref<string[]>([])
+
+const variants = computed(() => props.menuItem.product?.variants || [])
 
 // Telegram integration
 let cleanupMainButton: (() => void) | null = null
@@ -221,7 +246,7 @@ const modifierGroups = computed<ModifierGroup[]>(() => {
 })
 
 const totalPrice = computed(() => {
-  let price = props.menuItem.price
+  let price = selectedVariant.value?.price ?? props.menuItem.price
   
   // Add modifier prices
   selectedModifiers.value.forEach(modifier => {
@@ -240,6 +265,13 @@ const canAddToCart = computed(() => {
 const handleModifierChange = (modifiers: Modifier[]) => {
   selectedModifiers.value = modifiers
   validateModifiers()
+}
+
+const handleVariantSelect = (variant: ProductVariant) => {
+  selectedVariant.value = variant
+  if (telegram.isTelegram.value) {
+    telegram.selectionFeedback()
+  }
 }
 
 const validateModifiers = () => {
@@ -261,6 +293,12 @@ const validateModifiers = () => {
       }
     }
   })
+
+  // Check if variant is required but not selected
+  if (variants.value.length > 0 && !selectedVariant.value) {
+    hasValidationErrors.value = true
+    validationErrors.value.push(t('menu.selectVariant', 'Пожалуйста, выберите вариант'))
+  }
 }
 
 const handleAddToCart = () => {
@@ -276,7 +314,7 @@ const handleAddToCart = () => {
   }
   
   // Add to cart
-  cartStore.addItem(props.menuItem, quantity.value, selectedModifiers.value)
+  cartStore.addItem(props.menuItem, quantity.value, selectedModifiers.value, undefined, selectedVariant.value || undefined)
   
   // Emit event
   emit('addToCart', props.menuItem, quantity.value, selectedModifiers.value)
@@ -308,6 +346,7 @@ const handleClose = () => {
   // Reset state
   quantity.value = 1
   selectedModifiers.value = []
+  selectedVariant.value = variants.value.length === 1 ? variants.value[0] : null
   hasValidationErrors.value = false
   validationErrors.value = []
   
@@ -319,6 +358,7 @@ watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
     quantity.value = 1
     selectedModifiers.value = []
+    selectedVariant.value = variants.value.length === 1 ? variants.value[0] : null
     hasValidationErrors.value = false
     validationErrors.value = []
     

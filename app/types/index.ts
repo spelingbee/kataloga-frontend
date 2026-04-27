@@ -125,13 +125,27 @@ export interface Category {
   count?: number
 }
 
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  name?: string;
+  sku?: string;
+  price?: number;
+  inStock: boolean;
+  quantity?: number;
+  imageUrl?: string;
+  attributes?: Record<string, any>;
+}
+
 export interface Product {
   id: string;
   name: string;
   basePrice: number;
-  type: 'PHYSICAL' | 'VIRTUAL';
+  type: 'PHYSICAL' | 'VIRTUAL' | 'COMBO';
   inStock: boolean;
   tenantId: string;
+  variants?: ProductVariant[];
+  attributes?: Record<string, any>;
 }
 
 export interface MenuItem {
@@ -201,6 +215,8 @@ export interface MenuFilters {
 // Cart types
 export interface CartItem {
   productId: string
+  variantId?: string
+  variant?: ProductVariant
   menuItem: MenuItem
   quantity: number
   selectedModifiers: Modifier[]
@@ -230,6 +246,8 @@ export interface Order {
 export interface OrderItem {
   id: string
   productId: string
+  variantId?: string
+  variant?: ProductVariant
   menuItemId: string
   menuItem: MenuItem
   quantity: number
@@ -262,6 +280,7 @@ export interface CreateOrderDto {
   tenantId: string
   items: {
     productId: string
+    variantId?: string
     quantity: number
     price: number
     customizations?: Record<string, any>
