@@ -25,8 +25,11 @@ CMD ["pnpm", "dev"]
 
 # Build stage
 FROM base AS build
-WORKDIR /app/apps/frontend
+# Build workspace dependencies first
+WORKDIR /app
+RUN pnpm --filter @kataloga/api-types build
 
+WORKDIR /app/apps/frontend
 # Build the application
 RUN pnpm run build:production
 
