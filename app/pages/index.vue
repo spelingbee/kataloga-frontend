@@ -33,7 +33,7 @@
               <a :href="adminUrl + '/login'" class="btn primary">
                 Начать бесплатно
               </a>
-              <a href="https://t.me/kataloga_bot" target="_blank" class="btn ghost">
+              <a href="https://t.me/kataloga_test_bot" target="_blank" class="btn ghost">
                 Открыть демо <Icon name="play-circle" size="20"/>
               </a>
             </div>
@@ -197,7 +197,7 @@
             <ul class="pricing-features">
               <li><Icon name="check" size="16"/> До 15 товаров</li>
               <li><Icon name="check" size="16"/> До 30 заказов / мес</li>
-              <li><Icon name="check" size="16"/> Общий бот @kataloga_bot</li>
+              <li><Icon name="check" size="16"/> Общий бот @kataloga_test_bot</li>
               <li><Icon name="check" size="16"/> Уведомления владельцу</li>
               <li class="pricing-features__disabled"><Icon name="x" size="16"/> Фото товаров</li>
               <li class="pricing-features__disabled"><Icon name="x" size="16"/> Аналитика</li>
@@ -530,8 +530,34 @@ p { color: var(--text-muted); }
 @media (min-width: 1024px) {
   .hero-grid { grid-template-columns: 1fr 1fr; }
 }
-.hero-content p { font-size: 1.125rem; margin-bottom: 2.5rem; max-width: 540px; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 16px; }
+.hero-content {
+  text-align: center;
+  @media (min-width: 1024px) {
+    text-align: left;
+  }
+}
+.hero-content p { 
+  font-size: 1.125rem; 
+  margin-bottom: 2.5rem; 
+  max-width: 540px; 
+  margin-left: auto;
+  margin-right: auto;
+  
+  @media (min-width: 1024px) {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+.hero-actions { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 16px; 
+  justify-content: center;
+
+  @media (min-width: 1024px) {
+    justify-content: flex-start;
+  }
+}
 
 /* Mockup */
 .hero-mockup-container { display: flex; justify-content: center; perspective: 1000px; }
