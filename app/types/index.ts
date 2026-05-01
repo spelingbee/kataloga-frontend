@@ -1,3 +1,14 @@
+import {
+  UserResponseDto,
+  CategoryResponseDto,
+  ProductResponseDto,
+  ProductVariantResponseDto,
+  OrderResponseDto,
+  OrderItemResponseDto,
+  PromotionResponseDto,
+  RegisterDto,
+} from '@kataloga/api-types'
+
 // Export API types
 export * from './api'
 
@@ -11,22 +22,10 @@ export * from './payment'
 export * from '../constants/error-codes'
 
 // User types
-export interface User {
-  id: string
-  firstName: string
-  lastName: string
+export type User = UserResponseDto & {
   name: string
-  email: string
-  phone?: string
-  telegramId?: string
-  role: UserRole
-  tenantId: string
-  isActive: boolean
-  emailVerified: boolean
   avatarUrl?: string
   preferences?: UserPreferences
-  createdAt: string
-  updatedAt: string
 }
 
 export enum UserRole {
@@ -115,37 +114,15 @@ export interface TrackingUpdate {
 }
 
 // Menu types
-export interface Category {
-  id: string
-  name: string
-  description?: string
+export type Category = CategoryResponseDto & {
   imageUrl?: string
-  sortOrder: number
-  icon?: string
   count?: number
 }
 
-export interface ProductVariant {
-  id: string;
-  productId: string;
-  name?: string;
-  sku?: string;
-  price?: number;
-  inStock: boolean;
-  quantity?: number;
-  imageUrl?: string;
-  attributes?: Record<string, any>;
-}
+export type ProductVariant = ProductVariantResponseDto
 
-export interface Product {
-  id: string;
-  name: string;
-  basePrice: number;
-  type: 'PHYSICAL' | 'VIRTUAL' | 'COMBO';
-  inStock: boolean;
-  tenantId: string;
-  variants?: ProductVariant[];
-  attributes?: Record<string, any>;
+export type Product = ProductResponseDto & {
+  variants?: ProductVariant[]
 }
 
 export interface MenuItem {
@@ -226,15 +203,9 @@ export interface CartItem {
 }
 
 // Order types
-export interface Order {
-  id: string
-  orderNumber: string
-  status: OrderStatus
-  total: number
+export type Order = OrderResponseDto & {
   items: OrderItem[]
   customerInfo: CustomerInfo
-  customerId: string
-  createdAt: string
   estimatedTime?: number
   deliveryAddress?: string
   orderType: 'delivery' | 'pickup' | 'dine-in'
@@ -243,17 +214,8 @@ export interface Order {
   dineInDetails?: any
 }
 
-export interface OrderItem {
-  id: string
-  productId: string
-  variantId?: string
-  variant?: ProductVariant
-  menuItemId: string
+export type OrderItem = OrderItemResponseDto & {
   menuItem: MenuItem
-  quantity: number
-  price: number
-  subtotal: number
-  customizations?: Record<string, any>
   selectedModifiers?: Modifier[]
 }
 
@@ -294,13 +256,6 @@ export interface CreateOrderDto {
 }
 
 // Promotion types
-export interface Promotion {
-  id: string
-  title: string
-  description: string
-  discountType: 'percentage' | 'fixed'
-  discountValue: number
-  validFrom: string
-  validTo: string
-  isActive: boolean
-}
+export type Promotion = PromotionResponseDto
+
+export { RegisterDto }
