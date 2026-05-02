@@ -146,6 +146,9 @@ export default defineNuxtConfig({
     compressPublicAssets: true,
     minify: true,
     preset: process.env.NITRO_PRESET || 'node-server',
+    externals: {
+      inline: ['vue', 'vue-router', 'pinia', '@pinia/nuxt'],
+    },
     storage: {
       redis: {
         driver: 'redis',
