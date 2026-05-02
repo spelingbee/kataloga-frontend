@@ -1,6 +1,6 @@
 <template>
   <div class="landing-wrapper">
-    <div class="bg-pattern"/>
+    <div class="bg-pattern"></div>
 
     <!-- Шапка -->
     <header class="landing-header">
@@ -147,7 +147,7 @@
         <div class="container">
           <h2 class="fade-up">Запуск за 3 простых шага</h2>
           <div id="steps-anim" class="steps-container fade-up delay-1">
-          <div class="steps-line"><div id="steps-progress" class="steps-line-progress" :style="progressStyle"/></div>
+          <div class="steps-line"><div id="steps-progress" class="steps-line-progress" :style="progressStyle"></div></div>
           
           <div class="step" :class="{ active: activeSteps.includes(1) }">
             <div class="step-number">1</div>
