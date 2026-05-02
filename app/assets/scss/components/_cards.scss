@@ -1,4 +1,5 @@
-@use '../abstracts/variables' as *;
+@use "sass:color";
+@use '@/assets/scss/abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 @use '../abstracts/functions' as *;
 

@@ -109,7 +109,7 @@ const handleAcknowledge = () => {
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .cart-validation-modal {
   padding: $space-4;

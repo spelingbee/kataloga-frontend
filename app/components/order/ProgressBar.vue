@@ -198,7 +198,7 @@ const isCurrentStep = (stepIndex: number): boolean => {
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .progress-bar {
   width: 100%;

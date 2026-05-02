@@ -4,8 +4,8 @@
 // This file provides backward compatibility while migrating to the new token system
 // Import and forward new design tokens
 @forward '../tokens';
+@use 'sass:color';
 @use '../tokens' as *;
-
 // Font Family
 // -----------------------------------------------------------------------------
 $font-family-primary: 'Work Sans', sans-serif;

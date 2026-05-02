@@ -2,7 +2,8 @@
 // Responsive Utilities
 // =============================================================================
 
-@use '../abstracts/variables' as *;
+@use "sass:color";
+@use '@/assets/scss/abstracts/variables' as *;
 @use '../abstracts/mixins' as *;
 
 // Display Utilities

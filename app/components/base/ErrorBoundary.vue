@@ -169,7 +169,7 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .error-boundary {
   min-height: 200px;

@@ -288,7 +288,7 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 @use '~/assets/scss/tokens' as *;
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .order-confirmation {
   min-height: 100vh;

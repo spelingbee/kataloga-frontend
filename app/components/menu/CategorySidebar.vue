@@ -148,7 +148,7 @@ const clearAllFilters = () => {
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 // Component-specific animations and transitions
 .category-sidebar {

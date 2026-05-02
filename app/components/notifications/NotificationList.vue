@@ -150,7 +150,7 @@ const formatTime = (dateString: string): string => {
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .notification-list {
   width: 100%;

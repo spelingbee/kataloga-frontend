@@ -28,7 +28,7 @@ const skipToNavigation = () => {
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .skip-links {
   position: fixed;

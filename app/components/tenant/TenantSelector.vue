@@ -23,7 +23,7 @@
     <!-- Error State -->
     <div v-else-if="error" class="tenant-selector__error">
       <ErrorMessage :message="error" />
-      <BaseButton @click="retryLoad" variant="primary" class="u-mt-4">
+      <BaseButton variant="primary" class="u-mt-4" @click="retryLoad">
         Retry
       </BaseButton>
     </div>
@@ -119,7 +119,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .tenant-selector {
   width: 100%;

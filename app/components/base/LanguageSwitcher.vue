@@ -77,7 +77,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .language-switcher {
   position: relative;

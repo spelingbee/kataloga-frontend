@@ -162,7 +162,7 @@ const goToHome = () => {
 
 <style scoped lang="scss">
 @use '~/assets/scss/tokens' as *;
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .payment-callback {
   min-height: 100vh;

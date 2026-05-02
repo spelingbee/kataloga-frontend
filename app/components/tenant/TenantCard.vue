@@ -4,9 +4,9 @@
       'tenant-card',
       { 'tenant-card--selected': selected }
     ]"
-    @click="handleSelect"
     role="button"
     :tabindex="0"
+    @click="handleSelect"
     @keydown.enter="handleSelect"
     @keydown.space.prevent="handleSelect"
   >
@@ -96,7 +96,7 @@ const handleSelect = () => {
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .tenant-card {
   position: relative;

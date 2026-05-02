@@ -57,7 +57,7 @@ const isActive = (path: string) => {
 </template>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .app-navbar {
   display: flex;

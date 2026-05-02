@@ -76,7 +76,7 @@ const handleGoHome = () => {
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .error-fallback {
   display: flex;

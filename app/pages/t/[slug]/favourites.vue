@@ -236,7 +236,7 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 @use '~/assets/scss/tokens' as *;
-@use '~/assets/scss/abstracts/variables' as *;
+
 @use '~/assets/scss/abstracts/mixins' as *;
 
 // Import the favourites page styles

@@ -1,10 +1,19 @@
+import { visualizer } from 'rollup-plugin-visualizer'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
   // Modules
-  modules: ['@pinia/nuxt', 'pinia-plugin-persistedstate', '@nuxtjs/google-fonts', '@nuxt/eslint', '@nuxt/image', '@nuxtjs/i18n'],
+  modules: [
+    '@pinia/nuxt',
+    'pinia-plugin-persistedstate',
+    '@nuxtjs/google-fonts',
+    '@nuxt/eslint',
+    '@nuxt/image',
+    '@nuxtjs/i18n',
+  ],
 
   // TypeScript configuration
   typescript: {
@@ -79,16 +88,17 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'Universal menu ordering system for web and Telegram' },
       ],
-      script: [
-        { src: 'https://telegram.org/js/telegram-web-app.js', defer: true }
-      ],
+      script: [{ src: 'https://telegram.org/js/telegram-web-app.js', defer: true }],
     },
   },
 
   // Runtime config
   runtimeConfig: {
     public: {
-      apiUrl: process.env.NUXT_PUBLIC_API_URL || process.env.NUXT_PUBLIC_API_BASE_URL || 'https://api.kataloga.org/api',
+      apiUrl:
+        process.env.NUXT_PUBLIC_API_URL ||
+        process.env.NUXT_PUBLIC_API_BASE_URL ||
+        'https://api.kataloga.org/api',
       apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || 'https://api.kataloga.org',
       tenantSlug: process.env.NUXT_PUBLIC_TENANT_SLUG || '',
       telegramBotToken: process.env.NUXT_PUBLIC_TELEGRAM_BOT_TOKEN || '',
@@ -299,11 +309,25 @@ export default defineNuxtConfig({
 
   // Vite configuration for optimization
   vite: {
+    plugins: [
+      visualizer({
+        filename: './.nuxt/stats.html',
+        title: 'Frontend Build Stats',
+        template: 'treemap',
+        gzipSize: true,
+        brotliSize: true,
+        trigger: 'build',
+      }),
+    ],
+    resolve: {
+      alias: {
+        'vue-i18n': 'vue-i18n/dist/vue-i18n.runtime.esm-bundler.js',
+      },
+    },
     css: {
       preprocessorOptions: {
         scss: {
-          // Removed additionalData to avoid conflicts with @use in main.scss
-          // Each SCSS file should import what it needs
+          additionalData: `@use "sass:color"; @use "~/assets/scss/abstracts/variables" as *;`
         },
       },
       devSourcemap: false, // Disable CSS sourcemaps in production

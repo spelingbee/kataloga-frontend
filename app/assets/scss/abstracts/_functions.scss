@@ -5,6 +5,7 @@
 // Color Functions
 // -----------------------------------------------------------------------------
 @use 'sass:color';
+@use '@/assets/scss/abstracts/variables' as *;
 
 // Lighten a color by a percentage
 @function lighten-color($color, $percentage) {

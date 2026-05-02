@@ -72,7 +72,7 @@ const handleClick = async () => {
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .favorite-button {
   display: inline-flex;

@@ -1,5 +1,6 @@
 @use "sass:list";
-@use 'variables' as *;
+@use 'sass:color';
+@use '@/assets/scss/abstracts/variables' as *;
 
 // =============================================================================
 // SCSS Animations

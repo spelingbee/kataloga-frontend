@@ -5,9 +5,6 @@
 // 1. Design Tokens - New token-first approach (DART SASS syntax)
 @use 'tokens' as *;
 
-// 2. Legacy Variables - Minimal backward compatibility
-@use 'abstracts/variables' as *;
-
 // 3. Abstracts - Functions, mixins, animations (keeping existing utilities)
 @use 'abstracts/functions' as *;
 @use 'abstracts/mixins' as *;

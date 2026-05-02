@@ -294,7 +294,7 @@ const formatEstimatedTime = (minutes: number): string => {
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .order-status {
   background: var(--bg-primary);

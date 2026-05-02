@@ -405,7 +405,7 @@ watch(() => order.value?.status, (newStatus, oldStatus) => {
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .order-tracking-page {
   min-height: 100vh;

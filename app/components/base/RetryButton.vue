@@ -58,7 +58,7 @@ const handleClick = () => {
 </script>
 
 <style scoped lang="scss">
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 button {
   display: inline-flex;

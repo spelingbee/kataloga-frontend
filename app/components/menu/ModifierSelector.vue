@@ -194,7 +194,7 @@ const formatPriceAdjustment = (amount: number): string => {
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+
 
 .modifier-selector {
   padding: $space-4;

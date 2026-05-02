@@ -18,9 +18,9 @@
         v-if="showSwitchButton"
         variant="ghost"
         size="xs"
-        @click="handleSwitch"
         class="tenant-indicator__switch-btn"
         aria-label="Switch restaurant"
+        @click="handleSwitch"
       >
         <BaseIcon name="refresh" size="xs" />
       </BaseButton>
@@ -50,7 +50,7 @@ const handleSwitch = async () => {
 </script>
 
 <style lang="scss" scoped>
-@use '~/assets/scss/abstracts/variables' as *;
+
 @use '~/assets/scss/abstracts/functions' as *;
 
 .tenant-indicator {
