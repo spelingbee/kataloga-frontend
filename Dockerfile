@@ -7,15 +7,22 @@ RUN npm install -g pnpm
 # Set working directory
 WORKDIR /app
 
+# Configure pnpm to use hoisted linker (more reliable in Docker)
+RUN pnpm config set node-linker hoisted
+
 # Copy root workspace files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Copy the specific package and app needed for the build
+# Copy package.json files for dependency resolution
+COPY packages/api-types/package.json ./packages/api-types/package.json
+COPY apps/frontend/package.json ./apps/frontend/package.json
+
+# Install dependencies (only based on package.json files)
+RUN pnpm install --frozen-lockfile --filter frontend...
+
+# Copy the rest of the source
 COPY packages/api-types ./packages/api-types
 COPY apps/frontend ./apps/frontend
-
-# Install dependencies for the frontend and its workspace dependencies
-RUN pnpm install --filter frontend...
 
 # Development stage
 FROM base AS development
