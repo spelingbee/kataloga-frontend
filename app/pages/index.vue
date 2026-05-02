@@ -33,7 +33,7 @@
                 Начать бесплатно
               </a>
               <a href="https://t.me/kataloga_test_bot" target="_blank" class="btn ghost">
-                Открыть демо <Icon name="play-circle" size="20"/>
+                Открыть демо <Icon name="play-circle" size="20"></Icon>
               </a>
             </div>
           </div>
@@ -41,7 +41,7 @@
           <div class="hero-mockup-container fade-up delay-3">
             <div class="mockup-frame">
               <div class="mockup-header">
-                <div class="mockup-avatar"><Icon name="bot" size="24"/></div>
+                <div class="mockup-avatar"><Icon name="bot" size="24"></Icon></div>
                 <div>
                   <div class="mockup-title">Kataloga Bot</div>
                   <div class="mockup-subtitle">bot</div>
@@ -54,16 +54,15 @@
                   <div class="app-btn">Открыть каталог</div>
                 </div>
                 <div class="chat-bubble bubble-bot" style="margin-top: auto; font-size: 13px; color: #9ca3af; background: transparent; border: 1px solid #e5e7eb;">
-                  🔔 <b>Новый заказ #1024</b><br/>
-                  Сумма: 2 500 сом.<br/>
+                  🔔 <b>Новый заказ #1024</b><br>
+                  Сумма: 2 500 сом.<br>
                   Оплачено картой.
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
       <!-- Секция 2: SOCIAL PROOF BAR -->
       <section id="social-proof" class="social-proof fade-up">
