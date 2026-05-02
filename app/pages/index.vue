@@ -62,7 +62,8 @@
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <!-- Секция 2: SOCIAL PROOF BAR -->
       <section id="social-proof" class="social-proof fade-up">
@@ -164,7 +165,8 @@
             <p>Принимайте готовые и оплаченные заказы на автомате.</p>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <!-- Секция 6: FAQ ACCORDION -->
       <section id="faq" class="faq">
@@ -184,7 +186,8 @@
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       <!-- Секция 7: PRICING -->
       <section id="pricing" class="pricing">
