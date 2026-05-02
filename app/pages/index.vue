@@ -6,12 +6,11 @@
     <header class="landing-header">
       <div class="container landing-header__container">
         <div class="landing-logo">
-          <Icon name="shopping-bag" class="landing-logo__icon"/>
-          Kataloga
+          <img src="/images/logo-kataloga.png" alt="Kataloga" class="landing-logo__img" />
         </div>
         <div class="landing-header__actions">
           <LanguageSwitcher class="landing-header__lang" />
-          <a :href="adminUrl + '/login'" class="btn ghost landing-header__login-btn">
+          <a :href="adminUrl + '/register'" class="btn ghost landing-header__login-btn">
             {{ $t('common.login', 'Вход') }}
           </a>
         </div>
@@ -30,7 +29,7 @@
               Kataloga превращает хаотичные заказы из WhatsApp и Instagram DM в удобный магазин с каталогом, оплатой и уведомлениями. Для кафе, кондитеров, магазинов и любого бизнеса.
             </p>
             <div class="hero-actions fade-up delay-2">
-              <a :href="adminUrl + '/login'" class="btn primary">
+              <a :href="adminUrl + '/register'" class="btn primary">
                 Начать бесплатно
               </a>
               <a href="https://t.me/kataloga_test_bot" target="_blank" class="btn ghost">
@@ -80,8 +79,8 @@
       </section>
 
       <!-- Секция 3: PROBLEM -> SOLUTION -->
-      <section id="comparison" class="comparison container">
-        <div class="comp-grid">
+      <section id="comparison" class="comparison">
+        <div class="container comp-grid">
           <div class="comp-card fade-up">
             <h3>Как было раньше</h3>
             <ul class="comp-list bad">
@@ -143,9 +142,10 @@
       </section>
 
       <!-- Секция 5: HOW IT WORKS -->
-      <section id="how-it-works" class="how-it-works container">
-        <h2 class="fade-up">Запуск за 3 простых шага</h2>
-        <div id="steps-anim" class="steps-container fade-up delay-1">
+      <section id="how-it-works" class="how-it-works">
+        <div class="container">
+          <h2 class="fade-up">Запуск за 3 простых шага</h2>
+          <div id="steps-anim" class="steps-container fade-up delay-1">
           <div class="steps-line"><div id="steps-progress" class="steps-line-progress" :style="progressStyle"/></div>
           
           <div class="step" :class="{ active: activeSteps.includes(1) }">
@@ -167,9 +167,10 @@
       </section>
 
       <!-- Секция 6: FAQ ACCORDION -->
-      <section id="faq" class="faq container">
-        <h2 class="fade-up">Частые вопросы</h2>
-        <div class="faq-list fade-up delay-1">
+      <section id="faq" class="faq">
+        <div class="container">
+          <h2 class="fade-up">Частые вопросы</h2>
+          <div class="faq-list fade-up delay-1">
           <div v-for="(item, index) in faq" :key="index" class="faq-item" :class="{ active: activeFaq === index }">
             <button class="faq-question" @click="toggleFaq(index)">
               {{ item.question }} <Icon name="plus"/>
@@ -186,52 +187,54 @@
       </section>
 
       <!-- Секция 7: PRICING -->
-      <section id="pricing" class="pricing container">
-        <h2 class="fade-up">Тарифы</h2>
-        <p class="pricing-subtitle fade-up delay-1">7 недель бесплатно на любом тарифе. 0% комиссий с заказов.</p>
-        <div class="pricing-grid fade-up delay-2">
-          <!-- FREE -->
-          <div class="pricing-card">
-            <h3>Бесплатный</h3>
-            <div class="price">0 <span>сом / мес</span></div>
-            <ul class="pricing-features">
-              <li><Icon name="check" size="16"/> До 15 товаров</li>
-              <li><Icon name="check" size="16"/> До 30 заказов / мес</li>
-              <li><Icon name="check" size="16"/> Общий бот @kataloga_test_bot</li>
-              <li><Icon name="check" size="16"/> Уведомления владельцу</li>
-              <li class="pricing-features__disabled"><Icon name="x" size="16"/> Фото товаров</li>
-              <li class="pricing-features__disabled"><Icon name="x" size="16"/> Аналитика</li>
-            </ul>
-            <a :href="adminUrl + '/login'" class="btn ghost" style="width: 100%;">Начать бесплатно</a>
-          </div>
-          <!-- START -->
-          <div class="pricing-card pricing-card--popular">
-            <div class="pricing-badge">Популярный</div>
-            <h3>Старт</h3>
-            <div class="price">500 <span>сом / мес</span></div>
-            <ul class="pricing-features">
-              <li><Icon name="check" size="16"/> До 100 товаров</li>
-              <li><Icon name="check" size="16"/> До 500 заказов / мес</li>
-              <li><Icon name="check" size="16"/> Свой Telegram-бот</li>
-              <li><Icon name="check" size="16"/> Фото товаров</li>
-              <li><Icon name="check" size="16"/> QR-оплата</li>
-              <li><Icon name="check" size="16"/> Базовая аналитика</li>
-            </ul>
-            <a :href="adminUrl + '/login'" class="btn primary" style="width: 100%;">Попробовать 7 недель</a>
-          </div>
-          <!-- PRO -->
-          <div class="pricing-card">
-            <h3>Про</h3>
-            <div class="price">1 500 <span>сом / мес</span></div>
-            <ul class="pricing-features">
-              <li><Icon name="check" size="16"/> Безлимит товаров</li>
-              <li><Icon name="check" size="16"/> Безлимит заказов</li>
-              <li><Icon name="check" size="16"/> Свой бот + брендинг</li>
-              <li><Icon name="check" size="16"/> До 10 сотрудников</li>
-              <li><Icon name="check" size="16"/> Полная аналитика + экспорт</li>
-              <li><Icon name="check" size="16"/> Приоритетная поддержка</li>
-            </ul>
-            <a :href="adminUrl + '/login'" class="btn ghost" style="width: 100%;">Попробовать 7 недель</a>
+      <section id="pricing" class="pricing">
+        <div class="container">
+          <h2 class="fade-up">Тарифы</h2>
+          <p class="pricing-subtitle fade-up delay-1">14 дней бесплатно на любом тарифе. 0% комиссий с заказов.</p>
+          <div class="pricing-grid fade-up delay-2">
+            <!-- FREE -->
+            <div class="pricing-card">
+              <h3>Бесплатный</h3>
+              <div class="price">0 <span>сом / мес</span></div>
+              <ul class="pricing-features">
+                <li><Icon name="check" size="16"/> До 15 товаров</li>
+                <li><Icon name="check" size="16"/> До 30 заказов / мес</li>
+                <li><Icon name="check" size="16"/> Общий бот @kataloga_test_bot</li>
+                <li><Icon name="check" size="16"/> Уведомления владельцу</li>
+                <li class="pricing-features__disabled"><Icon name="x" size="16"/> Фото товаров</li>
+                <li class="pricing-features__disabled"><Icon name="x" size="16"/> Аналитика</li>
+              </ul>
+              <a :href="adminUrl + '/register'" class="btn ghost" style="width: 100%;">Начать бесплатно</a>
+            </div>
+            <!-- START -->
+            <div class="pricing-card pricing-card--popular">
+              <div class="pricing-badge">Популярный</div>
+              <h3>Старт</h3>
+              <div class="price">500 <span>сом / мес</span></div>
+              <ul class="pricing-features">
+                <li><Icon name="check" size="16"/> До 100 товаров</li>
+                <li><Icon name="check" size="16"/> До 500 заказов / мес</li>
+                <li><Icon name="check" size="16"/> Свой Telegram-бот</li>
+                <li><Icon name="check" size="16"/> Фото товаров</li>
+                <li><Icon name="check" size="16"/> QR-оплата</li>
+                <li><Icon name="check" size="16"/> Базовая аналитика</li>
+              </ul>
+              <a :href="adminUrl + '/register'" class="btn primary" style="width: 100%;">Попробовать 14 дней</a>
+            </div>
+            <!-- PRO -->
+            <div class="pricing-card">
+              <h3>Про</h3>
+              <div class="price">1 500 <span>сом / мес</span></div>
+              <ul class="pricing-features">
+                <li><Icon name="check" size="16"/> Безлимит товаров</li>
+                <li><Icon name="check" size="16"/> Безлимит заказов</li>
+                <li><Icon name="check" size="16"/> Свой бот + брендинг</li>
+                <li><Icon name="check" size="16"/> До 10 сотрудников</li>
+                <li><Icon name="check" size="16"/> Полная аналитика + экспорт</li>
+                <li><Icon name="check" size="16"/> Приоритетная поддержка</li>
+              </ul>
+              <a :href="adminUrl + '/register'" class="btn ghost" style="width: 100%;">Попробовать 14 дней</a>
+            </div>
           </div>
         </div>
       </section>
@@ -241,8 +244,7 @@
     <footer class="landing-footer">
       <div class="container footer-grid">
         <div class="landing-logo">
-          <Icon name="shopping-bag" class="landing-logo__icon"/>
-          Kataloga
+          <img src="/images/logo-kataloga.png" alt="Kataloga" class="landing-logo__img" />
         </div>
         <div class="footer-links">
           <a href="#hero">О нас</a>
@@ -277,7 +279,7 @@ const faq = [
   },
   {
     question: 'Сколько это стоит?',
-    answer: 'Есть бесплатный тариф навсегда (до 15 товаров и 30 заказов). Платные тарифы начинаются от 500 сом/мес. Первые 7 недель бесплатны на любом тарифе. Никаких скрытых комиссий с заказов — 0%.'
+    answer: 'Есть бесплатный тариф навсегда (до 15 товаров и 30 заказов). Платные тарифы начинаются от 500 сом/мес. Первые 14 дней бесплатны на любом тарифе. Никаких скрытых комиссий с заказов — 0%.'
   },
   {
     question: 'Подходит ли это для моего бизнеса?',
@@ -394,9 +396,13 @@ onMounted(() => {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 32px;
   position: relative;
   z-index: 2;
+
+  @media (max-width: 640px) {
+    padding: 0 20px;
+  }
 }
 
 /* Typography */
@@ -509,6 +515,10 @@ p { color: var(--text-muted); }
   align-items: center;
   gap: 8px;
   color: var(--text-main);
+}
+.landing-logo__img {
+  height: 32px;
+  width: auto;
 }
 .landing-logo__icon { color: var(--accent-primary); }
 .landing-header__login-btn { padding: 8px 20px; min-height: 40px; border-radius: 10px; }
