@@ -2,14 +2,14 @@
   <header class="app-header">
     <!-- Left section -->
     <div class="app-header__left">
-      <!-- Back button (for non-telegram) -->
+      <!-- Back button -->
       <BaseButton
-        v-if="!isTelegramApp && !isHomePage"
+        v-if="!isHomePage"
         variant="ghost"
         size="sm"
         class="app-header__back-btn"
         aria-label="Back"
-        @click="$router.back()"
+        @click="handleBack"
       >
         <BaseIcon name="arrow-left" size="md" />
       </BaseButton>
@@ -183,6 +183,7 @@ import { onClickOutside } from '@vueuse/core'
 import { useNotificationStore } from '~/stores/notification'
 import LanguageSwitcher from '~/components/base/LanguageSwitcher.vue'
 import AppHeading from '../base/AppHeading.vue'
+import { useNavigation } from '~/composables/useNavigation'
 
 // Emits
 defineEmits<{
@@ -193,6 +194,7 @@ defineEmits<{
 // Composables
 const { currentTenant, isMultiTenant, tenantBranding, tPath, isTenantHome } = useTenant()
 const telegram = useTelegram()
+const { goBack } = useNavigation()
 
 // Stores
 const userStore = useUserStore()
@@ -237,6 +239,10 @@ const closeMobileSearch = () => {
 
 const openNotifications = () => {
   $router.push(tPath('/notifications'))
+}
+
+const handleBack = () => {
+  goBack()
 }
 
 const logout = async () => {

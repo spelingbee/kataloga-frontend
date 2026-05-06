@@ -96,9 +96,12 @@
 
     <!-- Sticky Cart Button (Mobile) -->
     <StickyCartButton
-      v-if="showStickyCart && !isCartOrCheckoutPage && !showMobileNav"
+      v-if="showStickyCart && !isCartOrCheckoutPage"
       @click="handleStickyCartClick"
     />
+
+    <!-- Global Toast Notifications -->
+    <ToastList />
 
     <!-- Footer -->
     <footer v-if="showFooter" class="app-layout__footer">
@@ -123,6 +126,7 @@ import { resolveImageUrl } from '~/utils/image-optimization'
 import LanguageSwitcher from '../base/LanguageSwitcher.vue'
 import AppNavigation from './AppNavigation.vue'
 import StickyCartButton from '../cart/StickyCartButton.vue'
+import ToastList from '../notifications/ToastList.vue'
 import AppBreadcrumbs from './AppBreadcrumbs.vue'
 import ResponsiveContainer from './ResponsiveContainer.vue'
 import TouchOptimizedContainer from './TouchOptimizedContainer.vue'

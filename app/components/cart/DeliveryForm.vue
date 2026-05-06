@@ -397,8 +397,16 @@ const getCurrentLocation = async () => {
       navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })
     })
     const { latitude, longitude } = position.coords
-    deliveryCoordinates.value = { lat: latitude, lng: longitude }
+    const coords = { lat: latitude, lng: longitude }
+    deliveryCoordinates.value = coords
+    
+    // Resolve address from coordinates
+    const address = await reverseGeocode(coords)
+    localDeliveryInfo.value.address = address
+    localDeliveryInfo.value.coordinates = coords
+    
     showMap.value = true
+    updateDeliveryInfo()
   } catch (error) {
     console.error('Error getting location:', error)
   } finally {

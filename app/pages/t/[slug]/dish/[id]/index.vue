@@ -16,7 +16,7 @@
         {{ error }}
       </AppText>
       <div class="flex gap-4 justify-center">
-        <BaseButton @click="$router.go(-1)">
+        <BaseButton @click="goBack">
           Go Back
         </BaseButton>
         <NuxtLink :to="tPath('/menu')">
@@ -34,7 +34,7 @@
         <div class="product-page__header-nav">
           <button 
             class="product-page__nav-btn"
-            @click="$router.go(-1)"
+            @click="goBack"
           >
             <BaseIcon name="arrow-left" size="md" />
           </button>
@@ -164,6 +164,7 @@ import { useMenuStore } from '~/stores/menu'
 import { useCartStore } from '~/stores/cart'
 import { useTenantSettings, useTenant } from '~/composables/useTenant'
 import { useTelegram } from '~/composables/useTelegram'
+import { useNavigation } from '~/composables/useNavigation'
 import { resolveImageUrl } from '~/utils/image-optimization'
 
 const route = useRoute()
@@ -172,6 +173,7 @@ const menuStore = useMenuStore()
 const { formatCurrency } = useTenantSettings()
 const { tPath } = useTenant()
 const telegram = useTelegram()
+const { goBack } = useNavigation()
 
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -243,19 +245,10 @@ const formatPriceDisplay = (price: number) => formatCurrency(price)
 
 onMounted(() => {
   loadDish()
-  
-  if (telegram.isTelegram.value) {
-    cleanupBackButton = telegram.showBackButton(() => {
-      router.go(-1)
-    })
-  }
 })
 
 onUnmounted(() => {
-  if (cleanupBackButton) {
-    cleanupBackButton()
-  }
-  telegram.hideBackButton()
+  // No local cleanup needed as it's handled globally in app.vue
 })
 
 watch(() => dishId.value, loadDish)

@@ -252,6 +252,8 @@ export interface CreateOrderDto {
   deliveryType: 'PICKUP' | 'DELIVERY'
   notes?: string
   deliveryAddress?: string
+  latitude?: number
+  longitude?: number
   total: number
 }
 

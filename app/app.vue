@@ -19,8 +19,11 @@ import { useAnimations } from '~/composables/useAnimations'
 import { useResponsive } from '~/composables/useResponsive'
 import SkipLinks from '~/components/base/SkipLinks.vue'
 import { onMounted, computed } from 'vue'
-import { useHead, useRuntimeConfig } from '#app'
+import { useHead, useRuntimeConfig, useRoute } from '#app'
 import { useI18n } from 'vue-i18n'
+import { useTelegram } from '~/composables/useTelegram'
+import { useNavigation } from '~/composables/useNavigation'
+import { watch } from 'vue'
 
 // Initialize stores on app startup
 const userStore = useUserStore()
@@ -34,6 +37,28 @@ const { deviceInfo } = useResponsive()
 
 // Initialize i18n at the top level
 const { locale } = useI18n()
+
+// Telegram Back Button Sync
+const { isTelegram, showBackButton, hideBackButton } = useTelegram()
+const { goBack } = useNavigation()
+const route = useRoute()
+
+if (process.client) {
+  watch(() => route.path, (newPath) => {
+    if (isTelegram.value) {
+      // Check if we are on a "home" page (root or tenant root)
+      // Tenant root looks like /t/[slug]
+      const pathParts = newPath.split('/').filter(Boolean)
+      const isHome = newPath === '/' || (pathParts.length === 2 && pathParts[0] === 't')
+      
+      if (isHome) {
+        hideBackButton()
+      } else {
+        showBackButton(goBack)
+      }
+    }
+  }, { immediate: true })
+}
 
 // Set viewport meta tags for responsive design
 useHead({

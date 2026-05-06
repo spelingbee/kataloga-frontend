@@ -6,25 +6,16 @@
   >
     <BaseButton
       variant="primary"
-      size="lg"
-      full-width
+      size="md"
       class="sticky-cart-button__btn"
       :disabled="isEmpty"
       @click="handleClick"
     >
       <div class="sticky-cart-button__content">
-        <div class="sticky-cart-button__info">
-          <BaseIcon name="cart" size="md" class="sticky-cart-button__icon" />
-          <span class="sticky-cart-button__count">{{ itemCount }}</span>
-        </div>
-        
-        <span class="sticky-cart-button__text">
-          {{ buttonText }}
-        </span>
-        
-        <span class="sticky-cart-button__total">
-          {{ formattedTotal }}
-        </span>
+        <BaseIcon name="cart" size="sm" class="sticky-cart-button__icon" />
+        <span class="sticky-cart-button__count">{{ itemCount }}</span>
+        <span class="sticky-cart-button__divider">|</span>
+        <span class="sticky-cart-button__total">{{ formattedTotal }}</span>
       </div>
     </BaseButton>
   </div>
@@ -67,7 +58,7 @@ const isEmpty = computed(() => cartStore.isEmpty)
 const shouldShow = computed(() => {
   if (isEmpty.value) return false
   if (props.mobileOnly && !isMobile.value) return false
-  return scrollY.value > props.scrollThreshold
+  return true // Show immediately if not empty
 })
 
 const isMobile = computed(() => {
@@ -137,18 +128,12 @@ onUnmounted(() => {
 
 .sticky-cart-button {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  padding: $space-4;
-  padding-bottom: calc($space-4 + env(safe-area-inset-bottom));
-  background: linear-gradient(
-    to top,
-    var(--bg-primary) 70%,
-    transparent 100%
-  );
-  backdrop-filter: blur(8px);
+  bottom: calc(72px + $space-4 + env(safe-area-inset-bottom));
+  right: $space-4;
+  z-index: 1000;
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
   transform: translateY(100%);
   transition: transform 0.3s ease-in-out;
   
@@ -165,9 +150,10 @@ onUnmounted(() => {
 .sticky-cart-button__btn {
   background: var(--color-primary);
   border: none;
-  border-radius: $space-3;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-height: var(--touch-target-min);
+  border-radius: $radius-full;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  min-height: 48px;
+  padding: 0 $space-4;
   
   &:hover:not(:disabled) {
     background: var(--color-primary-light);
@@ -189,43 +175,20 @@ onUnmounted(() => {
 .sticky-cart-button__content {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: $space-2 $space-4;
-  color: white;
-}
-
-.sticky-cart-button__info {
-  display: flex;
-  align-items: center;
   gap: $space-2;
-}
-
-.sticky-cart-button__icon {
   color: white;
 }
 
 .sticky-cart-button__count {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: $space-1 $space-2;
-  border-radius: $space-3;
-  min-width: 1.5rem;
-  text-align: center;
+  font-weight: 700;
 }
 
-.sticky-cart-button__text {
-  font-weight: 600;
-  font-size: 1rem;
-  color: white;
+.sticky-cart-button__divider {
+  opacity: 0.5;
 }
 
 .sticky-cart-button__total {
   font-weight: 700;
-  font-size: 1.125rem;
-  color: white;
 }
 
 // Animation for smooth appearance

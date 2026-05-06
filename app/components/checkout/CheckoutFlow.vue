@@ -499,6 +499,8 @@ const submitOrder = async () => {
             ? pickupLocations.value.find(loc => loc.id === orderData.value.pickupDetails.locationId)
                 ?.address
             : undefined,
+      latitude: orderData.value.orderType === 'delivery' ? orderData.value.deliveryDetails.coordinates?.lat : undefined,
+      longitude: orderData.value.orderType === 'delivery' ? orderData.value.deliveryDetails.coordinates?.lng : undefined,
       total: totalWithDelivery.value,
     }
 

@@ -126,6 +126,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useCartStore } from '~/stores/cart'
+import { useNotification } from '~/composables/useNotification'
 
 // Props & Emits
 interface Props {
@@ -140,6 +141,7 @@ defineEmits<{
 
 // Stores
 const cartStore = useCartStore()
+const { showSuccess } = useNotification()
 
 // Reactive state
 const isOpen = ref(false)
@@ -167,17 +169,23 @@ const toggleIngredient = (ingredientId: string) => {
 }
 
 const onAddedToCart = () => {
-  // Reset quantity after adding to cart
-  selectedQuantity.value = 1
-  selectedIngredients.value = []
-  
   // Show success feedback
+  showSuccess(
+    'Добавлено', 
+    `${props.dish?.name} добавлен в корзину`
+  )
+
   if ('vibrate' in navigator) {
     navigator.vibrate([50, 50, 50])
   }
   
-  // Close modal
-  $emit('close')
+  // Close modal with a small delay to let user see the button success state if AddToCartButton has it
+  setTimeout(() => {
+    $emit('close')
+    // Reset quantity after closing
+    selectedQuantity.value = 1
+    selectedIngredients.value = []
+  }, 300)
 }
 
 // Animation

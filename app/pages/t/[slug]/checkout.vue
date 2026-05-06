@@ -91,6 +91,7 @@ import { useI18n } from 'vue-i18n'
 import CheckoutFlow from '~/components/checkout/CheckoutFlow.vue'
 import EmptyCart from '~/components/base/EmptyCart.vue'
 import { useTenant } from '~/composables/useTenant'
+import { useNavigation } from '~/composables/useNavigation'
 
 definePageMeta({
   layout: 'default',
@@ -101,6 +102,7 @@ const { t } = useI18n()
 const cartStore = useCartStore()
 const router = useRouter()
 const { tPath } = useTenant()
+const { goBack } = useNavigation()
 
 let timeoutId: ReturnType<typeof setTimeout> | null = null
 
@@ -113,7 +115,7 @@ function timeoutPromise(ms: number): Promise<never> {
 const TIMEOUT_MS = 30_000
 
 const handleBack = () => {
-  router.back()
+  goBack()
 }
 
 const creatingOrder = ref(false)

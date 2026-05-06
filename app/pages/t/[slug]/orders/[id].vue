@@ -17,7 +17,7 @@
           {{ error }}
         </AppText>
         <div class="order-details-page__error-actions">
-          <BaseButton @click="$router.go(-1)">Go Back</BaseButton>
+          <BaseButton @click="goBack">Go Back</BaseButton>
           <NuxtLink to="/orders">
             <BaseButton variant="secondary">View All Orders</BaseButton>
           </NuxtLink>
@@ -30,7 +30,7 @@
       <!-- Header -->
       <div class="order-header">
         <div class="order-header__top">
-          <BaseButton variant="ghost" class="order-header__back-btn" @click="$router.go(-1)">
+          <BaseButton variant="ghost" class="order-header__back-btn" @click="goBack">
             <BaseIcon name="arrow-left" size="md" />
           </BaseButton>
           <div class="order-header__info">
@@ -431,6 +431,7 @@ import AppHeading from '~/components/base/AppHeading.vue'
 import AppText from '~/components/base/AppText.vue'
 import AppPrice from '~/components/base/AppPrice.vue'
 import StatusBadge from '~/components/order/StatusBadge.vue'
+import { useNavigation } from '~/composables/useNavigation'
 
 // Page setup
 definePageMeta({
@@ -445,6 +446,7 @@ const { t, locale } = useI18n()
 const orderStore = useOrderStore()
 const cartStore = useCartStore()
 const { formatCurrency, tenantSettings } = useTenantSettings()
+const { goBack } = useNavigation()
 
 // Reactive state
 const loading = ref(true)
