@@ -43,7 +43,7 @@ export default defineNuxtPlugin({
         apiClient.setTenantStore(tenantStore)
 
         // Initialize authentication
-        await authStore.initializeAuth()
+        authStore.initializeAuth().catch(err => console.error('Auth initialization failed:', err))
 
         // Sync tenant slug
         watch(

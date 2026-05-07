@@ -92,7 +92,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async initializeAuth() {
-      if (!import.meta.client) return
+      if (!import.meta.client || this.authReady) return
       this.loading = true
       
       try {
@@ -177,29 +177,39 @@ export const useUserStore = defineStore('user', {
     },
 
     async verifyEmail(data: { token: string; email: string; tenantSlug?: string }) {
+      console.log('[UserStore] 📧 verifyEmail started', data)
       this.loading = true
       this.error = null
       try {
         const tenantStore = useTenantStore()
         const slug = data.tenantSlug || tenantStore.tenantSlug
         
+        console.log('[UserStore] 🏢 Using slug:', slug)
+
         if (!slug) {
+          console.error('[UserStore] ❌ No slug found')
           throw new Error('Tenant context missing.')
         }
         
         const endpoint = `/public/${slug}/auth/verify-email`
+        console.log('[UserStore] 🌐 POST', endpoint)
+
         const result = await (this as any).$apiClient.post(endpoint, {
           token: data.token,
           email: data.email
         })
         
+        console.log('[UserStore] ✅ POST result:', result)
+
         // Refresh profile if user is logged in
         if (this.isAuthenticated) {
+          console.log('[UserStore] 👤 User is authenticated, refreshing profile...')
           await this.fetchUserProfile()
         }
         
         return result
       } catch (error) {
+        console.error('[UserStore] ❌ Error in verifyEmail:', error)
         this.error = error as ApiError
         throw error
       } finally {

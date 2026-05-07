@@ -553,10 +553,15 @@ export class ApiClient {
           headers: { ...headers, ...requestConfig.headers },
         }
 
-        // Add timeout if supported by browser (AbortSignal.timeout is relatively new)
-        if (typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal) {
-          requestInit.signal = (AbortSignal as any).timeout(requestConfig.timeout || this.config.timeout)
-        }
+        // Add timeout using AbortController
+        const timeout = requestConfig.timeout || this.config.timeout || 10000
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => {
+          console.warn(`[ApiClient] ⏱️ Timeout triggered for ${endpoint} after ${timeout}ms`)
+          controller.abort()
+        }, timeout)
+        
+        requestInit.signal = controller.signal
 
         if (requestConfig.body && requestConfig.method !== 'GET') {
           requestInit.body = JSON.stringify(requestConfig.body)
@@ -568,7 +573,16 @@ export class ApiClient {
             ...requestInit,
             credentials: 'include'
           })
-        } catch (fetchError) {
+          clearTimeout(timeoutId)
+        } catch (fetchError: any) {
+          clearTimeout(timeoutId)
+          if (fetchError.name === 'AbortError') {
+            const timeoutError: ApiError = {
+              code: 'TIMEOUT_ERROR',
+              message: `Request to ${endpoint} timed out after ${timeout}ms`
+            }
+            throw this.createTypedApiError(timeoutError, { requestId: `timeout-${Date.now()}`, timestamp: new Date().toISOString() })
+          }
           // Convert fetch errors to network errors
           const networkError = this.createNetworkError(fetchError as Error, url)
           this.logError(networkError, {

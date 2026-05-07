@@ -99,20 +99,27 @@ const handleManualHome = () => {
 }
 
 onMounted(async () => {
+  console.log('[VerifyEmail] 🚀 onMounted started')
   const token = route.query.token as string
   const email = route.query.email as string
   const tenantSlug = route.params.slug as string
 
+  console.log('[VerifyEmail] 📋 Params:', { token: !!token, email: !!email, tenantSlug })
+
   if (!token || !email) {
+    console.error('[VerifyEmail] ❌ Missing token or email')
     status.value = 'error'
     errorMsg.value = 'Отсутствуют необходимые параметры верификации.'
     return
   }
 
   try {
-    await userStore.verifyEmail({ token, email, tenantSlug })
+    console.log('[VerifyEmail] ⏳ Calling userStore.verifyEmail...')
+    const result = await userStore.verifyEmail({ token, email, tenantSlug })
+    console.log('[VerifyEmail] ✅ Verification successful:', result)
     status.value = 'success'
   } catch (err: any) {
+    console.error('[VerifyEmail] ❌ Verification failed:', err)
     status.value = 'error'
     errorMsg.value = err.message || 'Не удалось подтвердить email.'
   }
