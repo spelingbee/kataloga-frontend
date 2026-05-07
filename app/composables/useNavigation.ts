@@ -25,7 +25,7 @@ export function useNavigation() {
     // Since router.back() is asynchronous and doesn't return a "success" boolean easily,
     // we can use a small hack or just trust the history check.
     
-    if (typeof window !== 'undefined' && window.history.length > 1) {
+    if (typeof window !== 'undefined' && window.history.state && window.history.state.back) {
       router.back()
     } else {
       router.push(tPath('/'))

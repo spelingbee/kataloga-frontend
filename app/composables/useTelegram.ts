@@ -39,6 +39,15 @@ export const useTelegram = () => {
     }
   }
 
+  const currentBackHandler = ref<(() => void) | null>(null)
+  const isBackListenerAttached = ref(false)
+
+  const stableBackClickHandler = () => {
+    if (currentBackHandler.value) {
+      currentBackHandler.value()
+    }
+  }
+
   // Get user data from Telegram
   const user = computed((): TelegramUser | null => {
     if (!isTelegram.value) return null
@@ -189,12 +198,18 @@ export const useTelegram = () => {
       const tg = window.Telegram?.WebApp
       if (!tg?.BackButton) return () => {}
 
+      currentBackHandler.value = onClick
+
       tg.BackButton.show()
-      tg.BackButton.onClick(onClick)
+
+      if (!isBackListenerAttached.value) {
+        tg.BackButton.onClick(stableBackClickHandler)
+        isBackListenerAttached.value = true
+      }
       
       return () => {
-        tg.BackButton.hide()
-        tg.BackButton.offClick(onClick)
+        currentBackHandler.value = null
+        // we don't hide it immediately on cleanup, the next route decides if it should hide or not
       }
     } catch {
       return () => {}

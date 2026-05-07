@@ -4,6 +4,7 @@
       <!-- Header -->
       <div class="checkout-page__header">
         <BaseButton
+          v-if="!isTelegram"
           variant="ghost"
           @click="handleBack"
         >
@@ -92,6 +93,7 @@ import CheckoutFlow from '~/components/checkout/CheckoutFlow.vue'
 import EmptyCart from '~/components/base/EmptyCart.vue'
 import { useTenant } from '~/composables/useTenant'
 import { useNavigation } from '~/composables/useNavigation'
+import { useTelegram } from '~/composables/useTelegram'
 
 definePageMeta({
   layout: 'default',
@@ -103,6 +105,7 @@ const cartStore = useCartStore()
 const router = useRouter()
 const { tPath } = useTenant()
 const { goBack } = useNavigation()
+const { isTelegram } = useTelegram()
 
 let timeoutId: ReturnType<typeof setTimeout> | null = null
 
@@ -193,6 +196,7 @@ const handleCancel = () => {
 .checkout-page__header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: $space-4;
   margin-bottom: $space-12;
 }
