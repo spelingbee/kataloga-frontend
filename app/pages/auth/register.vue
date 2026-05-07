@@ -102,9 +102,9 @@
               :error="error && !form.agreeTerms ? 'Вы должны согласиться с условиями' : ''"
             >
               Я согласен с
-              <a href="#" class="register-page__link" @click.stop>условиями</a>
+              <a href="/legal/oferta" target="_blank" class="register-page__link">условиями</a>
               и
-              <a href="#" class="register-page__link" @click.stop>политикой конфиденциальности</a>
+              <a href="/legal/oferta" target="_blank" class="register-page__link">политикой конфиденциальности</a>
             </BaseCheckbox>
           </div>
 
