@@ -47,7 +47,19 @@
     "address": "Адрес",
     "location": "Место",
     "table": "Стол",
-    "instructions": "Инструкции"
+    "instructions": "Инструкции",
+    "first_name": "Имя",
+    "last_name": "Фамилия",
+    "save_changes": "Сохранить изменения",
+    "added": "Добавлено",
+    "browseMenu": "Перейти в меню",
+    "clearFilters": "Очистить фильтры",
+    "notifications": "Уведомления",
+    "or": "или",
+    "orders": "Заказы",
+    "subtotal": "Подытог",
+    "viewAll": "Посмотреть все",
+    "yesterday": "Вчера"
   },
   "home": {
     "title": "Главная",
@@ -107,7 +119,10 @@
     "loginRequired": "Пожалуйста, войдите для продолжения",
     "loginSuccess": "Вход выполнен успешно",
     "logoutSuccess": "Выход выполнен успешно",
-    "linkedWithTelegram": "Привязано к Telegram"
+    "email": "Email",
+    "password": "Пароль",
+    "forgotPassword": "Забыли пароль?",
+    "linked_with_telegram": "Привязано к Telegram"
   },
   "profile": {
     "title": "Профиль",
@@ -513,7 +528,25 @@
       "enjoyTitle": "Приятного аппетита!",
       "enjoyDesc": "Спасибо, что выбрали нас. Наслаждайтесь вашим заказом!",
       "continue": "За покупками",
-      "viewAll": "Все заказы"
+      "viewAll": "Все заказы",
+      "enjoy_desc_generic": "Спасибо, что выбрали нас! Мы всегда рады вам.",
+      "enjoy_title_flowers": "Пусть цветы приносят вам радость!",
+      "enjoy_title_generic": "Спасибо за ваш выбор!",
+      "preparation_desc_flowers": "Ваш букет уже собирается нашими флористами",
+      "preparation_desc_generic": "Мы уже обрабатываем ваш заказ",
+      "preparation_title_generic": "Обработка заказа",
+      "estimated_time": "Ожидаемое время",
+      "order_number": "Номер заказа",
+      "order_type": "Тип заказа",
+      "view_all": "Посмотреть все заказы",
+      "delivery_desc": "Скоро курьер заберет ваш заказ и доставит его по адресу",
+      "delivery_title": "Передача курьеру",
+      "dinein_desc": "Ваш заказ будет подан прямо к вашему столику",
+      "dinein_title": "Подача на стол",
+      "enjoy_desc": "Спасибо, что выбрали нас. Наслаждайтесь вашим заказом!",
+      "next_steps": "Что дальше?",
+      "pickup_ready_desc": "Мы сообщим вам, когда заказ можно будет забрать",
+      "pickup_ready_title": "Готовность к выдаче"
     }
   },
   "payment": {
@@ -538,13 +571,18 @@
       "CASH": "Наличные",
       "CASH_DESC": "Оплата наличными при получении",
       "CASH_INFO": "Оплата наличными при получении заказа.",
+      "CASH_HINT": "Оплата при получении",
       "TRANSFER": "Перевод",
       "TRANSFER_DESC": "Перевод на карту или кошелек",
       "TRANSFER_INFO": "После оформления заказа мы пришлем реквизиты для перевода.",
+      "TRANSFER_HINT": "MBank, O!Money, Элсом",
       "STRIPE": "Банковская карта",
       "STRIPE_DESC": "Оплата картой на сайте",
-      "STRIPE_INFO": "Безопасная оплата картой на сайте."
-    }
+      "STRIPE_INFO": "Безопасная оплата картой на сайте.",
+      "STRIPE_HINT": "Оплата картой Visa/Mastercard онлайн"
+    },
+    "cashAmount": "Нужна сдача? (укажите с какой суммы)",
+    "cashAmountPlaceholder": "Например: 1000"
   },
   "delivery": {
     "title": "Способ получения",
@@ -574,63 +612,45 @@
     "freeThreshold": "Бесплатно при заказе от {amount}",
     "min": "мин"
   },
-  "payment": {
-    "methods": {
-      "CASH": "Наличные",
-      "TRANSFER": "Перевод",
-      "STRIPE": "Карта",
-      "STRIPE_HINT": "Оплата картой Visa/Mastercard онлайн",
-      "TRANSFER_HINT": "MBank, O!Money, Элсом",
-      "CASH_HINT": "Оплата при получении"
+  "delivery_page": {
+    "title": "Информация о доставке",
+    "subtitle": "Отслеживайте ваши заказы и управляйте предпочтениями доставки",
+    "activeDelivery": "Активная доставка",
+    "callCourier": "Позвонить курьеру",
+    "trackOnMap": "Отследить на карте",
+    "liveTrackingMap": "Карта живого отслеживания",
+    "deliveryOptions": "Варианты доставки",
+    "standardDelivery": "Стандартная доставка",
+    "expressDelivery": "Экспресс-доставка",
+    "pickup": "Самовывоз",
+    "minutes": "минут",
+    "mostPopular": "Самый популярный",
+    "fastest": "Самый быстрый",
+    "free": "Бесплатно",
+    "deliveryAreas": "Зоны доставки",
+    "minOrder": "Мин. заказ:",
+    "deliveryFee": "стоимость доставки",
+    "checkAvailability": "Проверить доступность доставки",
+    "enterAddress": "Введите ваш адрес",
+    "check": "Проверить",
+    "zoneMap": "Карта зон доставки",
+    "interactiveMap": "Интерактивная карта с зонами доставки",
+    "recentDeliveries": "Последние доставки",
+    "deliveredIn": "Доставлено за {time} минут",
+    "notAvailable": "Н/Д",
+    "calculating": "Расчет...",
+    "minutesRemaining": "осталось {count} минут",
+    "statuses": {
+      "pending": "Заказ подтвержден, ищем курьера...",
+      "assigned": "Курьер назначен, готовим заказ...",
+      "picked_up": "Заказ забран, уже в пути!",
+      "in_transit": "Курьер направляется к вам",
+      "delivered": "Заказ успешно доставлен!",
+      "unknown": "Неизвестный статус"
     },
-    "delivery_page": {
-      "title": "Информация о доставке",
-      "subtitle": "Отслеживайте ваши заказы и управляйте предпочтениями доставки",
-      "activeDelivery": "Активная доставка",
-      "callCourier": "Позвонить курьеру",
-      "trackOnMap": "Отследить на карте",
-      "liveTrackingMap": "Карта живого отслеживания",
-      "deliveryOptions": "Варианты доставки",
-      "standardDelivery": "Стандартная доставка",
-      "expressDelivery": "Экспресс-доставка",
-      "pickup": "Самовывоз",
-      "minutes": "минут",
-      "mostPopular": "Самый популярный",
-      "fastest": "Самый быстрый",
-      "free": "Бесплатно",
-      "deliveryAreas": "Зоны доставки",
-      "minOrder": "Мин. заказ:",
-      "deliveryFee": "стоимость доставки",
-      "checkAvailability": "Проверить доступность доставки",
-      "enterAddress": "Введите ваш адрес",
-      "check": "Проверить",
-      "zoneMap": "Карта зон доставки",
-      "interactiveMap": "Интерактивная карта с зонами доставки",
-      "recentDeliveries": "Последние доставки",
-      "deliveredIn": "Доставлено за {time} минут",
-      "notAvailable": "Н/Д",
-      "calculating": "Расчет...",
-      "minutesRemaining": "осталось {count} минут",
-      "statuses": {
-        "pending": "Заказ подтвержден, ищем курьера...",
-        "assigned": "Курьер назначен, готовим заказ...",
-        "picked_up": "Заказ забран, уже в пути!",
-        "in_transit": "Курьер направляется к вам",
-        "delivered": "Заказ успешно доставлен!",
-        "unknown": "Неизвестный статус"
-      },
-      "results": {
-        "available": "Отлично! Мы доставляем по этому адресу.",
-        "notAvailable": "К сожалению, этот адрес находится вне нашей зоны доставки."
-      }
-    },
-    "cashAmount": "Нужна сдача? (укажите с какой суммы)",
-    "cashAmountPlaceholder": "Например: 1000",
-    "selectMethod": "Выберите способ оплаты",
-    "transfer": {
-      "title": "Оплата переводом",
-      "confirm": "Я оплатил(а)",
-      "cancel": "Отмена"
+    "results": {
+      "available": "Отлично! Мы доставляем по этому адресу.",
+      "notAvailable": "К сожалению, этот адрес находится вне нашей зоны доставки."
     }
   },
   "order": {
@@ -672,6 +692,89 @@
     "notFound": "Заказ не найден",
     "goBack": "Назад",
     "viewAll": "Все заказы",
+    "activeOrders": "Активные заказы",
+    "allOrders": "Все заказы",
+    "all_statuses": "Все статусы",
+    "all_time": "Все время",
+    "browse_menu": "Перейти в меню",
+    "callSupport": "Позвонить в поддержку",
+    "cancelOrder": "Отменить заказ",
+    "cancelled": "Отменен",
+    "chatSupport": "Чат с поддержкой",
+    "clear_filters": "Очистить фильтры",
+    "commonIssues": "Частые проблемы",
+    "confirmCancel": "Вы уверены, что хотите отменить этот заказ?",
+    "confirmed": "Подтвержден",
+    "contactDetails": "Контактные данные",
+    "contactRestaurant": "Связаться с рестораном",
+    "continue_to_cart": "Перейти в корзину",
+    "courier": "Курьер",
+    "customerInfo": "Информация о клиенте",
+    "delivered": "Доставлен",
+    "deliveryAddress": "Адрес доставки",
+    "deliveryDetails": "Детали доставки",
+    "deliveryFee": "Стоимость доставки",
+    "description": "Описание",
+    "emptyHistory": "История заказов пуста",
+    "estimatedDelivery": "Ожидаемое время доставки",
+    "estimatedTime": "Ожидаемое время",
+    "export": "Экспорт",
+    "filters": {
+      "allTime": "Все время",
+      "month": "За месяц",
+      "today": "За сегодня",
+      "week": "За неделю",
+      "year": "За год"
+    },
+    "history": "История заказов",
+    "history_subtitle": "Отслеживайте заказы и повторяйте любимые",
+    "inTransit": "В пути",
+    "issueType": "Тип проблемы",
+    "liveTracking": "Живое отслеживание",
+    "loadMore": "Загрузить еще",
+    "loading_orders": "Загрузка заказов...",
+    "noResults": "Ничего не найдено",
+    "noResultsFilter": "Нет результатов для выбранных фильтров",
+    "no_orders": "Заказов пока нет",
+    "no_orders_text": "Начните изучать меню и сделайте свой первый заказ!",
+    "overview": "Обзор",
+    "pending": "Ожидает",
+    "pickupDetails": "Детали самовывоза",
+    "pickupLocation": "Место самовывоза",
+    "preparing": "Готовится",
+    "price_changes": "Изменения цен",
+    "price_changes_desc": "Цены изменились с момента вашего последнего заказа. В корзине будут актуальные цены.",
+    "ready": "Готов",
+    "readyForPickup": "Готов к выдаче",
+    "receipt": "Чек",
+    "reorderItems": "Повторить товары",
+    "reordering": "Повторный заказ...",
+    "reportIssue": "Сообщить о проблеме",
+    "restaurantPhone": "Телефон ресторана",
+    "searchPlaceholder": "Поиск заказов...",
+    "search_orders": "Поиск заказов...",
+    "shareOrder": "Поделиться заказом",
+    "specialInstructions": "Особые инструкции",
+    "stats": {
+      "avgOrder": "Средний чек",
+      "favorite": "Любимое блюдо",
+      "totalOrders": "Всего заказов",
+      "totalSpent": "Всего потрачено"
+    },
+    "status": "Статус",
+    "submitIssue": "Отправить",
+    "subtotal": "Подытог",
+    "summary": "Сводка",
+    "support": "Поддержка",
+    "tax": "Налог",
+    "today": "Сегодня",
+    "total": "Итого",
+    "trackOrder": "Отследить заказ",
+    "unavailable_items": "Некоторые товары недоступны",
+    "unavailable_items_desc": "Некоторые товары из вашего заказа больше недоступны и будут исключены.",
+    "view": "Посмотреть",
+    "view_details": "Подробнее",
+    "yesterday": "Вчера",
     "describeIssuePlaceholder": "Пожалуйста, опишите проблему подробно...",
     "issueSubmitted": "Проблема успешно отправлена! Мы свяжемся с вами в ближайшее время.",
     "issueFailed": "Не удалось отправить проблему. Пожалуйста, попробуйте еще раз.",
@@ -723,7 +826,10 @@
       "liveTrackingSoon": "Отслеживание на карте будет доступно скоро",
       "statusUpdatedTitle": "Статус заказа обновлен",
       "statusUpdatedDesc": "Ваш заказ теперь {status}"
-    }
+    },
+    "historyTitle": "История заказа",
+    "updating": "Обновляется",
+    "stopped": "Остановлено"
   },
   "favorites": {
     "title": "Избранное",
@@ -741,7 +847,10 @@
     "noFavorites": "Избранных товаров пока нет",
     "emptyDesc": "Отмечайте блюда как избранные, нажимая на иконку сердечка. Ваши любимые блюда появятся здесь для быстрого доступа.",
     "added": "Добавлено в избранное",
-    "removed": "Удалено из избранного"
+    "removed": "Удалено из избранного",
+    "addToFavorites": "Добавить в избранное",
+    "removeFromFavorites": "Удалить из избранного",
+    "viewAll": "Посмотреть избранное"
   },
   "notifications": {
     "title": "Уведомления",
@@ -1014,12 +1123,57 @@
       "desserts": "Десерты"
     }
   },
-  "orders": {
-    "historyTitle": "История заказа",
-    "updating": "Обновляется",
-    "stopped": "Остановлено"
-  },
   "errors": {
-    "not_supported": "Ваш клиент Telegram не поддерживает эту функцию"
+    "generic": "Что-то пошло не так",
+    "network": "Ошибка сети. Пожалуйста, проверьте подключение",
+    "timeout": "Время ожидания запроса истекло. Пожалуйста, попробуйте еще раз",
+    "notFound": "Не найдено",
+    "unauthorized": "Неавторизованный доступ",
+    "serverError": "Ошибка сервера. Пожалуйста, попробуйте позже",
+    "validationError": "Пожалуйста, проверьте введенные данные",
+    "offline": "Вы не в сети",
+    "requiresInternet": "Это действие требует подключения к интернету",
+    "not_supported": "Ваш клиент Telegram не поддерживает эту функцию",
+    "unknown": {
+      "title": "Неизвестная ошибка",
+      "message": "Произошла неизвестная ошибка. Пожалуйста, попробуйте еще раз."
+    }
+  },
+  "validation": {
+    "acknowledge": "Я понимаю и хочу продолжить",
+    "cartItems": "Проверка товаров в корзине...",
+    "itemUnavailable": "{item} больше недоступен",
+    "priceChanged": "Цена изменилась с {old} на {new}"
+  },
+  "terminology": {
+    "catalog": "Каталог",
+    "category": "Категория",
+    "characteristics": "Характеристики",
+    "dish": "Блюдо",
+    "dishes": "Блюда",
+    "ingredients": "Ингредиенты",
+    "menu": "Меню",
+    "product": "Товар",
+    "products": "Товары"
+  },
+  "offline": {
+    "title": "Офлайн-режим",
+    "message": "Вы сейчас офлайн. Некоторые функции могут быть ограничены.",
+    "menuAvailable": "Меню доступно офлайн",
+    "cannotCheckout": "Вам нужно подключение к интернету для завершения заказа",
+    "reconnected": "Соединение восстановлено",
+    "syncingData": "Синхронизация данных..."
+  },
+  "date": {
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "tomorrow": "Завтра",
+    "daysAgo": "{count} дн. назад",
+    "hoursAgo": "{count} час. назад",
+    "minutesAgo": "{count} мин. назад",
+    "justNow": "Только что"
+  },
+  "currency": {
+    "som": "сом"
   }
 }
