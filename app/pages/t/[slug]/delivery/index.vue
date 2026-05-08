@@ -5,11 +5,11 @@
       <div class="flex items-center gap-3 mb-4">
         <BaseIcon name="truck" size="lg" class="text-primary-green" />
         <AppHeading level="h1" size="display-md" class="text-white">
-          Delivery Information
+          {{ $t('delivery_page.title') }}
         </AppHeading>
       </div>
       <AppText size="body-lg" class="text-neutral-20">
-        Track your orders and manage delivery preferences
+        {{ $t('delivery_page.subtitle') }}
       </AppText>
     </div>
 
@@ -19,7 +19,7 @@
         <div class="flex items-center gap-3 mb-4">
           <BaseIcon name="truck" size="md" class="text-primary-green" />
           <AppHeading level="h3" size="heading-lg" class="text-white">
-            Active Delivery
+            {{ $t('delivery_page.activeDelivery') }}
           </AppHeading>
           <StatusBadge :status="activeDelivery.status" />
         </div>
@@ -63,7 +63,7 @@
                 @click="callCourier"
               >
                 <BaseIcon name="phone" size="sm" class="mr-2" />
-                Call Courier
+                {{ $t('delivery_page.callCourier') }}
               </BaseButton>
               <BaseButton 
                 variant="ghost" 
@@ -71,7 +71,7 @@
                 @click="showTrackingDetails = true"
               >
                 <BaseIcon name="map" size="sm" class="mr-2" />
-                Track on Map
+                {{ $t('delivery_page.trackOnMap') }}
               </BaseButton>
             </div>
           </div>
@@ -81,7 +81,7 @@
             <div class="text-center">
               <BaseIcon name="map" size="xl" class="text-neutral-80 mx-auto mb-2" />
               <AppText size="body-sm" class="text-neutral-20">
-                Live tracking map
+                {{ $t('delivery_page.liveTrackingMap') }}
               </AppText>
             </div>
           </div>
@@ -92,7 +92,7 @@
     <!-- Delivery Options -->
     <div class="px-6 mb-8">
       <AppHeading level="h2" size="heading-xl" class="text-white mb-6">
-        Delivery Options
+        {{ $t('delivery_page.deliveryOptions') }}
       </AppHeading>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -102,7 +102,7 @@
             <BaseIcon name="truck" size="lg" class="text-primary-green" />
             <div>
               <AppHeading level="h3" size="heading-md" class="text-white">
-                Standard Delivery
+                {{ $t('delivery_page.standardDelivery') }}
               </AppHeading>
               <AppText size="body-sm" class="text-neutral-20">
                 30-45 minutes
@@ -115,7 +115,7 @@
           <div class="flex items-center justify-between">
             <AppPrice :price="2.99" size="lg" />
             <AppText size="body-sm" class="text-primary-green">
-              Most Popular
+              {{ $t('delivery_page.mostPopular') }}
             </AppText>
           </div>
         </BaseCard>
@@ -126,7 +126,7 @@
             <BaseIcon name="zap" size="lg" class="text-primary-orange" />
             <div>
               <AppHeading level="h3" size="heading-md" class="text-white">
-                Express Delivery
+                {{ $t('delivery_page.expressDelivery') }}
               </AppHeading>
               <AppText size="body-sm" class="text-neutral-20">
                 15-25 minutes
@@ -139,7 +139,7 @@
           <div class="flex items-center justify-between">
             <AppPrice :price="5.99" size="lg" />
             <AppText size="body-sm" class="text-primary-orange">
-              Fastest
+              {{ $t('delivery_page.fastest') }}
             </AppText>
           </div>
         </BaseCard>
@@ -150,7 +150,7 @@
             <BaseIcon name="store" size="lg" class="text-primary-red" />
             <div>
               <AppHeading level="h3" size="heading-md" class="text-white">
-                Pickup
+                {{ $t('delivery_page.pickup') }}
               </AppHeading>
               <AppText size="body-sm" class="text-neutral-20">
                 15-20 minutes
@@ -163,7 +163,7 @@
           <div class="flex items-center justify-between">
             <AppPrice :price="0" size="lg" />
             <AppText size="body-sm" class="text-primary-green">
-              Free
+              {{ $t('delivery_page.free') }}
             </AppText>
           </div>
         </BaseCard>
@@ -173,7 +173,7 @@
     <!-- Delivery Zones -->
     <div class="px-6 mb-8">
       <AppHeading level="h2" size="heading-xl" class="text-white mb-6">
-        Delivery Areas
+        {{ $t('delivery_page.deliveryAreas') }}
       </AppHeading>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -190,13 +190,13 @@
                   {{ zone.name }}
                 </AppHeading>
                 <AppText size="body-sm" class="text-neutral-20">
-                  Min order: {{ zone.minOrderAmount }}
+                  {{ $t('delivery_page.minOrder') }} {{ zone.minOrderAmount }}
                 </AppText>
               </div>
               <div class="text-right">
                 <AppPrice :price="parseFloat(zone.deliveryFee)" size="md" />
                 <AppText size="caption" class="text-neutral-20">
-                  delivery fee
+                  {{ $t('delivery_page.deliveryFee') }}
                 </AppText>
               </div>
             </div>
@@ -205,19 +205,19 @@
           <!-- Check Address -->
           <div class="mt-6 bg-background-card rounded-xl p-4">
             <AppHeading level="h4" size="heading-sm" class="text-white mb-3">
-              Check Delivery Availability
+              {{ $t('delivery_page.checkAvailability') }}
             </AppHeading>
             <div class="flex gap-2">
               <BaseInput
                 v-model="addressToCheck"
-                placeholder="Enter your address"
+                :placeholder="$t('delivery_page.enterAddress')"
                 class="flex-1"
               />
               <BaseButton 
                 :disabled="!addressToCheck.trim()"
                 @click="checkDeliveryAvailability"
               >
-                Check
+                {{ $t('delivery_page.check') }}
               </BaseButton>
             </div>
             <div v-if="deliveryCheckResult" class="mt-3">
@@ -235,9 +235,9 @@
           <div class="w-full h-64 bg-neutral-80/20 rounded-lg flex items-center justify-center">
             <div class="text-center">
               <BaseIcon name="map" size="xl" class="text-neutral-80 mx-auto mb-2" />
-              <AppText class="text-white mb-1">Delivery Zone Map</AppText>
+              <AppText class="text-white mb-1">{{ $t('delivery_page.zoneMap') }}</AppText>
               <AppText size="body-sm" class="text-neutral-20">
-                Interactive map showing delivery areas
+                {{ $t('delivery_page.interactiveMap') }}
               </AppText>
             </div>
           </div>
@@ -249,11 +249,11 @@
     <div class="px-6 mb-8">
       <div class="flex items-center justify-between mb-6">
         <AppHeading level="h2" size="heading-xl" class="text-white">
-          Recent Deliveries
+          {{ $t('delivery_page.recentDeliveries') }}
         </AppHeading>
         <NuxtLink to="/orders">
           <BaseButton variant="secondary" size="sm">
-            View All Orders
+            {{ $t('orders.viewAll') }}
           </BaseButton>
         </NuxtLink>
       </div>
@@ -278,7 +278,7 @@
           <div class="flex items-center gap-2">
             <BaseIcon name="clock" size="sm" class="text-neutral-20" />
             <AppText size="body-sm" class="text-neutral-20">
-              Delivered in {{ delivery.actualTime || 'N/A' }} minutes
+              {{ $t('delivery_page.deliveredIn', { time: delivery.actualTime || 'N/A' }) }}
             </AppText>
           </div>
         </div>
@@ -311,11 +311,12 @@ import { useLocationStore } from '~/stores/location'
 
 // Page setup
 definePageMeta({
-  title: 'Delivery - Menu Ordering App'
+  title: 'Delivery'
 })
 
 const deliveryStore = useDeliveryStore()
 const locationStore = useLocationStore()
+const { t } = useI18n()
 
 // Reactive state
 const showTrackingDetails = ref(false)
@@ -328,9 +329,9 @@ const courierInfo = computed(() => deliveryStore.courierInfo)
 const deliveryZones = computed(() => locationStore.deliveryZones)
 
 const estimatedTimeText = computed(() => {
-  if (!activeDelivery.value?.estimatedTime) return 'Calculating...'
+  if (!activeDelivery.value?.estimatedTime) return t('delivery_page.calculating')
   const minutes = activeDelivery.value.estimatedTime
-  return `${minutes} minutes remaining`
+  return t('delivery_page.minutesRemaining', { count: minutes })
 })
 
 const deliveryProgress = computed(() => {
@@ -351,14 +352,14 @@ const deliveryStatusText = computed(() => {
   if (!activeDelivery.value) return ''
   
   const statusTexts = {
-    'pending': 'Order confirmed, finding courier...',
-    'assigned': 'Courier assigned, preparing order...',
-    'picked_up': 'Order picked up, on the way!',
-    'in_transit': 'Courier is heading to your location',
-    'delivered': 'Order delivered successfully!'
+    'pending': t('delivery_page.statuses.pending'),
+    'assigned': t('delivery_page.statuses.assigned'),
+    'picked_up': t('delivery_page.statuses.picked_up'),
+    'in_transit': t('delivery_page.statuses.in_transit'),
+    'delivered': t('delivery_page.statuses.delivered')
   }
   
-  return statusTexts[activeDelivery.value.status] || 'Unknown status'
+  return statusTexts[activeDelivery.value.status] || t('delivery_page.statuses.unknown')
 })
 
 // Sample data - will be replaced with real data from API
@@ -400,8 +401,8 @@ const checkDeliveryAvailability = () => {
   deliveryCheckResult.value = {
     available: isAvailable,
     message: isAvailable 
-      ? 'Great! We deliver to this address.' 
-      : 'Sorry, this address is outside our delivery zone.'
+      ? t('delivery_page.results.available')
+      : t('delivery_page.results.notAvailable')
   }
 }
 
@@ -411,8 +412,8 @@ const formatDeliveryDate = (timestamp: string) => {
   const diffTime = Math.abs(now.getTime() - date.getTime())
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
   
-  if (diffDays === 1) return 'Yesterday'
-  if (diffDays <= 7) return `${diffDays} days ago`
+  if (diffDays === 1) return t('common.yesterday') || 'Yesterday'
+  if (diffDays <= 7) return t('common.daysAgo', { count: diffDays }) || `${diffDays} days ago`
   return date.toLocaleDateString()
 }
 

@@ -2,8 +2,8 @@
   <div class="checkout-page">
     <!-- Header -->
     <div class="checkout-header">
-      <h1 class="checkout-title">{{ $t('checkout.title', 'Оформление заказа') }}</h1>
-      <p class="checkout-subtitle">{{ $t('checkout.subtitle', 'Пожалуйста, заполните данные для доставки') }}</p>
+      <h1 class="checkout-title">{{ $t('checkout.title') }}</h1>
+      <p class="checkout-subtitle">{{ $t('checkout.subtitle') }}</p>
     </div>
 
     <form class="checkout-form" @submit.prevent="handleSubmit">
@@ -14,7 +14,7 @@
           <section class="checkout-section">
             <h2 class="section-title">
               <BaseIcon name="user" size="sm" class="mr-2" />
-              {{ $t('checkout.customerInfo', 'Контактные данные') }}
+              {{ $t('checkout.customerInfo') }}
             </h2>
             <CustomerInfoForm
               v-model="customerInfo"
@@ -27,7 +27,7 @@
           <section class="checkout-section">
             <h2 class="section-title">
               <BaseIcon name="truck" size="sm" class="mr-2" />
-              {{ $t('checkout.deliveryInfo', 'Доставка') }}
+              {{ $t('checkout.deliveryInfo') }}
             </h2>
             <DeliveryForm
               v-model="deliveryInfo"
@@ -40,7 +40,7 @@
           <section class="checkout-section">
             <h2 class="section-title">
               <BaseIcon name="credit-card" size="sm" class="mr-2" />
-              {{ $t('checkout.paymentMethod', 'Способ оплаты') }}
+              {{ $t('checkout.paymentMethod') }}
             </h2>
             <PaymentForm
               v-model="paymentInfo"
@@ -53,7 +53,7 @@
         <!-- Sidebar / Summary -->
         <aside class="checkout-sidebar">
           <div class="summary-card">
-            <h2 class="summary-title">{{ $t('checkout.summary', 'Ваш заказ') }}</h2>
+            <h2 class="summary-title">{{ $t('checkout.summary') }}</h2>
             
             <CartSummary
               :total="orderTotal"
@@ -74,8 +74,8 @@
                   class="terms-checkbox"
                 >
                 <span class="terms-text">
-                  {{ $t('checkout.acceptTerms', 'Я согласен с') }}
-                  <a href="/terms" class="terms-link" target="_blank">{{ $t('checkout.termsLink', 'условиями использования') }}</a>
+                  {{ $t('checkout.acceptTerms') }}
+                  <a href="/terms" class="terms-link" target="_blank">{{ $t('checkout.termsLink') }}</a>
                 </span>
               </label>
               <p v-if="errors.terms" class="error-text">{{ errors.terms }}</p>
@@ -90,7 +90,7 @@
               :disabled="!isFormValid || loading"
               class="submit-button"
             >
-              {{ loading ? $t('checkout.processing', 'Обработка...') : `${$t('checkout.placeOrder', 'Оформить заказ')} • ${formatPrice(orderTotal)}` }}
+              {{ loading ? $t('checkout.processing') : `${$t('checkout.placeOrder')} • ${formatPrice(orderTotal)}` }}
             </BaseButton>
 
             <p v-if="submitError" class="submit-error">
@@ -198,7 +198,7 @@ const handleSubmit = async () => {
   submitError.value = ''
   
   if (!acceptTerms.value) {
-    errors.terms = t('checkout.termsRequired', 'Необходимо принять условия')
+    errors.terms = t('checkout.termsRequired')
     return
   }
 
@@ -229,7 +229,7 @@ const handleSubmit = async () => {
     emit('submit', orderData)
   } catch (error: any) {
     console.error('Order submission error:', error)
-    submitError.value = error.message || t('checkout.errorGeneric', 'Не удалось создать заказ. Пожалуйста, попробуйте позже.')
+    submitError.value = error.message || t('checkout.errorGeneric')
   } finally {
     loading.value = false
   }

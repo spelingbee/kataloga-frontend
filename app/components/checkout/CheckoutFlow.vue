@@ -17,7 +17,7 @@
 
     <!-- Form State -->
     <div v-else class="checkout-single-page__form">
-      <h2 class="checkout-single-page__title">{{ $t('checkout.title', 'Оформление заказа') }}</h2>
+      <h2 class="checkout-single-page__title">{{ $t('checkout.title') }}</h2>
 
       <!-- Validation Warning -->
       <div v-if="showValidationWarning" class="checkout-flow__validation-warning mb-6">
@@ -26,17 +26,17 @@
         </div>
         <div class="checkout-flow__validation-content">
           <h4 class="checkout-flow__validation-title">
-            {{ $t('checkout.validation.title', 'Обнаружены изменения') }}
+            {{ $t('checkout.validation.title') }}
           </h4>
           <p class="checkout-flow__validation-message">
             {{ validationMessage }}
           </p>
           <div class="checkout-flow__validation-actions mt-2 flex gap-2">
             <BaseButton variant="secondary" size="sm" @click="handleReviewCart">
-              {{ $t('common.review_cart', 'Проверить корзину') }}
+              {{ $t('common.review_cart') }}
             </BaseButton>
             <BaseButton variant="primary" size="sm" @click="handleAcknowledgeValidation">
-              {{ $t('common.continue_anyway', 'Продолжить') }}
+              {{ $t('common.continue_anyway') }}
             </BaseButton>
           </div>
         </div>
@@ -44,7 +44,7 @@
 
       <!-- Section: Order Type -->
       <section class="checkout-section">
-        <h3 class="checkout-section__title">{{ $t('delivery.title', 'Способ получения') }}</h3>
+        <h3 class="checkout-section__title">{{ $t('delivery.title') }}</h3>
         <OrderTypeSelector
           v-model="orderData.orderType"
           @update:model-value="handleOrderTypeChange"
@@ -55,7 +55,7 @@
       <section class="checkout-section checkout-section--accordion">
         <div class="checkout-section__header" @click="isOrderExpanded = !isOrderExpanded">
           <h3 class="checkout-section__title">
-            {{ $t('checkout.yourOrder', 'Ваш заказ') }}
+            {{ $t('checkout.yourOrder') }}
             <span class="checkout-section__title-count">({{ cart.length }})</span>
           </h3>
           <BaseIcon
@@ -81,7 +81,7 @@
               </div>
             </div>
             <div class="order-summary-total">
-              <span>{{ $t('common.subtotal', 'Сумма') }}</span>
+              <span>{{ $t('common.subtotal') }}</span>
               <span>{{ formatCurrency(cartTotal) }}</span>
             </div>
           </div>
@@ -93,7 +93,7 @@
         <!-- Delivery Form -->
         <div v-if="orderData.orderType === 'delivery'">
           <h3 class="checkout-section__title">
-            {{ $t('checkout.deliveryInfo', 'Детали доставки') }}
+            {{ $t('checkout.deliveryInfo') }}
           </h3>
           <DeliveryForm
             v-model="orderData.deliveryDetails"
@@ -106,7 +106,7 @@
         <!-- Pickup Form -->
         <div v-if="orderData.orderType === 'pickup'">
           <h3 class="checkout-section__title">
-            {{ $t('checkout.pickupInfo', 'Детали самовывоза') }}
+            {{ $t('checkout.pickupInfo') }}
           </h3>
           <PickupForm
             v-model="orderData.pickupDetails"
@@ -117,7 +117,7 @@
 
         <!-- Dine-in Form -->
         <div v-if="orderData.orderType === 'dine-in'">
-          <h3 class="checkout-section__title">{{ $t('checkout.dineInInfo', 'В заведении') }}</h3>
+          <h3 class="checkout-section__title">{{ $t('checkout.dineInInfo') }}</h3>
           <DineInForm
             v-model="orderData.dineInDetails"
             :errors="validationErrors"
@@ -130,7 +130,7 @@
 
       <!-- Section: Payment Method -->
       <section class="checkout-section">
-        <h3 class="checkout-section__title">{{ $t('checkout.paymentMethod', 'Способ оплаты') }}</h3>
+        <h3 class="checkout-section__title">{{ $t('checkout.paymentMethod') }}</h3>
         <PaymentMethodSelector v-model="orderData.paymentMethod" :order-total="cartTotal" />
       </section>
 
@@ -146,7 +146,7 @@
       <!-- Action Buttons for Non-Telegram environments -->
       <div v-if="!isTelegramApp" class="checkout-single-page__actions mt-8">
         <BaseButton variant="secondary" @click="emit('cancel')">
-          {{ $t('checkout.backToCart', 'Назад в корзину') }}
+          {{ $t('checkout.backToCart') }}
         </BaseButton>
 
         <BaseButton
@@ -155,7 +155,7 @@
           :disabled="!canSubmit"
           @click="handleSubmit"
         >
-          {{ $t('checkout.placeOrder', 'Оформить заказ') }} •
+          {{ $t('checkout.placeOrder') }} •
           {{ formatCurrency(totalWithDelivery) }}
         </BaseButton>
       </div>
@@ -287,7 +287,7 @@ const tenantWhatsappPhone = computed(() => contactInfo.value?.phone || '+996 555
 // Confirmation state
 const orderNumber = ref('')
 const estimatedDeliveryTime = computed(
-  () => `${deliverySettings.value?.estimatedDeliveryTime || 30} мин`
+  () => `${deliverySettings.value?.estimatedDeliveryTime || 30} ${t('menu.units.minutes')}`
 )
 
 // Locations
@@ -335,20 +335,20 @@ const validateForm = (showErrors = true): boolean => {
 
   if (orderData.value.orderType === 'delivery') {
     if (!orderData.value.deliveryDetails.address?.trim()) {
-      errors.address = 'Адрес доставки обязателен'
+      errors.address = t('checkout.validation.addressRequired')
       isValid = false
     } else if (orderData.value.deliveryDetails.address.trim().length < 5) {
-      errors.address = 'Введите полный адрес доставки'
+      errors.address = t('checkout.validation.addressFull')
       isValid = false
     }
 
     if (!isTelegramApp.value && !orderData.value.deliveryDetails.phone?.trim()) {
-      errors.phone = 'Номер телефона обязателен'
+      errors.phone = t('checkout.validation.phoneRequired')
       isValid = false
     } else if (orderData.value.deliveryDetails.phone?.trim()) {
       const phoneRegex = /^\+?[\d\s\-()]{10,}$/
       if (!phoneRegex.test(orderData.value.deliveryDetails.phone)) {
-        errors.phone = 'Введите корректный номер телефона'
+        errors.phone = t('checkout.validation.phoneInvalid')
         isValid = false
       }
     }
@@ -356,17 +356,17 @@ const validateForm = (showErrors = true): boolean => {
 
   if (orderData.value.orderType === 'pickup') {
     if (!orderData.value.pickupDetails.locationId) {
-      errors.locationId = 'Выберите точку самовывоза'
+      errors.locationId = t('checkout.validation.locationRequired')
       isValid = false
     }
 
     if (!isTelegramApp.value && !orderData.value.pickupDetails.phone?.trim()) {
-      errors.phone = 'Номер телефона обязателен'
+      errors.phone = t('checkout.validation.phoneRequired')
       isValid = false
     } else if (orderData.value.pickupDetails.phone?.trim()) {
       const phoneRegex = /^\+?[\d\s\-()]{10,}$/
       if (!phoneRegex.test(orderData.value.pickupDetails.phone)) {
-        errors.phone = 'Введите корректный номер телефона'
+        errors.phone = t('checkout.validation.phoneInvalid')
         isValid = false
       }
     }
@@ -374,7 +374,7 @@ const validateForm = (showErrors = true): boolean => {
 
   if (orderData.value.orderType === 'dine-in') {
     if (!orderData.value.dineInDetails.tableNumber?.trim()) {
-      errors.tableNumber = 'Укажите номер стола'
+      errors.tableNumber = t('checkout.validation.tableRequired')
       isValid = false
     }
   }
@@ -395,25 +395,25 @@ const validateCartBeforePayment = async () => {
     const result = await validateBeforeCheckout()
 
     if (!result.isValid) {
-      errorMessage.value = 'Некоторые товары стали недоступны. Проверьте корзину.'
+      errorMessage.value = t('checkout.validation.itemsUnavailable')
       showValidationWarning.value = true
-      validationMessage.value = 'Недоступные товары были удалены.'
+      validationMessage.value = t('checkout.validation.itemsRemoved')
       return false
     }
 
     if (result.requiresAcknowledgment) {
       showValidationWarning.value = true
       if (result.result.priceChanges.length > 0) {
-        validationMessage.value = `Изменились цены на ${result.result.priceChanges.length} товар(ов).`
+        validationMessage.value = t('checkout.validation.priceChangesCount', { count: result.result.priceChanges.length })
       } else {
-        validationMessage.value = 'Корзина обновлена. Пожалуйста, проверьте изменения.'
+        validationMessage.value = t('checkout.validation.cartUpdated')
       }
       return false
     }
     return true
   } catch (error) {
     console.error('Cart validation failed:', error)
-    errorMessage.value = 'Ошибка проверки корзины.'
+    errorMessage.value = t('checkout.validation.validationFailed')
     return false
   }
 }
@@ -431,12 +431,12 @@ const handleReviewCart = () => {
 
 const handleSubmit = async () => {
   if (!validateForm(true)) {
-    errorMessage.value = 'Пожалуйста, заполните необходимые поля корректно.'
+    errorMessage.value = t('checkout.validation.fillRequired')
     return
   }
 
   if (requiresAcknowledgment.value && !acknowledged.value) {
-    errorMessage.value = 'Пожалуйста, подтвердите изменения в корзине.'
+    errorMessage.value = t('checkout.validation.confirmChanges')
     showValidationWarning.value = true
     return
   }
@@ -461,7 +461,7 @@ const submitOrder = async () => {
             ? [telegram.user.value.firstName, telegram.user.value.lastName]
                 .filter(Boolean)
                 .join(' ')
-            : 'Guest User',
+            : t('common.guest'),
       phone:
         orderData.value.pickupDetails.phone ||
         orderData.value.deliveryDetails.phone ||
@@ -541,7 +541,7 @@ const submitOrder = async () => {
         }
       }
     } else {
-      throw new Error('Не удалось создать заказ.')
+      throw new Error(t('checkout.validation.orderCreateFailed'))
     }
   } catch (error: any) {
     console.error('Order creation failed:', error)
@@ -555,22 +555,20 @@ const submitOrder = async () => {
       error.code === 'USER_NOT_FOUND' // Backend quirk
 
     if (isProductError) {
-      errorMessage.value =
-        'Некоторые товары в вашей корзине стали недоступны. Сейчас мы обновим корзину.'
+      errorMessage.value = t('checkout.validation.itemsUnavailableDesc')
 
       // Trigger a forced validation to clean up the cart
       setTimeout(async () => {
         const result = await validateCartBeforePayment()
         if (!result) {
-          errorMessage.value =
-            'Корзина обновлена. Пожалуйста, проверьте изменения перед оформлением заказа.'
+          errorMessage.value = t('checkout.validation.cartUpdatedCheck')
         }
       }, 1500)
     } else {
       // Extract detailed error message if available
       const rawError = error.response?._data || error.data || error
       const message =
-        rawError.message || error.message || t('checkout.orderFailed', 'Ошибка оформления заказа.')
+        rawError.message || error.message || t('checkout.orderFailed')
       errorMessage.value = Array.isArray(message) ? message[0] : message
     }
   } finally {
@@ -628,7 +626,7 @@ watch(
   () => props.cart,
   newCart => {
     if (newCart.length === 0 && !isSuccess.value) {
-      errorMessage.value = 'Корзина пуста.'
+      errorMessage.value = t('checkout.validation.cartEmpty')
     }
     updateMainButtonState()
   },
@@ -648,8 +646,8 @@ function updateMainButtonState() {
 
   const disabled = !canSubmit.value || submitting.value
   const text = submitting.value
-    ? 'Оформление заказа...'
-    : `Оформить заказ • ${formatCurrency(totalWithDelivery.value)}`
+    ? t('checkout.validation.processing')
+    : t('checkout.validation.placeOrderWithTotal', { total: formatCurrency(totalWithDelivery.value) })
 
   if (!isMainButtonVisible) {
     telegram.showMainButton(text, handleSubmit)

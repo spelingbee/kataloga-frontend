@@ -1,7 +1,7 @@
 <template>
   <BaseCard class="order-summary" variant="outlined" padding="lg">
     <div class="order-summary__header">
-      <h3 class="order-summary__title">Order Summary</h3>
+      <h3 class="order-summary__title">{{ $t('order.summary') }}</h3>
       <BaseBadge 
         :variant="statusVariant" 
         size="sm"
@@ -13,22 +13,22 @@
     <!-- Order Details -->
     <div class="order-summary__details">
       <div class="order-summary__info-row">
-        <span class="order-summary__label">Order #</span>
+        <span class="order-summary__label">{{ $t('order.orderNumberLabel') }}</span>
         <span class="order-summary__value">{{ order.id }}</span>
       </div>
       <div class="order-summary__info-row">
-        <span class="order-summary__label">Date</span>
+        <span class="order-summary__label">{{ $t('order.date') }}</span>
         <span class="order-summary__value">{{ formattedDate }}</span>
       </div>
       <div class="order-summary__info-row">
-        <span class="order-summary__label">Type</span>
+        <span class="order-summary__label">{{ $t('order.type') }}</span>
         <span class="order-summary__value">{{ order.type }}</span>
       </div>
     </div>
 
     <!-- Items List -->
     <div class="order-summary__items">
-      <h4 class="order-summary__section-title">Items</h4>
+      <h4 class="order-summary__section-title">{{ $t('order.itemsLabel') }}</h4>
       <div class="order-summary__items-list">
         <div 
           v-for="item in order.items" 
@@ -39,7 +39,7 @@
             <span class="order-summary__item-name">{{ item.name }}</span>
             <span class="order-summary__item-quantity">×{{ item.quantity }}</span>
           </div>
-          <span class="order-summary__item-price">${{ (item.price * item.quantity).toFixed(2) }}</span>
+          <span class="order-summary__item-price">{{ $n(item.price * item.quantity, 'currency') }}</span>
         </div>
       </div>
     </div>
@@ -47,41 +47,41 @@
     <!-- Pricing Breakdown -->
     <div class="order-summary__pricing">
       <div class="order-summary__price-row">
-        <span class="order-summary__price-label">Subtotal</span>
-        <span class="order-summary__price-value">${{ order.subtotal.toFixed(2) }}</span>
+        <span class="order-summary__price-label">{{ $t('cart.subtotal') }}</span>
+        <span class="order-summary__price-value">{{ $n(order.subtotal, 'currency') }}</span>
       </div>
       <div v-if="order.tax > 0" class="order-summary__price-row">
-        <span class="order-summary__price-label">Tax</span>
-        <span class="order-summary__price-value">${{ order.tax.toFixed(2) }}</span>
+        <span class="order-summary__price-label">{{ $t('order.tax') }}</span>
+        <span class="order-summary__price-value">{{ $n(order.tax, 'currency') }}</span>
       </div>
       <div v-if="order.deliveryFee > 0" class="order-summary__price-row">
-        <span class="order-summary__price-label">Delivery Fee</span>
-        <span class="order-summary__price-value">${{ order.deliveryFee.toFixed(2) }}</span>
+        <span class="order-summary__price-label">{{ $t('cart.deliveryFee') }}</span>
+        <span class="order-summary__price-value">{{ $n(order.deliveryFee, 'currency') }}</span>
       </div>
       <div v-if="order.discount > 0" class="order-summary__price-row order-summary__price-row--discount">
-        <span class="order-summary__price-label">Discount</span>
-        <span class="order-summary__price-value">-${{ order.discount.toFixed(2) }}</span>
+        <span class="order-summary__price-label">{{ $t('cart.discount') }}</span>
+        <span class="order-summary__price-value">-{{ $n(order.discount, 'currency') }}</span>
       </div>
       <div class="order-summary__price-row order-summary__price-row--total">
-        <span class="order-summary__price-label">Total</span>
-        <span class="order-summary__price-value">${{ order.total.toFixed(2) }}</span>
+        <span class="order-summary__price-label">{{ $t('cart.total') }}</span>
+        <span class="order-summary__price-value">{{ $n(order.total, 'currency') }}</span>
       </div>
     </div>
 
     <!-- Customer Info -->
     <div v-if="order.customerInfo" class="order-summary__customer">
-      <h4 class="order-summary__section-title">Customer Information</h4>
+      <h4 class="order-summary__section-title">{{ $t('order.customerInfo') }}</h4>
       <div class="order-summary__customer-details">
         <div class="order-summary__info-row">
-          <span class="order-summary__label">Name</span>
+          <span class="order-summary__label">{{ $t('order.name') }}</span>
           <span class="order-summary__value">{{ order.customerInfo.name }}</span>
         </div>
         <div class="order-summary__info-row">
-          <span class="order-summary__label">Phone</span>
+          <span class="order-summary__label">{{ $t('order.phone') }}</span>
           <span class="order-summary__value">{{ order.customerInfo.phone }}</span>
         </div>
         <div v-if="order.customerInfo.address" class="order-summary__info-row">
-          <span class="order-summary__label">Address</span>
+          <span class="order-summary__label">{{ $t('order.address') }}</span>
           <span class="order-summary__value">{{ order.customerInfo.address }}</span>
         </div>
       </div>
@@ -89,16 +89,16 @@
 
     <!-- Payment Info -->
     <div v-if="order.paymentMethod" class="order-summary__payment">
-      <h4 class="order-summary__section-title">Payment</h4>
+      <h4 class="order-summary__section-title">{{ $t('order.payment') }}</h4>
       <div class="order-summary__info-row">
-        <span class="order-summary__label">Method</span>
+        <span class="order-summary__label">{{ $t('order.method') }}</span>
         <span class="order-summary__value">{{ order.paymentMethod }}</span>
       </div>
     </div>
 
     <!-- Special Instructions -->
     <div v-if="order.notes" class="order-summary__notes">
-      <h4 class="order-summary__section-title">Special Instructions</h4>
+      <h4 class="order-summary__section-title">{{ $t('order.specialInstructions') }}</h4>
       <p class="order-summary__notes-text">{{ order.notes }}</p>
     </div>
   </BaseCard>
@@ -153,8 +153,10 @@ const statusVariant = computed(() => {
   return statusMap[props.order.status.toLowerCase()] || 'secondary'
 })
 
+const { locale } = useI18n()
+
 const formattedDate = computed(() => {
-  return new Date(props.order.date).toLocaleDateString('en-US', {
+  return new Date(props.order.date).toLocaleDateString(locale.value, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',

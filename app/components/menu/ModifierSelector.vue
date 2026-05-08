@@ -1,7 +1,7 @@
 <template>
   <div class="modifier-selector">
     <AppText size="body-md" color="white" class="font-semibold mb-4">
-      Customize Your Order
+      {{ $t('menu.customizeOrder') }}
     </AppText>
     
     <div class="modifier-selector__groups">
@@ -21,26 +21,28 @@
               variant="danger"
               size="sm"
             >
-              Required
+              {{ $t('menu.required') }}
             </BaseBadge>
             <BaseBadge
               v-else
               variant="secondary"
               size="sm"
             >
-              Optional
+              {{ $t('menu.optional') }}
             </BaseBadge>
           </div>
           
           <AppText size="caption" color="muted">
             <template v-if="group.required">
-              Select {{ group.minSelection }}
               <template v-if="group.maxSelection > group.minSelection">
-                - {{ group.maxSelection }}
+                {{ $t('menu.selectRange', { min: group.minSelection, max: group.maxSelection }) }}
+              </template>
+              <template v-else>
+                {{ $t('menu.selectCount', { count: group.minSelection }) }}
               </template>
             </template>
             <template v-else>
-              Select up to {{ group.maxSelection }}
+              {{ $t('menu.selectUpTo', { count: group.maxSelection }) }}
             </template>
           </AppText>
         </div>
@@ -101,7 +103,7 @@
           class="modifier-selector__group-error"
         >
           <AppText size="caption" color="red">
-            Please select at least {{ group.minSelection }} option(s)
+            {{ $t('menu.selectAtLeast', { count: group.minSelection }) }}
           </AppText>
         </div>
       </div>
@@ -111,6 +113,9 @@
 
 <script setup lang="ts">
 import type { ModifierGroup, Modifier } from '~/types'
+import { useTenantSettings } from '~/composables/useTenant'
+
+const { formatCurrency } = useTenantSettings()
 
 interface Props {
   modifierGroups: ModifierGroup[]
@@ -188,8 +193,8 @@ const handleModifierToggle = (group: ModifierGroup, modifier: Modifier) => {
 }
 
 const formatPriceAdjustment = (amount: number): string => {
-  const sign = amount > 0 ? '+' : ''
-  return `${sign}$${Math.abs(amount).toFixed(2)}`
+  const sign = amount > 0 ? '+' : '-'
+  return `${sign}${formatCurrency(Math.abs(amount))}`
 }
 </script>
 

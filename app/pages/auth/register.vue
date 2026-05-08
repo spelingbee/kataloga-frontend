@@ -8,16 +8,16 @@
       <!-- Back Navigation -->
       <nav class="register-page__nav">
         <BaseButton variant="ghost" size="sm" icon="arrow-left" @click="router.push('/')">
-          На главную
+          {{ t('common.back') }}
         </BaseButton>
       </nav>
 
       <main class="register-page__card">
         <header class="register-page__header">
-          <h1 class="register-page__title">Создать аккаунт</h1>
+          <h1 class="register-page__title">{{ t('auth.register.title') }}</h1>
           <p class="register-page__subtitle">
-            Уже есть аккаунт?
-            <NuxtLink to="/auth/login" class="register-page__link">Войти</NuxtLink>
+            {{ t('auth.register.hasAccount') }}
+            <NuxtLink to="/auth/login" class="register-page__link">{{ t('auth.register.login') }}</NuxtLink>
           </p>
         </header>
 
@@ -25,7 +25,7 @@
           <div class="register-page__form-grid">
             <BaseInput
               v-model="form.firstName"
-              label="Имя"
+              :label="t('auth.register.firstName')"
               placeholder="Иван"
               required
               :error="errors.firstName"
@@ -35,7 +35,7 @@
 
             <BaseInput
               v-model="form.lastName"
-              label="Фамилия"
+              :label="t('auth.register.lastName')"
               placeholder="Иванов"
               required
               :error="errors.lastName"
@@ -46,7 +46,7 @@
 
           <BaseInput
             v-model="form.email"
-            label="Email адрес"
+            :label="t('auth.login.emailLabel')"
             type="email"
             placeholder="example@mail.com"
             required
@@ -58,7 +58,7 @@
 
           <BaseInput
             v-model="form.phone"
-            label="Телефон"
+            :label="t('auth.register.phone')"
             type="tel"
             placeholder="+7 (999) 123-4567"
             :error="errors.phone"
@@ -70,7 +70,7 @@
           <div class="register-page__form-grid">
             <BaseInput
               v-model="form.password"
-              label="Пароль"
+              :label="t('auth.register.password')"
               type="password"
               placeholder="••••••••"
               required
@@ -83,7 +83,7 @@
 
             <BaseInput
               v-model="form.confirmPassword"
-              label="Подтвердите пароль"
+              :label="t('auth.register.confirmPassword')"
               type="password"
               placeholder="••••••••"
               required
@@ -99,12 +99,9 @@
             <BaseCheckbox
               v-model="form.agreeTerms"
               required
-              :error="error && !form.agreeTerms ? 'Вы должны согласиться с условиями' : ''"
+              :error="error && !form.agreeTerms ? t('auth.register.agreeTermsError') : ''"
             >
-              Я согласен с
-              <a href="/legal/oferta" target="_blank" class="register-page__link">условиями</a>
-              и
-              <a href="/legal/oferta" target="_blank" class="register-page__link">политикой конфиденциальности</a>
+              {{ t('auth.register.agreeTerms') }}
             </BaseCheckbox>
           </div>
 
@@ -124,7 +121,7 @@
               :loading="isLoading"
               :disabled="!form.agreeTerms"
             >
-              {{ isLoading ? 'Создание...' : 'Зарегистрироваться' }}
+              {{ isLoading ? t('common.loading') : t('auth.register.submit') }}
             </BaseButton>
           </div>
         </form>
@@ -137,6 +134,7 @@
 
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user'
+import { useI18n } from 'vue-i18n'
 import BrandingFooter from '~/components/layout/BrandingFooter.vue'
 
 // Meta
@@ -144,6 +142,7 @@ definePageMeta({
   middleware: 'guest',
 })
 
+const { t } = useI18n()
 const authStore = useUserStore()
 const router = useRouter()
 
@@ -181,55 +180,55 @@ const validateForm = () => {
 
   // First name validation
   if (!form.firstName.trim()) {
-    errors.firstName = 'Имя обязательно'
+    errors.firstName = t('auth.register.firstNameRequired')
     isValid = false
   } else if (form.firstName.trim().length < 2) {
-    errors.firstName = 'Имя должно содержать минимум 2 символа'
+    errors.firstName = t('auth.register.firstNameRequired')
     isValid = false
   }
 
   // Last name validation
   if (!form.lastName.trim()) {
-    errors.lastName = 'Фамилия обязательна'
+    errors.lastName = t('auth.register.lastNameRequired')
     isValid = false
   } else if (form.lastName.trim().length < 2) {
-    errors.lastName = 'Фамилия должна содержать минимум 2 символа'
+    errors.lastName = t('auth.register.lastNameRequired')
     isValid = false
   }
 
   // Email validation
   if (!form.email) {
-    errors.email = 'Email обязателен'
+    errors.email = t('auth.login.emailRequired')
     isValid = false
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = 'Введите корректный email'
+    errors.email = t('auth.login.emailInvalid')
     isValid = false
   }
 
   // Phone validation (optional)
   if (form.phone && !/^[\+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/[\s\-\(\)]/g, ''))) {
-    errors.phone = 'Введите корректный номер телефона'
+    errors.phone = t('auth.login.emailInvalid') // Reuse invalid error or add phoneInvalid
     isValid = false
   }
 
   // Password validation
   if (!form.password) {
-    errors.password = 'Пароль обязателен'
+    errors.password = t('auth.login.passwordRequired')
     isValid = false
   } else if (form.password.length < 8) {
-    errors.password = 'Пароль должен содержать минимум 8 символов'
+    errors.password = t('auth.register.passwordMin')
     isValid = false
   } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(form.password)) {
-    errors.password = 'Пароль должен содержать строчные и заглавные буквы, а также цифры'
+    errors.password = t('auth.register.passwordComplex')
     isValid = false
   }
 
   // Confirm password validation
   if (!form.confirmPassword) {
-    errors.confirmPassword = 'Подтверждение пароля обязательно'
+    errors.confirmPassword = t('auth.register.passwordsDontMatch')
     isValid = false
   } else if (form.password !== form.confirmPassword) {
-    errors.confirmPassword = 'Пароли не совпадают'
+    errors.confirmPassword = t('auth.register.passwordsDontMatch')
     isValid = false
   }
 
@@ -254,7 +253,7 @@ const handleRegister = async () => {
     // Redirect to home page after successful registration
     await router.push('/')
   } catch (err: any) {
-    error.value = err.message || 'Произошла ошибка при регистрации'
+    error.value = err.message || t('auth.register.error')
   } finally {
     isLoading.value = false
   }

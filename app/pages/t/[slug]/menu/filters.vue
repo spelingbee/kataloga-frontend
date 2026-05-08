@@ -12,10 +12,10 @@
         
         <div>
           <AppHeading level="h1" size="display-md" class="text-white">
-            Menu Filters
+            {{ $t('menu.filters.title') }}
           </AppHeading>
           <AppText size="body-md" class="text-neutral-20">
-            Customize your menu browsing experience
+            {{ $t('menu.filters.subtitle') }}
           </AppText>
         </div>
       </div>
@@ -24,14 +24,14 @@
       <div v-if="hasActiveFilters" class="bg-background-card rounded-xl p-4">
         <div class="flex items-center justify-between mb-3">
           <AppText size="body-sm" class="text-neutral-20">
-            Active Filters ({{ activeFilterCount }})
+            {{ $t('menu.filters.active', { count: activeFilterCount }) }}
           </AppText>
           <BaseButton 
             variant="ghost" 
             size="sm"
             @click="clearAllFilters"
           >
-            Clear All
+            {{ $t('menu.filters.clearAll') }}
           </BaseButton>
         </div>
         <div class="flex flex-wrap gap-2">
@@ -54,7 +54,7 @@
       <!-- Category Filter -->
       <div class="bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-4">
-          Categories
+          {{ $t('menu.filters.categories') }}
         </AppHeading>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           <label
@@ -75,7 +75,7 @@
                 {{ category.name }}
               </AppText>
               <AppText size="caption" class="text-neutral-20">
-                {{ category.count }} items
+                {{ $t('menu.itemsCount', { count: category.count }) }}
               </AppText>
             </div>
           </label>
@@ -85,7 +85,7 @@
       <!-- Price Range Filter -->
       <div class="bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-4">
-          Price Range
+          {{ $t('menu.filters.priceRange') }}
         </AppHeading>
         <div class="space-y-4">
           <!-- Price Range Slider -->
@@ -128,7 +128,7 @@
       <!-- Dietary Preferences -->
       <div class="bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-4">
-          Dietary Preferences
+          {{ $t('menu.filters.dietary') }}
         </AppHeading>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <label
@@ -146,10 +146,10 @@
             <BaseIcon :name="diet.icon" size="sm" :class="diet.color" />
             <div class="flex-1">
               <AppText size="body-sm" class="text-white">
-                {{ diet.label }}
+                {{ $t(`menu.filters.dietaryOptions.${diet.key}`) }}
               </AppText>
               <AppText size="caption" class="text-neutral-20">
-                {{ diet.description }}
+                {{ $t(`menu.filters.dietaryOptions.${diet.key}_desc`) }}
               </AppText>
             </div>
           </label>
@@ -159,29 +159,29 @@
       <!-- Nutrition Filters -->
       <div class="bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-4">
-          Nutrition
+          {{ $t('menu.filters.nutrition') }}
         </AppHeading>
         
         <!-- Calories Range -->
         <div class="mb-6">
           <AppText size="body-sm" class="text-white mb-2">
-            Calories per serving
+            {{ $t('menu.filters.caloriesPerServing') }}
           </AppText>
           <div class="flex items-center gap-4">
             <BaseInput
               v-model.number="caloriesRange[0]"
               type="number"
-              placeholder="Min"
+              :placeholder="$t('menu.filters.min')"
               class="w-24"
             />
-            <AppText class="text-neutral-20">to</AppText>
+            <AppText class="text-neutral-20">{{ $t('menu.filters.to') }}</AppText>
             <BaseInput
               v-model.number="caloriesRange[1]"
               type="number"
-              placeholder="Max"
+              :placeholder="$t('menu.filters.max')"
               class="w-24"
             />
-            <AppText class="text-neutral-20">calories</AppText>
+            <AppText class="text-neutral-20">{{ $t('menu.filters.calories') }}</AppText>
           </div>
         </div>
 
@@ -195,7 +195,7 @@
             @click="toggleNutritionPreset(preset.key)"
           >
             <BaseIcon :name="preset.icon" size="sm" class="mr-2" />
-            {{ preset.label }}
+            {{ $t(`menu.filters.nutritionPresets.${preset.key}`) }}
           </BaseButton>
         </div>
       </div>
@@ -203,7 +203,7 @@
       <!-- Cooking Time -->
       <div class="bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-4">
-          Preparation Time
+          {{ $t('menu.filters.preparationTime') }}
         </AppHeading>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
           <BaseButton
@@ -214,7 +214,7 @@
             @click="selectedCookingTime = selectedCookingTime === time.value ? null : time.value"
           >
             <BaseIcon name="clock" size="sm" class="mr-2" />
-            {{ time.label }}
+            {{ $t(`menu.filters.cookingTimes.${time.value}`) }}
           </BaseButton>
         </div>
       </div>
@@ -222,7 +222,7 @@
       <!-- Availability -->
       <div class="bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-4">
-          Availability
+          {{ $t('menu.filters.availability') }}
         </AppHeading>
         <div class="space-y-3">
           <label class="flex items-center gap-3 cursor-pointer">
@@ -233,10 +233,10 @@
             />
             <div>
               <AppText size="body-sm" class="text-white">
-                Show only available items
+                {{ $t('menu.filters.showOnlyAvailable') }}
               </AppText>
               <AppText size="caption" class="text-neutral-20">
-                Hide out-of-stock dishes
+                {{ $t('menu.filters.hideOutOfStock') }}
               </AppText>
             </div>
           </label>
@@ -249,10 +249,10 @@
             />
             <div>
               <AppText size="body-sm" class="text-white">
-                Show new items first
+                {{ $t('menu.filters.showNewFirst') }}
               </AppText>
               <AppText size="caption" class="text-neutral-20">
-                Highlight recently added dishes
+                {{ $t('menu.filters.highlightRecent') }}
               </AppText>
             </div>
           </label>
@@ -269,14 +269,14 @@
           class="min-w-48"
           @click="applyFilters"
         >
-          Apply Filters ({{ filteredItemsCount }} items)
+          {{ $t('menu.filters.applyFiltersCount', { count: filteredItemsCount }) }}
         </BaseButton>
         <BaseButton 
           variant="secondary"
           size="lg"
           @click="resetFilters"
         >
-          Reset All
+          {{ $t('menu.filters.resetAll') }}
         </BaseButton>
       </div>
     </div>
@@ -289,11 +289,12 @@
 import { useMenuStore } from '~/stores/menu'
 
 definePageMeta({
-  title: 'Menu Filters - Menu Ordering App'
+  title: 'Menu Filters'
 })
 
 const menuStore = useMenuStore()
 const router = useRouter()
+const { t } = useI18n()
 
 // Reactive state
 const selectedCategories = ref<string[]>([])

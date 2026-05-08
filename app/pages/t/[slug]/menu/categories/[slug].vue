@@ -38,7 +38,7 @@
         <div class="category-page__search-box">
           <BaseInput
             v-model="searchQuery"
-            placeholder="Search in this category..."
+            :placeholder="$t('menu.searchInCategory')"
             class="category-page__search-input"
           >
             <template #prefix>
@@ -53,11 +53,11 @@
             v-model="sortBy"
             class="category-page__sort-select"
           >
-            <option value="name">Sort by Name</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="popular">Most Popular</option>
-            <option value="calories">Calories</option>
+            <option value="name">{{ $t('menu.sortByName') }}</option>
+            <option value="price-low">{{ $t('menu.sortByPriceLow') }}</option>
+            <option value="price-high">{{ $t('menu.sortByPriceHigh') }}</option>
+            <option value="popular">{{ $t('menu.sortByPopular') }}</option>
+            <option value="calories">{{ $t('menu.sortByCalories') }}</option>
           </select>
           
           <BaseButton 
@@ -66,7 +66,7 @@
             @click="showFilters = !showFilters"
           >
             <BaseIcon name="filter" size="sm" class="category-page__filter-icon" />
-            Filters
+            {{ $t('menu.filters.title') }}
           </BaseButton>
         </div>
       </div>
@@ -85,7 +85,7 @@
       <!-- Loading State -->
       <div v-if="menuStore.loading" class="category-page__state category-page__state--loading">
         <div class="category-page__spinner"/>
-        <AppText class="category-page__state-text">Loading {{ category?.name || 'category' }}...</AppText>
+        <AppText class="category-page__state-text">{{ $t('orders.loading') }}</AppText>
       </div>
 
       <!-- Error State -->
@@ -93,7 +93,7 @@
         <BaseIcon name="alert-circle" size="xl" class="category-page__state-icon category-page__state-icon--error" />
         <AppText class="category-page__state-text">{{ menuStore.error }}</AppText>
         <BaseButton @click="loadCategoryData">
-          Try Again
+          {{ $t('orders.tracking.tryAgain') }}
         </BaseButton>
       </div>
 
@@ -111,12 +111,12 @@
         <div v-else class="category-page__state category-page__state--empty">
           <BaseIcon name="search" size="xl" class="category-page__state-icon" />
           <AppHeading level="h3" size="heading-lg" class="category-page__state-title">
-            No items found
+            {{ $t('menu.noItemsFound') }}
           </AppHeading>
           <AppText class="category-page__state-text">
             {{ searchQuery ? 
-              `No items match "${searchQuery}" in this category.` : 
-              'This category is currently empty.' 
+              $t('menu.noItemsMatch', { query: searchQuery }) : 
+              $t('menu.categoryEmpty') 
             }}
           </AppText>
           <div class="category-page__state-actions">
@@ -125,11 +125,11 @@
               variant="secondary"
               @click="clearSearch"
             >
-              Clear Search
+              {{ $t('menu.clearSearch') }}
             </BaseButton>
             <NuxtLink to="/menu/categories" class="category-page__state-link">
               <BaseButton variant="secondary">
-                Browse Other Categories
+                {{ $t('menu.browseOtherCategories') }}
               </BaseButton>
             </NuxtLink>
           </div>
@@ -180,12 +180,13 @@ import { useTenantSettings } from '~/composables/useTenant'
 
 // Page setup
 definePageMeta({
-  title: 'Category - Menu'
+  title: 'Category'
 })
 
 // Route and stores
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const menuStore = useMenuStore()
 const tenantStore = useTenantStore()
 const { formatCurrency } = useTenantSettings()

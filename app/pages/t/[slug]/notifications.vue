@@ -5,11 +5,11 @@
       <div class="flex items-center gap-3 mb-4">
         <BaseIcon name="bell" size="lg" class="text-primary-orange" />
         <AppHeading level="h1" size="display-md" class="text-white">
-          Notifications
+          {{ $t('notifications.title') }}
         </AppHeading>
       </div>
       <AppText size="body-lg" class="text-neutral-20">
-        Stay updated with your orders and special offers
+        {{ $t('notifications.subtitle') }}
       </AppText>
     </div>
 
@@ -26,35 +26,35 @@
           size="sm"
           @click="setFilter('all')"
         >
-          All ({{ notifications.length }})
+          {{ $t('notifications.all') }} ({{ notifications.length }})
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'unread' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('unread')"
         >
-          Unread ({{ unreadCount }})
+          {{ $t('notifications.unread') }} ({{ unreadCount }})
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'order' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('order')"
         >
-          Orders
+          {{ $t('notifications.orders') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'promotion' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('promotion')"
         >
-          Promotions
+          {{ $t('notifications.promotions') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'system' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('system')"
         >
-          System
+          {{ $t('notifications.system') }}
         </BaseButton>
       </div>
       
@@ -66,7 +66,7 @@
           @click="markAllAsRead"
         >
           <BaseIcon name="check-circle" size="sm" class="mr-2" />
-          Mark All Read
+          {{ $t('notifications.markAllRead') }}
         </BaseButton>
         <BaseButton 
           variant="ghost" 
@@ -75,7 +75,7 @@
           @click="clearAllNotifications"
         >
           <BaseIcon name="trash" size="sm" class="mr-2" />
-          Clear All
+          {{ $t('notifications.clearAll') }}
         </BaseButton>
       </div>
     </div>
@@ -92,16 +92,16 @@
       <div v-if="!notificationStore.loading && filteredNotifications.length === 0 && activeFilter !== 'all'" class="text-center py-16">
         <BaseIcon name="filter" size="4xl" class="text-neutral-80 mx-auto mb-6" />
         <h3 class="text-white text-xl font-semibold mb-4">
-          No {{ activeFilter }} notifications
+          {{ $t('notifications.noFiltered', { type: activeFilter }) }}
         </h3>
         <p class="text-neutral-20 mb-8 max-w-md mx-auto">
-          You don't have any {{ activeFilter }} notifications at the moment.
+          {{ $t('notifications.noFilteredText') }}
         </p>
         <BaseButton 
           variant="secondary"
           @click="setFilter('all')"
         >
-          View All Notifications
+          {{ $t('notifications.viewAll') }}
         </BaseButton>
       </div>
 
@@ -118,7 +118,7 @@
             size="sm" 
             class="mr-2 animate-spin" 
           />
-          Load More Notifications
+          {{ $t('notifications.loadMore') }}
         </BaseButton>
       </div>
     </div>
@@ -129,13 +129,13 @@
         <NuxtLink to="/orders">
           <BaseButton variant="secondary">
             <BaseIcon name="receipt" size="sm" class="mr-2" />
-            View Orders
+            {{ $t('notifications.viewOrders') }}
           </BaseButton>
         </NuxtLink>
         <NuxtLink to="/promotions">
           <BaseButton variant="secondary">
             <BaseIcon name="tag" size="sm" class="mr-2" />
-            View Promotions
+            {{ $t('notifications.viewPromotions') }}
           </BaseButton>
         </NuxtLink>
         <BaseButton 
@@ -143,7 +143,7 @@
           @click="requestNotificationPermission"
         >
           <BaseIcon name="bell" size="sm" class="mr-2" />
-          Enable Push Notifications
+          {{ $t('notifications.enablePush') }}
         </BaseButton>
       </div>
     </div>
@@ -162,7 +162,7 @@ import AppText from '~/components/base/AppText.vue'
 
 // Page setup
 definePageMeta({
-  title: 'Notifications - Menu Ordering App'
+  title: 'notifications.title'
 })
 
 const notificationStore = useNotificationStore()
@@ -236,7 +236,7 @@ const markAllAsRead = () => {
 }
 
 const clearAllNotifications = () => {
-  if (confirm('Are you sure you want to clear all notifications?')) {
+  if (confirm(useI18n().t('notifications.clearConfirm'))) {
     clearAll()
     notificationStore.clearAll()
   }
@@ -298,12 +298,12 @@ const requestNotificationPermission = async () => {
   const granted = await requestPermission()
   
   if (granted) {
-    new Notification('Notifications Enabled!', {
-      body: 'You will now receive push notifications for order updates.',
+    new Notification(useI18n().t('notifications.permissionTitle'), {
+      body: useI18n().t('notifications.permissionBody'),
       icon: '/icon-192x192.png'
     })
   } else {
-    alert('Please enable notifications in your browser settings to receive push notifications.')
+    alert(useI18n().t('notifications.permissionDenied'))
   }
 }
 

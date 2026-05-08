@@ -4,7 +4,7 @@
     <div v-if="loading" class="order-details-page__loading">
       <div class="order-details-page__loading-content">
         <div class="order-details-page__spinner" />
-        <AppText>Loading order details...</AppText>
+        <AppText>{{ $t('orders.loadingDetails') }}</AppText>
       </div>
     </div>
 
@@ -12,14 +12,14 @@
     <div v-else-if="error" class="order-details-page__error">
       <div class="order-details-page__error-content">
         <BaseIcon name="alert-circle" size="xl" class="order-details-page__error-icon" />
-        <AppHeading level="h2" size="heading-lg">Order Not Found</AppHeading>
+        <AppHeading level="h2" size="heading-lg">{{ $t('orders.notFound') }}</AppHeading>
         <AppText>
           {{ error }}
         </AppText>
         <div class="order-details-page__error-actions">
-          <BaseButton @click="goBack">Go Back</BaseButton>
+          <BaseButton @click="goBack">{{ $t('orders.goBack') }}</BaseButton>
           <NuxtLink to="/orders">
-            <BaseButton variant="secondary">View All Orders</BaseButton>
+            <BaseButton variant="secondary">{{ $t('orders.viewAll') }}</BaseButton>
           </NuxtLink>
         </div>
       </div>
@@ -394,7 +394,7 @@
                   <BaseTextarea
                     v-model="issueForm.description"
                     rows="4"
-                    placeholder="Please describe the issue in detail..."
+                    :placeholder="$t('orders.describeIssuePlaceholder')"
                     required
                   />
                 </div>
@@ -435,13 +435,16 @@ import { useNavigation } from '~/composables/useNavigation'
 
 // Page setup
 definePageMeta({
-  title: 'История заказа',
 })
 
 // Route and stores
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
+
+useHead({
+  title: t('orders.historyTitle')
+})
 
 const orderStore = useOrderStore()
 const cartStore = useCartStore()
@@ -631,10 +634,10 @@ const submitIssue = async () => {
     issueForm.value = { type: '', description: '' }
 
     // Show success message
-    alert('Issue submitted successfully! We will contact you soon.')
+    alert(t('orders.issueSubmitted'))
   } catch (error) {
     console.error('Failed to submit issue:', error)
-    alert('Failed to submit issue. Please try again.')
+    alert(t('orders.issueFailed'))
   } finally {
     submittingIssue.value = false
   }
@@ -655,7 +658,7 @@ onMounted(() => {
 watchEffect(() => {
   if (order.value) {
     useHead({
-      title: `Order #${order.value.id} - Menu Ordering App`,
+      title: t('orders.orderTitle', { number: order.value.id }),
     })
   }
 })

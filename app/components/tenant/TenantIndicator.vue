@@ -19,7 +19,7 @@
         variant="ghost"
         size="xs"
         class="tenant-indicator__switch-btn"
-        aria-label="Switch restaurant"
+        :aria-label="$t('tenant.switch')"
         @click="handleSwitch"
       >
         <BaseIcon name="refresh" size="xs" />

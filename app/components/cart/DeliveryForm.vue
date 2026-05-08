@@ -143,9 +143,8 @@
     <!-- Contact Information -->
     <div class="form-group">
       <label for="delivery-phone" class="form-label">
-        {{ $t('form.phone') }}
-        <span v-if="!isTelegram">*</span>
-        <span v-else>(Optional)</span>
+        {{ $t('form.phone') }} *
+        <span v-if="isTelegram">{{ $t('common.optional') }}</span>
       </label>
       <div class="phone-input-group">
         <BaseInput
@@ -164,11 +163,11 @@
           @click="requestTelegramContact"
         >
           <BaseIcon name="telegram" size="sm" />
-          {{ $t('checkout.get_from_tg', 'Из Telegram') }}
+          {{ $t('checkout.get_from_tg') }}
         </BaseButton>
       </div>
       <p class="hint-text">
-        {{ $t('form.phoneHint', 'Мы перезвоним вам при необходимости') }}
+        {{ $t('form.phoneHint') }}
       </p>
     </div>
 
@@ -270,7 +269,7 @@ const maxTime = computed(() => '22:00')
 
 const estimatedTime = computed(() => {
   const baseTime = localDeliveryInfo.value.type === 'delivery' ? 45 : 25
-  return `${baseTime}-${baseTime + 15} min`
+  return `${baseTime}-${baseTime + 15} ${t('delivery.min')}`
 })
 
 const deliveryFee = computed(() => {
@@ -334,7 +333,7 @@ const validateField = (field: keyof DeliveryInfo) => {
       } else if (localDeliveryInfo.value.phone?.trim()) {
         const phoneRegex = /^\+?[\d\s\-()]{10,}$/
         if (!phoneRegex.test(localDeliveryInfo.value.phone)) {
-          errors.phone = t('form.phoneInvalid', 'Некорректный номер')
+          errors.phone = t('form.phoneInvalid')
         } else {
           delete errors.phone
         }
@@ -385,7 +384,7 @@ const requestTelegramContact = () => {
     })
   } else {
     // Fallback if not supported
-    alert(t('errors.not_supported', 'Ваш клиент Telegram не поддерживает эту функцию'))
+    alert(t('errors.not_supported'))
   }
 }
 

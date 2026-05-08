@@ -5,20 +5,20 @@
     <div class="summary-rows">
       <!-- Subtotal -->
       <div class="summary-row">
-        <span class="summary-label">{{ $t('checkout.subtotal', 'Сумма') }}</span>
+        <span class="summary-label">{{ $t('cart.subtotal') }}</span>
         <span class="summary-value">{{ formatPrice(subtotal) }}</span>
       </div>
 
       <!-- Delivery Fee -->
       <div v-if="showDeliveryFee || deliveryFee > 0" class="summary-row">
-        <span class="summary-label">{{ $t('checkout.deliveryFee', 'Доставка') }}</span>
+        <span class="summary-label">{{ $t('cart.deliveryFee') }}</span>
         <span v-if="deliveryFee > 0" class="summary-value">{{ formatPrice(deliveryFee) }}</span>
-        <span v-else class="summary-value free">{{ $t('checkout.free', 'Бесплатно') }}</span>
+        <span v-else class="summary-value free">{{ $t('checkout.free') }}</span>
       </div>
 
       <!-- Discount -->
       <div v-if="discount > 0" class="summary-row discount">
-        <span class="summary-label">{{ $t('checkout.discount', 'Скидка') }}</span>
+        <span class="summary-label">{{ $t('cart.discount') }}</span>
         <span class="summary-value">-{{ formatPrice(discount) }}</span>
       </div>
     </div>
@@ -28,14 +28,14 @@
 
     <!-- Total -->
     <div class="summary-total">
-      <span class="total-label">{{ $t('checkout.total', 'Итого') }}</span>
+      <span class="total-label">{{ $t('cart.total') }}</span>
       <span class="total-value">{{ formatPrice(total) }}</span>
     </div>
 
     <!-- Minimum Order Notice -->
     <div v-if="showMinimumNotice" class="min-order-notice">
       <BaseIcon name="info" size="xs" class="mr-1" />
-      <span>{{ $t('checkout.minOrderNotice', { amount: formatPrice(remainingAmount) }, `Нужно добавить еще {amount} до минимального заказа`) }}</span>
+      <span>{{ $t('checkout.minOrderNotice', { amount: formatPrice(remainingAmount) }) }}</span>
     </div>
   </div>
 </template>

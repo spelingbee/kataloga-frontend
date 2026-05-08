@@ -1,7 +1,7 @@
 <template>
   <EmptyState
     icon="utensils"
-    title="No menu items found"
+    :title="$t('menu.noItems')"
     :description="description"
     :action-text="actionText"
     action-icon="refresh-cw"
@@ -24,23 +24,24 @@ defineEmits<{
   retry: []
 }>()
 
+const { t } = useI18n()
 const description = computed(() => {
   if (props.isSearch) {
-    return "We couldn't find any dishes matching your search. Try different keywords or browse our categories."
+    return t('menu.searchNoItemsDesc')
   }
   
   if (props.isFilter) {
-    return "No dishes match your current filters. Try adjusting your criteria or clear filters to see all items."
+    return t('menu.filterNoItemsDesc')
   }
   
-  return "Our menu is currently being updated. Please try again in a moment."
+  return t('menu.noItemsDesc')
 })
 
 const actionText = computed(() => {
   if (props.isSearch || props.isFilter) {
-    return "Clear filters"
+    return t('common.clearFilters')
   }
   
-  return "Refresh menu"
+  return t('menu.refresh')
 })
 </script>

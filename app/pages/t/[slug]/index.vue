@@ -26,7 +26,7 @@
         <p class="home-hero__subtitle">
           {{
             tenantStore.tenantBranding?.description ||
-            $t('home.subtitle', 'Заказывайте с доставкой быстро и удобно')
+            $t('home.subtitle')
           }}
         </p>
       </template>
@@ -40,7 +40,7 @@
           :class="{ 'category-pill--active': !selectedCategoryId }"
           @click="selectCategory(null)"
         >
-          {{ $t('common.all', 'Все') }}
+          {{ $t('common.all') }}
         </button>
         <button
           v-for="category in categories"
@@ -69,7 +69,7 @@
       <!-- Loading/Error States -->
       <div v-if="menuStore.loading && displayItems.length === 0" class="home-menu__state">
         <div class="spinner" />
-        <p>{{ $t('common.loading', 'Загрузка...') }}</p>
+        <p>{{ $t('common.loading') }}</p>
       </div>
 
       <div
@@ -79,7 +79,7 @@
         <BaseIcon name="alert-circle" size="xl" />
         <p>{{ menuStore.error }}</p>
         <BaseButton @click="menuStore.fetchMenu()">
-          {{ $t('common.retry', 'Повторить') }}
+          {{ $t('common.retry') }}
         </BaseButton>
       </div>
 
@@ -89,8 +89,8 @@
       <!-- Empty State -->
       <div v-if="!menuStore.loading && displayItems.length === 0" class="home-menu__state">
         <BaseIcon name="search" size="xl" />
-        <h3>{{ $t('common.not_found', 'Ничего не найдено') }}</h3>
-        <p>{{ $t('common.try_another_filter', 'Попробуйте сменить категорию или поиск') }}</p>
+        <h3>{{ $t('common.not_found') }}</h3>
+        <p>{{ $t('common.try_another_filter') }}</p>
       </div>
     </main>
   </div>
@@ -129,7 +129,7 @@ const displayItems = computed(() => {
 
 const selectedCategoryName = computed(() => {
   if (!selectedCategoryId.value) return catalogLabel.value
-  return categories.value.find(c => c.id === selectedCategoryId.value)?.name || $t('terminology.category', 'Категория')
+  return categories.value.find(c => c.id === selectedCategoryId.value)?.name || $t('terminology.category')
 })
 
 // Methods

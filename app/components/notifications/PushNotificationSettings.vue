@@ -10,9 +10,9 @@
         <div class="push-notification-settings__alert-content">
           <BaseIcon name="exclamation-triangle" class="push-notification-settings__alert-icon" />
           <div class="push-notification-settings__alert-text">
-            <h4 class="push-notification-settings__alert-title">Not Supported</h4>
+            <h4 class="push-notification-settings__alert-title">{{ $t('notifications.settings.notSupported') }}</h4>
             <p class="push-notification-settings__alert-message">
-              Push notifications are not supported in your browser.
+              {{ $t('notifications.settings.notSupportedDesc') }}
             </p>
           </div>
         </div>
@@ -22,7 +22,7 @@
       <div v-else class="push-notification-settings__status">
         <div class="push-notification-settings__status-header">
           <div class="push-notification-settings__status-info">
-            <h4 class="push-notification-settings__status-title">Notification Status</h4>
+            <h4 class="push-notification-settings__status-title">{{ $t('notifications.settings.statusTitle') }}</h4>
             <p class="push-notification-settings__status-description">
               {{ getPermissionDescription() }}
             </p>
@@ -59,9 +59,9 @@
           >
             <span v-if="loading" class="push-notification-settings__button-content">
               <div class="push-notification-settings__spinner"/>
-              Enabling...
+              {{ $t('notifications.settings.enabling') }}
             </span>
-            <span v-else>Enable Notifications</span>
+            <span v-else>{{ $t('notifications.settings.enable') }}</span>
           </button>
 
           <button
@@ -76,9 +76,9 @@
           >
             <span v-if="loading" class="push-notification-settings__button-content">
               <div class="push-notification-settings__spinner"/>
-              Disabling...
+              {{ $t('notifications.settings.disabling') }}
             </span>
-            <span v-else>Disable Notifications</span>
+            <span v-else>{{ $t('notifications.settings.disable') }}</span>
           </button>
 
           <button
@@ -91,20 +91,20 @@
             ]"
             @click="testNotification"
           >
-            Test Notification
+            {{ $t('notifications.settings.test') }}
           </button>
         </div>
       </div>
 
       <!-- Notification Preferences -->
       <div v-if="isSubscribed" class="push-notification-settings__preferences">
-        <h4 class="push-notification-settings__preferences-title">Notification Preferences</h4>
+        <h4 class="push-notification-settings__preferences-title">{{ $t('notifications.settings.preferencesTitle') }}</h4>
         
         <div class="push-notification-settings__preferences-list">
           <div class="push-notification-settings__preference">
             <div class="push-notification-settings__preference-info">
-              <label class="push-notification-settings__preference-label">Order Updates</label>
-              <p class="push-notification-settings__preference-description">Get notified about your order status changes</p>
+              <label class="push-notification-settings__preference-label">{{ $t('notifications.settings.orderUpdates') }}</label>
+              <p class="push-notification-settings__preference-description">{{ $t('notifications.settings.orderUpdatesDesc') }}</p>
             </div>
             <BaseToggle
               v-model="preferences.orderUpdates"
@@ -114,8 +114,8 @@
 
           <div class="push-notification-settings__preference">
             <div class="push-notification-settings__preference-info">
-              <label class="push-notification-settings__preference-label">Promotions</label>
-              <p class="push-notification-settings__preference-description">Receive notifications about special offers</p>
+              <label class="push-notification-settings__preference-label">{{ $t('notifications.settings.promotions') }}</label>
+              <p class="push-notification-settings__preference-description">{{ $t('notifications.settings.promotionsDesc') }}</p>
             </div>
             <BaseToggle
               v-model="preferences.promotions"
@@ -125,8 +125,8 @@
 
           <div class="push-notification-settings__preference">
             <div class="push-notification-settings__preference-info">
-              <label class="push-notification-settings__preference-label">Reminders</label>
-              <p class="push-notification-settings__preference-description">Get reminded about incomplete orders</p>
+              <label class="push-notification-settings__preference-label">{{ $t('notifications.settings.reminders') }}</label>
+              <p class="push-notification-settings__preference-description">{{ $t('notifications.settings.remindersDesc') }}</p>
             </div>
             <BaseToggle
               v-model="preferences.reminders"
@@ -141,7 +141,7 @@
         <div class="push-notification-settings__alert-content">
           <BaseIcon name="exclamation-circle" class="push-notification-settings__alert-icon" />
           <div class="push-notification-settings__alert-text">
-            <h4 class="push-notification-settings__alert-title">Error</h4>
+            <h4 class="push-notification-settings__alert-title">{{ $t('common.error') }}</h4>
             <p class="push-notification-settings__alert-message">{{ error }}</p>
           </div>
         </div>
@@ -152,7 +152,7 @@
         <div class="push-notification-settings__alert-content">
           <BaseIcon name="check-circle" class="push-notification-settings__alert-icon" />
           <div class="push-notification-settings__alert-text">
-            <h4 class="push-notification-settings__alert-title">Success</h4>
+            <h4 class="push-notification-settings__alert-title">{{ $t('common.success') }}</h4>
             <p class="push-notification-settings__alert-message">{{ success }}</p>
           </div>
         </div>
@@ -206,16 +206,16 @@ const enableNotifications = async () => {
   try {
     const result = await subscribe()
     if (result) {
-      success.value = 'Push notifications enabled successfully!'
+      success.value = t('notifications.settings.successEnabled')
       const prefs = await getPreferences()
       if (prefs) {
         preferences.value = prefs
       }
     } else {
-      error.value = 'Failed to enable push notifications. Please check your browser settings.'
+      error.value = t('notifications.settings.errorEnable')
     }
   } catch (err: any) {
-    error.value = err.message || 'An error occurred while enabling notifications.'
+    error.value = err.message || t('notifications.settings.errorEnable')
   } finally {
     loading.value = false
   }
@@ -228,9 +228,9 @@ const disableNotifications = async () => {
 
   try {
     await unsubscribe()
-    success.value = 'Push notifications disabled successfully!'
+    success.value = t('notifications.settings.successDisabled')
   } catch (err: any) {
-    error.value = err.message || 'An error occurred while disabling notifications.'
+    error.value = err.message || t('notifications.settings.errorUpdate')
   } finally {
     loading.value = false
   }
@@ -243,9 +243,9 @@ const testNotification = async () => {
 
   try {
     await sendTestNotification()
-    success.value = 'Test notification sent!'
+    success.value = t('notifications.settings.successTest')
   } catch (err: any) {
-    error.value = err.message || 'Failed to send test notification.'
+    error.value = err.message || t('notifications.settings.errorTest')
   } finally {
     loading.value = false
   }
@@ -255,17 +255,17 @@ const updatePreferences = async () => {
   try {
     await updateNotificationPreferences(preferences.value)
   } catch (err: any) {
-    error.value = err.message || 'Failed to update preferences.'
+    error.value = err.message || t('notifications.settings.errorUpdate')
   }
 }
 
 const getPermissionDescription = (): string => {
   if (permission.value === 'granted') {
-    return 'Notifications are enabled'
+    return t('notifications.settings.permissionGranted')
   } else if (permission.value === 'denied') {
-    return 'Notifications are blocked. Please enable them in your browser settings.'
+    return t('notifications.settings.permissionDenied')
   } else {
-    return 'Click the button below to enable notifications'
+    return t('notifications.settings.permissionDefault')
   }
 }
 
@@ -281,11 +281,11 @@ const getStatusColor = (): string => {
 
 const getStatusText = (): string => {
   if (permission.value === 'granted' && isSubscribed.value) {
-    return 'Enabled'
+    return t('notifications.settings.statusEnabled')
   } else if (permission.value === 'denied') {
-    return 'Blocked'
+    return t('notifications.settings.statusBlocked')
   } else {
-    return 'Disabled'
+    return t('notifications.settings.statusDisabled')
   }
 }
 </script>

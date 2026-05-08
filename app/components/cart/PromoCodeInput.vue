@@ -4,7 +4,7 @@
       <BaseInput
         v-model="promoCode"
         type="text"
-        placeholder="Enter promo code"
+        :placeholder="$t('cart.promoPlaceholder')"
         :disabled="loading"
         class="promo-code-input__field"
         @keyup.enter="applyCode"
@@ -17,7 +17,7 @@
         class="promo-code-input__button"
         @click="applyCode"
       >
-        Apply
+        {{ $t('cart.apply') }}
       </BaseButton>
     </div>
 
@@ -25,7 +25,7 @@
       <div class="promo-code-input__applied-content">
         <BaseIcon name="check-circle" size="sm" class="promo-code-input__check-icon" />
         <AppText size="body-sm" class="promo-code-input__applied-text">
-          {{ appliedCode }} applied
+          {{ appliedCode }} {{ $t('cart.applied') }}
         </AppText>
       </div>
       <BaseButton
@@ -58,7 +58,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
+import { useI18n } from 'vue-i18n'
 import AppText from '../base/AppText.vue'
+
+// I18n
+const { t } = useI18n()
 
 // Store
 const cartStore = useCartStore()
@@ -95,7 +99,7 @@ const applyCode = async () => {
       errorMessage.value = result.message
     }
   } catch (error: any) {
-    errorMessage.value = error.message || 'Failed to apply promo code'
+    errorMessage.value = error.message || t('cart.applyError')
   } finally {
     loading.value = false
   }

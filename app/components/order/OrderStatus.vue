@@ -51,7 +51,7 @@
       <!-- Tracking Updates -->
       <div v-if="order.trackingInfo?.updates?.length" class="order-status__updates">
         <AppText size="body-sm" class="order-status__updates-title">
-          Order Updates
+          {{ $t('order.updates') }}
         </AppText>
         <div class="order-status__updates-list">
           <div
@@ -85,7 +85,7 @@
           :loading="loading"
           @click="$emit('cancel-order', order.id)"
         >
-          Cancel Order
+          {{ $t('order.cancelOrder') }}
         </BaseButton>
 
         <!-- Repeat Order -->
@@ -96,7 +96,7 @@
           class="order-status__action order-status__action--repeat"
           @click="$emit('repeat-order', order.id)"
         >
-          Order Again
+          {{ $t('order.orderAgain') }}
         </BaseButton>
 
         <!-- Contact Support -->
@@ -107,7 +107,7 @@
           class="order-status__action order-status__action--support"
           @click="$emit('contact-support', order.id)"
         >
-          Contact Support
+          {{ $t('order.contactSupport') }}
         </BaseButton>
 
         <!-- Track Delivery -->
@@ -118,7 +118,7 @@
           class="order-status__action order-status__action--track"
           @click="$emit('track-delivery', order.id)"
         >
-          Track Delivery
+          {{ $t('order.trackDelivery') }}
         </BaseButton>
       </div>
     </div>
@@ -284,11 +284,11 @@ const formatTime = (dateString: string): string => {
 
 const formatEstimatedTime = (minutes: number): string => {
   if (minutes < 60) {
-    return `${minutes} мин.`
+    return `${minutes} ${t('menu.units.minutes')}`
   } else {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return `${hours}ч ${remainingMinutes}м`
+    return `${hours}${t('menu.units.hours')} ${remainingMinutes}${t('menu.units.minutes_short')}`
   }
 }
 </script>

@@ -63,7 +63,7 @@
         <!-- Allergen Information -->
         <div v-if="isFoodBusiness && menuItem.allergens && menuItem.allergens.length > 0" class="menu-item-detail__allergens">
           <AppText size="body-sm" color="white" class="font-semibold">
-            {{ $t('menu.allergens', 'Аллергены') }}:
+            {{ $t('menu.allergens') }}:
           </AppText>
           <div class="menu-item-detail__allergen-list">
             <BaseBadge
@@ -80,31 +80,31 @@
         <!-- Nutrition Information -->
         <div v-if="isFoodBusiness && menuItem.nutritionInfo" class="menu-item-detail__nutrition">
           <AppText size="body-sm" color="white" class="font-semibold mb-2">
-            {{ $t('menu.nutrition', 'Пищевая ценность') }}:
+            {{ $t('menu.nutrition') }}:
           </AppText>
           <div class="menu-item-detail__nutrition-grid">
             <div class="menu-item-detail__nutrition-item">
-              <AppText size="caption" color="muted">{{ $t('menu.calories', 'Калории') }}</AppText>
+              <AppText size="caption" color="muted">{{ $t('menu.calories') }}</AppText>
               <AppText size="body-sm" color="white" class="font-medium">
-                {{ menuItem.nutritionInfo.calories }} cal
+                {{ menuItem.nutritionInfo.calories }} {{ $t('menu.units.calories') }}
               </AppText>
             </div>
             <div class="menu-item-detail__nutrition-item">
-              <AppText size="caption" color="muted">{{ $t('menu.protein', 'Белки') }}</AppText>
+              <AppText size="caption" color="muted">{{ $t('menu.protein') }}</AppText>
               <AppText size="body-sm" color="white" class="font-medium">
-                {{ menuItem.nutritionInfo.protein }}g
+                {{ menuItem.nutritionInfo.protein }}{{ $t('menu.units.grams') }}
               </AppText>
             </div>
             <div class="menu-item-detail__nutrition-item">
-              <AppText size="caption" color="muted">{{ $t('menu.carbs', 'Углеводы') }}</AppText>
+              <AppText size="caption" color="muted">{{ $t('menu.carbs') }}</AppText>
               <AppText size="body-sm" color="white" class="font-medium">
-                {{ menuItem.nutritionInfo.carbs }}g
+                {{ menuItem.nutritionInfo.carbs }}{{ $t('menu.units.grams') }}
               </AppText>
             </div>
             <div class="menu-item-detail__nutrition-item">
-              <AppText size="caption" color="muted">{{ $t('menu.fat', 'Жиры') }}</AppText>
+              <AppText size="caption" color="muted">{{ $t('menu.fat') }}</AppText>
               <AppText size="body-sm" color="white" class="font-medium">
-                {{ menuItem.nutritionInfo.fat }}g
+                {{ menuItem.nutritionInfo.fat }}{{ $t('menu.units.grams') }}
               </AppText>
             </div>
           </div>
@@ -113,7 +113,7 @@
         <!-- Variants -->
         <div v-if="variants.length > 0" class="menu-item-detail__variants">
           <AppText size="body-sm" color="white" class="font-semibold mb-2">
-            {{ $t('menu.variants', 'Варианты') }}:
+            {{ $t('menu.variants') }}:
           </AppText>
           <div class="u-flex u-flex-wrap u-gap-2">
             <BaseButton
@@ -145,7 +145,7 @@
         <!-- Quantity Selector -->
         <div class="menu-item-detail__quantity">
           <AppText size="body-sm" color="white" class="font-semibold">
-            {{ $t('menu.quantity', 'Количество') }}:
+            {{ $t('menu.quantity') }}:
           </AppText>
           <QuantitySelector
             v-model="quantity"
@@ -158,7 +158,7 @@
         <!-- Price and Add to Cart -->
         <div class="menu-item-detail__footer">
           <div class="menu-item-detail__price-section">
-            <AppText size="caption" color="muted">{{ $t('cart.total', 'Итого') }}</AppText>
+            <AppText size="caption" color="muted">{{ $t('cart.total') }}</AppText>
             <AppPrice :amount="totalPrice" size="xl" />
           </div>
           
@@ -170,14 +170,14 @@
             @click="handleAddToCart"
           >
             <BaseIcon name="shopping-cart" size="sm" />
-            {{ $t('cart.checkout', 'Оформить заказ') }}
+            {{ $t('menu.addToCart') }}
           </BaseButton>
         </div>
         
         <!-- Validation Error Message -->
         <div v-if="hasValidationErrors" class="menu-item-detail__error">
           <AppText size="body-sm" color="red">
-            {{ $t('menu.selectRequired', 'Пожалуйста, выберите все обязательные опции') }}
+            {{ $t('menu.selectRequired') }}
           </AppText>
         </div>
       </div>
@@ -288,7 +288,7 @@ const validateModifiers = () => {
       if (selectedCount < group.minSelection) {
         hasValidationErrors.value = true
         validationErrors.value.push(
-          `Please select at least ${group.minSelection} option(s) for ${group.name}`
+          t('menu.selectRequiredError', { count: group.minSelection, name: group.name })
         )
       }
     }
@@ -297,7 +297,7 @@ const validateModifiers = () => {
   // Check if variant is required but not selected
   if (variants.value.length > 0 && !selectedVariant.value) {
     hasValidationErrors.value = true
-    validationErrors.value.push(t('menu.selectVariant', 'Пожалуйста, выберите вариант'))
+    validationErrors.value.push(t('menu.selectVariant'))
   }
 }
 
@@ -364,7 +364,7 @@ watch(() => props.modelValue, (isOpen) => {
     
     // Setup Telegram MainButton if in Telegram
     if (telegram.isTelegram.value) {
-      const buttonText = `${t('menu.addToCart', 'В корзину')} - ${totalPrice.value.toFixed(2)}`
+      const buttonText = `${t('menu.addToCart')} - ${totalPrice.value.toFixed(2)}`
       cleanupMainButton = telegram.showMainButton(buttonText, handleAddToCart)
       
       // Setup Telegram BackButton
@@ -392,7 +392,7 @@ watch(() => props.modelValue, (isOpen) => {
 // Watch for price changes to update MainButton text
 watch(totalPrice, (newPrice) => {
   if (telegram.isTelegram.value && props.modelValue) {
-    const buttonText = `${t('menu.addToCart', 'В корзину')} - ${newPrice.toFixed(2)}`
+    const buttonText = `${t('menu.addToCart')} - ${newPrice.toFixed(2)}`
     // Update button text by recreating it
     if (cleanupMainButton) {
       cleanupMainButton()

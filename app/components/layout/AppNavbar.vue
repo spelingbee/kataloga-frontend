@@ -1,16 +1,19 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '~/stores/user'
+import { useI18n } from 'vue-i18n'
 import { useTenant } from '~/composables/useTenant'
 
 const route = useRoute()
+const { t } = useI18n()
 const userStore = useUserStore()
 const { tPath } = useTenant()
 
-const menuItems = [
-  { path: '/', label: 'Меню', icon: 'menu-book' },
-  { path: '/orders', label: 'Заказы', icon: 'receipt' },
-]
+const menuItems = computed(() => [
+  { path: '/', label: t('menu.title'), icon: 'menu-book' },
+  { path: '/orders', label: t('profile.orders'), icon: 'receipt' },
+])
 
 const isActive = (path: string) => {
   const dynamicPath = tPath(path)
@@ -46,11 +49,11 @@ const isActive = (path: string) => {
     <div class="app-navbar__footer">
       <NuxtLink v-if="userStore.isAuthenticated" :to="tPath('/profile')" class="app-navbar__item">
         <BaseIcon name="user" size="md" class="app-navbar__item-icon" />
-        <span class="app-navbar__item-text">Профиль</span>
+        <span class="app-navbar__item-text">{{ $t('profile.title') }}</span>
       </NuxtLink>
       <NuxtLink v-else to="/auth/login" class="app-navbar__item">
         <BaseIcon name="user" size="md" class="app-navbar__item-icon" />
-        <span class="app-navbar__item-text">Войти</span>
+        <span class="app-navbar__item-text">{{ $t('auth.login.submit') }}</span>
       </NuxtLink>
     </div>
   </nav>

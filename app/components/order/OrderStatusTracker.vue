@@ -36,7 +36,7 @@
     <!-- Timeline -->
     <div v-if="showTimeline && timeline.length > 0" class="order-status-tracker__timeline">
       <AppHeading level="h4" size="heading-sm" class="order-status-tracker__timeline-title">
-        {{ $t('order.timeline', 'История заказа') }}
+        {{ $t('order.timeline') }}
       </AppHeading>
       
       <div class="order-status-tracker__timeline-list">
@@ -68,7 +68,7 @@
         @click="$emit('cancel-order', order.id)"
       >
         <BaseIcon name="x" size="sm" class="mr-2" />
-        {{ $t('common.cancelOrder', 'Отменить заказ') }}
+        {{ $t('order.cancelOrder') }}
       </BaseButton>
 
       <BaseButton
@@ -78,7 +78,7 @@
         @click="$emit('contact-support', order.id)"
       >
         <BaseIcon name="help-circle" size="sm" class="mr-2" />
-        {{ $t('common.contactSupport', 'Связаться с поддержкой') }}
+        {{ $t('order.contactSupport') }}
       </BaseButton>
 
       <BaseButton
@@ -88,7 +88,7 @@
         @click="$emit('track-delivery', order.id)"
       >
         <BaseIcon name="map" size="sm" class="mr-2" />
-        {{ $t('order.trackDelivery', 'Отследить доставку') }}
+        {{ $t('order.trackDelivery') }}
       </BaseButton>
     </div>
   </div>
@@ -198,7 +198,7 @@ const getStatusDescription = (status: OrderStatusEnum): string => {
 // Date/time formatting
 const formatTime = (dateString: string): string => {
   const date = new Date(dateString)
-  return new Intl.DateTimeFormat('ru-RU', {
+  return new Intl.DateTimeFormat(t('locale', 'ru-RU'), {
     hour: '2-digit',
     minute: '2-digit'
   }).format(date)
@@ -206,11 +206,11 @@ const formatTime = (dateString: string): string => {
 
 const formatEstimatedTime = (minutes: number): string => {
   if (minutes < 60) {
-    return t('order.timeRemaining', { count: minutes }, `${minutes} мин осталось`)
+    return t('order.timeRemaining', { count: minutes, unit: t('menu.units.minutes') })
   } else {
     const hours = Math.floor(minutes / 60)
     const remainingMinutes = minutes % 60
-    return `${hours}ч ${remainingMinutes}м осталось`
+    return `${hours}${t('menu.units.hours')} ${remainingMinutes}${t('menu.units.minutes_short')} ${t('menu.units.remaining')}`
   }
 }
 </script>

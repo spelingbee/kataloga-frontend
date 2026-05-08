@@ -16,7 +16,7 @@
         </div>
         <div class="payment-method-selector__method-info">
           <span class="payment-method-selector__method-name">{{ $t('payment.methods.CASH') }}</span>
-          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.CASH_DESC', 'Оплата наличными при получении') }}</span>
+          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.CASH_DESC') }}</span>
         </div>
         <div v-if="selectedMethod === 'CASH'" class="payment-method-selector__method-check">
           <BaseIcon name="check" size="sm" />
@@ -34,7 +34,7 @@
         </div>
         <div class="payment-method-selector__method-info">
           <span class="payment-method-selector__method-name">{{ $t('payment.methods.TRANSFER') }}</span>
-          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.TRANSFER_DESC', 'Перевод на карту или кошелек') }}</span>
+          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.TRANSFER_DESC') }}</span>
         </div>
         <div v-if="selectedMethod === 'TRANSFER'" class="payment-method-selector__method-check">
           <BaseIcon name="check" size="sm" />
@@ -53,7 +53,7 @@
         </div>
         <div class="payment-method-selector__method-info">
           <span class="payment-method-selector__method-name">{{ $t('payment.methods.STRIPE') }}</span>
-          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.STRIPE_DESC', 'Оплата картой на сайте') }}</span>
+          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.STRIPE_DESC') }}</span>
         </div>
         <div v-if="selectedMethod === 'STRIPE'" class="payment-method-selector__method-check">
           <BaseIcon name="check" size="md" />
@@ -102,17 +102,17 @@ const selectMethod = (method: PaymentMethodType) => {
 const selectedMethodInfo = computed(() => {
   if (selectedMethod.value === 'CASH') {
     return {
-      bannerText: t('payment.methods.CASH_INFO', 'Оплата наличными при получении заказа.')
+      bannerText: t('payment.methods.CASH_INFO')
     }
   }
   if (selectedMethod.value === 'TRANSFER') {
     return {
-      bannerText: t('payment.methods.TRANSFER_INFO', 'После оформления заказа мы пришлем реквизиты для перевода.')
+      bannerText: t('payment.methods.TRANSFER_INFO')
     }
   }
   if (selectedMethod.value === 'STRIPE') {
     return {
-      bannerText: t('payment.methods.STRIPE_DESC', 'Безопасная оплата картой на сайте.')
+      bannerText: t('payment.methods.STRIPE_INFO')
     }
   }
   return null

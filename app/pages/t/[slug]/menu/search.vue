@@ -5,7 +5,7 @@
       <NuxtLink to="/menu" class="search-page__back">
         <BaseIcon name="arrow-left" size="md" />
       </NuxtLink>
-      <h1 class="search-page__title">Поиск</h1>
+      <h1 class="search-page__title">{{ $t('search.title') }}</h1>
     </div>
 
     <!-- Search Bar -->
@@ -15,7 +15,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Поиск блюд..."
+          :placeholder="$t('search.placeholder')"
           class="search-page__input"
           @keyup.enter="performSearch"
         />
@@ -38,7 +38,7 @@
         @click="toggleQuickFilter(filter.key)"
       >
         <BaseIcon :name="filter.icon" size="xs" />
-        <span>{{ filter.label }}</span>
+        <span>{{ $t(`search.filters.${filter.key}`) }}</span>
       </button>
     </div>
 
@@ -47,20 +47,20 @@
       <!-- Loading State -->
       <div v-if="isSearching" class="search-page__loading">
         <BaseIcon name="loader" size="lg" class="search-page__spinner" />
-        <span>Ищем...</span>
+        <span>{{ $t('search.searching') }}</span>
       </div>
 
       <!-- Empty / Prompt State -->
       <div v-else-if="!searchQuery && !hasActiveFilters" class="search-page__empty">
         <BaseIcon name="search" size="4xl" class="search-page__empty-icon" />
-        <h2 class="search-page__empty-title">Найдите своё блюдо</h2>
+        <h2 class="search-page__empty-title">{{ $t('search.emptyTitle') }}</h2>
         <p class="search-page__empty-text">
-          Введите название блюда или ингредиент
+          {{ $t('search.emptyText') }}
         </p>
 
         <!-- Popular Searches -->
         <div v-if="searchSuggestions.length > 0" class="search-page__suggestions">
-          <span class="search-page__suggestions-label">Популярное:</span>
+          <span class="search-page__suggestions-label">{{ $t('search.popular') }}:</span>
           <div class="search-page__suggestion-tags">
             <button
               v-for="suggestion in searchSuggestions"
@@ -68,14 +68,14 @@
               class="search-page__suggestion-tag"
               @click="searchQuery = suggestion"
             >
-              {{ suggestion }}
+              {{ $t(`search.suggestions.${suggestion}`) }}
             </button>
           </div>
         </div>
 
         <!-- Categories -->
         <div v-if="popularCategories.length > 0" class="search-page__categories">
-          <span class="search-page__categories-label">Категории:</span>
+          <span class="search-page__categories-label">{{ $t('search.categories') }}:</span>
           <div class="search-page__category-grid">
             <NuxtLink
               v-for="category in popularCategories"
@@ -83,7 +83,7 @@
               :to="`/menu/categories/${category.id}`"
               class="search-page__category-card"
             >
-              {{ category.name }}
+              {{ $t(`search.popCategories.${category.id}`) }}
             </NuxtLink>
           </div>
         </div>
@@ -93,14 +93,14 @@
       <div v-else-if="searchResults.length > 0" class="search-page__results">
         <div class="search-page__results-header">
           <span class="search-page__results-count">
-            {{ searchResults.length }} {{ searchResults.length === 1 ? 'результат' : 'результатов' }}
-            <span v-if="searchQuery"> для "{{ searchQuery }}"</span>
+            {{ searchResults.length }} {{ formatResultsCount(searchResults.length) }}
+            <span v-if="searchQuery"> {{ $t('search.resultsFor', { query: searchQuery }) }}</span>
           </span>
           <select v-model="sortBy" class="search-page__sort">
-            <option value="relevance">По релевантности</option>
-            <option value="name">По названию</option>
-            <option value="price-low">Цена ↑</option>
-            <option value="price-high">Цена ↓</option>
+            <option value="relevance">{{ $t('search.relevance') }}</option>
+            <option value="name">{{ $t('search.name') }}</option>
+            <option value="price-low">{{ $t('search.priceLow') }}</option>
+            <option value="price-high">{{ $t('search.priceHigh') }}</option>
           </select>
         </div>
 
@@ -113,16 +113,16 @@
       <!-- No Results -->
       <div v-else class="search-page__no-results">
         <BaseIcon name="search-x" size="4xl" class="search-page__empty-icon" />
-        <h2 class="search-page__empty-title">Ничего не найдено</h2>
+        <h2 class="search-page__empty-title">{{ $t('search.noResults') }}</h2>
         <p class="search-page__empty-text">
-          Попробуйте изменить запрос или фильтры
+          {{ $t('search.noResultsText') }}
         </p>
         <div class="search-page__no-results-actions">
           <button class="search-page__action-btn" @click="clearAllFilters">
-            Сбросить фильтры
+            {{ $t('search.resetFilters') }}
           </button>
           <NuxtLink to="/menu" class="search-page__action-btn search-page__action-btn--ghost">
-            Всё меню
+            {{ $t('search.allMenu') }}
           </NuxtLink>
         </div>
       </div>
@@ -131,9 +131,9 @@
     <!-- Recent Searches -->
     <div v-if="recentSearches.length > 0 && !searchQuery" class="search-page__recent">
       <div class="search-page__recent-header">
-        <span class="search-page__recent-label">Недавние поиски</span>
+        <span class="search-page__recent-label">{{ $t('search.recent') }}</span>
         <button class="search-page__recent-clear" @click="clearRecentSearches">
-          Очистить
+          {{ $t('search.clear') }}
         </button>
       </div>
       <div class="search-page__recent-tags">
@@ -156,8 +156,9 @@ import type { MenuItem } from '~/types'
 import { useMenuStore } from '~/stores/menu'
 
 definePageMeta({
-  title: 'Поиск — Каталога'
+  title: 'search.title'
 })
+const { t } = useI18n()
 
 const menuStore = useMenuStore()
 const router = useRouter()
@@ -169,24 +170,24 @@ const sortBy = ref('relevance')
 const activeQuickFilters = ref<string[]>([])
 
 const searchSuggestions = ref([
-  'Пицца', 'Бургер', 'Салат', 'Паста', 'Десерт'
+  'pizza', 'burger', 'salad', 'pasta', 'dessert'
 ])
 
 const recentSearches = ref<string[]>([])
 
 const quickFilters = [
-  { key: 'vegetarian', label: 'Вегетарианское', icon: 'leaf' },
-  { key: 'spicy', label: 'Острое', icon: 'flame' },
-  { key: 'popular', label: 'Популярное', icon: 'star' },
-  { key: 'new', label: 'Новинки', icon: 'sparkles' }
+  { key: 'vegetarian', icon: 'leaf' },
+  { key: 'spicy', icon: 'flame' },
+  { key: 'popular', icon: 'star' },
+  { key: 'new', icon: 'sparkles' }
 ]
 
 const popularCategories = [
-  { id: 'fastfood', name: 'Фастфуд' },
-  { id: 'main-dishes', name: 'Основные блюда' },
-  { id: 'pizza', name: 'Пицца' },
-  { id: 'salads', name: 'Салаты' },
-  { id: 'desserts', name: 'Десерты' }
+  { id: 'fastfood' },
+  { id: 'main' },
+  { id: 'pizza' },
+  { id: 'salads' },
+  { id: 'desserts' }
 ]
 
 let searchTimeout: any = null
@@ -228,6 +229,12 @@ watch(searchQuery, (newQuery) => {
     isSearching.value = false
   }
 }, { immediate: true })
+
+const formatResultsCount = (count: number) => {
+  if (count % 10 === 1 && count % 100 !== 11) return t('common.result')
+  if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100)) return t('common.results_2')
+  return t('common.results')
+}
 
 const sortedResults = computed(() => {
   const results = [...searchResults.value]

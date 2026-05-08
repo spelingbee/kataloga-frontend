@@ -1,7 +1,7 @@
 <template>
   <div class="menu-filters">
     <div class="menu-filters__header">
-      <h3 class="menu-filters__title">Filters</h3>
+      <h3 class="menu-filters__title">{{ $t('menu.filters.title') }}</h3>
       <button class="menu-filters__close" @click="$emit('close')">
         <BaseIcon name="x" size="sm" />
       </button>
@@ -10,12 +10,12 @@
     <div class="menu-filters__content">
       <!-- Price Range -->
       <div class="menu-filters__section">
-        <h4 class="menu-filters__section-title">Price Range</h4>
+        <h4 class="menu-filters__section-title">{{ $t('menu.filters.priceRange') }}</h4>
         <div class="menu-filters__price-inputs">
           <BaseInput
             v-model="filters.priceMin"
             type="number"
-            placeholder="Min"
+            :placeholder="$t('menu.filters.min')"
             min="0"
             step="0.01"
           />
@@ -23,7 +23,7 @@
           <BaseInput
             v-model="filters.priceMax"
             type="number"
-            placeholder="Max"
+            :placeholder="$t('menu.filters.max')"
             min="0"
             step="0.01"
           />
@@ -32,7 +32,7 @@
 
       <!-- Dietary Options -->
       <div class="menu-filters__section">
-        <h4 class="menu-filters__section-title">Dietary</h4>
+        <h4 class="menu-filters__section-title">{{ $t('menu.filters.dietary') }}</h4>
         <div class="menu-filters__checkboxes">
           <label
             v-for="option in dietaryOptions"
@@ -44,7 +44,7 @@
               type="checkbox"
               :value="option.value"
             />
-            <span class="menu-filters__checkbox-label">{{ option.label }}</span>
+            <span class="menu-filters__checkbox-label">{{ $t(`menu.filters.${option.value}`) }}</span>
           </label>
         </div>
       </div>
@@ -56,17 +56,17 @@
             v-model="filters.availableOnly"
             type="checkbox"
           />
-          <span class="menu-filters__checkbox-label">Available items only</span>
+          <span class="menu-filters__checkbox-label">{{ $t('menu.filters.availableOnly') }}</span>
         </label>
       </div>
     </div>
 
     <div class="menu-filters__actions">
       <BaseButton variant="secondary" @click="clearFilters">
-        Clear All
+        {{ $t('menu.filters.clear') }}
       </BaseButton>
       <BaseButton variant="primary" @click="applyFilters">
-        Apply Filters
+        {{ $t('menu.filters.apply') }}
       </BaseButton>
     </div>
   </div>

@@ -3,7 +3,7 @@
     <!-- Location Selection -->
     <div class="pickup-form__field">
       <label class="pickup-form__label">
-        {{ $t('checkout.selectLocation', 'Выберите филиал') }} *
+        {{ $t('checkout.selectLocation') }} *
       </label>
       
       <!-- Card-based selection for small number of locations -->
@@ -35,7 +35,7 @@
         id="pickup-location-select"
         v-model="localData.locationId"
         :options="locationOptions"
-        :placeholder="$t('delivery.selectLocation', 'Выберите точку из списка')"
+        :placeholder="$t('checkout.selectLocation')"
         :error="errors.locationId"
         @change="handleChange"
       />
@@ -85,7 +85,7 @@
     <!-- Contact Information -->
     <div class="form-group">
       <label for="pickup-phone" class="form-label">
-        {{ $t('form.phone') }} <span v-if="!isTelegram">*</span><span v-else>(Optional)</span>
+        {{ $t('form.phone') }} <span v-if="!isTelegram">*</span><span v-else>{{ $t('common.optional') }}</span>
       </label>
       <div class="phone-input-group">
         <BaseInput
@@ -104,11 +104,11 @@
           @click="requestTelegramContact"
         >
           <BaseIcon name="telegram" size="sm" />
-          {{ $t('checkout.get_from_tg', 'Из Telegram') }}
+          {{ $t('checkout.get_from_tg') }}
         </BaseButton>
       </div>
       <p class="hint-text">
-        {{ $t('form.phoneHint', 'Мы перезвоним вам при необходимости') }}
+        {{ $t('form.phoneHint') }}
       </p>
     </div>
 
@@ -264,7 +264,7 @@ const requestTelegramContact = () => {
     })
   } else {
     // Fallback if not supported
-    alert(t('errors.not_supported', 'Ваш клиент Telegram не поддерживает эту функцию'))
+    alert(t('errors.not_supported'))
   }
 }
 

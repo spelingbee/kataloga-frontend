@@ -6,10 +6,10 @@
         <FireIcon size="lg" :animated="true" />
         <div>
           <AppHeading level="h2" size="heading-xl" class="text-white">
-            For You
+            {{ $t('menu.popularTitle') }}
           </AppHeading>
           <AppText size="body-md" class="text-neutral-80">
-            Popular dishes you might like
+            {{ $t('menu.popularSubtitle') }}
           </AppText>
         </div>
       </div>
@@ -21,7 +21,7 @@
         class="text-primary-green hover:text-primary-green/80"
         @click="$emit('viewAll')"
       >
-        View All
+        {{ $t('common.viewAll') }}
         <BaseIcon name="chevron-right" size="sm" class="ml-1" />
       </BaseButton>
     </div>
@@ -35,8 +35,8 @@
       :show-popular-indicator="true"
       :max-items="maxItems"
       :show-view-all="false"
-      :empty-title="'No popular items'"
-      :empty-message="'Check back later for trending dishes'"
+      :empty-title="$t('menu.popularNoItems')"
+      :empty-message="$t('menu.popularNoItemsDesc')"
       @item-click="handleItemClick"
       @add-to-cart="handleAddToCart"
       @toggle-favorite="handleToggleFavorite"
@@ -50,7 +50,7 @@
         @click="refreshRecommendations"
       >
         <BaseIcon name="refresh" size="sm" class="mr-2" />
-        Refresh Recommendations
+        {{ $t('menu.refreshRecs') }}
       </BaseButton>
     </div>
     
@@ -60,15 +60,15 @@
         <BaseIcon name="info" size="sm" class="text-primary-orange mt-0.5 flex-shrink-0" />
         <div>
           <AppText size="body-sm" class="text-neutral-20 mb-1">
-            Personalized Recommendations
+            {{ $t('menu.personalTitle') }}
           </AppText>
           <AppText size="caption" class="text-neutral-80">
-            These suggestions are based on popular items and your preferences. 
+            {{ $t('menu.personalDesc') }}
             <button 
               class="text-primary-green hover:underline"
               @click="$emit('learnMore')"
             >
-              Learn more
+              {{ $t('menu.learnMore') }}
             </button>
           </AppText>
         </div>

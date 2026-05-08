@@ -3,7 +3,7 @@
     <!-- Sidebar Header -->
     <div class="app-sidebar__header">
       <AppHeading level="h2" size="heading-md" class="u-text-neutral-20">
-        {{ $t('menu.categories', 'Категории') }}
+        {{ $t('menu.categories') }}
       </AppHeading>
     </div>
 
@@ -36,7 +36,7 @@
           class="u-text-caption"
           @click="clearFilters"
         >
-          {{ $t('menu.clearFilters', 'Очистить фильтры') }}
+          {{ $t('menu.clearFilters') }}
         </BaseButton>
       </div>
     </div>

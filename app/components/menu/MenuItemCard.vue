@@ -22,12 +22,12 @@
       <!-- Popular Badge -->
       <div v-if="isPopular" class="product-card__badge">
         <BaseIcon name="fire" size="xs" class="product-card__badge-icon" />
-        <span class="product-card__badge-text">{{ $t('menu.popular', 'Популярное') }}</span>
+        <span class="product-card__badge-text">{{ $t('menu.popular') }}</span>
       </div>
 
       <!-- Unavailable Overlay -->
       <div v-if="!menuItem.isActive" class="product-card__unavailable-overlay">
-        <span class="product-card__unavailable-text">{{ $t('common.unavailable', 'Нет в наличии') }}</span>
+        <span class="product-card__unavailable-text">{{ $t('common.unavailable') }}</span>
       </div>
     </div>
 
@@ -66,7 +66,7 @@
           >
             <BaseIcon :name="isAdded ? 'check' : 'plus'" size="sm" class="product-card__add-icon" />
             <span class="product-card__add-text">
-              {{ isAdded ? $t('common.added', 'В корзине') : $t('common.add', 'Добавить') }}
+              {{ isAdded ? $t('common.added') : $t('common.add') }}
             </span>
           </button>
         </div>

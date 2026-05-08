@@ -1,9 +1,9 @@
 <template>
   <EmptyState
     icon="clipboard-list"
-    title="No orders yet"
-    description="You haven't placed any orders yet. Start by exploring our delicious menu and place your first order."
-    action-text="Start Ordering"
+    :title="$t('order.noOrders')"
+    :description="$t('order.emptyDesc')"
+    :action-text="$t('order.startOrdering')"
     action-icon="plus"
     @action="$emit('start-ordering')"
   />

@@ -11,7 +11,7 @@
         </BaseButton>
         <div>
           <AppHeading level="h1" size="heading-lg" class="text-white">
-            Customize Ingredients
+            {{ $t('menu.ingredients.title') }}
           </AppHeading>
           <AppText class="text-neutral-20">
             {{ dish?.name }}
@@ -24,7 +24,7 @@
     <div v-if="loading" class="flex items-center justify-center py-16">
       <div class="text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading customization options...</AppText>
+        <AppText class="text-neutral-20">{{ $t('menu.ingredients.loading') }}</AppText>
       </div>
     </div>
 
@@ -34,33 +34,33 @@
       <div class="mb-8 p-4 bg-background-card rounded-xl">
         <div class="flex items-center justify-between mb-4">
           <AppHeading level="h3" size="heading-md" class="text-white">
-            Your Customizations
+            {{ $t('menu.ingredients.yourCustomizations') }}
           </AppHeading>
           <BaseButton 
             variant="ghost" 
             size="sm"
             @click="resetCustomizations"
           >
-            Reset All
+            {{ $t('menu.filters.clearAll') }}
           </BaseButton>
         </div>
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="text-center">
             <AppText size="body-lg" class="text-white font-semibold">{{ customizedCalories }}</AppText>
-            <AppText size="caption" class="text-neutral-20">Calories</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.calories') }}</AppText>
           </div>
           <div class="text-center">
             <AppPrice :price="customizationPrice" size="md" />
-            <AppText size="caption" class="text-neutral-20">Extra Cost</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.ingredients.extraCost') }}</AppText>
           </div>
           <div class="text-center">
             <AppText size="body-lg" class="text-white font-semibold">{{ activeCustomizations }}</AppText>
-            <AppText size="caption" class="text-neutral-20">Changes</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.ingredients.changes') }}</AppText>
           </div>
           <div class="text-center">
             <AppText size="body-lg" class="text-white font-semibold">{{ totalPrice }}</AppText>
-            <AppText size="caption" class="text-neutral-20">Total Price</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.price') }}</AppText>
           </div>
         </div>
       </div>
@@ -70,7 +70,7 @@
         <!-- Main Ingredients -->
         <div>
           <AppHeading level="h2" size="heading-md" class="text-white mb-6">
-            Main Ingredients
+            {{ $t('menu.ingredients.main') }}
           </AppHeading>
           
           <div class="space-y-4">
@@ -86,7 +86,7 @@
                     <BaseIcon :name="ingredient.icon" size="md" :class="ingredient.iconColor" />
                     <div>
                       <AppHeading level="h4" size="heading-sm" class="text-white">
-                        {{ ingredient.name }}
+                        {{ $t(`menu.ingredients.items.${ingredient.id}`) }}
                       </AppHeading>
                       <AppText size="body-sm" class="text-neutral-20">
                         {{ ingredient.description }}
@@ -96,7 +96,7 @@
                   
                   <div class="flex items-center gap-4">
                     <AppText size="caption" class="text-neutral-20">
-                      {{ ingredient.calories }} cal
+                      {{ ingredient.calories }} {{ $t('menu.filters.calories') }}
                     </AppText>
                     <AppText v-if="ingredient.price > 0" size="caption" class="text-neutral-20">
                       +{{ formatPrice(ingredient.price) }}
@@ -120,7 +120,7 @@
         <!-- Add-ons -->
         <div>
           <AppHeading level="h2" size="heading-md" class="text-white mb-6">
-            Add Extra Ingredients
+            {{ $t('menu.ingredients.extra') }}
           </AppHeading>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -136,7 +136,7 @@
                     <BaseIcon :name="addon.icon" size="md" :class="addon.iconColor" />
                     <div>
                       <AppHeading level="h4" size="heading-sm" class="text-white">
-                        {{ addon.name }}
+                        {{ $t(`menu.ingredients.items.${addon.id}`) }}
                       </AppHeading>
                       <AppText size="body-sm" class="text-neutral-20">
                         {{ addon.description }}
@@ -146,7 +146,7 @@
                   
                   <div class="flex items-center gap-4">
                     <AppText size="caption" class="text-neutral-20">
-                      +{{ addon.calories }} cal
+                      +{{ addon.calories }} {{ $t('menu.filters.calories') }}
                     </AppText>
                     <AppPrice :price="addon.price" size="sm" />
                   </div>
@@ -164,7 +164,7 @@
                       size="sm" 
                       class="mr-2" 
                     />
-                    {{ isAddonSelected(addon.id) ? 'Added' : 'Add' }}
+                    {{ isAddonSelected(addon.id) ? $t('menu.ingredients.added') : $t('menu.ingredients.add') }}
                   </BaseButton>
                 </div>
               </div>
@@ -175,7 +175,7 @@
         <!-- Dietary Preferences -->
         <div>
           <AppHeading level="h2" size="heading-md" class="text-white mb-6">
-            Dietary Preferences
+            {{ $t('menu.filters.dietary') }}
           </AppHeading>
           
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -213,13 +213,13 @@
         <!-- Special Instructions -->
         <div>
           <AppHeading level="h2" size="heading-md" class="text-white mb-6">
-            Special Instructions
+            {{ $t('menu.ingredients.specialInstructions') }}
           </AppHeading>
           
           <div class="bg-background-card rounded-xl p-4">
             <BaseInput
               v-model="specialInstructions"
-              placeholder="Any special requests or cooking instructions..."
+              :placeholder="$t('menu.ingredients.placeholder')"
               type="textarea"
               rows="4"
               class="w-full"
@@ -228,7 +228,7 @@
             <!-- Quick Instructions -->
             <div class="mt-4">
               <AppText size="body-sm" class="text-neutral-20 mb-3">
-                Quick options:
+                {{ $t('menu.ingredients.quickOptions') }}
               </AppText>
               <div class="flex flex-wrap gap-2">
                 <BaseButton
@@ -257,7 +257,7 @@
             @click="saveCustomizations"
           >
             <BaseIcon name="check" size="sm" class="mr-2" />
-            Save Customizations ({{ formatPrice(totalPrice) }})
+            {{ $t('menu.ingredients.save', { price: formatPrice(totalPrice) }) }}
           </BaseButton>
           
           <BaseButton 
@@ -266,7 +266,7 @@
             @click="previewChanges"
           >
             <BaseIcon name="eye" size="sm" class="mr-2" />
-            Preview
+            {{ $t('menu.ingredients.preview') }}
           </BaseButton>
           
           <BaseButton 
@@ -274,7 +274,7 @@
             size="lg"
             @click="resetCustomizations"
           >
-            Reset
+            {{ $t('menu.quantity_selector.reset') }}
           </BaseButton>
         </div>
       </div>
@@ -287,12 +287,13 @@ import type { MenuItem } from '~/types'
 
 // Page setup
 definePageMeta({
-  title: 'Customize Ingredients - Menu Ordering App'
+  title: 'Customize Ingredients'
 })
 
 // Route and stores
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 // Reactive state
 const loading = ref(true)

@@ -11,7 +11,7 @@
         <div class="landing-header__actions">
           <LanguageSwitcher class="landing-header__lang" />
           <a :href="adminUrl + '/register'" class="btn ghost landing-header__login-btn">
-            {{ $t('common.login', 'Вход') }}
+            {{ $t('auth.login.submit') }}
           </a>
         </div>
       </div>
@@ -23,17 +23,17 @@
         <div class="container hero-grid">
           <div class="hero-content">
             <h1 class="fade-up">
-              Ваш магазин прямо в <span class="text-accent">Telegram</span>
+              {{ $t('landing.hero.title') }} <span class="text-accent">Telegram</span>
             </h1>
             <p class="fade-up delay-1">
-              Kataloga превращает хаотичные заказы из WhatsApp и Instagram DM в удобный магазин с каталогом, оплатой и уведомлениями. Для кафе, кондитеров, магазинов и любого бизнеса.
+              {{ $t('landing.hero.subtitle') }}
             </p>
             <div class="hero-actions fade-up delay-2">
               <a :href="adminUrl + '/register'" class="btn primary">
-                Начать бесплатно
+                {{ $t('landing.hero.startFree') }}
               </a>
               <a href="https://t.me/kataloga_test_bot" target="_blank" class="btn ghost">
-                Открыть демо <Icon name="play-circle" size="20"></Icon>
+                {{ $t('landing.hero.openDemo') }} <Icon name="play-circle" size="20"></Icon>
               </a>
             </div>
           </div>
@@ -50,13 +50,13 @@
               <div class="mockup-chat">
                 <div class="chat-bubble bubble-user">/start</div>
                 <div class="chat-bubble bubble-bot">
-                  Добро пожаловать в наш магазин! 👋 Нажмите кнопку ниже, чтобы открыть каталог товаров.
-                  <div class="app-btn">Открыть каталог</div>
+                  {{ $t('menu.browseSubtitle') }} 👋 {{ $t('menu.searchPlaceholder') }}
+                  <div class="app-btn">{{ $t('menu.allItems') }}</div>
                 </div>
                 <div class="chat-bubble bubble-bot" style="margin-top: auto; font-size: 13px; color: #9ca3af; background: transparent; border: 1px solid #e5e7eb;">
-                  🔔 <b>Новый заказ #1024</b><br>
-                  Сумма: 2 500 сом.<br>
-                  Оплачено картой.
+                  🔔 <b>{{ $t('notifications.orderUpdate') }} #1024</b><br>
+                  {{ $t('order.summary') }}: 2 500 {{ $t('currency.som') }}.<br>
+                  {{ $t('order.payment') }}: {{ $t('payment.methods.STRIPE') }}.
                 </div>
               </div>
             </div>
@@ -67,13 +67,13 @@
       <!-- Секция 2: SOCIAL PROOF BAR -->
       <section id="social-proof" class="social-proof fade-up">
         <div class="container">
-          <p>Создано для предпринимателей Кыргызстана 🇰🇬</p>
+          <p>{{ $t('landing.socialProof') }}</p>
           <div class="logo-row">
-            <div class="social-proof-stat">🍕 Кафе</div>
-            <div class="social-proof-stat">🎂 Кондитеры</div>
-            <div class="social-proof-stat">💐 Цветы</div>
-            <div class="social-proof-stat">🛍️ Магазины</div>
-            <div class="social-proof-stat">✨ Handmade</div>
+            <div class="social-proof-stat">{{ $t('landing.categories.cafe') }}</div>
+            <div class="social-proof-stat">{{ $t('landing.categories.confectioners') }}</div>
+            <div class="social-proof-stat">{{ $t('landing.categories.flowers') }}</div>
+            <div class="social-proof-stat">{{ $t('landing.categories.shops') }}</div>
+            <div class="social-proof-stat">{{ $t('landing.categories.handmade') }}</div>
           </div>
         </div>
       </section>
@@ -82,21 +82,21 @@
       <section id="comparison" class="comparison">
         <div class="container comp-grid">
           <div class="comp-card fade-up">
-            <h3>Как было раньше</h3>
+            <h3>{{ $t('landing.comparison.before.title') }}</h3>
             <ul class="comp-list bad">
-              <li><Icon name="x-circle"/> Хаотичные чаты, голосовые сообщения и скрины</li>
-              <li><Icon name="x-circle"/> Потерянные заказы в потоке переписок</li>
-              <li><Icon name="x-circle"/> Ручной учёт и копирование реквизитов для оплаты</li>
-              <li><Icon name="x-circle"/> Долгие ответы клиентам, снижающие конверсию</li>
+              <li><Icon name="x-circle"/> {{ $t('landing.comparison.before.item1') }}</li>
+              <li><Icon name="x-circle"/> {{ $t('landing.comparison.before.item2') }}</li>
+              <li><Icon name="x-circle"/> {{ $t('landing.comparison.before.item3') }}</li>
+              <li><Icon name="x-circle"/> {{ $t('landing.comparison.before.item4') }}</li>
             </ul>
           </div>
           <div class="comp-card good fade-up delay-1">
-            <h3>Как стало с Kataloga</h3>
+            <h3>{{ $t('landing.comparison.after.title') }}</h3>
             <ul class="comp-list good">
-              <li><Icon name="check-circle-2"/> Единый и красивый каталог товаров с корзиной</li>
-              <li><Icon name="check-circle-2"/> Автоматический сбор и четкая структура заказов</li>
-              <li><Icon name="check-circle-2"/> Интегрированная оплата и моментальные уведомления</li>
-              <li><Icon name="check-circle-2"/> Время на развитие бизнеса, а не на рутину в чатах</li>
+              <li><Icon name="check-circle-2"/> {{ $t('landing.comparison.after.item1') }}</li>
+              <li><Icon name="check-circle-2"/> {{ $t('landing.comparison.after.item2') }}</li>
+              <li><Icon name="check-circle-2"/> {{ $t('landing.comparison.after.item3') }}</li>
+              <li><Icon name="check-circle-2"/> {{ $t('landing.comparison.after.item4') }}</li>
             </ul>
           </div>
         </div>
@@ -105,37 +105,37 @@
       <!-- Секция 4: FEATURES -->
       <section id="features" class="features">
         <div class="container">
-          <h2 class="fade-up">Полный набор инструментов для вашего бизнеса</h2>
+          <h2 class="fade-up">{{ $t('landing.features.title') }}</h2>
           <div class="bento-grid">
             <div class="feature-card fade-up">
               <div class="feature-icon"><Icon name="package" size="24"/></div>
-              <h3>Telegram Web App</h3>
-              <p>Полноценный интерактивный магазин прямо внутри Telegram. Клиенту не нужно переходить по внешним ссылкам.</p>
+              <h3>{{ $t('landing.features.twa.title') }}</h3>
+              <p>{{ $t('landing.features.twa.desc') }}</p>
             </div>
             <div class="feature-card fade-up delay-1">
               <div class="feature-icon"><Icon name="settings" size="24"/></div>
-              <h3>Мощная панель управления</h3>
-              <p>Удобный интерфейс для управления товарами (модификаторы, размеры), просмотра аналитики и статусов заказов.</p>
+              <h3>{{ $t('landing.features.admin.title') }}</h3>
+              <p>{{ $t('landing.features.admin.desc') }}</p>
             </div>
             <div class="feature-card fade-up delay-2">
               <div class="feature-icon"><Icon name="credit-card" size="24"/></div>
-              <h3>Гибкая оплата (QR и наличные)</h3>
-              <p>Оплата через банковский перевод по QR-коду, наличными при получении или скриншотом чека прямо в бота.</p>
+              <h3>{{ $t('landing.features.payments.title') }}</h3>
+              <p>{{ $t('landing.features.payments.desc') }}</p>
             </div>
             <div class="feature-card fade-up">
               <div class="feature-icon"><Icon name="bell" size="24"/></div>
-              <h3>Мгновенные уведомления</h3>
-              <p>Вы и ваши сотрудники моментально получаете уведомления о новых заказах прямо в Telegram или на Email.</p>
+              <h3>{{ $t('landing.features.notifications.title') }}</h3>
+              <p>{{ $t('landing.features.notifications.desc') }}</p>
             </div>
             <div class="feature-card fade-up delay-1">
               <div class="feature-icon"><Icon name="globe" size="24"/></div>
-              <h3>Многоязычность</h3>
-              <p>Интерфейс доступен на Русском, Английском и Кыргызском языках, чтобы каждый клиент чувствовал себя комфортно.</p>
+              <h3>{{ $t('landing.features.multilingual.title') }}</h3>
+              <p>{{ $t('landing.features.multilingual.desc') }}</p>
             </div>
             <div class="feature-card fade-up delay-2">
               <div class="feature-icon"><Icon name="layout-dashboard" size="24"/></div>
-              <h3>Современный дизайн и удобство</h3>
-              <p>Добавьте свои товары и категории — система сама соберет удобный и красивый каталог без программирования.</p>
+              <h3>{{ $t('landing.features.design.title') }}</h3>
+              <p>{{ $t('landing.features.design.desc') }}</p>
             </div>
           </div>
         </div>
@@ -144,24 +144,24 @@
       <!-- Секция 5: HOW IT WORKS -->
       <section id="how-it-works" class="how-it-works">
         <div class="container">
-          <h2 class="fade-up">Запуск за 3 простых шага</h2>
+          <h2 class="fade-up">{{ $t('landing.howItWorks.title') }}</h2>
           <div id="steps-anim" class="steps-container fade-up delay-1">
           <div class="steps-line"><div id="steps-progress" class="steps-line-progress" :style="progressStyle"></div></div>
           
           <div class="step" :class="{ active: activeSteps.includes(1) }">
             <div class="step-number">1</div>
-            <h3>Создайте магазин</h3>
-            <p>Простая регистрация и настройка займет не более 5 минут.</p>
+            <h3>{{ $t('landing.howItWorks.step1.title') }}</h3>
+            <p>{{ $t('landing.howItWorks.step1.desc') }}</p>
           </div>
           <div class="step" :class="{ active: activeSteps.includes(2) }">
             <div class="step-number">2</div>
-            <h3>Добавьте ссылку</h3>
-            <p>Поделитесь ботом в шапке профиля Instagram или на сайте.</p>
+            <h3>{{ $t('landing.howItWorks.step2.title') }}</h3>
+            <p>{{ $t('landing.howItWorks.step2.desc') }}</p>
           </div>
           <div class="step" :class="{ active: activeSteps.includes(3) }">
             <div class="step-number">3</div>
-            <h3>Получайте прибыль</h3>
-            <p>Принимайте готовые и оплаченные заказы на автомате.</p>
+            <h3>{{ $t('landing.howItWorks.step3.title') }}</h3>
+            <p>{{ $t('landing.howItWorks.step3.desc') }}</p>
           </div>
         </div>
       </div>
@@ -170,7 +170,7 @@
       <!-- Секция 6: FAQ ACCORDION -->
       <section id="faq" class="faq">
         <div class="container">
-          <h2 class="fade-up">Частые вопросы</h2>
+          <h2 class="fade-up">{{ $t('landing.faq.title') }}</h2>
           <div class="faq-list fade-up delay-1">
           <div v-for="(item, index) in faq" :key="index" class="faq-item" :class="{ active: activeFaq === index }">
             <button class="faq-question" @click="toggleFaq(index)">
@@ -191,51 +191,51 @@
       <!-- Секция 7: PRICING -->
       <section id="pricing" class="pricing">
         <div class="container">
-          <h2 class="fade-up">Тарифы</h2>
-          <p class="pricing-subtitle fade-up delay-1">14 дней бесплатно на любом тарифе. 0% комиссий с заказов.</p>
+          <h2 class="fade-up">{{ $t('landing.pricing.title') }}</h2>
+          <p class="pricing-subtitle fade-up delay-1">{{ $t('landing.pricing.subtitle') }}</p>
           <div class="pricing-grid fade-up delay-2">
             <!-- FREE -->
             <div class="pricing-card">
-              <h3>Бесплатный</h3>
-              <div class="price">0 <span>сом / мес</span></div>
+              <h3>{{ $t('landing.pricing.free.title') }}</h3>
+              <div class="price">0 <span>{{ $t('landing.pricing.perMonth') }}</span></div>
               <ul class="pricing-features">
-                <li><Icon name="check" size="16"/> До 15 товаров</li>
-                <li><Icon name="check" size="16"/> До 30 заказов / мес</li>
-                <li><Icon name="check" size="16"/> Общий бот @kataloga_test_bot</li>
-                <li><Icon name="check" size="16"/> Уведомления владельцу</li>
-                <li class="pricing-features__disabled"><Icon name="x" size="16"/> Фото товаров</li>
-                <li class="pricing-features__disabled"><Icon name="x" size="16"/> Аналитика</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.free.items') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.free.orders') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.free.bot') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.free.notifications') }}</li>
+                <li class="pricing-features__disabled"><Icon name="x" size="16"/> {{ $t('landing.pricing.free.photos') }}</li>
+                <li class="pricing-features__disabled"><Icon name="x" size="16"/> {{ $t('landing.pricing.free.analytics') }}</li>
               </ul>
-              <a :href="adminUrl + '/register'" class="btn ghost" style="width: 100%;">Начать бесплатно</a>
+              <a :href="adminUrl + '/register'" class="btn ghost" style="width: 100%;">{{ $t('landing.hero.startFree') }}</a>
             </div>
             <!-- START -->
             <div class="pricing-card pricing-card--popular">
-              <div class="pricing-badge">Популярный</div>
-              <h3>Старт</h3>
-              <div class="price">500 <span>сом / мес</span></div>
+              <div class="pricing-badge">{{ $t('menu.popular') }}</div>
+              <h3>{{ $t('landing.pricing.start.title') }}</h3>
+              <div class="price">500 <span>{{ $t('landing.pricing.perMonth') }}</span></div>
               <ul class="pricing-features">
-                <li><Icon name="check" size="16"/> До 100 товаров</li>
-                <li><Icon name="check" size="16"/> До 500 заказов / мес</li>
-                <li><Icon name="check" size="16"/> Свой Telegram-бот</li>
-                <li><Icon name="check" size="16"/> Фото товаров</li>
-                <li><Icon name="check" size="16"/> QR-оплата</li>
-                <li><Icon name="check" size="16"/> Базовая аналитика</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.start.items') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.start.orders') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.start.bot') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('menu.dietary') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.start.qr') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.free.analytics') }}</li>
               </ul>
-              <a :href="adminUrl + '/register'" class="btn primary" style="width: 100%;">Попробовать 14 дней</a>
+              <a :href="adminUrl + '/register'" class="btn primary" style="width: 100%;">{{ $t('landing.pricing.startTrial') }}</a>
             </div>
             <!-- PRO -->
             <div class="pricing-card">
-              <h3>Про</h3>
-              <div class="price">1 500 <span>сом / мес</span></div>
+              <h3>{{ $t('landing.pricing.pro.title') }}</h3>
+              <div class="price">1 500 <span>{{ $t('landing.pricing.perMonth') }}</span></div>
               <ul class="pricing-features">
-                <li><Icon name="check" size="16"/> Безлимит товаров</li>
-                <li><Icon name="check" size="16"/> Безлимит заказов</li>
-                <li><Icon name="check" size="16"/> Свой бот + брендинг</li>
-                <li><Icon name="check" size="16"/> До 10 сотрудников</li>
-                <li><Icon name="check" size="16"/> Полная аналитика + экспорт</li>
-                <li><Icon name="check" size="16"/> Приоритетная поддержка</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.pro.items') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.pro.orders') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.pro.branding') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.pro.staff') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.free.analytics') }} + {{ $t('common.viewDetails') }}</li>
+                <li><Icon name="check" size="16"/> {{ $t('landing.pricing.pro.priority') }}</li>
               </ul>
-              <a :href="adminUrl + '/register'" class="btn ghost" style="width: 100%;">Попробовать 14 дней</a>
+              <a :href="adminUrl + '/register'" class="btn ghost" style="width: 100%;">{{ $t('landing.pricing.startTrial') }}</a>
             </div>
           </div>
         </div>
@@ -249,15 +249,15 @@
           <img src="/images/logo-kataloga.png" alt="Kataloga" class="landing-logo__img" />
         </div>
         <div class="footer-links">
-          <a href="#hero">О нас</a>
-          <a href="#features">Возможности</a>
-          <a href="#pricing">Цены</a>
-          <a href="#">Контакты</a>
-          <a href="#">Telegram-канал</a>
+          <a href="#hero">{{ $t('common.viewDetails') }}</a>
+          <a href="#features">{{ $t('orders.statuses.confirmed') }}</a>
+          <a href="#pricing">{{ $t('landing.pricing.title') }}</a>
+          <a href="#">{{ $t('order.contactSupport') }}</a>
+          <a href="#">Telegram</a>
         </div>
       </div>
       <div class="container footer-bottom">
-        &copy; 2026 Kataloga. Все права защищены.
+        {{ $t('landing.footer.rights') }}
       </div>
     </footer>
   </div>
@@ -265,6 +265,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import LanguageSwitcher from '~/components/base/LanguageSwitcher.vue'
 import Icon from '~/components/ui/Icon.vue'
 
@@ -274,28 +275,30 @@ definePageMeta({
 
 // FAQ State
 const activeFaq = ref<number | null>(null)
-const faq = [
+const { t } = useI18n()
+
+const faq = computed(() => [
   {
-    question: 'Нужно ли скачивать приложение?',
-    answer: 'Нет, весь процесс происходит внутри Telegram. Вашим клиентам не нужно ничего скачивать или регистрироваться — они просто открывают бота и делают заказ.'
+    question: t('landing.faq.q1'),
+    answer: t('landing.faq.a1')
   },
   {
-    question: 'Сколько это стоит?',
-    answer: 'Есть бесплатный тариф навсегда (до 15 товаров и 30 заказов). Платные тарифы начинаются от 500 сом/мес. Первые 14 дней бесплатны на любом тарифе. Никаких скрытых комиссий с заказов — 0%.'
+    question: t('landing.faq.q2'),
+    answer: t('landing.faq.a2')
   },
   {
-    question: 'Подходит ли это для моего бизнеса?',
-    answer: 'Да! Kataloga идеально подходит для кофеен, доставки еды, шоурумов одежды, продажи косметики, хендмейда и любых других малых бизнесов.'
+    question: t('landing.faq.q3'),
+    answer: t('landing.faq.a3')
   },
   {
-    question: 'Как клиенты делают заказы?',
-    answer: 'Они переходят по вашей ссылке (например, из Instagram), нажимают "Start" в Telegram и открывают красивое мини-приложение (Web App) с полноценным интерфейсом магазина.'
+    question: t('landing.faq.q4'),
+    answer: t('landing.faq.a4')
   },
   {
-    question: 'Безопасно ли это?',
-    answer: 'Абсолютно. Мы не храним данные банковских карт. Все платежи проходят напрямую через проверенных и лицензированных платежных провайдеров.'
+    question: t('landing.faq.q5'),
+    answer: t('landing.faq.a5')
   }
-]
+])
 
 // Steps State
 const activeSteps = ref<number[]>([])

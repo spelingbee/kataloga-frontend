@@ -4,7 +4,7 @@
     <div class="order-details__header">
       <div class="order-details__header-info">
         <AppHeading level="h2" size="heading-xl" class="order-details__order-number">
-          Order #{{ order.id }}
+          {{ $t('order.orderNumberLabel') }}{{ order.id }}
         </AppHeading>
         <AppText size="body-sm" class="order-details__date">
           {{ formatDate(order.createdAt) }}
@@ -16,7 +16,7 @@
     <!-- Order Items -->
     <div class="order-details__section">
       <AppHeading level="h3" size="heading-md" class="order-details__section-title">
-        Order Items
+        {{ $t('order.itemsLabel') }}
       </AppHeading>
       
       <div class="order-details__items">
@@ -48,7 +48,7 @@
             <!-- Customizations -->
             <div v-if="item.customizations && Object.keys(item.customizations).length > 0" class="order-details__item-customizations">
               <AppText size="caption" class="order-details__item-customizations-label">
-                Customizations:
+                {{ $t('order.customizations') }}
               </AppText>
               <AppText size="caption" class="order-details__item-customizations-text">
                 {{ formatCustomizations(item.customizations) }}
@@ -57,10 +57,10 @@
             
             <div class="order-details__item-meta">
               <AppText size="body-sm" class="order-details__item-quantity">
-                Qty: {{ item.quantity }}
+                {{ $t('order.qty') }} {{ item.quantity }}
               </AppText>
               <AppText size="body-sm" class="order-details__item-price">
-                {{ formatPrice(item.price) }} each
+                {{ formatPrice(item.price) }} {{ $t('order.each') }}
               </AppText>
             </div>
           </div>
@@ -76,33 +76,33 @@
     <!-- Order Summary -->
     <div class="order-details__section">
       <AppHeading level="h3" size="heading-md" class="order-details__section-title">
-        Order Summary
+        {{ $t('order.summary') }}
       </AppHeading>
       
       <div class="order-details__summary">
         <div class="order-details__summary-row">
-          <AppText class="order-details__summary-label">Subtotal</AppText>
+          <AppText class="order-details__summary-label">{{ $t('cart.subtotal') }}</AppText>
           <AppText class="order-details__summary-value">{{ formatPrice(subtotal) }}</AppText>
         </div>
         
         <div v-if="deliveryFee > 0" class="order-details__summary-row">
-          <AppText class="order-details__summary-label">Delivery Fee</AppText>
+          <AppText class="order-details__summary-label">{{ $t('cart.deliveryFee') }}</AppText>
           <AppText class="order-details__summary-value">{{ formatPrice(deliveryFee) }}</AppText>
         </div>
         
         <div v-if="tax > 0" class="order-details__summary-row">
-          <AppText class="order-details__summary-label">Tax</AppText>
+          <AppText class="order-details__summary-label">{{ $t('order.tax') }}</AppText>
           <AppText class="order-details__summary-value">{{ formatPrice(tax) }}</AppText>
         </div>
         
         <div v-if="discount > 0" class="order-details__summary-row order-details__summary-row--discount">
-          <AppText class="order-details__summary-label">Discount</AppText>
+          <AppText class="order-details__summary-label">{{ $t('cart.discount') }}</AppText>
           <AppText class="order-details__summary-value">-{{ formatPrice(discount) }}</AppText>
         </div>
         
         <div class="order-details__summary-row order-details__summary-row--total">
           <AppText size="body-lg" class="order-details__summary-label order-details__summary-label--total">
-            Total
+            {{ $t('cart.total') }}
           </AppText>
           <AppPrice :price="order.total" size="lg" />
         </div>
@@ -112,7 +112,7 @@
     <!-- Customer Information -->
     <div class="order-details__section">
       <AppHeading level="h3" size="heading-md" class="order-details__section-title">
-        Customer Information
+        {{ $t('order.customerInfo') }}
       </AppHeading>
       
       <div class="order-details__customer">
@@ -140,7 +140,7 @@
           <BaseIcon name="message-square" size="sm" class="order-details__customer-icon" />
           <div class="order-details__customer-notes">
             <AppText size="body-sm" class="order-details__customer-notes-label">
-              Special Instructions:
+              {{ $t('order.specialInstructions') }}
             </AppText>
             <AppText size="body-sm" class="order-details__customer-text">
               {{ order.customerInfo.notes }}
@@ -153,7 +153,7 @@
     <!-- Restaurant Contact (if needed) -->
     <div v-if="showRestaurantContact" class="order-details__section">
       <AppHeading level="h3" size="heading-md" class="order-details__section-title">
-        Restaurant Contact
+        {{ $t('order.restaurantContact') }}
       </AppHeading>
       
       <div class="order-details__contact">
@@ -162,7 +162,7 @@
           @click="$emit('call-restaurant')"
         >
           <BaseIcon name="phone" size="sm" class="mr-2" />
-          Call Restaurant
+          {{ $t('order.callRestaurant') }}
         </BaseButton>
       </div>
     </div>

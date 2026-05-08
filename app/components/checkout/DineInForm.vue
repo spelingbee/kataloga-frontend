@@ -3,18 +3,18 @@
     <!-- Table Number -->
     <div class="dine-in-form__field">
       <label for="table-number" class="dine-in-form__label">
-        {{ $t('checkout.tableNumber', 'Номер стола') }} *
+        {{ $t('checkout.tableNumber') }} *
       </label>
       <BaseInput
         id="table-number"
         v-model="localData.tableNumber"
         type="text"
-        :placeholder="$t('checkout.tableNumberPlaceholder', 'Введите номер стола')"
+        :placeholder="$t('checkout.tableNumberPlaceholder')"
         :error="errors.tableNumber"
         @input="handleChange"
       />
       <p class="dine-in-form__hint">
-        {{ $t('checkout.tableNumberHint', 'Вы можете найти номер на карточке столика') }}
+        {{ $t('checkout.tableNumberHint') }}
       </p>
     </div>
 
@@ -23,7 +23,7 @@
       <BaseSelect
         id="location"
         v-model="localData.locationId"
-        :label="$t('delivery.selectLocation', 'Выберите филиал') + ' *'"
+        :label="$t('checkout.selectLocation') + ' *'"
         :options="locationOptions"
         :error="errors.locationId"
         @change="handleChange"
@@ -33,7 +33,7 @@
     <!-- Number of Guests (Optional) -->
     <div class="dine-in-form__field">
       <label for="guest-count" class="dine-in-form__label">
-        {{ $t('checkout.guestCount', 'Количество гостей (опционально)') }}
+        {{ $t('checkout.guestCount') }}
       </label>
       <BaseInput
         id="guest-count"
@@ -41,7 +41,7 @@
         type="number"
         min="1"
         max="20"
-        :placeholder="$t('checkout.guestCountPlaceholder', 'Сколько человек?')"
+        :placeholder="$t('checkout.guestCountPlaceholder')"
         @input="handleChange"
       />
     </div>
@@ -49,13 +49,13 @@
     <!-- Special Instructions -->
     <div class="dine-in-form__field">
       <label for="dine-in-instructions" class="dine-in-form__label">
-        {{ $t('delivery.instructions', 'Пожелания к заказу') }}
+        {{ $t('delivery.instructions') }}
       </label>
       <BaseInput
         id="dine-in-instructions"
         v-model="localData.instructions"
         type="textarea"
-        :placeholder="$t('delivery.instructionsPlaceholder', 'Например: не добавлять лук')"
+        :placeholder="$t('delivery.instructionsPlaceholder')"
         :rows="3"
         @input="handleChange"
       />
@@ -64,7 +64,7 @@
     <!-- QR Code Scanner (Optional Feature) -->
     <div v-if="showQrScanner" class="dine-in-form__qr-section">
       <div class="dine-in-form__qr-divider">
-        <span class="dine-in-form__qr-divider-text">{{ $t('common.or', 'ИЛИ') }}</span>
+        <span class="dine-in-form__qr-divider-text">{{ $t('common.or') }}</span>
       </div>
       
       <BaseButton
@@ -73,7 +73,7 @@
         @click="openQrScanner"
       >
         <BaseIcon name="qrcode" size="md" />
-        {{ $t('checkout.scanQr', 'Сканировать QR-код стола') }}
+        {{ $t('checkout.scanQr') }}
       </BaseButton>
     </div>
 
@@ -82,7 +82,7 @@
       <BaseIcon name="info" size="sm" />
       <div class="dine-in-form__info-content">
         <p class="dine-in-form__info-text">
-          {{ $t('checkout.dineInInfoMsg', 'Ваш заказ будет приготовлен и подан к вашему столу. Пожалуйста, оставайтесь на месте.') }}
+          {{ $t('checkout.dineInInfoMsg') }}
         </p>
       </div>
     </div>

@@ -116,10 +116,10 @@
         <!-- Guest Auth Buttons -->
         <div v-if="!userStore.isAuthenticated" class="u-flex u-items-center u-gap-2">
           <NuxtLink to="/auth/login" class="app-header__link">
-            <BaseButton variant="ghost" size="sm">{{ $t('auth.login', 'Войти') }}</BaseButton>
+            <BaseButton variant="ghost" size="sm">{{ $t('auth.login.submit') }}</BaseButton>
           </NuxtLink>
           <NuxtLink to="/auth/register" class="app-header__link">
-            <BaseButton variant="primary" size="sm">{{ $t('auth.register', 'Регистрация') }}</BaseButton>
+            <BaseButton variant="primary" size="sm">{{ $t('auth.register.submit') }}</BaseButton>
           </NuxtLink>
         </div>
 
@@ -139,15 +139,15 @@
         <!-- User dropdown menu -->
         <div v-if="showUserMenu" class="app-header__dropdown">
           <NuxtLink :to="tPath('/profile')" class="app-header__dropdown-item" @click="closeUserMenu">
-            {{ $t('common.profile', 'Профиль') }}
+            {{ $t('profile.title') }}
           </NuxtLink>
           <NuxtLink :to="tPath('/orders')" class="app-header__dropdown-item" @click="closeUserMenu">
-            {{ $t('common.order_history', 'История заказов') }}
+            {{ $t('common.order_history') }}
           </NuxtLink>
 
           <hr class="app-header__dropdown-divider" />
           <button class="app-header__dropdown-item" @click="logout">
-            {{ $t('common.logout', 'Выйти') }}
+            {{ $t('auth.logout') }}
           </button>
         </div>
       </div>
@@ -214,7 +214,7 @@ const isHomePage = computed(() => {
   if (useRoute().path === '/') return true
   return isTenantHome.value
 })
-const userName = computed(() => userStore.user?.name || 'Гость')
+const userName = computed(() => userStore.user?.name || useI18n().t('common.guest'))
 const cartItemCount = computed(() => cartStore.itemCount)
 const unreadNotifications = computed(() => notificationStore.unreadCount)
 const appName = computed(() => useRuntimeConfig().public.appName)

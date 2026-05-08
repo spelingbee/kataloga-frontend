@@ -15,13 +15,13 @@
       <!-- Instruction about sending receipt to Bot -->
       <div class="transfer-payment-modal__bot-instruction">
         <BaseIcon name="telegram" size="md" class="u-text-primary" />
-        <p>{{ $t('payment.transfer.sendToBot', 'Пришлите скриншот чека прямо в этот чат Telegram') }}</p>
+        <p>{{ $t('payment.transfer.sendToBot') }}</p>
       </div>
 
       <!-- Phone Section -->
       <div v-if="whatsappPhone" class="transfer-payment-modal__phone-section">
         <div class="transfer-payment-modal__phone-label">
-          {{ $t('payment.transfer.phoneLabel') || 'Реквизиты для перевода (номер телефона):' }}
+          {{ $t('payment.transfer.phoneLabel') }}
         </div>
         <div class="transfer-payment-modal__phone-display">
           <div class="transfer-payment-modal__phone-icon">
@@ -43,7 +43,7 @@
       <!-- QR Code Section -->
       <div v-if="qrCodeUrl" class="transfer-payment-modal__qr-section">
         <div class="transfer-payment-modal__qr-label">
-          {{ $t('payment.transfer.qrLabel') || 'Сканируйте QR-код для оплаты' }}
+          {{ $t('payment.transfer.qrLabel') }}
         </div>
         <div class="transfer-payment-modal__qr-container">
           <img :src="qrCodeUrl" alt="Payment QR Code" class="transfer-payment-modal__qr-image" />

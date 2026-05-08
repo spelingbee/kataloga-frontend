@@ -4,7 +4,7 @@
     <div v-if="loading" class="order-tracking-page__loading">
       <div class="order-tracking-page__loading-spinner" />
       <AppText class="order-tracking-page__loading-text">
-        Loading order tracking...
+        {{ $t('orders.tracking.loading') }}
       </AppText>
     </div>
 
@@ -12,7 +12,7 @@
     <div v-else-if="error" class="order-tracking-page__error">
       <BaseIcon name="alert-circle" size="4xl" class="order-tracking-page__error-icon" />
       <AppHeading level="h2" size="heading-lg" class="order-tracking-page__error-title">
-        Unable to Load Order
+        {{ $t('orders.tracking.unableToLoad') }}
       </AppHeading>
       <AppText class="order-tracking-page__error-message">
         {{ error }}
@@ -20,11 +20,11 @@
       <div class="order-tracking-page__error-actions">
         <BaseButton @click="retryLoad">
           <BaseIcon name="refresh" size="sm" class="mr-2" />
-          Try Again
+          {{ $t('orders.tracking.tryAgain') }}
         </BaseButton>
         <NuxtLink to="/orders">
           <BaseButton variant="secondary">
-            View All Orders
+            {{ $t('orders.viewAll') }}
           </BaseButton>
         </NuxtLink>
       </div>
@@ -44,7 +44,7 @@
         
         <div class="order-tracking-page__header-info">
           <AppHeading level="h1" size="heading-xl" class="order-tracking-page__title">
-            Track Your Order
+            {{ $t('orders.tracking.title') }}
           </AppHeading>
           <AppText size="body-sm" class="order-tracking-page__subtitle">
             Order #{{ order.id }}
@@ -58,7 +58,7 @@
             :class="{ 'order-tracking-page__connection-indicator--connected': isTracking }"
           />
           <AppText size="caption" class="order-tracking-page__connection-text">
-            {{ isTracking ? 'Обновляется' : 'Остановлено' }}
+            {{ isTracking ? $t('orders.updating') : $t('orders.stopped') }}
           </AppText>
         </div>
       </div>
@@ -80,7 +80,7 @@
       <!-- Delivery Information (if applicable) -->
       <div v-if="isDeliveryOrder && order.deliveryAddress" class="order-tracking-page__section">
         <AppHeading level="h3" size="heading-md" class="order-tracking-page__section-title">
-          Delivery Information
+          {{ $t('orders.tracking.deliveryInfo') }}
         </AppHeading>
         
         <div class="order-tracking-page__delivery">
@@ -88,7 +88,7 @@
             <BaseIcon name="map-pin" size="sm" class="order-tracking-page__delivery-icon" />
             <div class="order-tracking-page__delivery-content">
               <AppText size="body-sm" class="order-tracking-page__delivery-label">
-                Delivery Address
+                {{ $t('orders.tracking.deliveryAddress') }}
               </AppText>
               <AppText size="body-sm" class="order-tracking-page__delivery-value">
                 {{ order.deliveryAddress }}
@@ -100,7 +100,7 @@
             <BaseIcon name="user" size="sm" class="order-tracking-page__delivery-icon" />
             <div class="order-tracking-page__delivery-content">
               <AppText size="body-sm" class="order-tracking-page__delivery-label">
-                Your Courier
+                {{ $t('orders.tracking.courier') }}
               </AppText>
               <AppText size="body-sm" class="order-tracking-page__delivery-value">
                 {{ courierInfo.name }}
@@ -122,7 +122,7 @@
             <BaseIcon name="clock" size="sm" class="order-tracking-page__delivery-icon order-tracking-page__delivery-icon--orange" />
             <div class="order-tracking-page__delivery-content">
               <AppText size="body-sm" class="order-tracking-page__delivery-label">
-                Estimated Delivery
+                {{ $t('orders.tracking.estimatedDelivery') }}
               </AppText>
               <AppText size="body-sm" class="order-tracking-page__delivery-value order-tracking-page__delivery-value--orange">
                 {{ estimatedDeliveryText }}
@@ -149,7 +149,7 @@
           @click="refreshTracking"
         >
           <BaseIcon name="refresh" size="sm" class="mr-2" />
-          Refresh Status
+          {{ $t('orders.tracking.refreshStatus') }}
         </BaseButton>
       </div>
     </div>
@@ -162,18 +162,18 @@
     >
       <div class="order-tracking-page__cancel-modal">
         <AppText class="order-tracking-page__cancel-message">
-          Are you sure you want to cancel this order? This action cannot be undone.
+          {{ $t('orders.tracking.cancelConfirm') }}
         </AppText>
         
         <div class="order-tracking-page__cancel-reason">
           <label class="order-tracking-page__cancel-label">
-            Reason for cancellation (optional)
+            {{ $t('orders.tracking.cancelReasonLabel') }}
           </label>
           <textarea
             v-model="cancelReason"
             class="order-tracking-page__cancel-textarea"
             rows="3"
-            placeholder="Let us know why you're cancelling..."
+            :placeholder="$t('orders.tracking.cancelReasonPlaceholder')"
           />
         </div>
 
@@ -182,7 +182,7 @@
             variant="secondary"
             @click="showCancelModal = false"
           >
-            Keep Order
+            {{ $t('orders.tracking.keepOrder') }}
           </BaseButton>
           <BaseButton
             variant="primary"
@@ -190,7 +190,7 @@
             :loading="cancellingOrder"
             @click="confirmCancelOrder"
           >
-            Cancel Order
+            {{ $t('orders.tracking.cancelOrder') }}
           </BaseButton>
         </div>
       </div>
@@ -210,13 +210,14 @@ import AppHeading from '~/components/base/AppHeading.vue'
 
 // Page setup
 definePageMeta({
-  title: 'Track Order - Menu Ordering App'
+  title: 'Track Order'
 })
 
 // Route and composables
 const route = useRoute()
 const router = useRouter()
 const { showNotification } = useNotification()
+const { t } = useI18n()
 
 // Get order ID from route
 const orderId = computed(() => route.params.id as string)
@@ -263,11 +264,11 @@ const loadOrder = async () => {
       // Start WebSocket tracking
       await startTracking(orderId.value)
     } else {
-      error.value = 'Order not found'
+      error.value = t('orders.notFound')
     }
   } catch (err) {
     console.error('Error loading order:', err)
-    error.value = 'Failed to load order details. Please try again.'
+    error.value = t('orders.issueFailed')
   } finally {
     loading.value = false
   }
@@ -294,15 +295,15 @@ const refreshTracking = async () => {
     
     showNotification({
       type: 'success',
-      title: 'Status Updated',
-      message: 'Order status has been refreshed'
+      title: t('orders.tracking.statusUpdated'),
+      message: t('orders.tracking.statusRefreshed')
     })
   } catch (err) {
     console.error('Error refreshing tracking:', err)
     showNotification({
       type: 'error',
-      title: 'Refresh Failed',
-      message: 'Failed to refresh order status'
+      title: t('orders.tracking.refreshFailed'),
+      message: t('orders.tracking.refreshFailedDesc')
     })
   } finally {
     refreshing.value = false
@@ -323,8 +324,8 @@ const confirmCancelOrder = async () => {
     if (success) {
       showNotification({
         type: 'success',
-        title: 'Order Cancelled',
-        message: 'Your order has been cancelled successfully'
+        title: t('orders.tracking.cancelledTitle'),
+        message: t('orders.tracking.cancelledDesc')
       })
       
       // Update local order status
@@ -341,16 +342,16 @@ const confirmCancelOrder = async () => {
     } else {
       showNotification({
         type: 'error',
-        title: 'Cancellation Failed',
-        message: 'Failed to cancel order. Please try again or contact support.'
+        title: t('orders.tracking.cancelFailedTitle'),
+        message: t('orders.tracking.cancelFailedDesc')
       })
     }
   } catch (err) {
     console.error('Error cancelling order:', err)
     showNotification({
       type: 'error',
-      title: 'Cancellation Failed',
-      message: 'An error occurred while cancelling the order'
+      title: t('orders.tracking.cancelFailedTitle'),
+      message: t('orders.tracking.cancelFailedDesc')
     })
   } finally {
     cancellingOrder.value = false
@@ -366,8 +367,8 @@ const handleTrackDelivery = () => {
   // Show live map tracking (if implemented)
   showNotification({
     type: 'info',
-    title: 'Live Tracking',
-    message: 'Live map tracking will be available soon'
+    title: t('orders.tracking.liveTracking'),
+    message: t('orders.tracking.liveTrackingSoon')
   })
 }
 
@@ -397,8 +398,8 @@ watch(() => order.value?.status, (newStatus, oldStatus) => {
     // Show notification for status change
     showNotification({
       type: 'info',
-      title: 'Order Status Updated',
-      message: `Your order is now ${newStatus.toLowerCase()}`
+      title: t('orders.tracking.statusUpdatedTitle'),
+      message: t('orders.tracking.statusUpdatedDesc', { status: newStatus.toLowerCase() })
     })
   }
 })

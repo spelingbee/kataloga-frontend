@@ -8,23 +8,23 @@
       <!-- Back Navigation -->
       <nav class="auth-page__nav">
         <BaseButton variant="ghost" size="sm" icon="arrow-left" @click="router.push('/')">
-          На главную
+          {{ t('common.back') }}
         </BaseButton>
       </nav>
 
       <main class="auth-page__card">
         <header class="auth-page__header">
-          <h1 class="auth-page__title">Войти в аккаунт</h1>
+          <h1 class="auth-page__title">{{ t('auth.login.title') }}</h1>
           <p class="auth-page__subtitle">
-            Нет аккаунта?
-            <NuxtLink to="/auth/register" class="auth-page__link">Создать новый</NuxtLink>
+            {{ t('auth.login.noAccount') }}
+            <NuxtLink to="/auth/register" class="auth-page__link">{{ t('auth.login.createAccount') }}</NuxtLink>
           </p>
         </header>
 
         <form class="auth-page__form" @submit.prevent="handleLogin">
           <BaseInput
             v-model="form.email"
-            label="Email адрес"
+            :label="t('auth.login.emailLabel')"
             type="email"
             placeholder="example@mail.com"
             required
@@ -36,7 +36,7 @@
 
           <BaseInput
             v-model="form.password"
-            label="Пароль"
+            :label="t('auth.login.passwordLabel')"
             type="password"
             placeholder="••••••••"
             required
@@ -48,10 +48,10 @@
           />
 
           <div class="auth-page__form-options">
-            <BaseCheckbox v-model="form.rememberMe">Запомнить меня</BaseCheckbox>
+            <BaseCheckbox v-model="form.rememberMe">{{ t('auth.login.rememberMe') }}</BaseCheckbox>
 
             <NuxtLink to="/auth/forgot-password" class="auth-page__link auth-page__link--small">
-              Забыли пароль?
+              {{ t('auth.login.forgotPassword') }}
             </NuxtLink>
           </div>
 
@@ -65,7 +65,7 @@
 
           <div class="auth-page__actions">
             <BaseButton type="submit" variant="primary" full-width :loading="isLoading">
-              {{ isLoading ? 'Вход...' : 'Войти' }}
+              {{ isLoading ? t('common.loading') : t('auth.login.submit') }}
             </BaseButton>
           </div>
         </form>
@@ -78,6 +78,7 @@
 
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user'
+import { useI18n } from 'vue-i18n'
 import BrandingFooter from '~/components/layout/BrandingFooter.vue'
 
 // Meta
@@ -87,6 +88,7 @@ definePageMeta({
 })
 
 // Composables
+const { t } = useI18n()
 const authStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
@@ -116,19 +118,19 @@ const validateForm = () => {
 
   // Email validation
   if (!form.email) {
-    errors.email = 'Email обязателен'
+    errors.email = t('auth.login.emailRequired')
     isValid = false
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = 'Введите корректный email'
+    errors.email = t('auth.login.emailInvalid')
     isValid = false
   }
 
   // Password validation
   if (!form.password) {
-    errors.password = 'Пароль обязателен'
+    errors.password = t('auth.login.passwordRequired')
     isValid = false
   } else if (form.password.length < 6) {
-    errors.password = 'Пароль должен содержать минимум 6 символов'
+    errors.password = t('auth.login.passwordMin')
     isValid = false
   }
 
@@ -151,7 +153,7 @@ const handleLogin = async () => {
     const redirectTo = (route.query.redirect as string) || '/'
     await router.push(redirectTo)
   } catch (err: any) {
-    error.value = err.message || 'Произошла ошибка при входе'
+    error.value = err.message || t('auth.login.error')
   } finally {
     isLoading.value = false
   }

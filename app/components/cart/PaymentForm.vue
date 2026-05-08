@@ -16,7 +16,7 @@
         </div>
         <div class="method-info">
           <span class="method-name">{{ $t('payment.methods.STRIPE') }}</span>
-          <span class="method-hint">{{ $t('payment.methods.STRIPE_HINT', 'Pay with Visa/Mastercard online') }}</span>
+          <span class="method-hint">{{ $t('payment.methods.STRIPE_HINT') }}</span>
         </div>
         <div class="method-check">
           <div v-if="localPaymentInfo.method === 'STRIPE'" class="check-dot" />
@@ -34,7 +34,7 @@
         </div>
         <div class="method-info">
           <span class="method-name">{{ $t('payment.methods.TRANSFER') }}</span>
-          <span class="method-hint">{{ $t('payment.methods.TRANSFER_HINT', 'MBank, O!Money, Elsom') }}</span>
+          <span class="method-hint">{{ $t('payment.methods.TRANSFER_HINT') }}</span>
         </div>
         <div class="method-check">
           <div v-if="localPaymentInfo.method === 'TRANSFER'" class="check-dot" />
@@ -52,7 +52,7 @@
         </div>
         <div class="method-info">
           <span class="method-name">{{ $t('payment.methods.CASH') }}</span>
-          <span class="method-hint">{{ $t('payment.methods.CASH_HINT', 'Pay on delivery') }}</span>
+          <span class="method-hint">{{ $t('payment.methods.CASH_HINT') }}</span>
         </div>
         <div class="method-check">
           <div v-if="localPaymentInfo.method === 'CASH'" class="check-dot" />
@@ -64,13 +64,13 @@
     <div v-if="localPaymentInfo.method === 'CASH'" class="payment-details">
       <div class="form-group">
         <label for="cash-amount" class="form-label">
-          {{ $t('payment.cashAmount', 'Нужна сдача? (укажите с какой суммы)') }}
+          {{ $t('payment.cashAmount') }}
         </label>
         <BaseInput
           id="cash-amount"
           v-model="localPaymentInfo.cashAmount"
           type="number"
-          :placeholder="$t('payment.cashAmountPlaceholder', 'Например: 1000')"
+          :placeholder="$t('payment.cashAmountPlaceholder')"
           min="0"
           step="1"
           @input="updatePaymentInfo"

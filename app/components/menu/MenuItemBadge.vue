@@ -18,6 +18,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 type BadgeType = 'new' | 'popular' | 'spicy' | 'vegetarian' | 'vegan' | 'gluten-free' | 'dairy-free'
 type BadgeSize = 'sm' | 'md'
@@ -45,17 +46,18 @@ const icon = computed(() => {
   return iconMap[props.type]
 })
 
+const { t } = useI18n()
 const label = computed(() => {
   if (props.label) return props.label
 
   const labelMap: Record<BadgeType, string> = {
-    new: 'New',
-    popular: 'Popular',
-    spicy: 'Spicy',
-    vegetarian: 'Vegetarian',
-    vegan: 'Vegan',
-    'gluten-free': 'Gluten Free',
-    'dairy-free': 'Dairy Free'
+    new: t('menu.new'),
+    popular: t('menu.popular'),
+    spicy: t('menu.spicy'),
+    vegetarian: t('menu.filters.vegetarian'),
+    vegan: t('menu.filters.vegan'),
+    'gluten-free': t('menu.filters.gluten-free'),
+    'dairy-free': t('menu.filters.dairy-free')
   }
   return labelMap[props.type]
 })

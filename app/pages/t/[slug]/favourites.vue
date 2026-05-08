@@ -5,11 +5,11 @@
       <div class="favourites-header__title-row">
         <BaseIcon name="heart" size="lg" class="favourites-header__icon" />
         <AppHeading level="h1" size="display-md" class="favourites-header__title">
-          Your Favourites
+          {{ $t('favorites.title') }}
         </AppHeading>
       </div>
       <AppText size="body-lg" class="favourites-header__subtitle">
-        Your favorite dishes, ready to order again
+        {{ $t('favorites.subtitle') }}
       </AppText>
     </section>
 
@@ -17,7 +17,7 @@
     <section class="favourites-controls">
       <div class="favourites-controls__row">
         <AppText class="favourites-controls__count">
-          {{ favourites.length }} favourite{{ favourites.length !== 1 ? 's' : '' }}
+          {{ $t('favorites.count', { count: favourites.length }) }}
         </AppText>
         <div class="favourites-controls__actions">
           <BaseButton 
@@ -33,7 +33,7 @@
             :disabled="favourites.length === 0"
             @click="clearAllFavourites"
           >
-            Clear All
+            {{ $t('favorites.clearAll') }}
           </BaseButton>
         </div>
       </div>
@@ -44,7 +44,7 @@
       <!-- Loading State -->
       <div v-if="menuStore.loading" class="favourites-state favourites-state--loading">
         <div class="favourites-loading-spinner"/>
-        <AppText class="favourites-state__text">Loading favourites...</AppText>
+        <AppText class="favourites-state__text">{{ $t('favorites.loading') }}</AppText>
       </div>
 
       <!-- Empty State -->
@@ -53,21 +53,21 @@
           <BaseIcon name="heart" size="xl" class="favourites-state__icon" />
         </div>
         <AppHeading level="h3" size="heading-lg" class="favourites-state__title">
-          No favourites yet
+          {{ $t('favorites.emptyTitle') }}
         </AppHeading>
         <AppText class="favourites-state__text">
-          Start exploring our menu and add dishes to your favourites by clicking the heart icon
+          {{ $t('favorites.emptyText') }}
         </AppText>
         <div class="favourites-state__actions">
           <NuxtLink to="/menu">
             <BaseButton variant="primary" class="favourites-state__button">
               <BaseIcon name="search" size="sm" class="u-mr-2" />
-              Browse Menu
+              {{ $t('favorites.browseMenu') }}
             </BaseButton>
           </NuxtLink>
           <NuxtLink to="/">
             <BaseButton variant="secondary" class="favourites-state__button">
-              View Popular Dishes
+              {{ $t('favorites.viewPopular') }}
             </BaseButton>
           </NuxtLink>
         </div>
@@ -119,7 +119,7 @@
                 <div v-if="item.calories" class="favourites-item__calories">
                   <BaseIcon name="flame" size="sm" />
                   <AppText size="caption" class="favourites-item__calories-text">
-                    {{ item.calories }} cal
+                    {{ item.calories }} {{ $t('menu.units.kcal') }}
                   </AppText>
                 </div>
               </div>
@@ -153,12 +153,12 @@
               @click="addAllToCart"
             >
               <BaseIcon name="shopping-cart" size="sm" class="u-mr-2" />
-              Add All to Cart
+              {{ $t('favorites.addAllToCart') }}
             </BaseButton>
             <NuxtLink to="/menu">
               <BaseButton variant="secondary" class="favourites-actions__button">
                 <BaseIcon name="plus" size="sm" class="u-mr-2" />
-                Find More Dishes
+                {{ $t('favorites.findMore') }}
               </BaseButton>
             </NuxtLink>
           </div>
@@ -205,7 +205,7 @@ const onToggleFavourite = async (itemId: string) => {
 }
 
 const clearAllFavourites = async () => {
-  if (confirm('Are you sure you want to remove all favourites?')) {
+  if (confirm(useI18n().t('favorites.clearConfirm'))) {
     await favoritesStore.clearAllFavorites()
   }
 }

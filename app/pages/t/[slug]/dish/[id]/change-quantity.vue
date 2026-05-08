@@ -11,7 +11,7 @@
         </BaseButton>
         <div>
           <AppHeading level="h1" size="heading-lg" class="text-white">
-            Select Quantity
+            {{ $t('menu.quantity_selector.title') }}
           </AppHeading>
           <AppText class="text-neutral-20">
             {{ dish?.name }}
@@ -24,7 +24,7 @@
     <div v-if="loading" class="flex items-center justify-center py-16">
       <div class="text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading quantity options...</AppText>
+        <AppText class="text-neutral-20">{{ $t('menu.quantity_selector.loading') }}</AppText>
       </div>
     </div>
 
@@ -41,7 +41,7 @@
               {{ dish?.name }}
             </AppHeading>
             <AppText size="body-sm" class="text-neutral-20">
-              {{ formatPrice(dish?.price || 0) }} per item
+              {{ formatPrice(dish?.price || 0) }} {{ $t('menu.quantity_selector.perItem') }}
             </AppText>
           </div>
         </div>
@@ -49,19 +49,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="text-center">
             <AppText size="body-lg" class="text-white font-semibold">{{ selectedQuantity }}</AppText>
-            <AppText size="caption" class="text-neutral-20">Items</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.quantity_selector.items') }}</AppText>
           </div>
           <div class="text-center">
             <AppPrice :price="totalPrice" size="lg" />
-            <AppText size="caption" class="text-neutral-20">Total Price</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.quantity_selector.totalPrice') }}</AppText>
           </div>
           <div class="text-center">
             <AppText size="body-lg" class="text-white font-semibold">{{ totalCalories }}</AppText>
-            <AppText size="caption" class="text-neutral-20">Total Calories</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.quantity_selector.totalCalories') }}</AppText>
           </div>
           <div class="text-center">
             <AppText size="body-lg" class="text-white font-semibold">{{ totalWeight }}g</AppText>
-            <AppText size="caption" class="text-neutral-20">Total Weight</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.quantity_selector.totalWeight') }}</AppText>
           </div>
         </div>
       </div>
@@ -69,7 +69,7 @@
       <!-- Quantity Selector -->
       <div class="mb-8 bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-          Choose Quantity
+          {{ $t('menu.quantity_selector.choose') }}
         </AppHeading>
         
         <!-- Large Quantity Selector -->
@@ -89,7 +89,7 @@
               {{ selectedQuantity }}
             </AppText>
             <AppText size="body-sm" class="text-neutral-20">
-              {{ selectedQuantity === 1 ? 'item' : 'items' }}
+              {{ selectedQuantity === 1 ? $t('menu.quantity_selector.item_1') : (selectedQuantity < 5 ? $t('menu.quantity_selector.item_2') : $t('menu.quantity_selector.item_5')) }}
             </AppText>
           </div>
           
@@ -121,14 +121,14 @@
         <!-- Custom Quantity Input -->
         <div class="flex items-center gap-4">
           <AppText size="body-sm" class="text-white">
-            Custom quantity:
+            {{ $t('menu.quantity_selector.custom') }}
           </AppText>
           <BaseInput
             v-model.number="customQuantity"
             type="number"
             :min="1"
             :max="maxQuantity"
-            placeholder="Enter amount"
+            :placeholder="$t('menu.quantity_selector.enterAmount')"
             class="w-32"
           />
           <BaseButton 
@@ -136,7 +136,7 @@
             :disabled="!isValidCustomQuantity"
             @click="applyCustomQuantity"
           >
-            Apply
+            {{ $t('menu.quantity_selector.apply') }}
           </BaseButton>
         </div>
       </div>
@@ -144,7 +144,7 @@
       <!-- Bulk Order Options -->
       <div class="mb-8 bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-          Bulk Order Options
+          {{ $t('menu.quantity_selector.bulkOptions') }}
         </AppHeading>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -164,7 +164,7 @@
                 variant="success"
                 size="sm"
               >
-                {{ bulk.discount }}% OFF
+                {{ bulk.discount }}% {{ $t('menu.quantity_selector.off') }}
               </BaseBadge>
             </div>
             
@@ -175,10 +175,10 @@
             <div class="flex items-center justify-between">
               <div>
                 <AppText size="body-sm" class="text-white">
-                  {{ bulk.quantity }} items
+                  {{ bulk.quantity }} {{ bulk.quantity === 1 ? $t('menu.quantity_selector.item_1') : (bulk.quantity < 5 ? $t('menu.quantity_selector.item_2') : $t('menu.quantity_selector.item_5')) }}
                 </AppText>
                 <AppText size="caption" class="text-neutral-20">
-                  {{ formatPrice(bulk.pricePerItem) }} per item
+                  {{ formatPrice(bulk.pricePerItem) }} {{ $t('menu.quantity_selector.perItem') }}
                 </AppText>
               </div>
               <div class="text-right">
@@ -188,7 +188,7 @@
                   size="caption" 
                   class="text-primary-green"
                 >
-                  Save {{ formatPrice(bulk.savings) }}
+                  {{ $t('menu.quantity_selector.save', { amount: formatPrice(bulk.savings) }) }}
                 </AppText>
               </div>
             </div>
@@ -202,7 +202,7 @@
           <BaseIcon name="lightbulb" size="md" class="text-primary-green mt-1" />
           <div>
             <AppHeading level="h4" size="heading-sm" class="text-white mb-2">
-              Recommendation
+              {{ $t('menu.quantity_selector.recommendation') }}
             </AppHeading>
             <AppText size="body-sm" class="text-neutral-20 mb-3">
               {{ getRecommendationText() }}
@@ -212,7 +212,7 @@
               size="sm"
               @click="applyRecommendation"
             >
-              Apply Recommendation
+              {{ $t('menu.quantity_selector.applyRecommendation') }}
             </BaseButton>
           </div>
         </div>
@@ -221,7 +221,7 @@
       <!-- Nutritional Impact -->
       <div class="mb-8 bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-          Nutritional Impact
+          {{ $t('menu.quantity_selector.nutritionalImpact') }}
         </AppHeading>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -230,9 +230,9 @@
               <FireIcon size="lg" />
             </div>
             <AppText size="body-lg" class="text-white font-semibold">{{ totalCalories }}</AppText>
-            <AppText size="caption" class="text-neutral-20">Total Calories</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.quantity_selector.totalCalories') }}</AppText>
             <AppText size="caption" class="text-neutral-20">
-              {{ Math.round(totalCalories / 2000 * 100) }}% of daily intake
+              {{ Math.round(totalCalories / 2000 * 100) }}% {{ $t('menu.quantity_selector.ofDailyIntake') }}
             </AppText>
           </div>
           
@@ -241,9 +241,9 @@
               <BaseIcon name="activity" size="lg" class="text-primary-green" />
             </div>
             <AppText size="body-lg" class="text-white font-semibold">{{ totalProtein }}g</AppText>
-            <AppText size="caption" class="text-neutral-20">Total Protein</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.nutrition') }} ({{ $t('menu.protein') }})</AppText>
             <AppText size="caption" class="text-neutral-20">
-              {{ Math.round(totalProtein / 50 * 100) }}% of daily needs
+              {{ Math.round(totalProtein / 50 * 100) }}% {{ $t('menu.quantity_selector.ofDailyNeeds') }}
             </AppText>
           </div>
           
@@ -252,9 +252,9 @@
               <BaseIcon name="droplet" size="lg" class="text-primary-red" />
             </div>
             <AppText size="body-lg" class="text-white font-semibold">{{ totalSodium }}mg</AppText>
-            <AppText size="caption" class="text-neutral-20">Total Sodium</AppText>
+            <AppText size="caption" class="text-neutral-20">{{ $t('menu.nutrition') }} (Натрий)</AppText>
             <AppText size="caption" class="text-neutral-20">
-              {{ Math.round(totalSodium / 2300 * 100) }}% of daily limit
+              {{ Math.round(totalSodium / 2300 * 100) }}% {{ $t('menu.quantity_selector.ofDailyLimit') }}
             </AppText>
           </div>
         </div>
@@ -263,12 +263,12 @@
       <!-- Sharing Options -->
       <div v-if="selectedQuantity > 1" class="mb-8 bg-background-card rounded-xl p-6">
         <AppHeading level="h3" size="heading-md" class="text-white mb-6">
-          Sharing Information
+          {{ $t('menu.quantity_selector.sharingInfo') }}
         </AppHeading>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <AppText size="body-sm" class="text-neutral-20 mb-3">Perfect for:</AppText>
+            <AppText size="body-sm" class="text-neutral-20 mb-3">{{ $t('menu.quantity_selector.perfectFor') }}</AppText>
             <div class="space-y-2">
               <div class="flex items-center gap-2">
                 <BaseIcon name="users" size="sm" class="text-primary-green" />
@@ -286,7 +286,7 @@
           </div>
           
           <div>
-            <AppText size="body-sm" class="text-neutral-20 mb-3">Storage tips:</AppText>
+            <AppText size="body-sm" class="text-neutral-20 mb-3">{{ $t('menu.quantity_selector.storageTips') }}</AppText>
             <AppText size="body-sm" class="text-white">
               {{ getStorageTips() }}
             </AppText>
@@ -303,7 +303,7 @@
           @click="confirmQuantity"
         >
           <BaseIcon name="check" size="sm" class="mr-2" />
-          Confirm Quantity ({{ formatPrice(totalPrice) }})
+          {{ $t('menu.quantity_selector.confirmQuantity', { price: formatPrice(totalPrice) }) }}
         </BaseButton>
         
         <BaseButton 
@@ -312,7 +312,7 @@
           @click="addToCart"
         >
           <BaseIcon name="shopping-cart" size="sm" class="mr-2" />
-          Add to Cart
+          {{ $t('menu.addToCart') }}
         </BaseButton>
         
         <BaseButton 
@@ -320,7 +320,7 @@
           size="lg"
           @click="resetQuantity"
         >
-          Reset
+          {{ $t('menu.quantity_selector.reset') }}
         </BaseButton>
       </div>
     </div>
@@ -333,7 +333,7 @@ import { useCartStore } from '~/stores/cart'
 
 // Page setup
 definePageMeta({
-  title: 'Select Quantity - Menu Ordering App'
+  title: 'Select Quantity'
 })
 
 // Route and stores
@@ -341,6 +341,7 @@ const route = useRoute()
 const router = useRouter()
 
 const cartStore = useCartStore()
+const { t } = useI18n()
 
 // Reactive state
 const loading = ref(true)

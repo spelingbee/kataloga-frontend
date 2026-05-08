@@ -11,7 +11,7 @@
     <!-- Custom Options -->
     <div v-if="dish.customizations && dish.customizations.length > 0" class="space-y-4">
       <AppHeading level="h4" size="heading-md" class="text-white">
-        Customize Your Dish
+        {{ $t('menu.ingredients.customizeDish') }}
       </AppHeading>
 
       <div class="space-y-4">
@@ -28,7 +28,7 @@
     <!-- Size Options -->
     <div v-if="dish.sizes && dish.sizes.length > 1" class="space-y-4">
       <AppHeading level="h4" size="heading-md" class="text-white">
-        Size
+        {{ $t('menu.ingredients.size') }}
       </AppHeading>
 
       <div class="grid grid-cols-1 gap-2">
@@ -45,12 +45,12 @@
     <!-- Special Instructions -->
     <div class="space-y-3">
       <AppHeading level="h4" size="heading-md" class="text-white">
-        Special Instructions
+        {{ $t('menu.ingredients.specialInstructions') }}
       </AppHeading>
       <BaseInput
         v-model="specialInstructions"
         type="textarea"
-        placeholder="Any special requests or modifications..."
+        :placeholder="$t('menu.ingredients.placeholder')"
         :rows="3"
         class="w-full"
       />
@@ -97,6 +97,7 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+const { t } = useI18n()
 
 const selectedSize = ref<string>('')
 const specialInstructions = ref('')

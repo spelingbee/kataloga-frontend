@@ -6,11 +6,11 @@
         <div class="promotions-header__title-group">
           <BaseIcon name="tag" size="lg" class="promotions-header__icon" />
           <AppHeading level="h1" size="display-md" class="promotions-header__title">
-            {{ $t('promotions.title', 'Акции и спецпредложения') }}
+            {{ $t('promotions.title') }}
           </AppHeading>
         </div>
         <AppText size="body-lg" class="promotions-header__subtitle">
-          {{ $t('promotions.subtitle', 'Экономьте с нашими эксклюзивными предложениями') }}
+          {{ $t('promotions.subtitle') }}
         </AppText>
       </div>
     </header>
@@ -27,10 +27,10 @@
           <div class="featured-card__badges">
             <BaseBadge variant="success" size="lg">
               <BaseIcon name="star" size="sm" class="u-mr-2" />
-              {{ $t('promotions.featured', 'Лучшее предложение') }}
+              {{ $t('promotions.featured') }}
             </BaseBadge>
             <BaseBadge variant="warning" size="sm">
-              {{ $t('promotions.limited', 'Ограничено') }}
+              {{ $t('promotions.limited') }}
             </BaseBadge>
           </div>
           
@@ -49,7 +49,7 @@
                   {{ featuredPromotion.discountValue }}{{ featuredPromotion.discountType === 'percentage' ? '%' : '$' }}
                 </AppText>
                 <AppText size="body-sm" class="stat-item__label">
-                  {{ featuredPromotion.discountType === 'percentage' ? 'СКИДКА' : 'ЭКОНОМИЯ' }}
+                  {{ featuredPromotion.discountType === 'percentage' ? $t('menu.quantity_selector.off') : $t('menu.quantity_selector.savings') }}
                 </AppText>
               </div>
               
@@ -58,7 +58,7 @@
                   {{ getTimeRemaining(featuredPromotion.validTo) }}
                 </AppText>
                 <AppText size="body-sm" class="stat-item__label">
-                  {{ $t('promotions.timeLeft', 'Осталось') }}
+                  {{ $t('promotions.timeLeft') }}
                 </AppText>
               </div>
             </div>
@@ -71,7 +71,7 @@
                 @click="usePromotion(featuredPromotion)"
               >
                 <BaseIcon name="shopping-cart" size="sm" class="u-mr-2" />
-                {{ $t('promotions.useNow', 'Использовать') }}
+                {{ $t('promotions.useNow') }}
               </BaseButton>
               <BaseButton 
                 variant="ghost"
@@ -80,7 +80,7 @@
                 @click="sharePromotion(featuredPromotion)"
               >
                 <BaseIcon name="share" size="sm" class="u-mr-2" />
-                {{ $t('common.share', 'Поделиться') }}
+                {{ $t('common.share') }}
               </BaseButton>
             </div>
           </div>
@@ -96,40 +96,40 @@
           size="sm"
           @click="setFilter('all')"
         >
-          {{ $t('common.all', 'Все акции') }}
+          {{ $t('common.all') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'active' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('active')"
         >
-          {{ $t('promotions.active', 'Активные') }}
+          {{ $t('promotions.active') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'percentage' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('percentage')"
         >
-          {{ $t('promotions.filterPercent', '% Скидки') }}
+          {{ $t('promotions.filterPercent') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'fixed' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('fixed')"
         >
-          {{ $t('promotions.filterFixed', 'Сумма') }}
+          {{ $t('promotions.filterFixed') }}
         </BaseButton>
         <BaseButton
           :variant="activeFilter === 'expiring' ? 'primary' : 'secondary'"
           size="sm"
           @click="setFilter('expiring')"
         >
-          {{ $t('promotions.filterExpiring', 'Сгорают') }}
+          {{ $t('promotions.filterExpiring') }}
         </BaseButton>
       </div>
       
       <AppText size="body-sm" class="promotions-filters__count">
-        {{ filteredPromotions.length }} {{ $t('promotions.offersFound', 'предложений найдено') }}
+        {{ filteredPromotions.length }} {{ $t('promotions.offersFound') }}
       </AppText>
     </div>
 
@@ -138,26 +138,26 @@
       <!-- Loading State -->
       <div v-if="loading" class="promotions-state promotions-state--loading">
         <div class="promotions-state__spinner"/>
-        <AppText>{{ $t('common.loading', 'Загрузка...') }}</AppText>
+        <AppText>{{ $t('common.loading') }}</AppText>
       </div>
 
       <!-- Empty State -->
       <div v-else-if="filteredPromotions.length === 0" class="promotions-state promotions-state--empty">
         <BaseIcon name="tag" size="4xl" class="promotions-state__icon" />
         <AppHeading level="h3" size="heading-lg" class="promotions-state__title">
-          {{ $t('promotions.notFound', 'Ничего не найдено') }}
+          {{ $t('promotions.notFound') }}
         </AppHeading>
         <AppText class="promotions-state__desc">
           {{ activeFilter === 'all' ? 
-            $t('promotions.emptyAll', 'Следите за обновлениями, новые акции скоро появятся.') : 
-            $t('promotions.emptyFilter', 'Нет подходящих акций в данный момент.') 
+            $t('promotions.emptyAll') : 
+            $t('promotions.emptyFilter') 
           }}
         </AppText>
         <div class="promotions-state__actions">
           <NuxtLink :to="tPath('/menu')">
             <BaseButton variant="primary">
               <BaseIcon name="utensils" size="sm" class="u-mr-2" />
-              {{ $t('common.browseMenu', 'В меню') }}
+              {{ $t('common.browseMenu') }}
             </BaseButton>
           </NuxtLink>
           <BaseButton 
@@ -165,7 +165,7 @@
             variant="secondary"
             @click="setFilter('all')"
           >
-            {{ $t('promotions.showAll', 'Все акции') }}
+            {{ $t('promotions.showAll') }}
           </BaseButton>
         </div>
       </div>
@@ -184,7 +184,7 @@
                 :variant="promotion.isActive ? 'success' : 'secondary'"
                 size="sm"
               >
-                {{ promotion.isActive ? $t('promotions.statusActive', 'Активна') : $t('promotions.statusInactive', 'Истекла') }}
+                {{ promotion.isActive ? $t('promotions.statusActive') : $t('promotions.statusInactive') }}
               </BaseBadge>
               <BaseBadge 
                 v-if="isExpiringSoon(promotion.validTo)"
@@ -192,7 +192,7 @@
                 size="sm"
               >
                 <BaseIcon name="clock" size="xs" class="u-mr-1" />
-                {{ $t('promotions.expiringSoon', 'Скоро сгорит') }}
+                {{ $t('promotions.expiringSoon') }}
               </BaseBadge>
             </div>
             
@@ -214,7 +214,7 @@
               </AppText>
             </div>
             <AppText size="caption" class="discount-badge__label">
-              {{ promotion.discountType === 'percentage' ? $t('promotions.discount', 'Скидка') : $t('promotions.offOrder', 'Минус от счета') }}
+              {{ promotion.discountType === 'percentage' ? $t('promotions.discount') : $t('promotions.offOrder') }}
             </AppText>
           </div>
 
@@ -231,10 +231,10 @@
             <!-- Validity Period -->
             <div class="promotion-card__validity">
               <AppText size="caption" class="validity-date">
-                {{ $t('promotions.validUntil', 'До') }} {{ formatDate(promotion.validTo) }}
+                {{ $t('promotions.validUntil') }} {{ formatDate(promotion.validTo) }}
               </AppText>
               <AppText size="caption" class="validity-remaining">
-                {{ getTimeRemaining(promotion.validTo) }} {{ $t('promotions.remaining', 'осталось') }}
+                {{ getTimeRemaining(promotion.validTo) }} {{ $t('promotions.remaining') }}
               </AppText>
             </div>
           </div>
@@ -249,7 +249,7 @@
               @click="usePromotion(promotion)"
             >
               <BaseIcon name="shopping-cart" size="sm" class="u-mr-2" />
-              {{ promotion.isActive ? $t('promotions.useNow', 'Применить') : $t('promotions.expired', 'Истекла') }}
+              {{ promotion.isActive ? $t('promotions.useNow') : $t('promotions.expired') }}
             </BaseButton>
             <BaseButton 
               variant="ghost"
@@ -268,17 +268,17 @@
       <div class="newsletter-container">
         <BaseIcon name="mail" size="4xl" class="newsletter-container__icon" />
         <AppHeading level="h2" size="heading-xl" class="newsletter-container__title">
-          {{ $t('promotions.newsletterTitle', 'Не пропускайте выгоду!') }}
+          {{ $t('promotions.newsletterTitle') }}
         </AppHeading>
         <AppText class="newsletter-container__desc">
-          {{ $t('promotions.newsletterDesc', 'Подпишитесь на нашу рассылку и первыми узнавайте об эксклюзивных акциях и спецпредложениях.') }}
+          {{ $t('promotions.newsletterDesc') }}
         </AppText>
         
         <form class="newsletter-form" @submit.prevent="subscribeNewsletter">
           <BaseInput
             v-model="newsletterEmail"
             type="email"
-            :placeholder="$t('promotions.emailPlaceholder', 'Ваш email')"
+            :placeholder="$t('promotions.emailPlaceholder')"
             class="newsletter-form__input"
             required
           />
@@ -294,12 +294,12 @@
               size="sm" 
               class="u-mr-2 u-animate-spin" 
             />
-            {{ $t('promotions.subscribe', 'Подписаться') }}
+            {{ $t('promotions.subscribe') }}
           </BaseButton>
         </form>
         
         <AppText size="caption" class="newsletter-container__privacy">
-          {{ $t('promotions.privacy', 'Вы можете отписаться в любое время. Мы уважаем вашу конфиденциальность.') }}
+          {{ $t('promotions.privacy') }}
         </AppText>
       </div>
     </div>
@@ -310,19 +310,19 @@
         <NuxtLink :to="tPath('/menu')">
           <BaseButton variant="secondary">
             <BaseIcon name="utensils" size="sm" class="u-mr-2" />
-            {{ $t('common.browseMenu', 'В меню') }}
+            {{ $t('common.browseMenu') }}
           </BaseButton>
         </NuxtLink>
         <NuxtLink :to="tPath('/orders')">
           <BaseButton variant="ghost">
             <BaseIcon name="receipt" size="sm" class="u-mr-2" />
-            {{ $t('common.orders', 'История заказов') }}
+            {{ $t('common.orders') }}
           </BaseButton>
         </NuxtLink>
         <NuxtLink :to="tPath('/notifications')">
           <BaseButton variant="ghost">
             <BaseIcon name="bell" size="sm" class="u-mr-2" />
-            {{ $t('common.notifications', 'Уведомления') }}
+            {{ $t('common.notifications') }}
           </BaseButton>
         </NuxtLink>
       </div>
@@ -532,16 +532,16 @@ const subscribeNewsletter = async () => {
     
     // Show success message
     showSuccess(
-      t('promotions.successTitle', 'Успешно!'),
-      t('promotions.successDesc', 'Вы подписались на нашу рассылку.')
+      t('promotions.successTitle'),
+      t('promotions.successDesc')
     )
     newsletterEmail.value = ''
     
   } catch (error) {
     console.error('Failed to subscribe:', error)
     showError(
-      t('promotions.errorTitle', 'Ошибка'),
-      t('promotions.errorDesc', 'Не удалось подписаться. Попробуйте позже.')
+      t('promotions.errorTitle'),
+      t('promotions.errorDesc')
     )
   } finally {
     subscribing.value = false

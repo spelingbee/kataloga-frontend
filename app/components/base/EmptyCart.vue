@@ -1,9 +1,9 @@
 <template>
   <EmptyState
     icon="shopping-cart"
-    title="Your cart is empty"
-    description="Add some delicious items from our menu to get started with your order."
-    action-text="Browse Menu"
+    :title="$t('cart.empty')"
+    :description="$t('cart.emptyDesc')"
+    :action-text="$t('common.browseMenu')"
     action-icon="utensils"
     @action="$emit('browse')"
   />

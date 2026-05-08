@@ -5,7 +5,7 @@
       <BaseInput
         v-model="searchQuery"
         type="text"
-        placeholder="Search restaurants..."
+        :placeholder="$t('tenant.search')"
         class="tenant-selector__search-input"
       >
         <template #prefix>
@@ -17,14 +17,14 @@
     <!-- Loading State -->
     <div v-if="isLoading" class="tenant-selector__loading">
       <BaseLoader size="lg" />
-      <AppText class="u-text-center u-mt-4">Loading restaurants...</AppText>
+      <AppText class="u-text-center u-mt-4">{{ $t('tenant.loading') }}</AppText>
     </div>
 
     <!-- Error State -->
     <div v-else-if="error" class="tenant-selector__error">
       <ErrorMessage :message="error" />
       <BaseButton variant="primary" class="u-mt-4" @click="retryLoad">
-        Retry
+        {{ $t('common.retry') || 'Retry' }}
       </BaseButton>
     </div>
 
@@ -43,8 +43,8 @@
     <div v-else class="tenant-selector__empty">
       <EmptyState
         icon="store"
-        title="No restaurants found"
-        :description="searchQuery ? 'Try adjusting your search' : 'No restaurants available'"
+        :title="$t('tenant.noFound')"
+        :description="searchQuery ? $t('tenant.tryAdjusting') : $t('tenant.noneAvailable')"
       />
     </div>
   </div>
@@ -59,6 +59,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   select: [tenant: TenantInfo]
@@ -98,7 +99,7 @@ const loadTenants = async () => {
       throw new Error('Failed to load restaurants: Invalid response format')
     }
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load restaurants'
+    error.value = err instanceof Error ? err.message : t('tenant.failedToLoad')
   } finally {
     isLoading.value = false
   }

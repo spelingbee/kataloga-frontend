@@ -49,20 +49,20 @@
           <div class="profile-page__content">
             <!-- Personal Information -->
             <section class="profile-page__section">
-              <h2 class="profile-page__section-title">{{ t('profile.personal_info') }}</h2>
+              <h2 class="profile-page__section-title">{{ t('profile.personalInfo') }}</h2>
               <BaseCard padding="lg">
                 <form class="profile-page__form" @submit.prevent="handleUpdateProfile">
                   <div class="profile-page__form-grid">
                     <BaseInput
                       v-model="profileForm.firstName"
-                      :label="t('common.first_name')"
-                      :placeholder="t('common.first_name')"
+                      :label="t('profile.firstName')"
+                      :placeholder="t('profile.firstName')"
                       required
                     />
                     <BaseInput
                       v-model="profileForm.lastName"
-                      :label="t('common.last_name')"
-                      :placeholder="t('common.last_name')"
+                      :label="t('profile.lastName')"
+                      :placeholder="t('profile.lastName')"
                       required
                     />
                   </div>
@@ -70,21 +70,21 @@
                     v-model="profileForm.email"
                     :label="t('common.email')"
                     type="email"
-                    placeholder="email@example.com"
+                    :placeholder="t('profile.emailPlaceholder') || 'email@example.com'"
                   />
                   <BaseInput
                     v-model="profileForm.phone"
                     :label="t('common.phone')"
                     type="tel"
-                    placeholder="+7 (999) 123-4567"
+                    :placeholder="t('profile.phonePlaceholder') || '+7 (999) 123-4567'"
                   />
                   <div v-if="user.telegramId" class="profile-page__telegram-info u-mb-4">
                     <BaseIcon name="telegram" size="sm" class="u-mr-2" />
-                    <span>{{ t('auth.linked_with_telegram') }} (ID: {{ user.telegramId }})</span>
+                    <span>{{ t('profile.linkedWithTelegram') }} (ID: {{ user.telegramId }})</span>
                   </div>
                   <div class="profile-page__form-actions">
                     <BaseButton type="submit" :loading="isUpdating">
-                      {{ t('common.save_changes') }}
+                      {{ t('profile.saveChanges') }}
                     </BaseButton>
                   </div>
                 </form>
@@ -93,7 +93,7 @@
 
             <!-- Delivery Settings -->
             <section class="profile-page__section">
-              <h2 class="profile-page__section-title">{{ t('profile.delivery_settings') }}</h2>
+              <h2 class="profile-page__section-title">{{ t('profile.deliverySettings') }}</h2>
               <BaseCard padding="lg">
                 <div v-if="addresses.length > 0" class="profile-page__address-list">
                   <div v-for="addr in addresses" :key="addr.id" class="profile-page__address-item">
@@ -108,11 +108,11 @@
                   </div>
                 </div>
                 <div v-else class="profile-page__empty-state">
-                  <p>{{ t('profile.no_addresses') }}</p>
+                  <p>{{ t('profile.noAddresses') }}</p>
                 </div>
                 <BaseButton variant="outline" size="sm" class="profile-page__add-address">
                   <BaseIcon name="add" />
-                  {{ t('profile.add_address') }}
+                  {{ t('profile.addAddress') }}
                 </BaseButton>
               </BaseCard>
             </section>
@@ -155,14 +155,14 @@ useHead({
 
 // Computed
 const userDisplayName = computed(() => {
-  if (!user.value.firstName && !user.value.lastName) return 'User'
+  if (!user.value.firstName && !user.value.lastName) return t('profile.user')
   return `${user.value.firstName || ''} ${user.value.lastName || ''}`.trim()
 })
 
 const userInitials = computed(() => {
   const first = user.value.firstName?.[0] || ''
   const last = user.value.lastName?.[0] || ''
-  return (first + last).toUpperCase() || 'U'
+  return (first + last).toUpperCase() || t('profile.initials')
 })
 
 // Methods
@@ -182,7 +182,7 @@ const handleUpdateProfile = async () => {
     
     if (isEmailChanged) {
       // In a real app, use a notification plugin
-      alert(t('profile.email_verification_sent'))
+      alert(t('profile.emailVerificationSent'))
     }
   } catch (error) {
     console.error('Failed to update profile:', error)

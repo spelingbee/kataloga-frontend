@@ -19,7 +19,7 @@
           :loading="geocoding"
           @click="confirmSelection"
         >
-          {{ $t('common.confirm', 'Подтвердить') }}
+          {{ $t('common.confirm') }}
         </BaseButton>
       </div>
 

@@ -60,15 +60,17 @@ const textSize = computed(() => {
   }
 })
 
+const { t } = useI18n()
 const timeText = computed(() => {
   if (props.time < 60) {
-    return `Ready in ${props.time} min`
+    return t('menu.readyIn', { time: `${props.time} ${t('menu.units.minutes')}` })
   } else {
     const hours = Math.floor(props.time / 60)
     const minutes = props.time % 60
-    return minutes > 0 
-      ? `Ready in ${hours}h ${minutes}min`
-      : `Ready in ${hours}h`
+    const timeStr = minutes > 0 
+      ? `${hours}${t('menu.units.hours')} ${minutes}${t('menu.units.minutes_short')}`
+      : `${hours}${t('menu.units.hours')}`
+    return t('menu.readyIn', { time: timeStr })
   }
 })
 

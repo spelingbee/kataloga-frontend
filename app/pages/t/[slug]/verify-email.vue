@@ -16,7 +16,7 @@
         <div class="auth-page__content">
           <div v-if="status === 'loading'" class="auth-page__loading">
             <BaseSpinner />
-            <p>Проверяем ваш токен...</p>
+            <p>{{ $t('auth.login.verifyEmail.checkingToken') }}</p>
           </div>
 
           <div v-if="status === 'success'" class="auth-page__actions">
@@ -25,7 +25,7 @@
               full-width
               @click="handleContinue"
             >
-              Перейти к покупкам
+              {{ $t('auth.login.verifyEmail.goToShopping') }}
             </BaseButton>
           </div>
 
@@ -36,14 +36,14 @@
               class="u-mb-4"
               @click="handleRetry"
             >
-              Вернуться назад
+              {{ $t('auth.login.verifyEmail.back') }}
             </BaseButton>
             <BaseButton
               variant="ghost"
               full-width
               @click="handleManualHome"
             >
-              На главную
+              {{ $t('auth.login.verifyEmail.toHome') }}
             </BaseButton>
           </div>
         </div>
@@ -69,15 +69,15 @@ const status = ref<'loading' | 'success' | 'error'>('loading')
 const errorMsg = ref('')
 
 const title = computed(() => {
-  if (status.value === 'loading') return 'Верификация...'
-  if (status.value === 'success') return 'Email подтвержден!'
-  return 'Ошибка верификации'
+  if (status.value === 'loading') return useI18n().t('auth.login.verifyEmail.title')
+  if (status.value === 'success') return useI18n().t('auth.login.verifyEmail.successTitle')
+  return useI18n().t('auth.login.verifyEmail.errorTitle')
 })
 
 const subtitle = computed(() => {
-  if (status.value === 'loading') return 'Пожалуйста, подождите, пока мы проверяем ваш адрес.'
-  if (status.value === 'success') return 'Ваш аккаунт успешно активирован. Теперь вы можете пользоваться всеми функциями магазина.'
-  return errorMsg.value || 'Токен недействителен или срок его действия истек. Пожалуйста, запросите новую ссылку для подтверждения.'
+  if (status.value === 'loading') return useI18n().t('auth.login.verifyEmail.loadingSubtitle')
+  if (status.value === 'success') return useI18n().t('auth.login.verifyEmail.successSubtitle')
+  return errorMsg.value || useI18n().t('auth.login.verifyEmail.errorSubtitle')
 })
 
 const iconName = computed(() => {
@@ -109,7 +109,7 @@ onMounted(async () => {
   if (!token || !email) {
     console.error('[VerifyEmail] ❌ Missing token or email')
     status.value = 'error'
-    errorMsg.value = 'Отсутствуют необходимые параметры верификации.'
+    errorMsg.value = useI18n().t('auth.login.verifyEmail.missingParams')
     return
   }
 
@@ -121,7 +121,7 @@ onMounted(async () => {
   } catch (err: any) {
     console.error('[VerifyEmail] ❌ Verification failed:', err)
     status.value = 'error'
-    errorMsg.value = err.message || 'Не удалось подтвердить email.'
+    errorMsg.value = err.message || useI18n().t('auth.login.verifyEmail.verifyFailed')
   }
 })
 

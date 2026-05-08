@@ -4,31 +4,31 @@
       <div class="order-confirmation__icon">
         <BaseIcon name="check-circle" size="xl" />
       </div>
-      <h2 class="order-confirmation__title">{{ $t('checkout.confirmation.title', 'Заказ оформлен!') }}</h2>
+      <h2 class="order-confirmation__title">{{ $t('checkout.confirmation.title') }}</h2>
       <p class="order-confirmation__subtitle">
-        {{ $t('checkout.confirmation.subtitle', 'Ваш заказ успешно размещен') }}
+        {{ $t('checkout.confirmation.subtitle') }}
       </p>
     </div>
 
     <div class="order-confirmation__details">
       <!-- Order Number -->
       <div class="order-confirmation__section">
-        <h3 class="order-confirmation__section-title">{{ $t('checkout.confirmation.details', 'Детали заказа') }}</h3>
+        <h3 class="order-confirmation__section-title">{{ $t('checkout.confirmation.details') }}</h3>
         <div class="order-confirmation__info-grid">
           <div class="order-confirmation__info-item">
-            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.order_number', 'Номер заказа') }}</span>
+            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.order_number') }}</span>
             <span class="order-confirmation__info-value">#{{ orderNumber }}</span>
           </div>
           <div class="order-confirmation__info-item">
-            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.order_type', 'Тип заказа') }}</span>
+            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.order_type') }}</span>
             <span class="order-confirmation__info-value">{{ formatOrderType(orderType) }}</span>
           </div>
           <div class="order-confirmation__info-item">
-            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.estimated_time', 'Ожидаемое время') }}</span>
+            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.estimated_time') }}</span>
             <span class="order-confirmation__info-value">{{ estimatedTime }}</span>
           </div>
           <div class="order-confirmation__info-item">
-            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.total', 'Итоговая сумма') }}</span>
+            <span class="order-confirmation__info-label">{{ $t('checkout.confirmation.total') }}</span>
             <span class="order-confirmation__info-value order-confirmation__total">
               {{ formatCurrency(totalAmount) }}
             </span>
@@ -38,7 +38,7 @@
 
       <!-- Order Summary -->
       <div class="order-confirmation__section">
-        <h3 class="order-confirmation__section-title">{{ $t('checkout.confirmation.summary', 'Состав заказа') }}</h3>
+        <h3 class="order-confirmation__section-title">{{ $t('checkout.confirmation.summary') }}</h3>
         <div class="order-confirmation__items">
           <div
             v-for="item in orderItems"
@@ -59,23 +59,23 @@
       <!-- Delivery/Pickup Information -->
       <div v-if="deliveryInfo" class="order-confirmation__section">
         <h3 class="order-confirmation__section-title">
-          {{ orderType === 'delivery' ? $t('common.delivery', 'Доставка') : orderType === 'pickup' ? $t('common.pickup', 'Самовывоз') : $t('common.dine_in', 'В заведении') }} - {{ $t('common.information', 'информация') }}
+          {{ orderType === 'delivery' ? $t('common.delivery') : orderType === 'pickup' ? $t('common.pickup') : $t('common.dine_in') }} - {{ $t('common.information') }}
         </h3>
         <div class="order-confirmation__delivery-info">
           <p v-if="deliveryInfo.address" class="order-confirmation__delivery-text">
-            <strong>{{ $t('common.address', 'Адрес') }}:</strong> {{ deliveryInfo.address }}
+            <strong>{{ $t('common.address') }}:</strong> {{ deliveryInfo.address }}
           </p>
           <p v-if="deliveryInfo.location" class="order-confirmation__delivery-text">
-            <strong>{{ $t('common.location', 'Место') }}:</strong> {{ deliveryInfo.location }}
+            <strong>{{ $t('common.location') }}:</strong> {{ deliveryInfo.location }}
           </p>
           <p v-if="deliveryInfo.tableNumber" class="order-confirmation__delivery-text">
-            <strong>{{ $t('common.table', 'Стол') }}:</strong> {{ deliveryInfo.tableNumber }}
+            <strong>{{ $t('common.table') }}:</strong> {{ deliveryInfo.tableNumber }}
           </p>
           <p v-if="deliveryInfo.phone" class="order-confirmation__delivery-text">
-            <strong>{{ $t('common.phone', 'Телефон') }}:</strong> {{ deliveryInfo.phone }}
+            <strong>{{ $t('common.phone') }}:</strong> {{ deliveryInfo.phone }}
           </p>
           <p v-if="deliveryInfo.instructions" class="order-confirmation__delivery-text">
-            <strong>{{ $t('common.instructions', 'Инструкции') }}:</strong> {{ deliveryInfo.instructions }}
+            <strong>{{ $t('common.instructions') }}:</strong> {{ deliveryInfo.instructions }}
           </p>
         </div>
       </div>
@@ -83,7 +83,7 @@
 
     <!-- Next Steps -->
     <div class="order-confirmation__next-steps">
-      <h3 class="order-confirmation__section-title">{{ $t('checkout.confirmation.next_steps', 'Что дальше?') }}</h3>
+      <h3 class="order-confirmation__section-title">{{ $t('checkout.confirmation.next_steps') }}</h3>
       <div class="order-confirmation__steps">
         <div class="order-confirmation__step">
           <div class="order-confirmation__step-number">1</div>
@@ -108,9 +108,9 @@
         <div v-if="orderType === 'delivery'" class="order-confirmation__step">
           <div class="order-confirmation__step-number">2</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.delivery_title', 'Передача курьеру') }}</h4>
+            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.delivery_title') }}</h4>
             <p class="order-confirmation__step-description">
-              {{ $t('checkout.confirmation.delivery_desc', 'Скоро курьер заберет ваш заказ и доставит его по адресу') }}
+              {{ $t('checkout.confirmation.delivery_desc') }}
             </p>
           </div>
         </div>
@@ -118,9 +118,9 @@
         <div v-else-if="orderType === 'pickup'" class="order-confirmation__step">
           <div class="order-confirmation__step-number">2</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.pickup_ready_title', 'Готовность к выдаче') }}</h4>
+            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.pickup_ready_title') }}</h4>
             <p class="order-confirmation__step-description">
-              {{ $t('checkout.confirmation.pickup_ready_desc', 'Мы сообщим вам, когда заказ можно будет забрать') }}
+              {{ $t('checkout.confirmation.pickup_ready_desc') }}
             </p>
           </div>
         </div>
@@ -128,9 +128,9 @@
         <div v-else class="order-confirmation__step">
           <div class="order-confirmation__step-number">2</div>
           <div class="order-confirmation__step-content">
-            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.dinein_title', 'Подача на стол') }}</h4>
+            <h4 class="order-confirmation__step-title">{{ $t('checkout.confirmation.dinein_title') }}</h4>
             <p class="order-confirmation__step-description">
-              {{ $t('checkout.confirmation.dinein_desc', 'Ваш заказ будет подан прямо к вашему столику') }}
+              {{ $t('checkout.confirmation.dinein_desc') }}
             </p>
           </div>
         </div>
@@ -148,7 +148,7 @@
             </h4>
             <p class="order-confirmation__step-description">
               {{ businessType === 'RESTAURANT' || businessType === 'CAFE'
-                ? $t('checkout.confirmation.enjoy_desc', 'Спасибо, что выбрали нас. Наслаждайтесь вашим заказом!')
+                ? $t('checkout.confirmation.enjoy_desc')
                 : $t('checkout.confirmation.enjoy_desc_generic', 'Спасибо, что выбрали нас! Мы всегда рады вам.')
               }}
             </p>
@@ -172,20 +172,21 @@
         variant="secondary"
         @click="$emit('continue-shopping')"
       >
-        {{ $t('checkout.confirmation.continue', 'За покупками') }}
+        {{ $t('checkout.confirmation.continue') }}
       </BaseButton>
       
       <BaseButton
         variant="primary"
         @click="$emit('view-orders')"
       >
-        {{ $t('checkout.confirmation.view_all', 'Все заказы') }}
+        {{ $t('checkout.confirmation.view_all') }}
       </BaseButton>
     </div>
   </div>
 </template>
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useTenantSettings } from '~/composables/useTenant'
 import { useTenantStore } from '~/stores/tenant'
 
@@ -221,14 +222,15 @@ const emit = defineEmits<{
   'view-orders': []
 }>()
 
+const { t } = useI18n()
 const tenantStore = useTenantStore()
 const businessType = computed(() => tenantStore.currentTenant?.businessType || 'RESTAURANT')
 
-const formatOrderType = (type: string): string => {
+const formatOrderType = (type: string) => {
   const types: Record<string, string> = {
-    'delivery': 'Доставка',
-    'pickup': 'Самовывоз',
-    'dine-in': 'В заведении'
+    'delivery': t('checkout.delivery'),
+    'pickup': t('checkout.pickup'),
+    'dine-in': t('checkout.dineIn')
   }
   return types[type] || type
 }

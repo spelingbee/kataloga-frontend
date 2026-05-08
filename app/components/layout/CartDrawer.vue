@@ -15,12 +15,12 @@
       <!-- Header -->
       <div class="flex items-center justify-between p-4 border-b border-border-subtle">
         <AppHeading level="h2" size="heading-lg">
-          {{ $t('cart.title', 'Корзина') }} ({{ itemCount }})
+          {{ $t('cart.title') }} ({{ itemCount }})
         </AppHeading>
         <BaseButton
           variant="ghost"
           size="sm"
-          :aria-label="$t('cart.close', 'Закрыть корзину')"
+          :aria-label="$t('cart.close')"
           @click="$emit('close')"
         >
           <BaseIcon name="x" size="md" />
@@ -34,13 +34,13 @@
           <div v-if="items.length === 0" class="text-center py-8">
             <BaseIcon name="cart" size="xl" class="text-neutral-80 mx-auto mb-4" />
             <AppText class="text-neutral-80 mb-4">
-              {{ $t('cart.empty', 'Ваша корзина пуста') }}
+              {{ $t('cart.empty') }}
             </AppText>
             <BaseButton
               variant="primary"
               @click="goToMenu"
             >
-              {{ $t('cart.browse_menu', 'Перейти в меню') }}
+              {{ $t('cart.browse_menu') }}
             </BaseButton>
           </div>
 
@@ -79,8 +79,8 @@
             :disabled="!canCheckout"
             @click="proceedToCheckout"
           >
-            <span v-if="canCheckout">{{ $t('cart.checkout', 'Оформить заказ') }}</span>
-            <span v-else>{{ $t('cart.min_reached', 'Добавьте еще') }} {{ formatPrice(remainingForMinimum) }}</span>
+            <span v-if="canCheckout">{{ $t('cart.checkout') }}</span>
+            <span v-else>{{ $t('cart.min_reached') }} {{ formatPrice(remainingForMinimum) }}</span>
           </BaseButton>
         </div>
       </div>

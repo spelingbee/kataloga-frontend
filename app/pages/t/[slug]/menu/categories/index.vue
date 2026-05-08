@@ -3,10 +3,10 @@
     <!-- Header Section -->
     <div class="px-6 py-8">
       <AppHeading level="h1" size="display-md" class="text-white mb-4">
-        All Categories
+        {{ $t('menu.allCategories') }}
       </AppHeading>
       <AppText size="body-lg" class="text-neutral-20">
-        Browse our menu by category to find exactly what you're craving
+        {{ $t('menu.browseMenuByCategory') }}
       </AppText>
     </div>
 
@@ -15,7 +15,7 @@
       <div class="max-w-md">
         <BaseInput
           v-model="searchQuery"
-          placeholder="Search categories..."
+          :placeholder="$t('menu.searchCategories')"
           class="w-full"
         >
           <template #prefix>
@@ -30,7 +30,7 @@
       <!-- Loading State -->
       <div v-if="menuStore.loading" class="text-center py-12">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-green mx-auto mb-4"/>
-        <AppText class="text-neutral-20">Loading categories...</AppText>
+        <AppText class="text-neutral-20">{{ $t('menu.loadingCategories') }}</AppText>
       </div>
 
       <!-- Error State -->
@@ -38,7 +38,7 @@
         <BaseIcon name="alert-circle" size="xl" class="text-primary-red mx-auto mb-4" />
         <AppText class="text-white mb-4">{{ menuStore.error }}</AppText>
         <BaseButton @click="menuStore.fetchMenu()">
-          Try Again
+          {{ $t('orders.tracking.tryAgain') }}
         </BaseButton>
       </div>
 
@@ -70,14 +70,14 @@
             </AppHeading>
             
             <AppText size="body-sm" class="text-neutral-20 mb-3">
-              {{ category.description || `Delicious ${category.name.toLowerCase()} dishes` }}
+              {{ category.description || $t('menu.deliciousDishes', { name: category.name.toLowerCase() }) }}
             </AppText>
 
             <!-- Item Count -->
             <div class="flex items-center justify-center gap-2">
               <BaseIcon name="utensils" size="sm" class="text-primary-orange" />
               <AppText size="caption" class="text-neutral-20">
-                {{ category.count || 0 }} items
+                {{ $t('menu.itemsCount', { count: category.count || 0 }) }}
               </AppText>
             </div>
 
@@ -85,7 +85,7 @@
             <div v-if="isPopularCategory(category.id)" class="mt-3">
               <BaseBadge variant="success" size="sm">
                 <FireIcon size="xs" class="mr-1" />
-                Popular
+                {{ $t('menu.popular') }}
               </BaseBadge>
             </div>
           </BaseCard>
@@ -96,16 +96,16 @@
       <div v-if="filteredCategories.length === 0 && !menuStore.loading" class="text-center py-16">
         <BaseIcon name="search" size="4xl" class="text-neutral-80 mx-auto mb-6" />
         <AppHeading level="h3" size="heading-lg" class="text-white mb-4">
-          No categories found
+          {{ $t('menu.noCategoriesFound') }}
         </AppHeading>
         <AppText class="text-neutral-20 mb-8 max-w-md mx-auto">
-          We couldn't find any categories matching your search. Try a different term or browse all categories.
+          {{ $t('menu.noCategoriesDesc') }}
         </AppText>
         <BaseButton 
           variant="secondary"
           @click="clearSearch"
         >
-          Clear Search
+          {{ $t('menu.clearSearch') }}
         </BaseButton>
       </div>
     </div>
@@ -114,10 +114,10 @@
     <div class="px-6 py-12 mt-12 border-t border-neutral-80/20">
       <div class="text-center mb-8">
         <AppHeading level="h2" size="heading-xl" class="text-white mb-4">
-          Quick Actions
+          {{ $t('menu.quickActions') }}
         </AppHeading>
         <AppText class="text-neutral-20">
-          Jump to popular sections or explore more options
+          {{ $t('menu.jumpToSections') }}
         </AppText>
       </div>
 
@@ -125,19 +125,19 @@
         <NuxtLink to="/menu">
           <BaseButton variant="primary">
             <BaseIcon name="grid" size="sm" class="mr-2" />
-            View Full Menu
+            {{ $t('menu.viewFullMenu') }}
           </BaseButton>
         </NuxtLink>
         <NuxtLink to="/favourites">
           <BaseButton variant="secondary">
             <BaseIcon name="heart" size="sm" class="mr-2" />
-            My Favourites
+            {{ $t('menu.myFavourites') }}
           </BaseButton>
         </NuxtLink>
         <NuxtLink to="/menu/search">
           <BaseButton variant="ghost">
             <BaseIcon name="search" size="sm" class="mr-2" />
-            Advanced Search
+            {{ $t('menu.advancedSearch') }}
           </BaseButton>
         </NuxtLink>
       </div>
@@ -153,10 +153,11 @@ import { useMenuStore } from '~/stores/menu'
 
 // Page setup
 definePageMeta({
-  title: 'Categories - Menu Ordering App'
+  title: 'Categories'
 })
 
 const menuStore = useMenuStore()
+const { t } = useI18n()
 
 // Reactive state
 const searchQuery = ref('')
