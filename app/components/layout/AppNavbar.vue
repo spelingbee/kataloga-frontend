@@ -28,8 +28,7 @@ const isActive = (path: string) => {
   <nav class="app-navbar">
     <div class="app-navbar__header">
       <NuxtLink :to="tPath('/')" class="app-navbar__logo">
-        <BaseIcon name="restaurant" size="lg" class="app-navbar__logo-icon" />
-        <span class="app-navbar__logo-text">Kataloga</span>
+        <img src="/images/logo-kataloga.png" alt="Kataloga" class="app-navbar__logo-img" />
       </NuxtLink>
     </div>
 
@@ -93,13 +92,10 @@ const isActive = (path: string) => {
     }
   }
 
-  &__logo-icon {
-    color: var(--color-success);
-  }
-
-  &__logo-text {
-    font-size: $font-size-heading-lg;
-    font-weight: $font-bold;
+  &__logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
   }
 
   &__menu {

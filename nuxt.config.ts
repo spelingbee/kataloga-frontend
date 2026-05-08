@@ -88,6 +88,9 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'Universal menu ordering system for web and Telegram' },
       ],
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/favicon.png' }
+      ],
       script: [{ src: 'https://telegram.org/js/telegram-web-app.js', defer: true }],
     },
   },
