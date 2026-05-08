@@ -23,15 +23,15 @@
         <div class="transfer-payment-modal__phone-label">
           {{ $t('payment.transfer.phoneLabel') }}
         </div>
-        <div class="transfer-payment-modal__phone-display">
-          <div class="transfer-payment-modal__phone-icon">
+        <div class="transfer-payment-modal__phone-card">
+          <div class="transfer-payment-modal__phone-icon-box">
             <BaseIcon name="smartphone" size="md" />
           </div>
-          <div class="transfer-payment-modal__phone-number">
+          <div class="transfer-payment-modal__phone-number-large">
             {{ whatsappPhone }}
           </div>
           <button 
-            class="transfer-payment-modal__copy-button"
+            class="transfer-payment-modal__copy-action-btn"
             :title="$t('common.copy')"
             @click="copyPhoneNumber"
           >
@@ -180,14 +180,26 @@ const formatAmount = (amount: number): string => {
 .transfer-payment-modal__bot-instruction {
   display: flex;
   align-items: center;
-  gap: $space-3;
-  padding: $space-4;
-  background: var(--bg-secondary);
+  gap: $space-4;
+  padding: $space-5;
+  background: var(--bg-primary);
   border: 1px solid var(--border-primary);
   border-radius: $radius-card;
   margin-bottom: $space-6;
   color: var(--text-primary);
   font-size: $text-sm;
+  box-shadow: $shadow-sm;
+
+  .icon {
+    color: #0088CC; // Telegram color
+    width: 28px;
+    height: 28px;
+  }
+
+  :deep(.icon--telegram) {
+    fill: currentColor !important;
+    stroke: none !important;
+  }
 
   p {
     margin: 0;
@@ -202,56 +214,58 @@ const formatAmount = (amount: number): string => {
   margin-bottom: $space-4;
 }
 
-.transfer-payment-modal__phone-display {
+.transfer-payment-modal__phone-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: $space-4;
   padding: $space-6;
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border: 1px solid var(--border-primary);
   border-radius: $radius-card;
+  box-shadow: $shadow-sm;
+  text-align: center;
 }
 
-.transfer-payment-modal__phone-icon {
-  width: 48px;
-  height: 48px;
+.transfer-payment-modal__phone-icon-box {
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-primary);
+  background: #FF6600; // Orange color from image
   color: white;
-  border-radius: $radius-md;
+  border-radius: $radius-lg;
   flex-shrink: 0;
-
-  &--whatsapp {
-    background: #25D366; // WhatsApp Green
+  
+  .icon {
+    width: 32px;
+    height: 32px;
   }
 }
 
-.transfer-payment-modal__phone-number {
-  flex: 1;
-  font-size: $text-lg;
-  font-weight: $font-semibold;
+.transfer-payment-modal__phone-number-large {
+  font-size: $text-xl;
+  font-weight: $font-bold;
   color: var(--text-primary);
   font-family: monospace;
 }
 
-.transfer-payment-modal__copy-button {
-  padding: $space-2;
+.transfer-payment-modal__copy-action-btn {
+  padding: $space-2 $space-4;
   background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: $radius-sm;
+  border: 1px solid #FF6600; // Orange border to match
+  border-radius: $radius-md;
   cursor: pointer;
   transition: $transition-base-ease;
-  color: var(--text-secondary);
+  color: #FF6600;
 
   &:hover {
-    background: var(--bg-secondary);
-    color: var(--color-primary);
+    background: rgba(255, 102, 0, 0.05);
   }
 
   &:focus {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid #FF6600;
     outline-offset: 2px;
   }
 }

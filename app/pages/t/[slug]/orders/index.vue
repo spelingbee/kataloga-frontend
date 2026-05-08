@@ -25,9 +25,6 @@
       <!-- Header Section -->
       <div class="orders-page__header">
         <h1 class="orders-page__title">{{ $t('orders.history') }}</h1>
-        <p class="orders-page__subtitle">
-          {{ $t('orders.subtitle') }}
-        </p>
       </div>
 
       <!-- Filter and Search -->
@@ -146,7 +143,7 @@
               </NuxtLink>
               <BaseButton
                 v-if="['PENDING', 'CONFIRMED'].includes(order.status)"
-                variant="ghost"
+                variant="secondary"
                 size="md"
                 class="orders-page__action-cancel"
                 @click.stop.prevent="cancelOrder(order.id)"
@@ -582,7 +579,7 @@ onMounted(() => {
 }
 
 .orders-page__order-card--active {
-  border-left: 4px solid var(--primary-color);
+  border-left: 2px solid var(--color-primary);
   background: var(--bg-card-active, var(--bg-card));
 }
 .orders-page__order-main {
@@ -743,8 +740,10 @@ onMounted(() => {
 
 @media (max-width: 600px) {
   .orders-page { padding: $space-4; }
-  .orders-page__title { font-size: 1.75rem; }
-  .orders-page__search-row { flex-direction: column; }
+  .orders-page__title { font-size: 1.75rem; margin-bottom: $space-2; }
+  .orders-page__header { margin-bottom: $space-6; }
+  .orders-page__filters { margin-bottom: $space-6; }
+  .orders-page__search-row { flex-direction: column; gap: $space-2; margin-bottom: $space-4; }
   .orders-page__filter-controls { width: 100%; }
   .orders-page__filter-controls > * { flex: 1; }
   .orders-page__order-status-row { flex-direction: column; align-items: flex-start; gap: $space-3; }

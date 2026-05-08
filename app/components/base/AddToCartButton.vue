@@ -19,10 +19,10 @@
       <slot />
     </span>
     <span v-else-if="price">
-      Добавить за {{ formattedPrice }}
+      {{ $t('common.add_for', { price: formattedPrice }) }}
     </span>
     <span v-else>
-      Добавить в корзину
+      {{ $t('common.add_to_cart') }}
     </span>
   </BaseButton>
 </template>

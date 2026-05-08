@@ -533,6 +533,9 @@ const submitOrder = async () => {
       if (orderData.value.paymentMethod === 'TRANSFER') {
         showTransferModal.value = true
         emit('complete', createdOrder)
+        if (telegram.isTelegram.value) {
+          telegram.hideMainButton()
+        }
       } else {
         isSuccess.value = true
         emit('complete', createdOrder)

@@ -26,6 +26,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useTelegramHaptic } from '~/composables/useTelegramHaptic'
 import { useTenant, useTenantSettings } from '~/composables/useTenant'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   /** Show button only on mobile devices */
@@ -42,6 +43,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   click: []
 }>()
+
+const { t } = useI18n()
 
 // Store
 const cartStore = useCartStore()
@@ -67,8 +70,8 @@ const isMobile = computed(() => {
 })
 
 const buttonText = computed(() => {
-  if (isEmpty.value) return 'Корзина пуста'
-  return 'Оформить заказ'
+  if (isEmpty.value) return t('common.cart_empty')
+  return t('checkout.title')
 })
 
 const { formatCurrency } = useTenantSettings()

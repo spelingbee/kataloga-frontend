@@ -459,7 +459,7 @@ function getDefaultBranding(): TenantBranding {
     secondaryColor: '#f5f5f5',
     favicon: '/favicon.ico',
     appName: config.public.appName || 'Menu Ordering App',
-    description: 'Universal menu ordering system',
+    description: '',
   }
 }
 

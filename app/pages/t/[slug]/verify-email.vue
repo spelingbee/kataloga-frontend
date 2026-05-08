@@ -59,7 +59,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '~/stores/user'
 import { useTenant } from '~/composables/useTenant'
 import BrandingFooter from '~/components/layout/BrandingFooter.vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
@@ -69,15 +71,15 @@ const status = ref<'loading' | 'success' | 'error'>('loading')
 const errorMsg = ref('')
 
 const title = computed(() => {
-  if (status.value === 'loading') return useI18n().t('auth.login.verifyEmail.title')
-  if (status.value === 'success') return useI18n().t('auth.login.verifyEmail.successTitle')
-  return useI18n().t('auth.login.verifyEmail.errorTitle')
+  if (status.value === 'loading') return t('auth.login.verifyEmail.title')
+  if (status.value === 'success') return t('auth.login.verifyEmail.successTitle')
+  return t('auth.login.verifyEmail.errorTitle')
 })
 
 const subtitle = computed(() => {
-  if (status.value === 'loading') return useI18n().t('auth.login.verifyEmail.loadingSubtitle')
-  if (status.value === 'success') return useI18n().t('auth.login.verifyEmail.successSubtitle')
-  return errorMsg.value || useI18n().t('auth.login.verifyEmail.errorSubtitle')
+  if (status.value === 'loading') return t('auth.login.verifyEmail.loadingSubtitle')
+  if (status.value === 'success') return t('auth.login.verifyEmail.successSubtitle')
+  return errorMsg.value || t('auth.login.verifyEmail.errorSubtitle')
 })
 
 const iconName = computed(() => {
@@ -109,7 +111,7 @@ onMounted(async () => {
   if (!token || !email) {
     console.error('[VerifyEmail] ❌ Missing token or email')
     status.value = 'error'
-    errorMsg.value = useI18n().t('auth.login.verifyEmail.missingParams')
+    errorMsg.value = t('auth.login.verifyEmail.missingParams')
     return
   }
 
@@ -121,7 +123,7 @@ onMounted(async () => {
   } catch (err: any) {
     console.error('[VerifyEmail] ❌ Verification failed:', err)
     status.value = 'error'
-    errorMsg.value = err.message || useI18n().t('auth.login.verifyEmail.verifyFailed')
+    errorMsg.value = err.message || t('auth.login.verifyEmail.verifyFailed')
   }
 })
 

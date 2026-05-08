@@ -127,6 +127,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useCartStore } from '~/stores/cart'
 import { useNotification } from '~/composables/useNotification'
+import { useI18n } from 'vue-i18n'
 
 // Props & Emits
 interface Props {
@@ -134,6 +135,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n()
 
 defineEmits<{
   close: []
@@ -171,8 +173,8 @@ const toggleIngredient = (ingredientId: string) => {
 const onAddedToCart = () => {
   // Show success feedback
   showSuccess(
-    'Добавлено', 
-    `${props.dish?.name} добавлен в корзину`
+    t('common.added'), 
+    t('common.added_item', { name: props.dish?.name })
   )
 
   if ('vibrate' in navigator) {

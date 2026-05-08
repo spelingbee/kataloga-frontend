@@ -8,18 +8,7 @@
       </div>
 
       <template v-else>
-        <img
-          v-if="tenantStore.isTenantLoaded && tenantStore.tenantBranding?.logo"
-          :src="resolveImageUrl(tenantStore.tenantBranding.logo)"
-          :alt="tenantStore.tenantName"
-          class="home-hero__logo"
-        />
-        <img
-          v-else
-          src="/images/logo-kataloga.png"
-          alt="Kataloga"
-          class="home-hero__logo"
-        />
+        <!-- Logo removed to avoid duplication with header -->
         <h1 class="home-hero__title">
           {{ tenantStore.tenantName || catalogLabel }}
         </h1>
@@ -175,7 +164,7 @@ onMounted(async () => {
 }
 
 .home-hero {
-  padding: $space-10 $space-6 $space-8;
+  padding: $space-4 $space-4 $space-2;
   text-align: center;
 }
 
@@ -256,7 +245,7 @@ onMounted(async () => {
     background: var(--color-primary) !important;
     border-color: var(--color-primary);
     color: white !important;
-    box-shadow: 0 4px 16px rgba(var(--color-primary-rgb), 0.4); // More prominent shadow
+    box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.2); // Softer shadow
     transform: translateY(-1px); // Subtle lift
 
     .category-pill__count {

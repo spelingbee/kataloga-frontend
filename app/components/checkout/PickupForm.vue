@@ -116,13 +116,13 @@
     <!-- Special Instructions -->
     <div class="form-group">
       <label for="pickup-instructions" class="form-label">
-        {{ $t('delivery.instructions') }}
+        {{ $t('form.notes') }}
       </label>
       <BaseInput
         id="pickup-instructions"
         v-model="localData.instructions"
         type="textarea"
-        :placeholder="$t('delivery.instructionsPlaceholder')"
+        :placeholder="$t('form.notesPlaceholder')"
         :rows="3"
         @input="handleChange"
       />
@@ -213,7 +213,7 @@ const minTime = computed(() => {
 const maxTime = computed(() => '22:00')
 
 const estimatedTime = computed(() => {
-  return '20-30 min'
+  return `20-30 ${t('menu.units.minutes')}`
 })
 
 const locationOptions = computed(() => {

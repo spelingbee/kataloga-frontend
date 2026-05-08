@@ -5,7 +5,8 @@
       :aria-label="t('common.selectLanguage')"
       @click="toggleDropdown"
     >
-      <span class="language-switcher__current">{{ currentLocale.name }}</span>
+      <span class="language-switcher__current language-switcher__current--desktop">{{ currentLocale.name }}</span>
+      <span class="language-switcher__current language-switcher__current--mobile">{{ currentLocale.code.toUpperCase() }}</span>
       <svg
         class="language-switcher__icon"
         :class="{ 'language-switcher__icon--open': isOpen }"
@@ -110,6 +111,24 @@ onMounted(() => {
 .language-switcher__current {
   font-size: 14px;
   font-weight: 500;
+  
+  &--desktop {
+    display: inline;
+  }
+  &--mobile {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .language-switcher__current {
+    &--desktop {
+      display: none;
+    }
+    &--mobile {
+      display: inline;
+    }
+  }
 }
 
 .language-switcher__icon {

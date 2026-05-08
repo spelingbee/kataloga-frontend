@@ -198,16 +198,20 @@ const handleNavClick = (item: NavigationItem) => {
       flex: 1;
       min-width: 50px; // Smaller width
       text-decoration: none;
-      color: var(--text-tertiary);
+      color: var(--text-secondary);
       transition: all $transition-base-ease;
       position: relative;
 
       &--active {
         color: var(--color-primary);
+        background: rgba(var(--color-primary-rgb), 0.1);
+        border-radius: 12px;
+        padding: 6px 12px !important;
+        margin: 2px 0;
 
         .app-navigation__icon {
           color: var(--color-primary);
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
 
         .app-navigation__label {
@@ -216,16 +220,7 @@ const handleNavClick = (item: NavigationItem) => {
         }
 
         &::after {
-          content: '';
-          position: absolute;
-          bottom: 2px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 4px;
-          height: 4px;
-          border-radius: 50%;
-          background: var(--color-primary);
-          box-shadow: 0 0 6px var(--color-primary);
+          display: none;
         }
       }
     }
@@ -236,7 +231,7 @@ const handleNavClick = (item: NavigationItem) => {
     }
 
     .app-navigation__label {
-      font-size: 9px; // Even smaller text
+      font-size: 11px; // Improved readability
       font-weight: $font-medium;
       text-align: center;
       line-height: 1.1;
