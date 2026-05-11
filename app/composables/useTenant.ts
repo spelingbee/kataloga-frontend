@@ -449,7 +449,7 @@ export function useTenantBranding() {
   })
 
   const description = computed(() => {
-    return tenantStore.tenantBranding.description || 'Universal menu ordering system'
+    return tenantStore.tenantBranding.description || ''
   })
 
   const heroImage = computed(() => {

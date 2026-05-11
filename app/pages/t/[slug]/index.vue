@@ -12,11 +12,8 @@
         <h1 class="home-hero__title">
           {{ tenantStore.tenantName || catalogLabel }}
         </h1>
-        <p class="home-hero__subtitle">
-          {{
-            tenantStore.tenantBranding?.description ||
-            $t('home.subtitle')
-          }}
+        <p v-if="tenantStore.tenantBranding?.description" class="home-hero__subtitle">
+          {{ tenantStore.tenantBranding.description }}
         </p>
       </template>
     </header>
@@ -50,7 +47,7 @@
         <h2 class="home-menu__title">
           {{ selectedCategoryName }}
           <span class="home-menu__count">
-            {{ displayItems.length }} {{ itemsLabel.toLowerCase() }}
+            {{ displayItems.length }} {{ pluralizeItems(displayItems.length) }}
           </span>
         </h2>
       </div>
@@ -102,7 +99,28 @@ const menuStore = useMenuStore()
 const tenantStore = useTenantStore()
 const router = useRouter()
 const { tPath } = useTenant()
-const { catalogLabel, itemsLabel } = useTerminology()
+const { catalogLabel, itemsLabel, isFoodBusiness } = useTerminology()
+
+/**
+ * Правильное склонение для русского языка:
+ * 1 блюдо / 2 блюда / 5 блюд
+ * 1 товар / 2 товара / 5 товаров
+ */
+const pluralizeItems = (count: number): string => {
+  const food = isFoodBusiness.value
+  const mod10 = count % 10
+  const mod100 = count % 100
+
+  if (food) {
+    if (mod10 === 1 && mod100 !== 11) return 'блюдо'
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'блюда'
+    return 'блюд'
+  } else {
+    if (mod10 === 1 && mod100 !== 11) return 'товар'
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'товара'
+    return 'товаров'
+  }
+}
 
 // UI State
 const selectedCategoryId = ref<string | null>(null)
@@ -164,7 +182,7 @@ onMounted(async () => {
 }
 
 .home-hero {
-  padding: $space-4 $space-4 $space-2;
+  padding: $space-2 $space-4 $space-1;
   text-align: center;
 }
 
@@ -175,19 +193,19 @@ onMounted(async () => {
 }
 
 .home-hero__title {
-  font-size: $text-3xl;
+  font-size: $text-2xl;
   font-weight: $font-bold;
   color: var(--text-primary);
-  margin-bottom: $space-2;
+  margin-bottom: $space-1;
   line-height: $leading-tight;
 }
 
 .home-hero__subtitle {
-  font-size: $text-base;
+  font-size: $text-sm;
   color: var(--text-secondary);
   line-height: $leading-relaxed;
   max-width: 480px;
-  margin: 0 auto;
+  margin: 0 auto $space-1;
 }
 
 .home-categories-nav {
@@ -342,10 +360,13 @@ onMounted(async () => {
 
 @media (max-width: 640px) {
   .home-hero {
-    padding: $space-8 $space-4;
+    padding: $space-2 $space-4 $space-1;
   }
   .home-hero__title {
-    font-size: $text-2xl;
+    font-size: $text-xl;
+  }
+  .home-hero__subtitle {
+    display: none; // скрываем описание на маленьких экранах — экономим место
   }
 }
 </style>
