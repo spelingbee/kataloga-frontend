@@ -41,20 +41,25 @@ const emit = defineEmits<{
 }>()
 
 const orderTypes = computed(() => {
-  const types = [
-    {
+  const types = []
+
+  // Add delivery if enabled (default to true if not specified)
+  if (features.value?.deliveryEnabled !== false) {
+    types.push({
       value: 'delivery' as OrderType,
       icon: 'truck',
       title: t('checkout.delivery'),
       description: t('checkout.deliveryDetails')
-    },
-    {
-      value: 'pickup' as OrderType,
-      icon: 'store',
-      title: t('checkout.pickup'),
-      description: t('checkout.pickupDetails')
-    }
-  ]
+    })
+  }
+
+  // Always add pickup
+  types.push({
+    value: 'pickup' as OrderType,
+    icon: 'store',
+    title: t('checkout.pickup'),
+    description: t('checkout.pickupDetails')
+  })
 
   // Only add dine-in if explicitly enabled in tenant features
   if (features.value?.dineInEnabled) {

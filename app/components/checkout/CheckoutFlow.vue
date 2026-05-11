@@ -196,7 +196,7 @@ const userStore = useUserStore()
 const { user, isAuthenticated } = storeToRefs(userStore)
 const tenantStore = useTenantStore()
 const telegram = useTelegram()
-const { formatCurrency, contactInfo, deliverySettings } = useTenantSettings()
+const { formatCurrency, contactInfo, deliverySettings, features } = useTenantSettings()
 
 type OrderType = 'delivery' | 'pickup' | 'dine-in'
 type PaymentMethodType = 'CASH' | 'TRANSFER' | 'STRIPE'
@@ -296,10 +296,18 @@ const dineInLocations = computed(() => tenantStore.locations)
 
 // Computed
 const totalWithDelivery = computed(() => {
-  const deliveryFee =
+  let deliveryFee =
     orderData.value.orderType === 'delivery'
       ? orderData.value.deliveryDetails.deliveryFeeAmount || 0
       : 0
+      
+  // Check for free delivery threshold
+  const settings = tenantStore.currentTenant?.settings?.deliverySettings
+  const threshold = settings?.freeDeliveryThreshold
+  if (threshold && props.cartTotal >= threshold) {
+    deliveryFee = 0
+  }
+  
   return props.cartTotal + deliveryFee
 })
 
@@ -679,6 +687,11 @@ onMounted(async () => {
   // Fetch locations if they are not already loaded
   if (tenantStore.locations.length === 0) {
     await tenantStore.fetchLocations()
+  }
+
+  // Set default order type based on settings
+  if (features.value?.deliveryEnabled === false) {
+    orderData.value.orderType = 'pickup'
   }
 
   if (telegram.isTelegram.value) {

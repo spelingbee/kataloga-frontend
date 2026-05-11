@@ -178,8 +178,8 @@
           {{ deliveryFee === 0 ? $t('delivery.free') : formatPrice(deliveryFee) }}
         </span>
       </div>
-      <p v-if="deliveryFee === 0" class="fee-hint">
-        {{ $t('delivery.freeThreshold', { amount: formatPrice(500) }) }}
+      <p v-if="tenantStore.currentTenant?.settings?.deliverySettings?.freeDeliveryThreshold" class="fee-hint">
+        {{ $t('delivery.freeThreshold', { amount: formatPrice(tenantStore.currentTenant.settings.deliverySettings.freeDeliveryThreshold) }) }}
       </p>
     </div>
   </div>
@@ -273,8 +273,23 @@ const estimatedTime = computed(() => {
 })
 
 const deliveryFee = computed(() => {
-  return localDeliveryInfo.value.type === 'delivery' ? 0 : 0
+  if (localDeliveryInfo.value.type === 'delivery') {
+    const settings = tenantStore.currentTenant?.settings?.deliverySettings
+    const globalFee = settings?.deliveryFee !== undefined ? settings.deliveryFee : 0
+    
+    if (localDeliveryInfo.value.deliveryZone && settings?.zones) {
+      const zone = settings.zones.find(z => z.id === localDeliveryInfo.value.deliveryZone)
+      if (zone) return zone.deliveryFee
+    }
+    
+    return globalFee
+  }
+  return 0
 })
+
+watch(deliveryFee, (newFee) => {
+  emit('delivery-fee-calculated', newFee, localDeliveryInfo.value.deliveryZone || '')
+}, { immediate: true })
 
 const locationOptions = computed(() => {
   return tenantStore.locations.map(loc => ({
@@ -419,7 +434,16 @@ const handleLocationSelected = (coords: Coordinates, address: string, zoneId: st
   localDeliveryInfo.value.deliveryZone = zoneId
   deliveryCoordinates.value = coords
   delete errors.address
-  emit('delivery-fee-calculated', 0, zoneId)
+  
+  // Calculate fee based on zone or global setting
+  const settings = tenantStore.currentTenant?.settings?.deliverySettings
+  let fee = settings?.deliveryFee !== undefined ? settings.deliveryFee : 0
+  if (zoneId && settings?.zones) {
+    const zone = settings.zones.find(z => z.id === zoneId)
+    if (zone) fee = zone.deliveryFee
+  }
+  
+  emit('delivery-fee-calculated', fee, zoneId)
   updateDeliveryInfo()
   emit('validate', { ...errors })
 }
