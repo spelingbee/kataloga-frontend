@@ -63,6 +63,7 @@
               :service-fee="serviceFee"
               :discount="discount"
               :min-order-amount="minOrderAmount"
+              :is-dynamic="isDynamicDelivery"
             />
 
             <!-- Terms and Conditions -->
@@ -164,6 +165,11 @@ const serviceFee = computed(() => 0)
 const discount = computed(() => 0)
 const minOrderAmount = computed(() => tenantStore.currentTenant?.settings?.deliverySettings?.minOrderAmount || 0)
 const orderTotal = computed(() => subtotal.value + deliveryFee.value + serviceFee.value - discount.value)
+
+const isDynamicDelivery = computed(() => {
+  const settings = tenantStore.currentTenant?.settings?.deliverySettings
+  return settings?.deliveryFee === 0 && !deliveryInfo.value.address
+})
 
 const isFormValid = computed(() => {
   return (

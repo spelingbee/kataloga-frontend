@@ -9,8 +9,8 @@
     <svg
       v-else-if="actionIcons[name]"
       class="icon__svg"
-      fill="none"
-      stroke="currentColor"
+      :fill="name === 'telegram' || name === 'whatsapp' ? 'currentColor' : 'none'"
+      :stroke="name === 'telegram' || name === 'whatsapp' ? 'none' : 'currentColor'"
       viewBox="0 0 24 24"
     >
       <path

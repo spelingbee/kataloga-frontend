@@ -86,43 +86,14 @@ export class MapService {
    * Detect delivery zone based on coordinates
    * In production, this should call the backend API to check against actual delivery zones
    */
-  detectDeliveryZone(coords: Coordinates, restaurantCoords: Coordinates): DeliveryZone {
-    const distance = this.calculateDistance(
-      coords.lat,
-      coords.lng,
-      restaurantCoords.lat,
-      restaurantCoords.lng
-    )
-
-    // Simple zone detection - replace with backend API call in production
-    if (distance < 3) {
-      return {
-        id: 'zone-1',
-        name: 'Zone 1',
-        deliveryFee: 50,
-        isAvailable: true
-      }
-    } else if (distance < 6) {
-      return {
-        id: 'zone-2',
-        name: 'Zone 2',
-        deliveryFee: 100,
-        isAvailable: true
-      }
-    } else if (distance < 10) {
-      return {
-        id: 'zone-3',
-        name: 'Zone 3',
-        deliveryFee: 150,
-        isAvailable: true
-      }
-    } else {
-      return {
-        id: 'out-of-range',
-        name: 'Out of Range',
-        deliveryFee: 0,
-        isAvailable: false
-      }
+  detectDeliveryZone(coords: Coordinates, restaurantCoords: Coordinates, defaultFee: number = 0): DeliveryZone {
+    // Distance calculation can be kept for info, but we don't use it for zones anymore as requested by user.
+    // Just return a default zone with the default fee.
+    return {
+      id: 'default',
+      name: 'Standard Delivery',
+      deliveryFee: defaultFee,
+      isAvailable: true
     }
   }
 

@@ -365,8 +365,5 @@ onMounted(async () => {
   .home-hero__title {
     font-size: $text-xl;
   }
-  .home-hero__subtitle {
-    display: none; // скрываем описание на маленьких экранах — экономим место
-  }
 }
 </style>

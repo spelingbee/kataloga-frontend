@@ -504,6 +504,7 @@
       "validationFailed": "Ошибка проверки корзины"
     },
     "free": "Бесплатно",
+    "dependsOnAddress": "Зависит от адреса",
     "minOrderNotice": "Нужно добавить еще {amount} до минимального заказа",
     "summary": "Ваш заказ",
     "paymentMethodLabel": "Способ оплаты",

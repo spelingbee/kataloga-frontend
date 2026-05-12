@@ -78,7 +78,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useCartStore } from '~/stores/cart'
-import { useNotification } from '~/composables/useNotification'
 import { useTerminology } from '~/composables/useTerminology'
 import type { MenuItem } from '~/types'
 import AppPrice from '../base/AppPrice.vue'
@@ -97,7 +96,6 @@ const emit = defineEmits<{
 
 // Stores and composables
 const cartStore = useCartStore()
-const { showSuccess } = useNotification()
 const { itemIcon } = useTerminology()
 
 // Local state
@@ -155,7 +153,6 @@ const addToCart = async () => {
 
     // Show feedback
     isAdded.value = true
-    showSuccess('Added to Cart', `${props.menuItem.name} has been added to your cart`)
 
     // Reset button state after 2 seconds
     setTimeout(() => {

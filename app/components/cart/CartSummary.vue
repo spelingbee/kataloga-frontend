@@ -13,6 +13,7 @@
       <div v-if="showDeliveryFee || deliveryFee > 0" class="summary-row">
         <span class="summary-label">{{ $t('cart.deliveryFee') }}</span>
         <span v-if="deliveryFee > 0" class="summary-value">{{ formatPrice(deliveryFee) }}</span>
+        <span v-else-if="isDynamic" class="summary-value">{{ $t('checkout.dependsOnAddress') }}</span>
         <span v-else class="summary-value free">{{ $t('checkout.free') }}</span>
       </div>
 
@@ -56,6 +57,7 @@ interface Props {
   discount?: number
   minOrderAmount?: number
   showDeliveryFee?: boolean
+  isDynamic?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -63,7 +65,8 @@ const props = withDefaults(defineProps<Props>(), {
   serviceFee: 0,
   discount: 0,
   minOrderAmount: 0,
-  showDeliveryFee: true
+  showDeliveryFee: true,
+  isDynamic: false
 })
 
 // Computed properties

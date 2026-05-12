@@ -377,24 +377,27 @@ const requestTelegramContact = () => {
   // @ts-ignore
   const webApp = window.Telegram?.WebApp
   if (webApp?.requestContact) {
-    webApp.requestContact(async (status: boolean, data: any) => {
-      if (status && data?.contact?.phone_number) {
-        const phoneNumber = data.contact.phone_number
-        localDeliveryInfo.value.phone = phoneNumber
-        updateDeliveryInfo()
+    webApp.requestContact(async (status: boolean, event: any) => {
+      if (status) {
+        const contact = event?.contact || event?.responseUnsafe?.contact
+        if (contact?.phone_number) {
+          const phoneNumber = contact.phone_number
+          localDeliveryInfo.value.phone = phoneNumber
+          updateDeliveryInfo()
 
-        // Wait a bit for backend to process the message and refresh profile
-        setTimeout(async () => {
-          try {
-            await userStore.fetchUserProfile()
-            if (userStore.user?.phone) {
-              localDeliveryInfo.value.phone = userStore.user.phone
-              updateDeliveryInfo()
+          // Wait a bit for backend to process the message and refresh profile
+          setTimeout(async () => {
+            try {
+              await userStore.fetchUserProfile()
+              if (userStore.user?.phone) {
+                localDeliveryInfo.value.phone = userStore.user.phone
+                updateDeliveryInfo()
+              }
+            } catch (e) {
+              console.error('Failed to refresh profile:', e)
             }
-          } catch (e) {
-            console.error('Failed to refresh profile:', e)
-          }
-        }, 1000)
+          }, 1000)
+        }
       }
     })
   } else {
@@ -415,7 +418,14 @@ const getCurrentLocation = async () => {
     deliveryCoordinates.value = coords
     
     // Resolve address from coordinates
-    const address = await reverseGeocode(coords)
+    let address = ''
+    try {
+      address = await reverseGeocode(coords)
+    } catch (e) {
+      console.error('Reverse geocoding failed:', e)
+      address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+    }
+    
     localDeliveryInfo.value.address = address
     localDeliveryInfo.value.coordinates = coords
     

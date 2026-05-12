@@ -106,6 +106,17 @@ onMounted(() => {
   // Set initial position if provided
   if (props.initialCoordinates) {
     map.value.setView([props.initialCoordinates.lat, props.initialCoordinates.lng], props.zoom)
+    
+    // Add a marker for initial coordinates (My Location)
+    L.circleMarker([props.initialCoordinates.lat, props.initialCoordinates.lng], {
+      radius: 8,
+      fillColor: '#2196F3',
+      color: '#FFFFFF',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.8
+    }).addTo(map.value)
+    
     handleMapMove()
   }
 })

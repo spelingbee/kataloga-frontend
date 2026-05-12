@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { mapService } from '../services/map.service'
+import { useTenantStore } from '~/stores/tenant'
 import type { Coordinates, DeliveryZone } from '../types/delivery'
 
 export const useMap = () => {
@@ -28,7 +29,9 @@ export const useMap = () => {
       selectedCoordinates.value = coords
 
       // Detect delivery zone
-      const zone = mapService.detectDeliveryZone(coords, restaurantCoords)
+      const settings = useTenantStore().currentTenant?.settings?.deliverySettings
+      const defaultFee = settings?.deliveryFee !== undefined ? settings.deliveryFee : 0
+      const zone = mapService.detectDeliveryZone(coords, restaurantCoords, defaultFee)
       deliveryZone.value = zone
 
       if (!zone.isAvailable) {
@@ -63,7 +66,9 @@ export const useMap = () => {
       selectedAddress.value = address
 
       // Detect delivery zone
-      const zone = mapService.detectDeliveryZone(coords, restaurantCoords)
+      const settings = useTenantStore().currentTenant?.settings?.deliverySettings
+      const defaultFee = settings?.deliveryFee !== undefined ? settings.deliveryFee : 0
+      const zone = mapService.detectDeliveryZone(coords, restaurantCoords, defaultFee)
       deliveryZone.value = zone
 
       if (!zone.isAvailable) {
