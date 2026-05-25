@@ -193,21 +193,20 @@ const handleNavClick = (item: NavigationItem) => {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1px;
-      padding: 4px;
+      gap: 2px;
+      padding: 6px 8px;
       flex: 1;
-      min-width: 50px; // Smaller width
+      min-width: 50px;
       text-decoration: none;
       color: var(--text-secondary);
       transition: all $transition-base-ease;
       position: relative;
+      border-radius: 12px;
+      margin: 2px;
 
       &--active {
         color: var(--color-primary);
-        background: rgba(var(--color-primary-rgb), 0.1);
-        border-radius: 12px;
-        padding: 6px 12px !important;
-        margin: 2px 0;
+        background: rgba(var(--color-primary-rgb), 0.08);
 
         .app-navigation__icon {
           color: var(--color-primary);

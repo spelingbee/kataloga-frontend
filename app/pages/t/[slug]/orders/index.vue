@@ -12,10 +12,10 @@
       </AppText>
       <div class="orders-page__auth-actions">
         <NuxtLink :to="`/auth/login?redirect=${tPath('/orders')}`">
-          <BaseButton variant="primary">{{ $t('auth.login') }}</BaseButton>
+          <BaseButton variant="primary">{{ $t('auth.login.submit') }}</BaseButton>
         </NuxtLink>
         <NuxtLink :to="`/auth/register?redirect=${tPath('/orders')}`">
-          <BaseButton variant="secondary">{{ $t('auth.register') }}</BaseButton>
+          <BaseButton variant="secondary">{{ $t('auth.register.submit') }}</BaseButton>
         </NuxtLink>
       </div>
     </div>

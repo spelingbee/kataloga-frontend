@@ -33,13 +33,21 @@
 
     <!-- Юридические ссылки -->
     <nav class="tenant-footer__legal">
-      <NuxtLink :to="`/t/${tenantSlug}/legal/offer`" class="tenant-footer__link">Оферта</NuxtLink>
-      <span class="tenant-footer__divider">·</span>
-      <NuxtLink :to="`/t/${tenantSlug}/legal/privacy`" class="tenant-footer__link">Конфиденциальность</NuxtLink>
-      <span class="tenant-footer__divider">·</span>
-      <NuxtLink :to="`/t/${tenantSlug}/legal/refund`" class="tenant-footer__link">Возврат</NuxtLink>
-      <span class="tenant-footer__divider">·</span>
-      <a href="/legal/oferta" target="_blank" class="tenant-footer__link">Правила Kataloga</a>
+      <span class="tenant-footer__item">
+        <NuxtLink :to="`/t/${tenantSlug}/legal/offer`" class="tenant-footer__link">Оферта</NuxtLink>
+        <span class="tenant-footer__divider">·</span>
+      </span>
+      <span class="tenant-footer__item">
+        <NuxtLink :to="`/t/${tenantSlug}/legal/privacy`" class="tenant-footer__link">Конфиденциальность</NuxtLink>
+        <span class="tenant-footer__divider">·</span>
+      </span>
+      <span class="tenant-footer__item">
+        <NuxtLink :to="`/t/${tenantSlug}/legal/refund`" class="tenant-footer__link">Возврат</NuxtLink>
+        <span class="tenant-footer__divider">·</span>
+      </span>
+      <span class="tenant-footer__item">
+        <a href="/legal/oferta" target="_blank" class="tenant-footer__link">Правила Kataloga</a>
+      </span>
     </nav>
   </footer>
 </template>
@@ -61,7 +69,7 @@ const tenantSlug = computed(() => route.params.slug as string)
 .tenant-footer {
   margin-top: $space-10;
   padding: $space-6 $space-4;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -141,8 +149,15 @@ const tenantSlug = computed(() => route.params.slug as string)
 }
 
 .tenant-footer__divider {
-  color: var(--border-color);
+  color: var(--border-primary);
   user-select: none;
+  margin-left: $space-2;
+}
+
+.tenant-footer__item {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
 @media (max-width: 576px) {

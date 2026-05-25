@@ -17,7 +17,7 @@
 
     <!-- Form State -->
     <div v-else class="checkout-single-page__form">
-      <h2 class="checkout-single-page__title">{{ $t('checkout.title') }}</h2>
+      <!-- Title removed to prevent duplication with parent page -->
 
       <!-- Validation Warning -->
       <div v-if="showValidationWarning" class="checkout-flow__validation-warning mb-6">
@@ -137,19 +137,17 @@
 
       <!-- Согласие с офертой -->
       <div class="checkout-terms mt-4 mb-4">
-        <label class="checkout-terms__label flex items-start gap-2 cursor-pointer">
-          <input
-            v-model="agreedToTerms"
-            type="checkbox"
-            class="checkout-terms__checkbox mt-1"
-          />
+        <BaseCheckbox
+          v-model="agreedToTerms"
+          size="sm"
+        >
           <span class="checkout-terms__text text-xs text-secondary">
             Оформляя заказ, я принимаю
             <NuxtLink :to="`/t/${tenantSlug}/legal/offer`" target="_blank" class="checkout-terms__link">публичную оферту</NuxtLink>
             и
             <NuxtLink :to="`/t/${tenantSlug}/legal/privacy`" target="_blank" class="checkout-terms__link">политику конфиденциальности</NuxtLink>.
           </span>
-        </label>
+        </BaseCheckbox>
       </div>
 
       <!-- Error Message -->

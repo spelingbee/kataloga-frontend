@@ -21,7 +21,7 @@
                 <h1 class="profile-page__name">{{ userDisplayName }}</h1>
                 <div class="profile-page__role-badge-wrapper">
                   <div class="profile-page__role-badge">
-                    {{ user.role }}
+                    {{ userRoleLabel }}
                   </div>
                 </div>
                 <p class="profile-page__email">{{ user.email }}</p>
@@ -156,7 +156,24 @@ useHead({
 // Computed
 const userDisplayName = computed(() => {
   if (!user.value.firstName && !user.value.lastName) return t('profile.user')
-  return `${user.value.firstName || ''} ${user.value.lastName || ''}`.trim()
+  const fullName = `${user.value.firstName || ''} ${user.value.lastName || ''}`.trim()
+  // Strip emojis from display name to enforce a clean UI
+  return fullName.replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]/gu, '').replace(/\s+/g, ' ').trim()
+})
+
+const userRoleLabel = computed(() => {
+  const role = user.value.role
+  if (!role) return ''
+  switch (role.toUpperCase()) {
+    case 'TENANT_ADMIN':
+      return t('roles.tenant_admin', 'Администратор')
+    case 'SUPER_ADMIN':
+      return t('roles.super_admin', 'Супер-администратор')
+    case 'USER':
+      return t('roles.user', 'Пользователь')
+    default:
+      return role
+  }
 })
 
 const userInitials = computed(() => {
@@ -273,7 +290,7 @@ definePageMeta({
 .profile-page__avatar {
   width: 96px;
   height: 96px;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
   color: white;
   display: flex;
   align-items: center;
@@ -281,7 +298,7 @@ definePageMeta({
   font-size: var(--text-3xl);
   font-weight: var(--font-bold);
   border-radius: 50%;
-  box-shadow: 0 8px 16px rgba(var(--color-primary-rgb), 0.3);
+  box-shadow: 0 8px 20px rgba(var(--color-primary-rgb), 0.15);
   overflow: hidden;
 }
 
@@ -307,15 +324,16 @@ definePageMeta({
 }
 
 .profile-page__role-badge {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  padding: var(--space-1) var(--space-4);
-  border-radius: var(--radius-full);
+  background: rgba(var(--color-primary-rgb), 0.08);
+  color: var(--color-primary);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
   font-size: var(--text-xs);
-  font-weight: var(--font-bold);
-  border: 1px solid var(--border-primary);
-  text-transform: uppercase;
+  font-weight: var(--font-semibold);
+  border: none;
+  text-transform: none;
   white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
 .profile-page__name {

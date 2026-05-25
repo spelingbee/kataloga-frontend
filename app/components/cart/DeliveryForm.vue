@@ -158,7 +158,7 @@
         <BaseButton
           v-if="isTelegram"
           variant="primary"
-          size="sm"
+          size="md"
           class="phone-request-btn phone-request-btn--telegram"
           @click="requestTelegramContact"
         >
@@ -541,8 +541,8 @@ watch(
 
 .phone-request-btn {
   white-space: nowrap;
-  height: 44px; // Align with input height
   margin-top: 0;
+  border-radius: var(--radius-input) !important; // Align with input corners
 
   &--telegram {
     background: linear-gradient(135deg, #2aabee 0%, #229ed9 100%);
@@ -626,17 +626,33 @@ watch(
 
   .mode-button {
     flex: 1;
-    background: var(--bg-tertiary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary) !important;
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
+
+    &:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
 
     &.active {
-      background: rgba(16, 185, 129, 0.1);
-      color: var(--color-success);
+      background: rgba(var(--color-primary-rgb), 0.08);
+      color: var(--color-primary);
+      border-color: var(--color-primary) !important;
+      font-weight: 600;
     }
   }
 }
 
 .location-button {
-  color: var(--color-success);
+  color: var(--color-primary);
+  font-weight: 500;
+
+  &:hover {
+    color: var(--color-primary-light);
+    background: transparent;
+  }
 }
 
 .map-container {

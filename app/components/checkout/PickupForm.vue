@@ -99,7 +99,7 @@
         <BaseButton
           v-if="isTelegram"
           variant="primary"
-          size="sm"
+          size="md"
           class="phone-request-btn phone-request-btn--telegram"
           @click="requestTelegramContact"
         >
@@ -310,8 +310,8 @@ watch(() => props.modelValue, (newValue) => {
 
 .phone-request-btn {
   white-space: nowrap;
-  height: 44px; // Align with input height
   margin-top: 0;
+  border-radius: var(--radius-input) !important; // Align with input corners
   
   &--telegram {
     background: linear-gradient(135deg, #2AABEE 0%, #229ED9 100%);

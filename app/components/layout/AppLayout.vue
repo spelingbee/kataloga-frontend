@@ -89,14 +89,14 @@
 
     <!-- Mobile Bottom Navigation -->
     <AppNavigation
-      v-if="showMobileNav"
+      v-if="showMobileNav && !isCartOrCheckoutPage"
       variant="bottom"
       class="app-layout__mobile-nav"
     />
 
     <!-- Sticky Cart Button (Mobile) -->
     <StickyCartButton
-      v-if="showStickyCart && !isCartOrCheckoutPage"
+      v-if="showStickyCart && !showMobileNav && !isCartOrCheckoutPage"
       @click="handleStickyCartClick"
     />
 

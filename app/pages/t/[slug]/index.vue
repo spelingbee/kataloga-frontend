@@ -275,15 +275,15 @@ onMounted(async () => {
   }
 
   &--active {
-    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary)) !important;
+    background: var(--color-primary) !important;
     border-color: var(--color-primary);
     color: white !important;
-    box-shadow: 0 8px 16px -4px rgba(var(--color-primary-rgb), 0.3);
+    box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.15);
     transform: translateY(-1px); // Subtle lift
 
     .category-pill__count {
-      color: rgba(255, 255, 255, 0.8);
-      background: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.15);
     }
 
     &:active {
