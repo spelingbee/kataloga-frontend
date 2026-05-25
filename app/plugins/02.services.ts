@@ -31,7 +31,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     tenantResolver: new TenantResolverService(apiClient, config),
     cartValidation: new CartValidationService(apiClient, config),
     user: new UserService(apiClient),
-    map: new MapService(),
+    map: new MapService(apiClient),
     notification: new NotificationService(config),
     telegramAuth: new TelegramAuthService(config.public.apiUrl),
     telegramNotifications: new TelegramNotificationsService(config.public.apiUrl)

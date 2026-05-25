@@ -270,7 +270,7 @@ export const useAnimations = () => {
       item.style.transform = 'translateY(20px)'
       
       setTimeout(() => {
-        item.style.transition = `opacity ${$transition-base} ease-out, transform ${$transition-base} ease-out`
+        item.style.transition = `opacity var(--transition-base) ease-out, transform var(--transition-base) ease-out`
         item.style.opacity = '1'
         item.style.transform = 'translateY(0)'
       }, index * delay)

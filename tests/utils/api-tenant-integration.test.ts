@@ -5,6 +5,24 @@ import { mockTenantData } from '../utils/tenant-test-helpers'
 // Mock fetch globally
 global.fetch = vi.fn()
 
+// Helper to construct a valid standard ApiResponse object for fetch mocks
+function createMockResponse(data: any, statusCode: number = 200, ok: boolean = true) {
+  return {
+    ok,
+    status: statusCode,
+    json: () => Promise.resolve({
+      success: ok,
+      statusCode,
+      data: ok ? data : null,
+      error: ok ? null : data,
+      meta: {
+        requestId: 'test-request-id',
+        timestamp: new Date().toISOString(),
+      }
+    })
+  }
+}
+
 describe('ApiClient - Tenant Integration', () => {
   let apiClient: ApiClient
   const mockFetch = vi.mocked(fetch)
@@ -23,11 +41,7 @@ describe('ApiClient - Tenant Integration', () => {
 
   describe('tenant header management', () => {
     it('should include tenant slug in request headers', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: {} }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({}) as Response)
 
       await apiClient.get('/test')
 
@@ -42,11 +56,7 @@ describe('ApiClient - Tenant Integration', () => {
     })
 
     it('should update tenant slug dynamically', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: {} }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({}) as Response)
 
       apiClient.setTenantSlug('new-tenant')
       await apiClient.get('/test')
@@ -62,11 +72,7 @@ describe('ApiClient - Tenant Integration', () => {
     })
 
     it('should allow bypassing tenant header', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: {} }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({}) as Response)
 
       await apiClient.get('/test', {
         headers: {
@@ -85,11 +91,7 @@ describe('ApiClient - Tenant Integration', () => {
     })
 
     it('should allow overriding tenant for specific request', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: {} }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({}) as Response)
 
       await apiClient.get('/test', {
         headers: {
@@ -111,36 +113,26 @@ describe('ApiClient - Tenant Integration', () => {
   describe('tenant-specific requests', () => {
     it('should fetch tenant information', async () => {
       const tenant = mockTenantData.restaurant1
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: tenant }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse(tenant) as Response)
 
-      const response = await apiClient.get('/tenants/restaurant-abc', {
+      const response = await apiClient.get<any>('/tenants/restaurant-abc', {
         headers: { 'X-Bypass-Tenant': 'true' },
       })
 
-      expect(response.success).toBe(true)
-      expect(response.data).toEqual(tenant)
+      expect(response).toEqual(tenant)
     })
 
     it('should validate tenant access', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ 
-          success: true, 
-          data: { valid: true, tenant: mockTenantData.restaurant1 } 
-        }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({ 
+        valid: true, 
+        tenant: mockTenantData.restaurant1 
+      }) as Response)
 
-      const response = await apiClient.get('/tenants/restaurant-abc/validate', {
+      const response = await apiClient.get<any>('/tenants/restaurant-abc/validate', {
         headers: { 'X-Bypass-Tenant': 'true' },
       })
 
-      expect(response.success).toBe(true)
-      expect(response.data.valid).toBe(true)
+      expect(response.valid).toBe(true)
     })
 
     it('should fetch tenant-specific menu data', async () => {
@@ -152,16 +144,11 @@ describe('ApiClient - Tenant Integration', () => {
         ],
       }
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: menuData }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse(menuData) as Response)
 
       const response = await apiClient.get('/menu')
 
-      expect(response.success).toBe(true)
-      expect(response.data).toEqual(menuData)
+      expect(response).toEqual(menuData)
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.test.com/menu',
         expect.objectContaining({
@@ -178,19 +165,11 @@ describe('ApiClient - Tenant Integration', () => {
         total: 25.98,
       }
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 201,
-        json: () => Promise.resolve({ 
-          success: true, 
-          data: { id: 'order-123', ...orderData } 
-        }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({ id: 'order-123', ...orderData }, 201) as Response)
 
-      const response = await apiClient.post('/orders', orderData)
+      const response = await apiClient.post<any>('/orders', orderData)
 
-      expect(response.success).toBe(true)
-      expect(response.data.id).toBe('order-123')
+      expect(response.id).toBe('order-123')
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.test.com/orders',
         expect.objectContaining({
@@ -206,43 +185,28 @@ describe('ApiClient - Tenant Integration', () => {
 
   describe('tenant error handling', () => {
     it('should handle tenant not found error', async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 404,
-        json: () => Promise.resolve({
-          success: false,
-          message: 'Tenant not found',
-          code: 'TENANT_NOT_FOUND',
-        }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({
+        message: 'Tenant not found',
+        code: 'TENANT_NOT_FOUND',
+      }, 404, false) as Response)
 
       await expect(apiClient.get('/test')).rejects.toThrow('Tenant not found')
     })
 
     it('should handle tenant inactive error', async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 403,
-        json: () => Promise.resolve({
-          success: false,
-          message: 'Tenant is inactive',
-          code: 'TENANT_INACTIVE',
-        }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({
+        message: 'Tenant is inactive',
+        code: 'TENANT_INACTIVE',
+      }, 403, false) as Response)
 
       await expect(apiClient.get('/test')).rejects.toThrow('Tenant is inactive')
     })
 
     it('should handle tenant access denied error', async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 403,
-        json: () => Promise.resolve({
-          success: false,
-          message: 'Access denied to tenant',
-          code: 'TENANT_ACCESS_DENIED',
-        }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({
+        message: 'Access denied to tenant',
+        code: 'TENANT_ACCESS_DENIED',
+      }, 403, false) as Response)
 
       await expect(apiClient.get('/test')).rejects.toThrow('Access denied to tenant')
     })
@@ -250,11 +214,7 @@ describe('ApiClient - Tenant Integration', () => {
 
   describe('tenant switching scenarios', () => {
     it('should update headers when tenant changes', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: {} }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({}) as Response)
 
       // First request with initial tenant
       await apiClient.get('/test')
@@ -283,11 +243,7 @@ describe('ApiClient - Tenant Integration', () => {
     })
 
     it('should handle concurrent requests with different tenants', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: {} }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({}) as Response)
 
       // Make concurrent requests with different tenant overrides
       await Promise.all([
@@ -318,40 +274,27 @@ describe('ApiClient - Tenant Integration', () => {
       const tenant2Data = { id: '2', name: 'Item from Tenant 2' }
 
       mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({ success: true, data: tenant1Data }),
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({ success: true, data: tenant2Data }),
-        } as Response)
+        .mockResolvedValueOnce(createMockResponse(tenant1Data) as Response)
+        .mockResolvedValueOnce(createMockResponse(tenant2Data) as Response)
 
       // Request from tenant 1
       apiClient.setTenantSlug('tenant-1')
-      const response1 = await apiClient.get('/data')
+      const response1 = await apiClient.get<any>('/data')
 
       // Request from tenant 2
       apiClient.setTenantSlug('tenant-2')
-      const response2 = await apiClient.get('/data')
+      const response2 = await apiClient.get<any>('/data')
 
-      expect(response1.data).toEqual(tenant1Data)
-      expect(response2.data).toEqual(tenant2Data)
-      expect(response1.data).not.toEqual(response2.data)
+      expect(response1).toEqual(tenant1Data)
+      expect(response2).toEqual(tenant2Data)
+      expect(response1).not.toEqual(response2)
     })
 
     it('should prevent cross-tenant data access', async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 403,
-        json: () => Promise.resolve({
-          success: false,
-          message: 'Cannot access data from different tenant',
-          code: 'TENANT_DATA_MISMATCH',
-        }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({
+        message: 'Cannot access data from different tenant',
+        code: 'TENANT_DATA_MISMATCH',
+      }, 403, false) as Response)
 
       apiClient.setTenantSlug('tenant-1')
 
@@ -364,21 +307,13 @@ describe('ApiClient - Tenant Integration', () => {
 
   describe('system-wide requests', () => {
     it('should allow system-wide requests without tenant', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ 
-          success: true, 
-          data: [mockTenantData.restaurant1, mockTenantData.restaurant2] 
-        }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse([mockTenantData.restaurant1, mockTenantData.restaurant2]) as Response)
 
-      const response = await apiClient.get('/tenants', {
+      const response = await apiClient.get<any>('/tenants', {
         headers: { 'X-Bypass-Tenant': 'true' },
       })
 
-      expect(response.success).toBe(true)
-      expect(response.data).toHaveLength(2)
+      expect(response).toHaveLength(2)
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.test.com/tenants',
         expect.objectContaining({
@@ -390,24 +325,16 @@ describe('ApiClient - Tenant Integration', () => {
     })
 
     it('should allow admin requests across tenants', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ 
-          success: true, 
-          data: { totalOrders: 150, totalRevenue: 5000 } 
-        }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({ totalOrders: 150, totalRevenue: 5000 }) as Response)
 
-      const response = await apiClient.get('/admin/stats', {
+      const response = await apiClient.get<any>('/admin/stats', {
         headers: { 
           'X-Bypass-Tenant': 'true',
           'X-Admin-Access': 'true',
         },
       })
 
-      expect(response.success).toBe(true)
-      expect(response.data.totalOrders).toBe(150)
+      expect(response.totalOrders).toBe(150)
     })
   })
 
@@ -425,11 +352,7 @@ describe('ApiClient - Tenant Integration', () => {
         baseURL: 'https://api.test.com',
       })
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: {} }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({}) as Response)
 
       client.setTenantSlug('runtime-tenant')
       await client.get('/test')
@@ -447,11 +370,7 @@ describe('ApiClient - Tenant Integration', () => {
     it('should clear tenant slug', async () => {
       apiClient.setTenantSlug('')
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: {} }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({}) as Response)
 
       await apiClient.get('/test')
 

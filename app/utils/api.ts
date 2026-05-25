@@ -1,5 +1,7 @@
 import type { ApiResponse, ApiError, RequestOptions, ApiMeta } from '~/types'
 import type { TenantInfo } from '~/types/tenant'
+import { isApiResponse } from '~/utils/type-guards'
+import { createErrorResponse } from '~/utils/response-normalizer'
 
 export interface ApiClientConfig {
   baseURL: string
@@ -81,7 +83,7 @@ export class ApiClient {
   constructor(config: ApiClientConfig) {
     this.config = {
       timeout: 10000,
-      retries: 1,
+      retries: 3,
       retryDelay: 1000,
       tenantSlug: '',
       ...config,
@@ -138,10 +140,14 @@ export class ApiClient {
    */
   getCurrentTenant(): string {
     // 1. Try to get from URL query first (most reliable for direct links)
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && window.location) {
       const urlParams = new URLSearchParams(window.location.search)
       const tenantParam = urlParams.get('tenant')
       if (tenantParam) return tenantParam
+
+      // Try to get from path parameter /t/[slug]
+      const match = window.location.pathname.match(/^\/t\/([^/]+)/)
+      if (match && match[1]) return match[1]
     }
 
     // 2. Try to get from tenant store
@@ -297,7 +303,7 @@ export class ApiClient {
     }
 
     // Retry network errors
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    if (error.name === 'NetworkError' || error.code === 'NETWORK_ERROR' || (error.name === 'TypeError' && error.message.includes('fetch'))) {
       return true
     }
 

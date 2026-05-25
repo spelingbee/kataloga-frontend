@@ -319,8 +319,7 @@ export default defineNuxtConfig({
         template: 'treemap',
         gzipSize: true,
         brotliSize: true,
-        trigger: 'build',
-      }),
+      }) as any,
     ],
     resolve: {
       alias: {

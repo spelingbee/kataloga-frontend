@@ -190,6 +190,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTenantStore } from '~/stores/tenant'
 import { useUserStore } from '~/stores/user'
+import { useCartStore } from '~/stores/cart'
 import { useTelegram } from '~/composables/useTelegram'
 import type { Coordinates } from '../../types/delivery'
 import AppText from '../base/AppText.vue'
@@ -198,6 +199,7 @@ import MapPicker from '../checkout/MapPicker.vue'
 const { t } = useI18n()
 const tenantStore = useTenantStore()
 const userStore = useUserStore()
+const cartStore = useCartStore()
 const { isTelegram } = useTelegram()
 
 // Props & Emits
@@ -275,6 +277,14 @@ const estimatedTime = computed(() => {
 const deliveryFee = computed(() => {
   if (localDeliveryInfo.value.type === 'delivery') {
     const settings = tenantStore.currentTenant?.settings?.deliverySettings
+    
+    // Check for free delivery threshold
+    if (settings?.freeDeliveryThreshold && settings.freeDeliveryThreshold > 0) {
+      if (cartStore.subtotal >= settings.freeDeliveryThreshold) {
+        return 0
+      }
+    }
+
     const globalFee = settings?.deliveryFee !== undefined ? settings.deliveryFee : 0
     
     if (localDeliveryInfo.value.deliveryZone && settings?.zones) {
@@ -451,6 +461,13 @@ const handleLocationSelected = (coords: Coordinates, address: string, zoneId: st
   if (zoneId && settings?.zones) {
     const zone = settings.zones.find(z => z.id === zoneId)
     if (zone) fee = zone.deliveryFee
+  }
+  
+  // Check for free delivery threshold
+  if (settings?.freeDeliveryThreshold && settings.freeDeliveryThreshold > 0) {
+    if (cartStore.subtotal >= settings.freeDeliveryThreshold) {
+      fee = 0
+    }
   }
   
   emit('delivery-fee-calculated', fee, zoneId)

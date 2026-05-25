@@ -95,6 +95,7 @@
           <h3 class="checkout-section__title">
             {{ $t('checkout.deliveryInfo') }}
           </h3>
+          <FreeDeliveryProgressBar />
           <DeliveryForm
             v-model="orderData.deliveryDetails"
             :errors="validationErrors"
@@ -133,6 +134,23 @@
         <h3 class="checkout-section__title">{{ $t('checkout.paymentMethod') }}</h3>
         <PaymentMethodSelector v-model="orderData.paymentMethod" :order-total="cartTotal" />
       </section>
+
+      <!-- Согласие с офертой -->
+      <div class="checkout-terms mt-4 mb-4">
+        <label class="checkout-terms__label flex items-start gap-2 cursor-pointer">
+          <input
+            v-model="agreedToTerms"
+            type="checkbox"
+            class="checkout-terms__checkbox mt-1"
+          />
+          <span class="checkout-terms__text text-xs text-secondary">
+            Оформляя заказ, я принимаю
+            <NuxtLink :to="`/t/${tenantSlug}/legal/offer`" target="_blank" class="checkout-terms__link">публичную оферту</NuxtLink>
+            и
+            <NuxtLink :to="`/t/${tenantSlug}/legal/privacy`" target="_blank" class="checkout-terms__link">политику конфиденциальности</NuxtLink>.
+          </span>
+        </label>
+      </div>
 
       <!-- Error Message -->
       <div
@@ -246,6 +264,8 @@ const showValidationWarning = ref(false)
 const validationMessage = ref('')
 const finalTotal = ref(0)
 const capturedOrderItems = ref<any[]>([])
+const agreedToTerms = ref(false)
+const tenantSlug = computed(() => tenantStore.currentTenant?.slug || '')
 
 let isMainButtonVisible = false
 
@@ -312,7 +332,7 @@ const totalWithDelivery = computed(() => {
 })
 
 const canSubmit = computed(() => {
-  return validateForm(false)
+  return validateForm(false) && agreedToTerms.value
 })
 
 // Methods
@@ -543,6 +563,31 @@ const submitOrder = async () => {
         emit('complete', createdOrder)
         if (telegram.isTelegram.value) {
           telegram.hideMainButton()
+        }
+      } else if (orderData.value.paymentMethod === 'FREEDOM_PAY') {
+        try {
+          submitting.value = true
+          errorMessage.value = ''
+          
+          const apiUrl = useRuntimeConfig().public.apiUrl || 'https://api.kataloga.org/api'
+          const res = await $fetch<{ paymentUrl: string }>(`${apiUrl}/payments/freedompay/init`, {
+            method: 'POST',
+            body: {
+              orderId: createdOrder.id
+            }
+          })
+          
+          if (res && res.paymentUrl) {
+            window.location.href = res.paymentUrl
+            return
+          } else {
+            throw new Error('Не удалось получить ссылку на оплату')
+          }
+        } catch (paymentErr: any) {
+          console.error('FreedomPay init failed:', paymentErr)
+          errorMessage.value = paymentErr.data?.message || paymentErr.message || 'Ошибка инициализации платежа. Пожалуйста, попробуйте позже.'
+          submitting.value = false
+          return
         }
       } else {
         isSuccess.value = true
@@ -868,6 +913,43 @@ onUnmounted(() => {
   opacity: 0;
   padding-top: 0;
   margin-top: 0;
+}
+
+.checkout-terms {
+  padding: $space-2 $space-4;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-md;
+}
+
+.checkout-terms__label {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-2;
+  cursor: pointer;
+}
+
+.checkout-terms__checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: $radius-sm;
+  accent-color: var(--color-primary);
+}
+
+.checkout-terms__text {
+  font-size: $text-xs;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.checkout-terms__link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  font-weight: $font-medium;
+
+  &:hover {
+    color: var(--color-primary-hover, var(--color-primary));
+  }
 }
 
 @media (max-width: 480px) {

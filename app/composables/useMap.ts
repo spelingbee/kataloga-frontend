@@ -1,9 +1,9 @@
 import { ref, computed } from 'vue'
-import { mapService } from '../services/map.service'
 import { useTenantStore } from '~/stores/tenant'
 import type { Coordinates, DeliveryZone } from '../types/delivery'
 
 export const useMap = () => {
+  const { $mapService } = useNuxtApp() as any
   const isGeocoding = ref(false)
   const error = ref<string | null>(null)
   const selectedCoordinates = ref<Coordinates | null>(null)
@@ -24,14 +24,14 @@ export const useMap = () => {
     error.value = null
 
     try {
-      const address = await mapService.reverseGeocode(coords)
+      const address = await $mapService.reverseGeocode(coords)
       selectedAddress.value = address
       selectedCoordinates.value = coords
 
       // Detect delivery zone
       const settings = useTenantStore().currentTenant?.settings?.deliverySettings
       const defaultFee = settings?.deliveryFee !== undefined ? settings.deliveryFee : 0
-      const zone = mapService.detectDeliveryZone(coords, restaurantCoords, defaultFee)
+      const zone = $mapService.detectDeliveryZone(coords, restaurantCoords, defaultFee)
       deliveryZone.value = zone
 
       if (!zone.isAvailable) {
@@ -56,7 +56,7 @@ export const useMap = () => {
     error.value = null
 
     try {
-      const coords = await mapService.geocode(address)
+      const coords = await $mapService.geocode(address)
       if (!coords) {
         error.value = 'Address not found'
         return null
@@ -68,7 +68,7 @@ export const useMap = () => {
       // Detect delivery zone
       const settings = useTenantStore().currentTenant?.settings?.deliverySettings
       const defaultFee = settings?.deliveryFee !== undefined ? settings.deliveryFee : 0
-      const zone = mapService.detectDeliveryZone(coords, restaurantCoords, defaultFee)
+      const zone = $mapService.detectDeliveryZone(coords, restaurantCoords, defaultFee)
       deliveryZone.value = zone
 
       if (!zone.isAvailable) {
@@ -88,14 +88,14 @@ export const useMap = () => {
    * Calculate distance between two points
    */
   const calculateDistance = (coords1: Coordinates, coords2: Coordinates): number => {
-    return mapService.calculateDistance(coords1.lat, coords1.lng, coords2.lat, coords2.lng)
+    return $mapService.calculateDistance(coords1.lat, coords1.lng, coords2.lat, coords2.lng)
   }
 
   /**
    * Clear geocoding cache
    */
   const clearCache = () => {
-    mapService.clearCache()
+    $mapService.clearCache()
   }
 
   /**

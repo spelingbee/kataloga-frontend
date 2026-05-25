@@ -615,6 +615,8 @@
     "fee": "Стоимость доставки",
     "free": "Бесплатно",
     "freeThreshold": "Бесплатно при заказе от {amount}",
+    "freeProgressRemaining": "Добавьте еще {amount} для бесплатной доставки",
+    "freeProgressQualified": "Вы получили бесплатную доставку!",
     "min": "мин"
   },
   "delivery_page": {

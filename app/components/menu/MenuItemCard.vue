@@ -181,14 +181,20 @@ const addToCart = async () => {
   border: 1px solid var(--border-primary);
   border-radius: $radius-xl;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, opacity 0.25s ease;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.06);
+  }
+
+  &:active {
+    transform: translateY(-1px) scale(0.985);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
 
   &--unavailable {
@@ -198,7 +204,7 @@ const addToCart = async () => {
 
     &:hover {
       transform: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
     }
   }
 }
@@ -382,6 +388,11 @@ const addToCart = async () => {
     border-color: var(--color-primary);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(var(--color-primary-rgb), 0.3);
+  }
+
+  &:active:not(&--disabled) {
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 2px 4px rgba(var(--color-primary-rgb), 0.1);
   }
 
   &--added {

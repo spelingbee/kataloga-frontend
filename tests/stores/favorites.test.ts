@@ -38,6 +38,13 @@ vi.mock('~/stores/auth', () => ({
   })
 }))
 
+// Mock tenant store
+vi.mock('~/stores/tenant', () => ({
+  useTenantStore: () => ({
+    tenantSlug: null
+  })
+}))
+
 // Mock menu service
 vi.mock('~/services/menu.service', () => ({
   useMenuService: () => ({

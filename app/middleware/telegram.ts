@@ -37,16 +37,5 @@ export default defineNuxtRouteMiddleware(async (to) => {
       console.log('Telegram user on main page:', user.value)
     }
 
-    // Handle back button for navigation
-    const { showBackButton, hideBackButton } = useTelegram()
-    
-    // Show back button on non-root pages
-    if (to.path !== '/') {
-      showBackButton(() => {
-        navigateTo('/')
-      })
-    } else {
-      hideBackButton()
-    }
   }
 })

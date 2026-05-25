@@ -33,7 +33,11 @@ export class TelegramAuthService {
     let tenantSlug = ''
     if (typeof window !== 'undefined') {
       const match = window.location.pathname.match(/^\/t\/([^/]+)/)
-      if (match) tenantSlug = match[1]
+      if (match) {
+        tenantSlug = match[1]
+      } else if (authData.initDataUnsafe?.start_param) {
+        tenantSlug = authData.initDataUnsafe.start_param
+      }
     }
 
     try {

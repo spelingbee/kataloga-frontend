@@ -225,20 +225,49 @@ export class MenuService {
    * Requirements: 2.3
    */
   async getMenuItem(itemId: string): Promise<MenuItem | null> {
-    try {
-      // Get item from all menu items
-      const menuItemsResult = await this.getMenuItems()
-      const item = menuItemsResult.items.find(item => item.id === itemId)
+    const tenantSlug = this.getTenantSlug()
+    console.log('🏢 Menu Service - Getting menu item:', itemId, 'for tenant:', tenantSlug)
 
-      if (item) {
-        return item
+    if (!tenantSlug) {
+      console.error('❌ Menu Service - No tenant slug configured')
+      throw new Error('Tenant slug not configured')
+    }
+
+    try {
+      const apiUrl = `/public/menu/${tenantSlug}/items/${itemId}`
+      console.log('🌐 Menu Service - Fetching menu item from:', apiUrl)
+
+      const item = await this.getApiClient().get<any>(apiUrl)
+      console.log('📥 Menu Service - Menu item response:', item)
+
+      if (!item) {
+        return null
       }
 
-      // Item not found - return null instead of throwing
-      return null
+      // Map backend menu item to frontend MenuItem format
+      const mappedItem: MenuItem = {
+        id: item.id,
+        productId: item.productId,
+        menuId: item.menuId,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        imageUrl: item.imageUrl || this.getImageUrl(item, item.category?.name),
+        isActive: item.isActive,
+        categoryId: item.category?.id,
+        category: item.category,
+        calories: item.calories,
+        nutritionInfo: item.nutritionInfo,
+        cookingTime: item.cookingTime,
+        dietary: item.dietary || [],
+        ingredients: item.ingredients || [],
+        allergens: item.allergens || [],
+        preparationTime: item.preparationTime,
+      }
+
+      return mappedItem
     } catch (error) {
       console.error('❌ Menu Service - Menu item fetch error:', error)
-      // Return null for not found cases
       return null
     }
   }

@@ -98,9 +98,11 @@ export class CoreWebVitalsMonitor {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         const lastEntry = entries[entries.length - 1]
-        this.metrics.lcp = lastEntry.startTime
-        this.notifyCallbacks()
-        console.log('LCP:', lastEntry.startTime)
+        if (lastEntry) {
+          this.metrics.lcp = lastEntry.startTime
+          this.notifyCallbacks()
+          console.log('LCP:', lastEntry.startTime)
+        }
       })
       
       observer.observe({ entryTypes: ['largest-contentful-paint'] })

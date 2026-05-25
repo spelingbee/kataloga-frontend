@@ -52,10 +52,19 @@
         </h2>
       </div>
 
-      <!-- Loading/Error States -->
-      <div v-if="menuStore.loading && displayItems.length === 0" class="home-menu__state">
-        <div class="spinner" />
-        <p>{{ $t('common.loading') }}</p>
+      <!-- Loading State (Skeleton Grid) -->
+      <div v-if="menuStore.loading && displayItems.length === 0" class="home-menu__skeleton-grid">
+        <div v-for="n in 4" :key="n" class="skeleton-card">
+          <div class="skeleton-card__image skeleton-pulse" />
+          <div class="skeleton-card__content">
+            <div class="skeleton-pulse skeleton-pulse--title" />
+            <div class="skeleton-pulse skeleton-pulse--desc" />
+            <div class="skeleton-card__footer">
+              <div class="skeleton-pulse skeleton-pulse--price" />
+              <div class="skeleton-pulse skeleton-pulse--button" />
+            </div>
+          </div>
+        </div>
       </div>
 
       <div
@@ -212,10 +221,12 @@ onMounted(async () => {
   position: sticky;
   top: 56px;
   z-index: 100;
-  background: rgba(var(--bg-primary-rgb), 0.8);
-  backdrop-filter: blur(12px);
-  padding: $space-4 0; // Increased vertical padding to prevent shadow clipping
-  border-bottom: 1px solid var(--border-primary);
+  background: rgba(var(--bg-primary-rgb), 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  padding: $space-3 0;
+  border-bottom: 1px solid rgba(var(--bg-primary-rgb), 0.08);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.05), 0 10px 30px -15px rgba(0, 0, 0, 0.03);
 }
 
 .home-categories-nav__scroll {
@@ -249,7 +260,7 @@ onMounted(async () => {
   font-size: $text-sm;
   font-weight: $font-semibold;
   cursor: pointer;
-  transition: all $transition-base;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   align-items: center;
   gap: $space-2;
@@ -259,16 +270,24 @@ onMounted(async () => {
     background: var(--bg-tertiary);
   }
 
+  &:active {
+    transform: scale(0.96);
+  }
+
   &--active {
-    background: var(--color-primary) !important;
+    background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary)) !important;
     border-color: var(--color-primary);
     color: white !important;
-    box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.2); // Softer shadow
+    box-shadow: 0 8px 16px -4px rgba(var(--color-primary-rgb), 0.3);
     transform: translateY(-1px); // Subtle lift
 
     .category-pill__count {
       color: rgba(255, 255, 255, 0.8);
       background: rgba(255, 255, 255, 0.2);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.96);
     }
   }
 }
@@ -313,14 +332,59 @@ onMounted(async () => {
   }
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--bg-secondary);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto $space-4;
+.home-menu__skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $space-6;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: $space-4;
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: $space-3;
+  }
+}
+
+.skeleton-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-xl;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.skeleton-card__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--bg-secondary);
+}
+
+.skeleton-card__content {
+  padding: $space-4;
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+  flex: 1;
+
+  @media (max-width: 640px) {
+    padding: $space-3;
+    gap: $space-2;
+  }
+}
+
+.skeleton-card__footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $space-3;
+  margin-top: auto;
+  width: 100%;
 }
 
 .skeleton-pulse {
@@ -329,14 +393,30 @@ onMounted(async () => {
   animation: pulse 1.5s ease-in-out infinite;
 
   &--title {
-    height: 32px;
+    height: 18px;
     width: 60%;
-    margin: 0 auto $space-4;
+    margin: 0;
   }
   &--subtitle {
     height: 16px;
     width: 80%;
     margin: 0 auto;
+  }
+  &--desc {
+    height: 14px;
+    width: 90%;
+    margin: 0;
+  }
+  &--price {
+    height: 18px;
+    width: 40%;
+    margin: 0;
+  }
+  &--button {
+    height: 36px;
+    width: 100%;
+    border-radius: $radius-full;
+    margin: 0;
   }
 }
 

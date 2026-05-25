@@ -2,6 +2,11 @@ import { defineConfig } from 'vitest/config'
 import { resolve } from 'path'
 
 export default defineConfig({
+  define: {
+    'import.meta.client': 'true',
+    'import.meta.server': 'false',
+    'import.meta.dev': 'true',
+  },
   test: {
     environment: 'jsdom',
     globals: true,

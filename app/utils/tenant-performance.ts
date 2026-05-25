@@ -412,6 +412,9 @@ export class TenantPrefetchManager {
       this.prefetchInProgress.size < this.maxConcurrent
     ) {
       const slug = this.prefetchQueue.values().next().value
+      if (!slug) {
+        break
+      }
       this.prefetchQueue.delete(slug)
       this.prefetchInProgress.add(slug)
 

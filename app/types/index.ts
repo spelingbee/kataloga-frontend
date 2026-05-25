@@ -1,13 +1,59 @@
 import type {
   UserResponseDto,
-  CategoryResponseDto,
-  ProductResponseDto,
-  ProductVariantResponseDto,
-  OrderResponseDto,
-  OrderItemResponseDto,
-  PromotionResponseDto,
+  CategoryDto,
+  ProductVariantDto,
   RegisterDto,
 } from '@kataloga/api-types'
+
+// Local DTO interfaces to match backend schemas not exported as named DTOs
+export interface ProductResponseDto {
+  id: string
+  name: string
+  description?: string
+  price: number
+  imageUrl?: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface OrderResponseDto {
+  id: string
+  tenantId: string
+  status: OrderStatus
+  total: number
+  createdAt: string
+  updatedAt: string
+  notes?: string
+  paymentMethod: 'CASH' | 'TRANSFER' | 'STRIPE'
+  paymentStatus: string
+  deliveryAddress?: string
+  latitude?: number
+  longitude?: number
+}
+
+export interface OrderItemResponseDto {
+  id: string
+  orderId: string
+  productId: string
+  variantId?: string
+  quantity: number
+  price: number
+  notes?: string
+}
+
+export interface PromotionResponseDto {
+  id: string
+  tenantId: string
+  code: string
+  name: string
+  description?: string
+  discountType: 'PERCENTAGE' | 'FIXED'
+  discountValue: number
+  startDate?: string
+  endDate?: string
+  isActive: boolean
+}
+
 
 // Export API types
 export * from './api'
@@ -114,12 +160,12 @@ export interface TrackingUpdate {
 }
 
 // Menu types
-export type Category = CategoryResponseDto & {
+export type Category = CategoryDto & {
   imageUrl?: string
   count?: number
 }
 
-export type ProductVariant = ProductVariantResponseDto
+export type ProductVariant = ProductVariantDto
 
 export type Product = ProductResponseDto & {
   variants?: ProductVariant[]
@@ -260,4 +306,4 @@ export interface CreateOrderDto {
 // Promotion types
 export type Promotion = PromotionResponseDto
 
-export { RegisterDto }
+export type { RegisterDto }

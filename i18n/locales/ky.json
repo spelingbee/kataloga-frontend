@@ -269,7 +269,9 @@
     "deliveryInstructions": "Р–РµС‚РєРёСЂТЇТЇ Р±РѕСЋРЅС‡Р° РєУ©СЂСЃУ©С‚РјУ©Р»У©СЂ",
     "deliveryFee": "Р–РµС‚РєРёСЂТЇТЇ Р°РєС‹СЃС‹",
     "freeDelivery": "РђРєС‹СЃС‹Р· Р¶РµС‚РєРёСЂТЇТЇ",
-    "minimumOrder": "РњРёРЅРёРјР°Р»РґСѓСѓ Р·Р°РєР°Р·"
+    "minimumOrder": "Минималдуу заказ",
+    "freeProgressRemaining": "Акысыз жеткирүү үчүн дагы {amount} кошуңуз",
+    "freeProgressQualified": "Сиз акысыз жеткирүүгө ээ болдуңуз!"
   },
   "form": {
     "firstName": "РђС‚С‹",

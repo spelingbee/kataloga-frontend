@@ -3,10 +3,12 @@
 // =============================================================================
 // Typography system for the minimalist design system
 
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap');
+
 // Font Families
 // -----------------------------------------------------------------------------
-$font-primary: 'Inter', system-ui, sans-serif;
-$font-secondary: 'Poppins', system-ui, sans-serif;  // Для заголовков
+$font-primary: 'Satoshi', 'Inter', system-ui, sans-serif;
+$font-secondary: 'Satoshi', 'Poppins', system-ui, sans-serif;  // Для заголовков
 
 // Font Sizes - Consistent scale from 12px to 36px
 // -----------------------------------------------------------------------------

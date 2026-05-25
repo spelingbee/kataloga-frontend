@@ -199,7 +199,9 @@
     "instructionsPlaceholder": "Entrance code, floor, etc...",
     "fee": "Delivery Fee",
     "free": "Free",
-    "freeThreshold": "Free over {amount}"
+    "freeThreshold": "Free over {amount}",
+    "freeProgressRemaining": "Spend {amount} more for free delivery",
+    "freeProgressQualified": "You have qualified for free delivery!"
   },
   "orders": {
     "title": "Orders",

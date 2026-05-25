@@ -4,6 +4,24 @@ import { ApiClient } from '~/utils/api'
 // Mock fetch globally
 global.fetch = vi.fn()
 
+// Helper to construct a valid standard ApiResponse object for fetch mocks
+function createMockResponse(data: any, statusCode: number = 200, ok: boolean = true) {
+  return {
+    ok,
+    status: statusCode,
+    json: () => Promise.resolve({
+      success: ok,
+      statusCode,
+      data: ok ? data : null,
+      error: ok ? null : data,
+      meta: {
+        requestId: 'test-request-id',
+        timestamp: new Date().toISOString(),
+      }
+    })
+  }
+}
+
 describe('ApiClient', () => {
   let apiClient: ApiClient
   const mockFetch = vi.mocked(fetch)
@@ -38,11 +56,7 @@ describe('ApiClient', () => {
 
   describe('HTTP methods', () => {
     beforeEach(() => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true, data: { id: 1 } }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({ id: 1 }) as Response)
     })
 
     it('should make GET request', async () => {
@@ -58,7 +72,7 @@ describe('ApiClient', () => {
           }),
         })
       )
-      expect(response).toEqual({ success: true, data: { id: 1 } })
+      expect(response).toEqual({ id: 1 })
     })
 
     it('should make POST request with body', async () => {
@@ -111,11 +125,7 @@ describe('ApiClient', () => {
       }
       apiClient.setTokenStore(mockTokenStore)
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse(true) as Response)
 
       await apiClient.get('/protected')
 
@@ -139,45 +149,26 @@ describe('ApiClient', () => {
 
       // First call returns 401
       mockFetch
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 401,
-          json: () => Promise.resolve({ message: 'Unauthorized' }),
-        } as Response)
+        .mockResolvedValueOnce(createMockResponse({ message: 'Unauthorized' }, 401, false) as Response)
         // Refresh token call succeeds
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({
-            success: true,
-            data: { accessToken: 'new-token', refreshToken: 'new-refresh' }
-          }),
-        } as Response)
+        .mockResolvedValueOnce(createMockResponse({ accessToken: 'new-token', refreshToken: 'new-refresh' }) as Response)
         // Retry with new token succeeds
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({ success: true, data: { id: 1 } }),
-        } as Response)
+        .mockResolvedValueOnce(createMockResponse({ id: 1 }) as Response)
 
       const response = await apiClient.get('/protected')
 
       expect(mockFetch).toHaveBeenCalledTimes(3)
       expect(mockTokenStore.setTokens).toHaveBeenCalledWith('new-token', 'new-refresh')
-      expect(response).toEqual({ success: true, data: { id: 1 } })
+      expect(response).toEqual({ id: 1 })
     })
   })
 
   describe('error handling', () => {
     it('should throw error on HTTP error status', async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 400,
-        json: () => Promise.resolve({
-          message: 'Bad Request',
-          code: 'VALIDATION_ERROR',
-        }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse({
+        message: 'Bad Request',
+        code: 'VALIDATION_ERROR',
+      }, 400, false) as Response)
 
       await expect(apiClient.get('/test')).rejects.toThrow('Bad Request')
     }, 10000)
@@ -193,16 +184,12 @@ describe('ApiClient', () => {
       mockFetch
         .mockRejectedValueOnce(new Error('Network error'))
         .mockRejectedValueOnce(new Error('Network error'))
-        .mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve({ success: true }),
-        } as Response)
+        .mockResolvedValueOnce(createMockResponse(true) as Response)
 
       const response = await fastApiClient.get('/test')
 
       expect(mockFetch).toHaveBeenCalledTimes(3)
-      expect(response).toEqual({ success: true })
+      expect(response).toEqual(true)
     }, 10000)
 
     it('should fail after max retries', async () => {
@@ -224,11 +211,7 @@ describe('ApiClient', () => {
     it('should set tenant slug in headers', async () => {
       apiClient.setTenantSlug('new-tenant')
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ success: true }),
-      } as Response)
+      mockFetch.mockResolvedValue(createMockResponse(true) as Response)
 
       await apiClient.get('/test')
 

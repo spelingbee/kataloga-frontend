@@ -165,6 +165,7 @@ import { useCartStore } from '~/stores/cart'
 import { useTenantSettings, useTenant } from '~/composables/useTenant'
 import { useTelegram } from '~/composables/useTelegram'
 import { useNavigation } from '~/composables/useNavigation'
+import { useTelegramHaptic } from '~/composables/useTelegramHaptic'
 import { resolveImageUrl } from '~/utils/image-optimization'
 
 const route = useRoute()
@@ -236,6 +237,10 @@ const onAddedToCart = () => {
   if (dish.value) {
     const cartStore = useCartStore()
     cartStore.addItem(dish.value, quantity.value)
+    try {
+      const { cartActions } = useTelegramHaptic()
+      cartActions.addToCart()
+    } catch (e) {}
     router.push(tPath('/checkout'))
   }
 }

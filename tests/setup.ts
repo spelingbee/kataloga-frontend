@@ -155,6 +155,46 @@ vi.mock('~/composables/useApiError', () => ({
 // Global storage for localStorage mock
 const globalStorage = new Map<string, string>()
 
+// Mock fetch globally with proper Response objects once at module level
+const globalMockFetch = vi.fn().mockImplementation((url, options) => {
+  const response = {
+    ok: true,
+    status: 200,
+    statusText: 'OK',
+    headers: new Headers({
+      'content-type': 'application/json',
+    }),
+    json: () => Promise.resolve({
+      success: true,
+      statusCode: 200,
+      data: { message: 'Mock response' },
+      error: null,
+      meta: {
+        requestId: 'test-request-id',
+        timestamp: new Date().toISOString(),
+        tenantId: 'test-tenant',
+      },
+    }),
+    text: () => Promise.resolve(JSON.stringify({
+      success: true,
+      statusCode: 200,
+      data: { message: 'Mock response' },
+      error: null,
+      meta: {
+        requestId: 'test-request-id',
+        timestamp: new Date().toISOString(),
+        tenantId: 'test-tenant',
+      },
+    })),
+    blob: () => Promise.resolve(new Blob()),
+    arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+    formData: () => Promise.resolve(new FormData()),
+    clone: () => response,
+  }
+  return Promise.resolve(response as Response)
+})
+vi.stubGlobal('fetch', globalMockFetch)
+
 beforeEach(() => {
   // Create fresh Pinia instance for each test
   const pinia = createPinia()
@@ -184,45 +224,7 @@ beforeEach(() => {
     tenantSlug: 'test-tenant',
   })
   
-  // Mock fetch with proper Response objects
-  const mockFetch = vi.fn().mockImplementation((url, options) => {
-    const response = {
-      ok: true,
-      status: 200,
-      statusText: 'OK',
-      headers: new Headers({
-        'content-type': 'application/json',
-      }),
-      json: () => Promise.resolve({
-        success: true,
-        statusCode: 200,
-        data: { message: 'Mock response' },
-        error: null,
-        meta: {
-          requestId: 'test-request-id',
-          timestamp: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        },
-      }),
-      text: () => Promise.resolve(JSON.stringify({
-        success: true,
-        statusCode: 200,
-        data: { message: 'Mock response' },
-        error: null,
-        meta: {
-          requestId: 'test-request-id',
-          timestamp: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        },
-      })),
-      blob: () => Promise.resolve(new Blob()),
-      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      formData: () => Promise.resolve(new FormData()),
-      clone: () => response,
-    }
-    return Promise.resolve(response as Response)
-  })
-  vi.stubGlobal('fetch', mockFetch)
+  globalMockFetch.mockClear()
   
   // Mock window.Telegram for Telegram Web App tests
   vi.stubGlobal('window', {
@@ -292,8 +294,7 @@ beforeEach(() => {
     localStorage: localStorageMock,
   })
   
-  // Mock fetch
-  vi.stubGlobal('fetch', vi.fn())
+
 })
 
 // Configure Vue Test Utils

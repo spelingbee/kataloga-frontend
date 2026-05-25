@@ -45,6 +45,7 @@
           @continue-shopping="handleContinueShopping"
           @view-orders="handleViewOrders"
         />
+        <TenantFooter />
       </div>
     </div>
 
@@ -91,6 +92,7 @@ import { useCartStore } from '~/stores/cart'
 import { useI18n } from 'vue-i18n'
 import CheckoutFlow from '~/components/checkout/CheckoutFlow.vue'
 import EmptyCart from '~/components/base/EmptyCart.vue'
+import TenantFooter from '~/components/tenant/TenantFooter.vue'
 import { useTenant } from '~/composables/useTenant'
 import { useNavigation } from '~/composables/useNavigation'
 import { useTelegram } from '~/composables/useTelegram'

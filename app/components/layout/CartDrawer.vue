@@ -45,6 +45,7 @@
           </div>
 
           <div v-else class="space-y-4">
+            <FreeDeliveryProgressBar />
             <CartItem
               v-for="item in items"
               :key="item.menuItem.id"

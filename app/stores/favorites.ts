@@ -30,7 +30,7 @@ export const useFavoritesStore = defineStore('favorites', {
 
   actions: {
     initializeFavorites() {
-      if (!import.meta.client) return
+      if (!import.meta.client && process.env.NODE_ENV !== 'test') return
       try {
         const tenantStore = useTenantStore()
         const storageKey = tenantStore.tenantSlug ? `favorites_${tenantStore.tenantSlug}` : 'favorites'
@@ -117,7 +117,7 @@ export const useFavoritesStore = defineStore('favorites', {
     },
 
     persistToLocalStorage() {
-      if (!import.meta.client) return
+      if (!import.meta.client && process.env.NODE_ENV !== 'test') return
       try {
         const tenantStore = useTenantStore()
         const storageKey = tenantStore.tenantSlug ? `favorites_${tenantStore.tenantSlug}` : 'favorites'

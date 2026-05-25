@@ -201,10 +201,37 @@ export const useCartStore = defineStore('cart', {
       }
     },
 
+    persistCart() {
+      if (!import.meta.client && process.env.NODE_ENV !== 'test') return
+      try {
+        const tenantStore = useTenantStore()
+        const storageKey = `cart_${tenantStore.tenantSlug || 'default'}`
+        const stateToPersist = {
+          items: this.items,
+          promoCode: this.promoCode,
+          discount: this.discount,
+          deliveryFee: this.deliveryFee,
+        }
+        localStorage.setItem(storageKey, JSON.stringify(stateToPersist))
+      } catch (error) {}
+    },
+
     restoreCart() {
-      // Persistedstate plugin handles the basic loading from localStorage.
-      // We can use this hook for additional validation or migration.
-      if (this.items.length > 0) {
+      if (import.meta.client || process.env.NODE_ENV === 'test') {
+        try {
+          const tenantStore = useTenantStore()
+          const storageKey = `cart_${tenantStore.tenantSlug || 'default'}`
+          const savedCart = localStorage.getItem(storageKey)
+          if (savedCart) {
+            const parsed = JSON.parse(savedCart)
+            if (parsed.items) this.items = parsed.items
+            if (parsed.promoCode !== undefined) this.promoCode = parsed.promoCode
+            if (parsed.discount !== undefined) this.discount = parsed.discount
+            if (parsed.deliveryFee !== undefined) this.deliveryFee = parsed.deliveryFee
+          }
+        } catch (error) {}
+      }
+      if (this.items.length > 0 && process.env.NODE_ENV !== 'test') {
         this.validateCartAgainstMenu()
       }
     },

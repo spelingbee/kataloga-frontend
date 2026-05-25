@@ -228,7 +228,7 @@ describe('Accessibility Testing Utilities', () => {
 
   describe('Keyboard Accessibility Validation', () => {
     it('should detect positive tabindex values', () => {
-      const div = createMockElement('div', { tabindex: '1' })
+      const div = createMockElement('div', { tabindex: '1', class: 'focus-ring' })
       document.body.appendChild(div)
 
       const issues = checkKeyboardAccessibility()
@@ -239,7 +239,7 @@ describe('Accessibility Testing Utilities', () => {
     })
 
     it('should detect onclick without keyboard handler', () => {
-      const div = createMockElement('div', { onclick: 'doSomething()' })
+      const div = createMockElement('div', { onclick: 'doSomething()', class: 'focus-ring' })
       document.body.appendChild(div)
 
       const issues = checkKeyboardAccessibility()
@@ -250,8 +250,8 @@ describe('Accessibility Testing Utilities', () => {
     })
 
     it('should not flag buttons and links with onclick', () => {
-      const button = createMockElement('button', { onclick: 'doSomething()' })
-      const link = createMockElement('a', { href: '#', onclick: 'doSomething()' })
+      const button = createMockElement('button', { onclick: 'doSomething()', class: 'focus-ring' })
+      const link = createMockElement('a', { href: '#', onclick: 'doSomething()', class: 'focus-ring' })
       
       document.body.appendChild(button)
       document.body.appendChild(link)

@@ -62,6 +62,10 @@ const formattedPrice = computed(() => {
   font-family: var(--font-primary, sans-serif);
   font-weight: var(--font-bold, 700);
   display: inline-block;
+  font-variant-numeric: tabular-nums;
+  -moz-font-feature-settings: "tnum";
+  -webkit-font-feature-settings: "tnum";
+  font-feature-settings: "tnum";
 
   &--sm { font-size: var(--text-sm); }
   &--md { font-size: var(--text-base); }

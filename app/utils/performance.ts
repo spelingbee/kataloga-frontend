@@ -61,7 +61,9 @@ export class PerformanceAnalyzer {
     // Largest Contentful Paint
     this.createObserver(['largest-contentful-paint'], (entries) => {
       const lastEntry = entries[entries.length - 1]
-      this.updateVital('lcp', lastEntry.startTime)
+      if (lastEntry) {
+        this.updateVital('lcp', lastEntry.startTime)
+      }
     })
 
     // Cumulative Layout Shift
