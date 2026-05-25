@@ -1051,7 +1051,7 @@
       "refreshStatus": "Обновить статус",
       "statusRefreshed": "Статус заказа обновлен",
       "statusUpdated": "Статус обновлен",
-      "statusUpdatedDesc": "Ваш заказ теперь {статус}",
+      "statusUpdatedDesc": "Ваш заказ теперь {status}",
       "statusUpdatedTitle": "Статус заказа обновлен",
       "title": "Отслеживание заказов",
       "tryAgain": "Попробуйте еще раз",
