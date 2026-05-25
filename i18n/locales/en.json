@@ -1121,7 +1121,7 @@
     "add_address": "Add Address",
     "deliverySettings": "Delivery addresses",
     "delivery_settings": "Delivery Settings",
-    "emailPlaceholder": "email@example.com",
+    "emailPlaceholder": "email{'@'}example.com",
     "emailVerificationSent": "A confirmation link has been sent to your new email.",
     "firstName": "Name",
     "initials": "P",

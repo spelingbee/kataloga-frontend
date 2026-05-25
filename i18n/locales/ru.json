@@ -1121,7 +1121,7 @@
     "add_address": "Добавить адрес",
     "deliverySettings": "Адреса доставки",
     "delivery_settings": "Настройки доставки",
-    "emailPlaceholder": "email@example.com",
+    "emailPlaceholder": "email{'@'}example.com",
     "emailVerificationSent": "Ссылка для подтверждения отправлена на ваш новый email",
     "firstName": "Имя",
     "initials": "П",

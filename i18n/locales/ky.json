@@ -925,7 +925,7 @@
     "title": "Профиль",
     "addAddress": "Дарек кошуу",
     "deliverySettings": "Жеткирүү даректери",
-    "emailPlaceholder": "email@example.com",
+    "emailPlaceholder": "email{'@'}example.com",
     "emailVerificationSent": "Ырастоо шилтемеси жаңы электрондук почтаңызга жөнөтүлдү.",
     "firstName": "аты",
     "initials": "П",
