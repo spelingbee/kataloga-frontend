@@ -215,7 +215,7 @@ const telegram = useTelegram()
 const { formatCurrency, contactInfo, deliverySettings, features } = useTenantSettings()
 
 type OrderType = 'delivery' | 'pickup' | 'dine-in'
-type PaymentMethodType = 'CASH' | 'TRANSFER' | 'STRIPE'
+type PaymentMethodType = 'CASH' | 'TRANSFER'
 
 interface Props {
   cart: CartItem[]
@@ -559,40 +559,12 @@ const submitOrder = async () => {
       if (orderData.value.paymentMethod === 'TRANSFER') {
         showTransferModal.value = true
         emit('complete', createdOrder)
-        if (telegram.isTelegram.value) {
-          telegram.hideMainButton()
-        }
-      } else if (orderData.value.paymentMethod === 'FREEDOM_PAY') {
-        try {
-          submitting.value = true
-          errorMessage.value = ''
-          
-          const apiUrl = useRuntimeConfig().public.apiUrl || 'https://api.kataloga.org/api'
-          const res = await $fetch<{ paymentUrl: string }>(`${apiUrl}/payments/freedompay/init`, {
-            method: 'POST',
-            body: {
-              orderId: createdOrder.id
-            }
-          })
-          
-          if (res && res.paymentUrl) {
-            window.location.href = res.paymentUrl
-            return
-          } else {
-            throw new Error('Не удалось получить ссылку на оплату')
-          }
-        } catch (paymentErr: any) {
-          console.error('FreedomPay init failed:', paymentErr)
-          errorMessage.value = paymentErr.data?.message || paymentErr.message || 'Ошибка инициализации платежа. Пожалуйста, попробуйте позже.'
-          submitting.value = false
-          return
-        }
       } else {
         isSuccess.value = true
         emit('complete', createdOrder)
-        if (telegram.isTelegram.value) {
-          telegram.hideMainButton()
-        }
+      }
+      if (telegram.isTelegram.value) {
+        telegram.hideMainButton()
       }
     } else {
       throw new Error(t('checkout.validation.orderCreateFailed'))

@@ -175,7 +175,7 @@
       <div class="fee-row">
         <span>{{ $t('delivery.fee') }}</span>
         <span class="fee-amount">
-          {{ deliveryFee === 0 ? $t('delivery.free') : formatPrice(deliveryFee) }}
+          {{ deliveryFeeLabel }}
         </span>
       </div>
       <p v-if="tenantStore.currentTenant?.settings?.deliverySettings?.freeDeliveryThreshold" class="fee-hint">
@@ -274,7 +274,7 @@ const estimatedTime = computed(() => {
   return `${baseTime}-${baseTime + 15} ${t('delivery.min')}`
 })
 
-const deliveryFee = computed(() => {
+const deliveryFee = computed<number | null>(() => {
   if (localDeliveryInfo.value.type === 'delivery') {
     const settings = tenantStore.currentTenant?.settings?.deliverySettings
     
@@ -285,7 +285,7 @@ const deliveryFee = computed(() => {
       }
     }
 
-    const globalFee = settings?.deliveryFee !== undefined ? settings.deliveryFee : 0
+    const globalFee = settings?.deliveryFee !== undefined && settings?.deliveryFee !== null ? settings.deliveryFee : null
     
     if (localDeliveryInfo.value.deliveryZone && settings?.zones) {
       const zone = settings.zones.find(z => z.id === localDeliveryInfo.value.deliveryZone)
@@ -295,6 +295,12 @@ const deliveryFee = computed(() => {
     return globalFee
   }
   return 0
+})
+
+const deliveryFeeLabel = computed(() => {
+  if (deliveryFee.value === null) return t('delivery.calculated')
+  if (deliveryFee.value === 0) return t('delivery.free')
+  return formatPrice(deliveryFee.value)
 })
 
 watch(deliveryFee, (newFee) => {

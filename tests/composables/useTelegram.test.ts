@@ -18,6 +18,7 @@ describe('useTelegram', () => {
       ;(window as any).Telegram = {
         WebApp: {
           ready: vi.fn(),
+          initData: 'test-init-data',
           initDataUnsafe: {},
           themeParams: {}
         }
@@ -46,6 +47,7 @@ describe('useTelegram', () => {
       ;(window as any).Telegram = {
         WebApp: {
           ready: vi.fn(),
+          initData: 'test-init-data',
           initDataUnsafe: { user: mockUser },
           themeParams: {}
         }
@@ -84,6 +86,7 @@ describe('useTelegram', () => {
       ;(window as any).Telegram = {
         WebApp: {
           ready: vi.fn(),
+          initData: 'test-init-data',
           initDataUnsafe: {},
           themeParams: mockTheme
         }
@@ -127,6 +130,7 @@ describe('useTelegram', () => {
       ;(window as any).Telegram = {
         WebApp: {
           ready: vi.fn(),
+          initData: 'test-init-data',
           initDataUnsafe: {},
           themeParams: {},
           MainButton: mockMainButton
@@ -169,6 +173,7 @@ describe('useTelegram', () => {
       ;(window as any).Telegram = {
         WebApp: {
           ready: vi.fn(),
+          initData: 'test-init-data',
           initDataUnsafe: {},
           themeParams: {},
           HapticFeedback: mockHaptic
@@ -209,6 +214,7 @@ describe('useTelegram', () => {
       ;(window as any).Telegram = {
         WebApp: {
           ready: vi.fn(),
+          initData: 'test-init-data',
           initDataUnsafe: {},
           themeParams: {},
           requestContact: mockRequestContact

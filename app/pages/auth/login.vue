@@ -7,7 +7,7 @@
     <div class="auth-page__container">
       <!-- Back Navigation -->
       <nav class="auth-page__nav">
-        <BaseButton variant="ghost" size="sm" icon="arrow-left" @click="router.push('/')">
+        <BaseButton variant="ghost" size="sm" icon="arrow-left" @click="goBack">
           {{ t('common.back') }}
         </BaseButton>
       </nav>
@@ -17,7 +17,7 @@
           <h1 class="auth-page__title">{{ t('auth.login.title') }}</h1>
           <p class="auth-page__subtitle">
             {{ t('auth.login.noAccount') }}
-            <NuxtLink to="/auth/register" class="auth-page__link">{{ t('auth.login.createAccount') }}</NuxtLink>
+            <NuxtLink :to="`/auth/register${route.query.redirect ? '?redirect=' + encodeURIComponent(route.query.redirect as string) : ''}`" class="auth-page__link">{{ t('auth.login.createAccount') }}</NuxtLink>
           </p>
         </header>
 
@@ -80,6 +80,7 @@
 import { useUserStore } from '~/stores/user'
 import { useI18n } from 'vue-i18n'
 import BrandingFooter from '~/components/layout/BrandingFooter.vue'
+import { useNavigation } from '~/composables/useNavigation'
 
 // Meta
 definePageMeta({
@@ -92,6 +93,7 @@ const { t } = useI18n()
 const authStore = useUserStore()
 const route = useRoute()
 const router = useRouter()
+const { goBack } = useNavigation()
 
 // Reactive data
 const form = reactive({

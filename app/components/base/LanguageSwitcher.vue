@@ -89,21 +89,21 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
-  background: var(--surface-color, #ffffff);
-  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
-  color: var(--text-main, #111827);
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
 
   &:hover {
-    border-color: var(--accent-primary, #0d9488);
-    background-color: var(--accent-light, #f0fdfa);
+    border-color: var(--color-primary);
+    background-color: rgba(var(--color-primary-rgb), 0.04);
   }
 
   &:focus {
-    outline: 2px solid var(--accent-primary, #0d9488);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 }
@@ -133,11 +133,11 @@ onMounted(() => {
 
 .language-switcher__icon {
   transition: transform 0.2s ease;
-  color: var(--text-muted, #4b5563);
+  color: var(--text-tertiary);
 
   &--open {
     transform: rotate(180deg);
-    color: var(--accent-primary, #0d9488);
+    color: var(--color-primary);
   }
 }
 
@@ -146,8 +146,8 @@ onMounted(() => {
   top: calc(100% + 8px);
   right: 0;
   min-width: 140px;
-  background: var(--surface-color, #ffffff);
-  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 12px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -166,18 +166,18 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 14px;
-  color: var(--text-main, #111827);
+  color: var(--text-secondary);
   font-family: inherit;
 
   &:hover {
-    background: var(--bg-color, #f9fafb);
-    color: var(--accent-primary, #0d9488);
+    background: var(--bg-secondary);
+    color: var(--color-primary);
   }
 
   &--active {
-    background: var(--accent-light, #f0fdfa);
+    background: rgba(var(--color-primary-rgb), 0.08);
     font-weight: 600;
-    color: var(--accent-primary, #0d9488);
+    color: var(--color-primary);
   }
 }
 

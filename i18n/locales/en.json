@@ -309,6 +309,7 @@
     "enterAddress": "enterAddress",
     "estimatedDelivery": "estimatedDelivery",
     "fee": "Delivery Fee",
+    "calculated": "Calculated",
     "free": "Free",
     "freeDelivery": "freeDelivery",
     "freeProgressQualified": "You have qualified for free delivery!",

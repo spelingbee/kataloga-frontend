@@ -285,6 +285,10 @@ definePageMeta({
 
 .profile-page__avatar-wrapper {
   margin-bottom: var(--space-4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .profile-page__avatar {

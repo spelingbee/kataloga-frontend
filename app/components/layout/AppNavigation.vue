@@ -194,7 +194,7 @@ const handleNavClick = (item: NavigationItem) => {
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      padding: 6px 8px;
+      padding: 4px 8px;
       flex: 1;
       min-width: 50px;
       text-decoration: none;
@@ -202,7 +202,7 @@ const handleNavClick = (item: NavigationItem) => {
       transition: all $transition-base-ease;
       position: relative;
       border-radius: 12px;
-      margin: 2px;
+      margin: 4px 2px;
 
       &--active {
         color: var(--color-primary);

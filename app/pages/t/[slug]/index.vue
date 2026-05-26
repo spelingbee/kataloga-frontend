@@ -220,7 +220,7 @@ onMounted(async () => {
 .home-categories-nav {
   position: sticky;
   top: 56px;
-  z-index: 100;
+  z-index: 30;
   background: rgba(var(--bg-primary-rgb), 0.75);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);

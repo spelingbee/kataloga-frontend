@@ -12,6 +12,7 @@ export interface TenantInfo {
   businessType: 'RESTAURANT' | 'CAFE' | 'FLOWERS' | 'SHOP' | 'OTHER'
   showBranding?: boolean
   brandingUrl?: string
+  freedomPayEnabled?: boolean
   createdAt: string
   updatedAt: string
 }

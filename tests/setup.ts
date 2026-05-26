@@ -348,3 +348,10 @@ vi.stubGlobal('useApiError', () => ({
   setError: vi.fn(),
   retry: vi.fn(),
 }))
+
+vi.stubGlobal('useI18n', () => ({
+  locale: { value: 'en' },
+  t: vi.fn((key) => key),
+  d: vi.fn((date) => date.toLocaleDateString()),
+  n: vi.fn((number) => number.toString()),
+}))

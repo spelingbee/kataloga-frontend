@@ -24,9 +24,11 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTenantSettings } from '~/composables/useTenant'
+import { useTerminology } from '~/composables/useTerminology'
 
 const { t } = useI18n()
 const { formatCurrency, features } = useTenantSettings()
+const { isRetailBusiness } = useTerminology()
 
 type OrderType = 'delivery' | 'pickup' | 'dine-in'
 
@@ -61,8 +63,8 @@ const orderTypes = computed(() => {
     description: t('checkout.pickupDetails')
   })
 
-  // Only add dine-in if explicitly enabled in tenant features
-  if (features.value?.dineInEnabled) {
+  // Dine-in только для food-бизнеса и только если явно включён в настройках
+  if (!isRetailBusiness.value && features.value?.dineInEnabled) {
     types.push({
       value: 'dine-in' as OrderType,
       icon: 'utensils',

@@ -3,12 +3,13 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '~/stores/user'
 import { useI18n } from 'vue-i18n'
-import { useTenant } from '~/composables/useTenant'
+import { useTenant, useTenantBranding } from '~/composables/useTenant'
 
 const route = useRoute()
 const { t } = useI18n()
 const userStore = useUserStore()
 const { tPath } = useTenant()
+const { logo: brandLogo, appName: brandAppName } = useTenantBranding()
 
 const menuItems = computed(() => [
   { path: '/', label: t('menu.title'), icon: 'menu-book' },
@@ -28,7 +29,7 @@ const isActive = (path: string) => {
   <nav class="app-navbar">
     <div class="app-navbar__header">
       <NuxtLink :to="tPath('/')" class="app-navbar__logo">
-        <img src="/images/logo-kataloga.png" alt="Kataloga" class="app-navbar__logo-img" />
+        <img :src="brandLogo" :alt="brandAppName" class="app-navbar__logo-img" />
       </NuxtLink>
     </div>
 
@@ -50,7 +51,7 @@ const isActive = (path: string) => {
         <BaseIcon name="user" size="md" class="app-navbar__item-icon" />
         <span class="app-navbar__item-text">{{ $t('profile.title') }}</span>
       </NuxtLink>
-      <NuxtLink v-else to="/auth/login" class="app-navbar__item">
+      <NuxtLink v-else :to="`/auth/login?redirect=${encodeURIComponent($route.fullPath)}`" class="app-navbar__item">
         <BaseIcon name="user" size="md" class="app-navbar__item-icon" />
         <span class="app-navbar__item-text">{{ $t('auth.login.submit') }}</span>
       </NuxtLink>

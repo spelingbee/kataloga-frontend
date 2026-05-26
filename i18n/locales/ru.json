@@ -309,6 +309,7 @@
     "enterAddress": "enterAddress",
     "estimatedDelivery": "estimatedDelivery",
     "fee": "Стоимость доставки",
+    "calculated": "Рассчитывается",
     "free": "Бесплатно",
     "freeDelivery": "freeDelivery",
     "freeProgressQualified": "Вы получили бесплатную доставку!",

@@ -7,7 +7,7 @@
     <div class="register-page__container">
       <!-- Back Navigation -->
       <nav class="register-page__nav">
-        <BaseButton variant="ghost" size="sm" icon="arrow-left" @click="router.push('/')">
+        <BaseButton variant="ghost" size="sm" icon="arrow-left" @click="goBack">
           {{ t('common.back') }}
         </BaseButton>
       </nav>
@@ -17,7 +17,7 @@
           <h1 class="register-page__title">{{ t('auth.register.title') }}</h1>
           <p class="register-page__subtitle">
             {{ t('auth.register.hasAccount') }}
-            <NuxtLink to="/auth/login" class="register-page__link">{{ t('auth.register.login') }}</NuxtLink>
+            <NuxtLink :to="`/auth/login${route.query.redirect ? '?redirect=' + encodeURIComponent(route.query.redirect as string) : ''}`" class="register-page__link">{{ t('auth.register.login') }}</NuxtLink>
           </p>
         </header>
 
@@ -136,6 +136,7 @@
 import { useUserStore } from '~/stores/user'
 import { useI18n } from 'vue-i18n'
 import BrandingFooter from '~/components/layout/BrandingFooter.vue'
+import { useNavigation } from '~/composables/useNavigation'
 
 // Meta
 definePageMeta({
@@ -145,6 +146,8 @@ definePageMeta({
 const { t } = useI18n()
 const authStore = useUserStore()
 const router = useRouter()
+const route = useRoute()
+const { goBack } = useNavigation()
 
 // Reactive data
 const form = reactive({
@@ -250,8 +253,9 @@ const handleRegister = async () => {
       phone: form.phone || undefined,
     })
 
-    // Redirect to home page after successful registration
-    await router.push('/')
+    // Redirect to intended page or home
+    const redirectTo = (route.query.redirect as string) || '/'
+    await router.push(redirectTo)
   } catch (err: any) {
     error.value = err.message || t('auth.register.error')
   } finally {

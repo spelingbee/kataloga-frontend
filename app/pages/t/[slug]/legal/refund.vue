@@ -44,12 +44,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, onMounted, onUnmounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useTenantStore } from '~/stores/tenant'
+import { useTelegram } from '~/composables/useTelegram'
 
 const route = useRoute()
+const router = useRouter()
 const tenantStore = useTenantStore()
+const telegram = useTelegram()
 
 const tenantSlug = computed(() => route.params.slug as string)
 const tenant = computed(() => tenantStore.currentTenant)
@@ -59,6 +62,23 @@ const legalNameText = computed(() => (tenant.value as any)?.legalName || `ИП/�
 const legalAddressText = computed(() => (tenant.value as any)?.legalAddress || tenant.value?.settings?.contactInfo?.address || '')
 const supportPhoneText = computed(() => (tenant.value as any)?.supportPhone || tenant.value?.settings?.contactInfo?.phone || '')
 const supportEmailText = computed(() => (tenant.value as any)?.supportEmail || tenant.value?.settings?.contactInfo?.email || 'info@kataloga.org')
+
+let cleanupBackBtn: (() => void) | null = null
+
+onMounted(() => {
+  if (telegram.isTelegram.value) {
+    cleanupBackBtn = telegram.showBackButton(() => {
+      router.back()
+    })
+  }
+})
+
+onUnmounted(() => {
+  if (telegram.isTelegram.value) {
+    if (cleanupBackBtn) cleanupBackBtn()
+    telegram.hideBackButton()
+  }
+})
 </script>
 
 <style scoped lang="scss">

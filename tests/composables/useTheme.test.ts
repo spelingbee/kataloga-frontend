@@ -60,7 +60,7 @@ describe('useTheme', () => {
     
     // Mock process.client
     Object.defineProperty(global, 'process', {
-      value: { client: true },
+      value: { ...global.process, client: true },
       writable: true
     })
     

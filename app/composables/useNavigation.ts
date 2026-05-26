@@ -4,7 +4,7 @@ import { useTenant } from './useTenant'
 export function useNavigation() {
   const router = useRouter()
   const route = useRoute()
-  const { tPath } = useTenant()
+  const { tPath, tenantSlug } = useTenant()
 
   /**
    * Smart back navigation.
@@ -12,19 +12,10 @@ export function useNavigation() {
    * Otherwise, redirects to the tenant's home page.
    */
   const goBack = () => {
-    // In many browsers, window.history.length starts at 1 or 2.
-    // However, if the user came from an external site, length is 1.
-    // If they refreshed, it might be > 1 but we can't go "back" to a previous state easily.
-    // Nuxt router usually handles this, but we can check if there's a previous route.
-    
-    // A simple check: if we are at the home page, do nothing.
-    const isHome = route.path === '/' || route.path.endsWith('/') || route.path.split('/').length <= 3
+    const slug = tenantSlug.value
+    const isHome = route.path === '/' || (slug && (route.path === `/t/${slug}` || route.path === `/t/${slug}/`))
     if (isHome) return
 
-    // Use router.back() and if it doesn't navigate (e.g. no history), go to home.
-    // Since router.back() is asynchronous and doesn't return a "success" boolean easily,
-    // we can use a small hack or just trust the history check.
-    
     if (typeof window !== 'undefined' && window.history.state && window.history.state.back) {
       router.back()
     } else {

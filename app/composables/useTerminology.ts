@@ -2,7 +2,17 @@ import { computed } from 'vue'
 import { useTenantStore } from '~/stores/tenant'
 import { useI18n } from 'vue-i18n'
 
-export type BusinessType = 'RESTAURANT' | 'CAFE' | 'FLOWERS' | 'SHOP' | 'OTHER'
+export type BusinessType =
+  | 'RESTAURANT'
+  | 'CAFE'
+  | 'BAKERY'
+  | 'FLOWERS'
+  | 'SHOP'
+  | 'CLOTHING'
+  | 'OTHER'
+
+const FOOD_TYPES: ReadonlySet<BusinessType> = new Set(['RESTAURANT', 'CAFE', 'BAKERY'])
+const RETAIL_TYPES: ReadonlySet<BusinessType> = new Set(['FLOWERS', 'SHOP', 'CLOTHING', 'OTHER'])
 
 export const useTerminology = () => {
   const tenantStore = useTenantStore()
@@ -12,9 +22,8 @@ export const useTerminology = () => {
     return (tenantStore.currentTenant?.businessType as BusinessType) || 'RESTAURANT'
   })
 
-  const isFoodBusiness = computed(() => {
-    return businessType.value === 'RESTAURANT' || businessType.value === 'CAFE'
-  })
+  const isFoodBusiness = computed(() => FOOD_TYPES.has(businessType.value))
+  const isRetailBusiness = computed(() => RETAIL_TYPES.has(businessType.value))
 
   /**
    * Label for the entire collection of items (Menu vs Catalog)
@@ -63,10 +72,12 @@ export const useTerminology = () => {
     switch (businessType.value) {
       case 'RESTAURANT':
       case 'CAFE':
+      case 'BAKERY':
         return 'utensils'
       case 'FLOWERS':
         return 'flower'
       case 'SHOP':
+      case 'CLOTHING':
         return 'shopping-bag'
       default:
         return 'package'
@@ -86,6 +97,7 @@ export const useTerminology = () => {
   return {
     businessType,
     isFoodBusiness,
+    isRetailBusiness,
     catalogLabel,
     itemLabel,
     itemsLabel,

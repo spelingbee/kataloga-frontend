@@ -10,9 +10,10 @@
       </div>
 
       <!-- Delivery Fee -->
-      <div v-if="showDeliveryFee || deliveryFee > 0" class="summary-row">
+      <div v-if="showDeliveryFee || deliveryFee > 0 || deliveryFee === null" class="summary-row">
         <span class="summary-label">{{ $t('cart.deliveryFee') }}</span>
         <span v-if="deliveryFee > 0" class="summary-value">{{ formatPrice(deliveryFee) }}</span>
+        <span v-else-if="deliveryFee === null" class="summary-value">{{ $t('delivery.calculated') }}</span>
         <span v-else-if="isDynamic" class="summary-value">{{ $t('checkout.dependsOnAddress') }}</span>
         <span v-else class="summary-value free">{{ $t('checkout.free') }}</span>
       </div>
@@ -52,7 +53,7 @@ interface Props {
   subtotal: number
   total: number
   itemCount: number
-  deliveryFee?: number
+  deliveryFee?: number | null
   serviceFee?: number
   discount?: number
   minOrderAmount?: number

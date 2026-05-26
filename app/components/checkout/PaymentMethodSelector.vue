@@ -41,43 +41,6 @@
         </div>
       </button>
 
-      <!-- Stripe Payment (Optional, can be enabled via config) -->
-      <button
-        v-if="hasStripe"
-        class="payment-method-selector__method"
-        :class="{ 'payment-method-selector__method--active': selectedMethod === 'STRIPE' }"
-        @click="selectMethod('STRIPE')"
-      >
-        <div class="payment-method-selector__method-icon">
-          <BaseIcon name="credit-card" size="md" />
-        </div>
-        <div class="payment-method-selector__method-info">
-          <span class="payment-method-selector__method-name">{{ $t('payment.methods.STRIPE') }}</span>
-          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.STRIPE_DESC') }}</span>
-        </div>
-        <div v-if="selectedMethod === 'STRIPE'" class="payment-method-selector__method-check">
-          <BaseIcon name="check" size="md" />
-        </div>
-      </button>
-
-      <!-- FreedomPay Payment -->
-      <button
-        v-if="hasFreedomPay"
-        class="payment-method-selector__method"
-        :class="{ 'payment-method-selector__method--active': selectedMethod === 'FREEDOM_PAY' }"
-        @click="selectMethod('FREEDOM_PAY')"
-      >
-        <div class="payment-method-selector__method-icon">
-          <BaseIcon name="credit-card" size="md" />
-        </div>
-        <div class="payment-method-selector__method-info">
-          <span class="payment-method-selector__method-name">{{ $t('payment.methods.FREEDOM_PAY', 'Банковская карта') }}</span>
-          <span class="payment-method-selector__method-desc">{{ $t('payment.methods.FREEDOM_PAY_DESC', 'Оплата картами Visa, Mastercard, Элкарт') }}</span>
-        </div>
-        <div v-if="selectedMethod === 'FREEDOM_PAY'" class="payment-method-selector__method-check">
-          <BaseIcon name="check" size="md" />
-        </div>
-      </button>
     </div>
 
     <!-- Optional: Payment Info Banner -->
@@ -93,31 +56,22 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useTenantStore } from '~/stores/tenant'
 
-type PaymentMethodType = 'CASH' | 'TRANSFER' | 'STRIPE' | 'FREEDOM_PAY'
+type PaymentMethodType = 'CASH' | 'TRANSFER'
 
 interface Props {
   modelValue: PaymentMethodType
   orderTotal: number
-  hasStripe?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  hasStripe: false
-})
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: PaymentMethodType]
 }>()
 
 const { t } = useI18n()
-const tenantStore = useTenantStore()
 const selectedMethod = ref<PaymentMethodType>(props.modelValue || 'CASH')
-
-const hasFreedomPay = computed(() => {
-  return (tenantStore.currentTenant as any)?.freedomPayEnabled || false
-})
 
 const selectMethod = (method: PaymentMethodType) => {
   selectedMethod.value = method
@@ -126,24 +80,10 @@ const selectMethod = (method: PaymentMethodType) => {
 
 const selectedMethodInfo = computed(() => {
   if (selectedMethod.value === 'CASH') {
-    return {
-      bannerText: t('payment.methods.CASH_INFO')
-    }
+    return { bannerText: t('payment.methods.CASH_INFO') }
   }
   if (selectedMethod.value === 'TRANSFER') {
-    return {
-      bannerText: t('payment.methods.TRANSFER_INFO')
-    }
-  }
-  if (selectedMethod.value === 'STRIPE') {
-    return {
-      bannerText: t('payment.methods.STRIPE_INFO')
-    }
-  }
-  if (selectedMethod.value === 'FREEDOM_PAY') {
-    return {
-      bannerText: t('payment.methods.FREEDOM_PAY_INFO', 'Вы будете перенаправлены на защищенный шлюз FreedomPay для оплаты картой.')
-    }
+    return { bannerText: t('payment.methods.TRANSFER_INFO') }
   }
   return null
 })

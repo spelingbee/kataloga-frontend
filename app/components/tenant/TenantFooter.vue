@@ -1,7 +1,7 @@
 <template>
   <footer class="tenant-footer">
     <!-- Платёжные системы -->
-    <div class="tenant-footer__payments">
+    <div v-if="hasFreedomPay" class="tenant-footer__payments">
       <span class="tenant-footer__payments-label">Принимаем к оплате:</span>
       <div class="tenant-footer__payment-logos">
         <!-- Visa Badge -->
@@ -27,7 +27,7 @@
     </div>
 
     <!-- Защита -->
-    <p class="tenant-footer__security">
+    <p v-if="hasFreedomPay" class="tenant-footer__security">
       🔒 Безопасность платежей гарантирована защищённым шлюзом FreedomPay (PCI DSS).
     </p>
 
@@ -55,9 +55,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useTenant } from '~/composables/useTenant'
 
 const route = useRoute()
+const { currentTenant } = useTenant()
 const tenantSlug = computed(() => route.params.slug as string)
+const hasFreedomPay = computed(() => (currentTenant.value as any)?.freedomPayEnabled === true)
 </script>
 
 <style scoped lang="scss">

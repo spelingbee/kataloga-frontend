@@ -172,7 +172,7 @@ const closeErrorModal = () => {
 }
 
 const handleCancel = () => {
-  router.push(tPath('/checkout'))
+  goBack()
 }
 </script>
 

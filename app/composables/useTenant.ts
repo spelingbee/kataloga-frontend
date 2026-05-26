@@ -429,7 +429,10 @@ export function useTenantBranding() {
 
   // Branding properties with fallbacks
   const logo = computed(() => {
-    return tenantStore.tenantBranding.logo || '/icon-192x192.png'
+    if (tenantStore.currentTenant?.showBranding !== false) {
+      return '/images/logo-kataloga.png'
+    }
+    return tenantStore.tenantBranding.logo || '/images/logo-kataloga.png'
   })
 
   const primaryColor = computed(() => {
@@ -445,6 +448,9 @@ export function useTenantBranding() {
   })
 
   const appName = computed(() => {
+    if (tenantStore.currentTenant?.showBranding !== false) {
+      return config.public.appName || 'Kataloga'
+    }
     return tenantStore.tenantBranding.appName || config.public.appName || 'Menu Ordering App'
   })
 

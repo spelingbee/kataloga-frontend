@@ -405,29 +405,36 @@ const addToCart = async () => {
 .product-card__qty-control {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: $space-6;
-  width: 100%;
-  background: transparent;
+  justify-content: space-between;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: $radius-full;
+  padding: 2px;
+  height: 40px;
+  min-width: 135px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+
+  &:hover {
+    border-color: var(--color-primary);
+  }
 
   .product-card__qty-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: $radius-full;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all $transition-base;
-    border: 1px solid var(--border-primary);
-    background: var(--bg-secondary);
+    border: none;
+    background: transparent;
     color: var(--text-primary);
 
     &:hover {
       background: var(--color-primary);
       color: white;
-      border-color: var(--color-primary);
-      transform: scale(1.1);
     }
 
     &--plus {
@@ -439,8 +446,9 @@ const addToCart = async () => {
     font-size: $text-base;
     font-weight: $font-bold;
     color: var(--text-primary);
-    min-width: 32px;
     text-align: center;
+    flex: 1;
+    user-select: none;
   }
 }
 
@@ -487,14 +495,16 @@ const addToCart = async () => {
 
   .product-card__qty-control {
     height: 36px;
+    min-width: 110px;
+    padding: 1px;
 
     .product-card__qty-btn {
       width: 32px;
+      height: 32px;
     }
 
     .product-card__qty-text {
       font-size: $text-sm;
-      min-width: 20px;
     }
   }
 }

@@ -40,17 +40,16 @@
       <!-- Logo/Brand -->
       <NuxtLink :to="tPath('/')" class="app-header__logo">
         <img
-          v-if="tenantBranding?.logo && !logoError"
-          :src="resolveImageUrl(tenantBranding.logo)"
-          :alt="tenantBranding.appName || appName"
+          v-if="brandLogo && !logoError"
+          :src="resolveImageUrl(brandLogo)"
+          :alt="brandAppName"
           class="app-header__logo-image"
           @error="logoError = true"
         />
-        <img v-else src="/images/logo-kataloga.png" :alt="appName" class="app-header__logo-image" />
+        <img v-else src="/images/logo-kataloga.png" :alt="brandAppName" class="app-header__logo-image" />
         <AppHeading level="h1" size="heading-lg" class="app-header__brand">
-          {{ tenantBranding?.appName || appName }}
+          {{ brandAppName }}
         </AppHeading>
-
       </NuxtLink>
 
       <!-- Tenant Indicator (multi-tenant mode only) -->
@@ -115,10 +114,10 @@
       <div class="app-header__right-actions">
         <!-- Guest Auth Buttons -->
         <div v-if="!userStore.isAuthenticated" class="u-flex u-items-center u-gap-2">
-          <NuxtLink to="/auth/login" class="app-header__link">
+          <NuxtLink :to="`/auth/login?redirect=${encodeURIComponent($route.fullPath)}`" class="app-header__link">
             <BaseButton variant="ghost" size="sm">{{ $t('auth.login.submit') }}</BaseButton>
           </NuxtLink>
-          <NuxtLink to="/auth/register" class="app-header__link">
+          <NuxtLink :to="`/auth/register?redirect=${encodeURIComponent($route.fullPath)}`" class="app-header__link">
             <BaseButton variant="primary" size="sm">{{ $t('auth.register.submit') }}</BaseButton>
           </NuxtLink>
         </div>
@@ -177,7 +176,7 @@ import { useResponsive } from '~/composables/useResponsive'
 import SkipLinks from '~/components/base/SkipLinks.vue'
 
 import { useI18n } from 'vue-i18n'
-import { useTenant } from '~/composables/useTenant'
+import { useTenant, useTenantBranding } from '~/composables/useTenant'
 import { useTelegram } from '~/composables/useTelegram'
 import { onClickOutside } from '@vueuse/core'
 import { useNotificationStore } from '~/stores/notification'
@@ -193,6 +192,7 @@ defineEmits<{
 
 // Composables
 const { currentTenant, isMultiTenant, tenantBranding, tPath, isTenantHome } = useTenant()
+const { logo: brandLogo, appName: brandAppName } = useTenantBranding()
 const telegram = useTelegram()
 const { goBack } = useNavigation()
 
