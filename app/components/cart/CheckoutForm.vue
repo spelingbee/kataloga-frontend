@@ -215,6 +215,20 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
+    const formattedNotes = (() => {
+      const time = deliveryInfo.value.deliveryTime
+      if (time === 'asap') {
+        return deliveryInfo.value.instructions || ''
+      }
+      const timeStr = time === 'custom' 
+        ? `${deliveryInfo.value.customDate} в ${deliveryInfo.value.customTime}` 
+        : (time === '30min' ? 'через 30 минут' : (time === '1hour' ? 'через 1 час' : (time === '2hours' ? 'через 2 часа' : time)))
+      const prepended = `[Время: ${timeStr}]`
+      return deliveryInfo.value.instructions 
+        ? `${prepended} ${deliveryInfo.value.instructions}` 
+        : prepended
+    })()
+
     const orderData: CreateOrderDto = {
       items: items.value.map(item => ({
         productId: item.productId,
@@ -225,10 +239,10 @@ const handleSubmit = async () => {
       customerInfo: {
         ...customerInfo.value,
         address: deliveryInfo.value.address,
-        notes: deliveryInfo.value.instructions
+        notes: formattedNotes
       },
       paymentMethod: paymentInfo.value.method as any,
-      notes: deliveryInfo.value.instructions,
+      notes: formattedNotes,
       deliveryAddress: deliveryInfo.value.type === 'delivery' ? deliveryInfo.value.address : `PICKUP: ${deliveryInfo.value.pickupLocation}`
     }
 
