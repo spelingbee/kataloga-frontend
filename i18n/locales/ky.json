@@ -1091,7 +1091,7 @@
     "pricing": {
       "free": {
         "analytics": "Аналитика",
-        "bot": "Жалпы бот {'@'}kataloga_test_bot",
+        "bot": "Сиздин жеке Telegram ботуңуз",
         "items": "15 өнүмгө чейин",
         "notifications": "Ээсине эскертмелер",
         "orders": "Айына 30 заказга чейин",

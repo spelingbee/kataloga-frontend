@@ -330,7 +330,7 @@ const addToCart = async () => {
 .product-card__footer {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: $space-3;
   margin-top: auto;
   width: 100%;
@@ -338,31 +338,29 @@ const addToCart = async () => {
 
 .product-card__price-wrapper {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
 }
 
 .product-card__price {
   flex-shrink: 0;
-  min-width: 80px;
   white-space: nowrap;
   font-weight: 600;
   font-size: 16px;
   color: var(--text-primary);
-  text-align: center;
+  text-align: left;
 }
 
 @media (max-width: 400px) {
   .product-card__price {
     font-size: 14px;
-    min-width: 70px;
   }
 }
 
 .product-card__actions {
   width: 100%;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .product-card__add-btn {
@@ -439,6 +437,7 @@ const addToCart = async () => {
 
     &--plus {
       color: var(--color-primary);
+      border-color: rgba(var(--color-primary-rgb), 0.3);
     }
   }
 

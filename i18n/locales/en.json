@@ -532,7 +532,7 @@
     "pricing": {
       "free": {
         "analytics": "Analytics",
-        "bot": "General bot {'@'}kataloga_test_bot",
+        "bot": "Your own Telegram bot",
         "items": "Up to 15 products",
         "notifications": "Notifications to owner",
         "orders": "Up to 30 orders/month",

@@ -532,7 +532,7 @@
     "pricing": {
       "free": {
         "analytics": "Аналитика",
-        "bot": "Общий бот {'@'}kataloga_test_bot",
+        "bot": "Свой Telegram-бот",
         "items": "До 15 товаров",
         "notifications": "Уведомления владельцу",
         "orders": "До 30 заказов / мес",
