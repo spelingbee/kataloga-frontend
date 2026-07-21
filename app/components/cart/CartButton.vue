@@ -18,6 +18,7 @@
       v-if="itemCount > 0"
       :count="itemCount"
       variant="primary"
+      data-testid="cart-badge"
       class="absolute -top-1 -right-1 min-w-[1.25rem] h-5 text-xs font-semibold bg-primary-red text-white rounded-full flex items-center justify-center"
     >
       {{ displayCount }}

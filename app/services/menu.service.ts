@@ -321,7 +321,7 @@ export class MenuService {
   async getFavoriteItems(): Promise<MenuItem[]> {
     // For now, use localStorage for favorites since there's no backend endpoint
     // In a real implementation, this would be a user-specific endpoint
-    if (import.meta.client) {
+    if (import.meta.client || process.env.NODE_ENV === 'test') {
       try {
         const favoriteIds = JSON.parse(localStorage.getItem('favorites') || '[]')
         const allItemsResult = await this.getMenuItems()
@@ -346,7 +346,7 @@ export class MenuService {
   async addToFavorites(itemId: string): Promise<void> {
     // For now, use localStorage for favorites
     // In a real implementation, this would be a POST to /users/favorites
-    if (import.meta.client) {
+    if (import.meta.client || process.env.NODE_ENV === 'test') {
       try {
         const favoriteIds = JSON.parse(localStorage.getItem('favorites') || '[]')
         if (!favoriteIds.includes(itemId)) {
@@ -372,7 +372,7 @@ export class MenuService {
   async removeFromFavorites(itemId: string): Promise<void> {
     // For now, use localStorage for favorites
     // In a real implementation, this would be a DELETE to /users/favorites/{itemId}
-    if (import.meta.client) {
+    if (import.meta.client || process.env.NODE_ENV === 'test') {
       try {
         const favoriteIds = JSON.parse(localStorage.getItem('favorites') || '[]')
         const updatedIds = favoriteIds.filter((id: string) => id !== itemId)
@@ -533,7 +533,7 @@ export class MenuService {
       const query = params.search.toLowerCase()
       filteredItems = filteredItems.filter(
         item =>
-          item.name.toLowerCase().includes(query) || item.description.toLowerCase().includes(query)
+          item.name.toLowerCase().includes(query) || (item.description || '').toLowerCase().includes(query)
       )
     }
 

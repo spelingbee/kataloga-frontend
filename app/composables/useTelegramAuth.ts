@@ -10,6 +10,9 @@ export const useTelegramAuth = () => {
   const telegram = useTelegram()
   const authStore = useUserStore()
 
+  // M18/M22: BE-эндпоинты link/unlink-telegram реализованы
+  const TELEGRAM_LINKING_ENABLED = true
+
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -68,6 +71,11 @@ export const useTelegramAuth = () => {
    * Link Telegram account to current user
    */
   const linkAccount = async (): Promise<boolean> => {
+    if (!TELEGRAM_LINKING_ENABLED) {
+      console.warn('[Telegram] Link/unlink is disabled.')
+      return false
+    }
+
     if (!isAvailable.value || !$telegramAuthService) {
       error.value = 'Telegram is not available'
       return false
@@ -113,6 +121,11 @@ export const useTelegramAuth = () => {
    * Unlink Telegram account from current user
    */
   const unlinkAccount = async (): Promise<boolean> => {
+    if (!TELEGRAM_LINKING_ENABLED) {
+      console.warn('[Telegram] Link/unlink is disabled.')
+      return false
+    }
+
     if (!authStore.user?.id || !$telegramAuthService) {
       error.value = 'User must be logged in'
       return false

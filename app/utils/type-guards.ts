@@ -310,3 +310,11 @@ export function validateApiResponseStructure(obj: any): {
     warnings
   };
 }
+
+/**
+ * Check if a response is in the legacy format (has items or pagination fields directly on root)
+ */
+export function isLegacyResponse(obj: any): boolean {
+  return !!(obj && typeof obj === 'object' && !obj.hasOwnProperty('success') && (obj.hasOwnProperty('items') || obj.hasOwnProperty('total') || obj.hasOwnProperty('page')));
+}
+

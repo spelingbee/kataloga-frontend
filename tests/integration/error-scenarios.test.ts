@@ -32,8 +32,8 @@ describe('Error Scenarios Integration Tests', () => {
 
   describe('🚨 Network and Connection Errors', () => {
     it('should handle complete network failure', async () => {
-      // Mock complete network failure
-      (global.fetch as any).mockRejectedValueOnce(
+      // Mock complete network failure for all retries
+      (global.fetch as any).mockRejectedValue(
         new TypeError('Failed to fetch')
       );
 
@@ -51,8 +51,8 @@ describe('Error Scenarios Integration Tests', () => {
     });
 
     it('should handle DNS resolution failures', async () => {
-      // Mock DNS failure
-      (global.fetch as any).mockRejectedValueOnce(
+      // Mock DNS failure for all retries
+      (global.fetch as any).mockRejectedValue(
         new TypeError('getaddrinfo ENOTFOUND api.example.com')
       );
 
@@ -69,8 +69,8 @@ describe('Error Scenarios Integration Tests', () => {
     });
 
     it('should handle connection timeout', async () => {
-      // Mock timeout
-      (global.fetch as any).mockImplementationOnce(() => 
+      // Mock timeout for all retries
+      (global.fetch as any).mockImplementation(() => 
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Request timeout')), 100)
         )
@@ -88,8 +88,8 @@ describe('Error Scenarios Integration Tests', () => {
     });
 
     it('should handle CORS errors', async () => {
-      // Mock CORS error
-      (global.fetch as any).mockRejectedValueOnce(
+      // Mock CORS error for all retries
+      (global.fetch as any).mockRejectedValue(
         new TypeError('Failed to fetch: CORS policy')
       );
 
@@ -415,7 +415,7 @@ describe('Error Scenarios Integration Tests', () => {
         requestId: 'server-error-123'
       });
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 500,
         json: async () => serverError,
@@ -440,7 +440,7 @@ describe('Error Scenarios Integration Tests', () => {
         requestId: 'service-unavailable-456'
       });
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 503,
         json: async () => serviceUnavailableError,
@@ -469,7 +469,7 @@ describe('Error Scenarios Integration Tests', () => {
         requestId: 'db-error-789'
       });
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 500,
         json: async () => dbError,
@@ -502,7 +502,7 @@ describe('Error Scenarios Integration Tests', () => {
         requestId: 'rate-limit-123'
       });
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 429,
         json: async () => rateLimitError,

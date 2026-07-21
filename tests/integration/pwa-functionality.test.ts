@@ -297,9 +297,7 @@ describe('PWA Functionality Tests', () => {
         clear: vi.fn()
       }
 
-      Object.defineProperty(window, 'localStorage', {
-        value: localStorageMock
-      })
+      vi.stubGlobal('localStorage', localStorageMock)
 
       localStorage.setItem('test-key', JSON.stringify({ test: 'data' }))
       const data = JSON.parse(localStorage.getItem('test-key') || '{}')

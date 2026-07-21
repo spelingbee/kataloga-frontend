@@ -14,6 +14,7 @@ interface UserState {
   
   // Auth state
   accessToken: string | null
+  // refreshToken intentionally NOT persisted on frontend (httpOnly cookie)
   refreshToken: string | null
   isAuthenticated: boolean
   
@@ -68,12 +69,14 @@ export const useUserStore = defineStore('user', {
 
     setTokens(accessToken: string, refreshToken: string) {
       this.accessToken = accessToken
+      // refreshToken lives in httpOnly cookie; do not store in localStorage.
+      // Keep it in memory only for backward-compat with existing calls (will be null after init).
       this.refreshToken = refreshToken
       this.isAuthenticated = true
       
       if (import.meta.client) {
         localStorage.setItem('accessToken', accessToken)
-        localStorage.setItem('refreshToken', refreshToken)
+        localStorage.removeItem('refreshToken')
       }
     },
 
@@ -97,12 +100,12 @@ export const useUserStore = defineStore('user', {
       
       try {
         const accessToken = localStorage.getItem('accessToken')
-        const refreshToken = localStorage.getItem('refreshToken')
+        // refreshToken is in httpOnly cookie; never read from localStorage.
         const userStr = localStorage.getItem('user')
 
-        if ((accessToken && refreshToken) || import.meta.client) {
+        if (accessToken || import.meta.client) {
           if (accessToken) this.accessToken = accessToken
-          if (refreshToken) this.refreshToken = refreshToken
+          this.refreshToken = null
           this.isAuthenticated = !!accessToken
 
           if (userStr) {
@@ -124,6 +127,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async login(credentials: { email: string; password: string; tenantSlug?: string }) {
+      console.log('USER STORE THIS KEYS:', Object.keys(this))
       this.loading = true
       this.error = null
       try {
@@ -220,9 +224,8 @@ export const useUserStore = defineStore('user', {
     async logout() {
       this.loading = true
       try {
-        if (this.refreshToken) {
-          await (this as any).$apiClient.post('/auth/logout', { refreshToken: this.refreshToken })
-        }
+        // logout uses httpOnly cookie refresh token (credentials: include)
+        await (this as any).$apiClient.post('/auth/logout', {})
       } catch (error) {
         console.error('Logout request failed:', error)
       } finally {
@@ -356,7 +359,7 @@ export const useUserStore = defineStore('user', {
             lastName: tUser.last_name || '',
             name: `${tUser.first_name} ${tUser.last_name || ''}`.trim(),
             email: '',
-            role: 'CUSTOMER' as any,
+            role: 'CLIENT' as any,
             tenantId: '',
             isActive: true,
             emailVerified: false,

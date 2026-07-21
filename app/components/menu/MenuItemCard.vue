@@ -3,6 +3,7 @@
     class="product-card"
     :class="{ 'product-card--unavailable': !menuItem.isActive }"
     @click="handleClick"
+    data-testid="menu-item"
   >
     <!-- Image Container with Fallback -->
     <div class="product-card__image-container">
@@ -34,7 +35,7 @@
     <!-- Content -->
     <div class="product-card__content">
       <div class="product-card__info">
-        <h3 class="product-card__name">{{ menuItem.name }}</h3>
+        <h3 class="product-card__name" data-testid="menu-item-title">{{ menuItem.name }}</h3>
         <p class="product-card__description">{{ menuItem.description }}</p>
       </div>
 
@@ -62,6 +63,7 @@
               'product-card__add-btn--disabled': !menuItem.isActive,
             }"
             :disabled="!menuItem.isActive"
+            data-testid="add-to-cart-btn"
             @click.stop="addToCart"
           >
             <BaseIcon :name="isAdded ? 'check' : 'plus'" size="sm" class="product-card__add-icon" />

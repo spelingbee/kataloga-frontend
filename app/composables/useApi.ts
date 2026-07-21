@@ -1,4 +1,5 @@
 import type { ApiResponse } from '~/types'
+import { useApiClient } from '~/utils/api'
 
 export interface UseApiOptions {
   immediate?: boolean
@@ -8,9 +9,12 @@ export interface UseApiOptions {
 }
 
 export function useApi<T>(
-  apiCall: () => Promise<ApiResponse<T>>,
+  apiCall?: () => Promise<ApiResponse<T>>,
   options: UseApiOptions = {}
 ) {
+  if (!apiCall) {
+    return useApiClient() as any
+  }
   const { 
     immediate = false,
     showError = true,

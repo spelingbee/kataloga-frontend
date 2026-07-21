@@ -144,13 +144,23 @@ export const useCartStore = defineStore('cart', {
       this.error = null
       
       try {
-        const result = await (this as any).$apiClient.post<{ discount: number; message: string }>('/promo/validate', {
-          code: code.trim(),
-          subtotal: this.subtotal
-        })
+        const tenantStore = useTenantStore()
+        const tenantSlug = tenantStore.tenantSlug
+
+        const result = await (this as any).$apiClient.post<{ valid: boolean; discountAmount?: number; message?: string }>(
+          `/public/${tenantSlug}/promo/validate`,
+          {
+            code: code.trim(),
+            subtotal: this.subtotal
+          }
+        )
+
+        if (!result.valid) {
+          return { success: false, message: result.message || 'Promo code is not valid' }
+        }
 
         this.promoCode = code.trim()
-        this.discount = result.discount
+        this.discount = result.discountAmount || 0
         return { success: true, message: result.message || 'Promo code applied successfully' }
         
       } catch (error: any) {

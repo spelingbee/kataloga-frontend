@@ -9,7 +9,7 @@ export interface TenantInfo {
   locations: TenantLocation[]
   isActive: boolean
   bankTransferQrCode?: string
-  businessType: 'RESTAURANT' | 'CAFE' | 'FLOWERS' | 'SHOP' | 'OTHER'
+  businessType: 'RESTAURANT' | 'CAFE' | 'FLOWERS' | 'SHOP' | 'OTHER' | 'BAKERY' | 'CLOTHING'
   showBranding?: boolean
   brandingUrl?: string
   freedomPayEnabled?: boolean

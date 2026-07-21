@@ -94,3 +94,28 @@ export function extractTenantFromResponse(response: any): string | undefined {
   }
   return undefined;
 }
+
+/**
+ * Normalizes a response to the standard ApiResponse format
+ */
+export function normalizeResponse<T>(response: any, statusCode: number = 200, requestUrl: string = ''): ApiResponse<T> {
+  // If already standard, return it
+  if (response && typeof response === 'object' && response.hasOwnProperty('success')) {
+    return response as ApiResponse<T>;
+  }
+  
+  // Wrap legacy/raw data into standard success format
+  const meta: ApiMeta = {
+    requestId: generateRequestId(),
+    timestamp: new Date().toISOString()
+  };
+  
+  return {
+    success: true,
+    statusCode,
+    data: response as T,
+    error: null,
+    meta
+  };
+}
+

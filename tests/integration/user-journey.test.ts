@@ -23,22 +23,22 @@ import { createApiClient } from '~/utils/api';
  * 
  * Requirements: 6.5 - Integration testing for new API format
  */
-describe('Frontend API Standardization Integration Tests', async () => {
-  await setup({
-    // Test configuration for API standardization
-    server: true,
-    browser: false, // Focus on API integration, not browser UI
-    nuxtConfig: {
-      runtimeConfig: {
-        public: {
-          apiBaseUrl: 'http://localhost:3001',
-          multiTenantMode: true,
-          tenantQueryParam: 'tenant'
-        }
+setup({
+  // Test configuration for API standardization
+  server: true,
+  browser: false, // Focus on API integration, not browser UI
+  nuxtConfig: {
+    runtimeConfig: {
+      public: {
+        apiBaseUrl: 'http://localhost:3001',
+        multiTenantMode: true,
+        tenantQueryParam: 'tenant'
       }
     }
-  });
+  }
+});
 
+describe('Frontend API Standardization Integration Tests', () => {
   let mockApiClient: any;
   let originalFetch: typeof global.fetch;
 
@@ -89,8 +89,10 @@ describe('Frontend API Standardization Integration Tests', async () => {
         });
 
         // Test API call through our service layer
-        const { useMenuService } = await import('~/services/menu.service');
-        const menuService = useMenuService();
+        const { useApiClient } = await import('~/utils/api');
+        const apiClient = useApiClient();
+        const { MenuService } = await import('~/services/menu.service');
+        const menuService = new MenuService(apiClient);
         
         const categories = await menuService.getCategories();
         
@@ -148,8 +150,10 @@ describe('Frontend API Standardization Integration Tests', async () => {
           headers: new Headers({ 'content-type': 'application/json' })
         });
 
-        const { useMenuService } = await import('~/services/menu.service');
-        const menuService = useMenuService();
+        const { useApiClient } = await import('~/utils/api');
+        const apiClient = useApiClient();
+        const { MenuService } = await import('~/services/menu.service');
+        const menuService = new MenuService(apiClient);
         
         const result = await menuService.getMenuItems({ page: 1, limit: 20 });
         
@@ -498,8 +502,10 @@ describe('Frontend API Standardization Integration Tests', async () => {
           headers: new Headers({ 'content-type': 'application/json' })
         });
 
-        const { useMenuService } = await import('~/services/menu.service');
-        const menuService = useMenuService();
+        const { useApiClient } = await import('~/utils/api');
+        const apiClient = useApiClient();
+        const { MenuService } = await import('~/services/menu.service');
+        const menuService = new MenuService(apiClient);
         
         const categories = await menuService.getCategories();
         
@@ -531,8 +537,10 @@ describe('Frontend API Standardization Integration Tests', async () => {
           headers: new Headers({ 'content-type': 'application/json' })
         });
 
-        const { useMenuService } = await import('~/services/menu.service');
-        const menuService = useMenuService();
+        const { useApiClient } = await import('~/utils/api');
+        const apiClient = useApiClient();
+        const { MenuService } = await import('~/services/menu.service');
+        const menuService = new MenuService(apiClient);
         
         try {
           await menuService.getCategories();
@@ -582,8 +590,10 @@ describe('Frontend API Standardization Integration Tests', async () => {
           headers: new Headers({ 'content-type': 'application/json' })
         });
 
-        const { useMenuService } = await import('~/services/menu.service');
-        const menuService = useMenuService();
+        const { useApiClient } = await import('~/utils/api');
+        const apiClient = useApiClient();
+        const { MenuService } = await import('~/services/menu.service');
+        const menuService = new MenuService(apiClient);
         
         const result = await menuService.getMenuItems({ page: 1, limit: 20 });
         

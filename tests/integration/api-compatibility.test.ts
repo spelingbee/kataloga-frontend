@@ -110,8 +110,10 @@ describe('API Compatibility Integration Tests', () => {
         headers: new Headers({ 'content-type': 'application/json' })
       });
 
-      const { useMenuService } = await import('~/services/menu.service');
-      const menuService = useMenuService();
+      const { useApiClient } = await import('~/utils/api');
+      const apiClient = useApiClient();
+      const { MenuService } = await import('~/services/menu.service');
+      const menuService = new MenuService(apiClient);
       
       const categories = await menuService.getCategories();
       
@@ -167,8 +169,10 @@ describe('API Compatibility Integration Tests', () => {
         headers: new Headers({ 'content-type': 'application/json' })
       });
 
-      const { useMenuService } = await import('~/services/menu.service');
-      const menuService = useMenuService();
+      const { useApiClient } = await import('~/utils/api');
+      const apiClient = useApiClient();
+      const { MenuService } = await import('~/services/menu.service');
+      const menuService = new MenuService(apiClient);
       
       const result = await menuService.getMenuItems({ page: 1, limit: 20 });
       
@@ -345,7 +349,7 @@ describe('API Compatibility Integration Tests', () => {
         requestId: 'server-error-123'
       });
 
-      (global.fetch as any).mockResolvedValueOnce({
+      (global.fetch as any).mockResolvedValue({
         ok: false,
         status: 500,
         json: async () => serverError,

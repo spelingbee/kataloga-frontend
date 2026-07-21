@@ -13,18 +13,6 @@ vi.mock('#app', () => ({
   })
 }))
 
-vi.mock('vue', () => ({
-  ref: (val: any) => ({ value: val }),
-  computed: (fn: any) => ({
-    get value() {
-      return fn()
-    },
-  }),
-  watch: () => {},
-  onMounted: () => {},
-}))
-
-
 // Mock useTelegramHaptic to avoid Telegram API errors
 vi.mock('~/composables/useTelegramHaptic', () => ({
   useTelegramHaptic: () => ({
@@ -36,6 +24,13 @@ vi.mock('~/composables/useTelegramHaptic', () => ({
       checkoutSuccess: vi.fn(),
       checkoutError: vi.fn()
     }
+  })
+}))
+
+// Cart store persist key depends on tenantSlug
+vi.mock('~/stores/tenant', () => ({
+  useTenantStore: () => ({
+    tenantSlug: 'test-tenant'
   })
 }))
 
@@ -83,6 +78,7 @@ describe('Cart Store - Property-Based Tests', () => {
           // Generate arbitrary menu items
           fc.record({
             id: fc.uuid(),
+            productId: fc.uuid(),
             name: fc.string({ minLength: 1, maxLength: 100 }),
             description: fc.string({ minLength: 0, maxLength: 500 }),
             price: fc.double({ min: 0.01, max: 10000, noNaN: true }),

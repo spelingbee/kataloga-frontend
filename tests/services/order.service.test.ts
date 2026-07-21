@@ -1,35 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { OrderService } from '~/services/order.service'
-
-// Mock useNuxtApp
-vi.mock('#app', () => ({
-  useNuxtApp: () => ({
-    $apiClient: {
-      get: vi.fn(),
-      post: vi.fn(),
-      patch: vi.fn(),
-    },
-  }),
-}))
+import type { Order, OrderStatus } from '~/types'
 
 describe('OrderService', () => {
   let orderService: OrderService
   let mockApiClient: any
 
   beforeEach(() => {
-    orderService = new OrderService()
     mockApiClient = {
       get: vi.fn(),
+      getRaw: vi.fn(),
       post: vi.fn(),
       patch: vi.fn(),
     }
-    
-    // Mock the getApiClient method
-    vi.spyOn(orderService as any, 'getApiClient').mockReturnValue(mockApiClient)
+    orderService = new OrderService(mockApiClient)
   })
 
   afterEach(() => {
-    vi.clearAllMocks()
     vi.restoreAllMocks()
   })
 
@@ -58,59 +45,65 @@ describe('OrderService', () => {
         ...orderData,
       }
 
-      mockApiClient.post.mockResolvedValue({
-        success: true,
-        data: mockOrder,
-      })
+      mockApiClient.post.mockResolvedValue(mockOrder)
 
-      const result = await orderService.createOrder(orderData)
+      const result = await orderService.createOrder(orderData as any)
 
       expect(mockApiClient.post).toHaveBeenCalledWith('/orders', orderData)
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockOrder)
+      expect(result).toEqual(mockOrder)
     })
   })
 
   describe('getOrders', () => {
     it('should fetch orders without filters', async () => {
-      const mockOrders = {
-        orders: [
-          { id: 'order-1', status: 'PENDING', total: 25.98 },
-          { id: 'order-2', status: 'DELIVERED', total: 18.50 },
-        ],
-        total: 2,
-        page: 1,
-        limit: 10,
-      }
+      const mockOrders = [
+        { id: 'order-1', status: 'PENDING', total: 25.98 },
+      ]
 
-      mockApiClient.get.mockResolvedValue({
+      mockApiClient.getRaw.mockResolvedValue({
         success: true,
         data: mockOrders,
+        meta: {
+          pagination: {
+            page: 1,
+            limit: 20,
+            totalItems: 1,
+            totalPages: 1,
+          }
+        }
       })
 
       const result = await orderService.getOrders()
 
-      expect(mockApiClient.get).toHaveBeenCalledWith('/orders')
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockOrders)
+      expect(mockApiClient.getRaw).toHaveBeenCalledWith('/my-orders')
+      expect(result.items).toEqual(mockOrders)
+      expect(result.pagination).toBeDefined()
     })
 
     it('should fetch orders with filters', async () => {
       const params = {
-        status: 'PENDING' as const,
+        status: 'PENDING' as OrderStatus,
         page: 2,
         limit: 5,
       }
 
-      mockApiClient.get.mockResolvedValue({
+      mockApiClient.getRaw.mockResolvedValue({
         success: true,
-        data: { orders: [], total: 0, page: 2, limit: 5 },
+        data: [],
+        meta: {
+          pagination: {
+            page: 2,
+            limit: 5,
+            totalItems: 0,
+            totalPages: 0,
+          }
+        }
       })
 
       await orderService.getOrders(params)
 
-      expect(mockApiClient.get).toHaveBeenCalledWith(
-        '/orders?status=PENDING&page=2&limit=5'
+      expect(mockApiClient.getRaw).toHaveBeenCalledWith(
+        '/my-orders?status=PENDING&page=2&limit=5'
       )
     })
   })
@@ -124,16 +117,12 @@ describe('OrderService', () => {
         items: [],
       }
 
-      mockApiClient.get.mockResolvedValue({
-        success: true,
-        data: mockOrder,
-      })
+      mockApiClient.get.mockResolvedValue(mockOrder)
 
       const result = await orderService.getOrder('order-1')
 
-      expect(mockApiClient.get).toHaveBeenCalledWith('/orders/order-1')
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockOrder)
+      expect(mockApiClient.get).toHaveBeenCalledWith('/my-orders/order-1')
+      expect(result).toEqual(mockOrder)
     })
   })
 
@@ -145,19 +134,15 @@ describe('OrderService', () => {
         total: 25.98,
       }
 
-      mockApiClient.patch.mockResolvedValue({
-        success: true,
-        data: mockOrder,
-      })
+      mockApiClient.patch.mockResolvedValue(mockOrder)
 
-      const result = await orderService.updateOrderStatus('order-1', 'CONFIRMED')
+      const result = await orderService.updateOrderStatus('order-1', 'CONFIRMED' as OrderStatus)
 
       expect(mockApiClient.patch).toHaveBeenCalledWith(
-        '/orders/order-1/status',
+        '/my-orders/order-1/status',
         { status: 'CONFIRMED' }
       )
-      expect(result.success).toBe(true)
-      expect(result.data?.status).toBe('CONFIRMED')
+      expect(result.status).toBe('CONFIRMED')
     })
   })
 
@@ -169,31 +154,24 @@ describe('OrderService', () => {
         total: 25.98,
       }
 
-      mockApiClient.patch.mockResolvedValue({
-        success: true,
-        data: mockOrder,
-      })
+      mockApiClient.patch.mockResolvedValue(mockOrder)
 
       const result = await orderService.cancelOrder('order-1', 'Customer request')
 
       expect(mockApiClient.patch).toHaveBeenCalledWith(
-        '/orders/order-1/cancel',
+        '/my-orders/order-1/cancel',
         { reason: 'Customer request' }
       )
-      expect(result.success).toBe(true)
-      expect(result.data?.status).toBe('CANCELLED')
+      expect(result.status).toBe('CANCELLED')
     })
 
     it('should cancel an order without reason', async () => {
-      mockApiClient.patch.mockResolvedValue({
-        success: true,
-        data: { id: 'order-1', status: 'CANCELLED' },
-      })
+      mockApiClient.patch.mockResolvedValue({ id: 'order-1', status: 'CANCELLED' })
 
       await orderService.cancelOrder('order-1')
 
       expect(mockApiClient.patch).toHaveBeenCalledWith(
-        '/orders/order-1/cancel',
+        '/my-orders/order-1/cancel',
         { reason: undefined }
       )
     })
@@ -202,29 +180,24 @@ describe('OrderService', () => {
   describe('trackOrder', () => {
     it('should get order tracking information', async () => {
       const mockTracking = {
-        order: { id: 'order-1', status: 'PREPARING' },
+        order: { id: 'order-1', status: 'PREPARING' as OrderStatus },
         tracking: {
-          status: 'PREPARING',
+          status: 'PREPARING' as OrderStatus,
           estimatedTime: 25,
           currentStep: 'Preparing your order',
           steps: [
-            { name: 'Order confirmed', status: 'completed', timestamp: '2023-01-01T10:00:00Z' },
-            { name: 'Preparing', status: 'current' },
-            { name: 'Ready for pickup', status: 'pending' },
+            { name: 'Order confirmed', status: 'completed' as const },
+            { name: 'Preparing', status: 'current' as const },
           ],
         },
       }
 
-      mockApiClient.get.mockResolvedValue({
-        success: true,
-        data: mockTracking,
-      })
+      mockApiClient.get.mockResolvedValue(mockTracking)
 
       const result = await orderService.trackOrder('order-1')
 
       expect(mockApiClient.get).toHaveBeenCalledWith('/orders/order-1/track')
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockTracking)
+      expect(result).toEqual(mockTracking)
     })
   })
 
@@ -236,16 +209,12 @@ describe('OrderService', () => {
         total: 25.98,
       }
 
-      mockApiClient.post.mockResolvedValue({
-        success: true,
-        data: mockNewOrder,
-      })
+      mockApiClient.post.mockResolvedValue(mockNewOrder)
 
       const result = await orderService.repeatOrder('order-1')
 
-      expect(mockApiClient.post).toHaveBeenCalledWith('/orders/order-1/repeat')
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockNewOrder)
+      expect(mockApiClient.post).toHaveBeenCalledWith('/my-orders/order-1/repeat')
+      expect(result).toEqual(mockNewOrder)
     })
   })
 
@@ -258,18 +227,14 @@ describe('OrderService', () => {
         comment: 'Great service!',
       }
 
-      mockApiClient.post.mockResolvedValue({
-        success: true,
-        message: 'Rating submitted successfully',
-      })
+      mockApiClient.post.mockResolvedValue(undefined)
 
-      const result = await orderService.rateOrder('order-1', rating)
+      await orderService.rateOrder('order-1', rating)
 
       expect(mockApiClient.post).toHaveBeenCalledWith(
-        '/orders/order-1/rating',
+        '/my-orders/order-1/rating',
         rating
       )
-      expect(result.success).toBe(true)
     })
   })
 
@@ -290,16 +255,12 @@ describe('OrderService', () => {
         availableTimeSlots: ['12:00', '12:30', '13:00'],
       }
 
-      mockApiClient.post.mockResolvedValue({
-        success: true,
-        data: mockEstimate,
-      })
+      mockApiClient.post.mockResolvedValue(mockEstimate)
 
       const result = await orderService.estimateDeliveryTime(estimateData)
 
       expect(mockApiClient.post).toHaveBeenCalledWith('/orders/estimate', estimateData)
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockEstimate)
+      expect(result).toEqual(mockEstimate)
     })
   })
 
@@ -310,16 +271,15 @@ describe('OrderService', () => {
         { id: 'order-2', status: 'READY', total: 18.50 },
       ]
 
-      mockApiClient.get.mockResolvedValue({
+      mockApiClient.getRaw.mockResolvedValue({
         success: true,
         data: mockActiveOrders,
       })
 
       const result = await orderService.getActiveOrders()
 
-      expect(mockApiClient.get).toHaveBeenCalledWith('/orders/active')
-      expect(result.success).toBe(true)
-      expect(result.data).toEqual(mockActiveOrders)
+      expect(mockApiClient.getRaw).toHaveBeenCalledWith('/my-orders?limit=100&status=PENDING')
+      expect(result).toEqual(mockActiveOrders)
     })
   })
 })

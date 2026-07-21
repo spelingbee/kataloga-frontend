@@ -1,7 +1,9 @@
 import { vi } from 'vitest'
 import { config } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { createApiClient } from '~/utils/api'
+import { createApiClient, useApiClient } from '~/utils/api'
+import { MenuService } from '~/services/menu.service'
+import { OrderService } from '~/services/order.service'
 
 // Ensure localStorage is available before any module (e.g. @vue/devtools-kit)
 // tries to call it during import-time initialization.
@@ -23,19 +25,13 @@ if (typeof globalThis.localStorage === 'undefined' || typeof globalThis.localSto
 
 // Mock Vue composables properly
 vi.mock('vue', async () => {
-  const actual = await vi.importActual('vue')
+  const actual = await vi.importActual<any>('vue')
   return {
     ...actual,
-    ref: (value: any) => {
-      const refObj = { value }
-      return refObj
-    },
-    computed: (fn: () => any) => {
-      const computedObj = { value: fn() }
-      return computedObj
-    },
-    reactive: (obj: any) => obj,
-    readonly: (obj: any) => obj,
+    ref: actual.ref,
+    computed: actual.computed,
+    reactive: actual.reactive,
+    readonly: actual.readonly,
     watch: vi.fn(),
     watchEffect: vi.fn(),
     onMounted: vi.fn(),
@@ -50,15 +46,10 @@ vi.mock('pinia', async () => {
   const actual = await vi.importActual('pinia')
   return {
     ...actual,
-    storeToRefs: (store: any) => {
-      const refs: any = {}
-      for (const key in store) {
-        if (typeof store[key] !== 'function') {
-          refs[key] = { value: store[key] }
-        }
-      }
-      return refs
-    },
+    createPinia: () => {
+      console.log('--- Mocked createPinia called! ---')
+      return actual.createPinia()
+    }
   }
 })
 
@@ -199,6 +190,13 @@ beforeEach(() => {
   // Create fresh Pinia instance for each test
   const pinia = createPinia()
   setActivePinia(pinia)
+  
+  const apiClient = useApiClient()
+  ;(globalThis as any).__apiClient = apiClient
+  ;(globalThis as any).__services = {
+    menu: new MenuService(apiClient),
+    order: new OrderService(apiClient)
+  }
   
   // Clear storage between tests
   globalStorage.clear()
@@ -355,3 +353,18 @@ vi.stubGlobal('useI18n', () => ({
   d: vi.fn((date) => date.toLocaleDateString()),
   n: vi.fn((number) => number.toString()),
 }))
+
+// Global fallback getters on Object.prototype to provide Nuxt injects ($apiClient, $services) to stores in test environments
+Object.defineProperty(Object.prototype, '$apiClient', {
+  get() {
+    return (globalThis as any).__apiClient
+  },
+  configurable: true
+})
+
+Object.defineProperty(Object.prototype, '$services', {
+  get() {
+    return (globalThis as any).__services
+  },
+  configurable: true
+})

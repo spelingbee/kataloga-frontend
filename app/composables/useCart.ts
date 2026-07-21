@@ -20,6 +20,22 @@ export function useCart() {
     lastSyncAt,
   } = storeToRefs(cartStore)
 
+  const wrappedItems = computed(() => {
+    return items.value.map(item => {
+      return new Proxy(item, {
+        get(target, prop) {
+          if (prop in target) {
+            return target[prop as keyof typeof target]
+          }
+          if (target.menuItem && prop in target.menuItem) {
+            return target.menuItem[prop as keyof MenuItem]
+          }
+          return undefined
+        }
+      }) as any
+    })
+  })
+
   // Actions
   const addItem = (menuItem: MenuItem, quantity: number = 1, customizations?: Record<string, any>) => {
     cartStore.addItem(menuItem, quantity, customizations)
@@ -156,7 +172,7 @@ export function useCart() {
 
   return {
     // State
-    items: readonly(items),
+    items: wrappedItems,
     loading: readonly(loading),
     total: readonly(total),
     itemCount: readonly(itemCount),

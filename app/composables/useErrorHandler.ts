@@ -28,6 +28,9 @@ export function useErrorHandler() {
   const nuxtApp = useNuxtApp()
   const $reportError = (nuxtApp.$reportError as Function) || (() => {})
 
+  const hasError = ref(false)
+  const errorMessage = ref('')
+
   const handleError = (
     error: Error | ApiError | string,
     options: ErrorHandlerOptions = {}
@@ -41,6 +44,9 @@ export function useErrorHandler() {
 
     // Normalize error
     const normalizedError = normalizeError(error, fallbackMessage)
+
+    hasError.value = true
+    errorMessage.value = normalizedError.message || fallbackMessage
 
     // Log error
     if (logError) {
@@ -267,5 +273,7 @@ export function useErrorHandler() {
     fallbackToLocalStorage,
     isApiError,
     DEFAULT_RETRY_CONFIG,
+    hasError,
+    errorMessage,
   }
 }

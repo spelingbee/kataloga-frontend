@@ -63,11 +63,18 @@ export function useLazyLoading(options: LazyLoadOptions = {}) {
     disconnect()
   })
 
+  const isElementVisible = (el: Element): boolean => {
+    if (typeof window === 'undefined' || !el || typeof el.getBoundingClientRect !== 'function') return false
+    const rect = el.getBoundingClientRect()
+    return rect.top >= 0 && rect.left >= 0
+  }
+
   return {
     isVisible: readonly(isVisible),
     target,
     observe,
     disconnect,
+    isElementVisible,
   }
 }
 

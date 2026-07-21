@@ -29,11 +29,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   // Define protected routes with role requirements
   const protectedRoutes = [
-    { path: '/profile', roles: ['CUSTOMER', 'ADMIN', 'MANAGER', 'STAFF'] },
-    { path: '/orders', roles: ['CUSTOMER', 'ADMIN', 'MANAGER', 'STAFF'] },
-    { path: '/favourites', roles: ['CUSTOMER', 'ADMIN', 'MANAGER', 'STAFF'] },
-    { path: '/admin', roles: ['ADMIN', 'MANAGER'] },
-    { path: '/management', roles: ['ADMIN', 'MANAGER', 'STAFF'] }
+    { path: '/profile', roles: ['CLIENT', 'MEMBER', 'TENANT_STAFF', 'ADMIN', 'TENANT_ADMIN', 'OWNER', 'SUPER_ADMIN'] },
+    { path: '/orders', roles: ['CLIENT', 'MEMBER', 'TENANT_STAFF', 'ADMIN', 'TENANT_ADMIN', 'OWNER', 'SUPER_ADMIN'] },
+    { path: '/favourites', roles: ['CLIENT', 'MEMBER', 'TENANT_STAFF', 'ADMIN', 'TENANT_ADMIN', 'OWNER', 'SUPER_ADMIN'] },
+    { path: '/admin', roles: ['ADMIN', 'TENANT_ADMIN', 'OWNER', 'SUPER_ADMIN'] },
+    { path: '/management', roles: ['MEMBER', 'TENANT_STAFF', 'ADMIN', 'TENANT_ADMIN', 'OWNER', 'SUPER_ADMIN'] }
   ]
 
   // Check if current route requires authentication

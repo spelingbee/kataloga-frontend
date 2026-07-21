@@ -81,6 +81,8 @@ export function useMenu() {
     // State
     categories: readonly(categories),
     menuItems: readonly(menuItems),
+    items: readonly(menuItems),
+    searchResults: readonly(filteredMenuItems),
     favourites: readonly(favourites),
     currentCategory: readonly(currentCategory),
     searchQuery: readonly(searchQuery),
@@ -101,6 +103,15 @@ export function useMenu() {
     // Actions
     fetchMenu,
     fetchCategory,
+    loadMenuItems: async (options?: { category?: string }) => {
+      if (options?.category) {
+        const cat = categories.value.find(c => c.name === options.category)
+        if (cat) {
+          setCurrentCategory(cat.id)
+        }
+      }
+      await fetchMenu()
+    },
     searchItems,
     toggleFavourite,
     applyFilters,

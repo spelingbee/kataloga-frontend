@@ -19,13 +19,8 @@ describe('TenantResolverService', () => {
     mockConfig = createMockRuntimeConfig()
     mockStorage = mockLocalStorage()
     
-    // Mock localStorage
-    if (typeof window !== 'undefined') {
-      Object.defineProperty(window, 'localStorage', {
-        value: mockStorage,
-        writable: true,
-      })
-    }
+    // Mock localStorage globally
+    vi.stubGlobal('localStorage', mockStorage)
 
     service = new TenantResolverService(mockApiClient, mockConfig)
   })
@@ -295,6 +290,9 @@ describe('TenantResolverService', () => {
       })
 
       await service.validateTenant('restaurant-abc')
+      
+      mockApiClient.get.mockResolvedValue(tenant)
+      await service.getTenantInfo('restaurant-abc')
       
       const stats = service.getCacheStats()
 

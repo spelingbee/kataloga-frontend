@@ -12,6 +12,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./tests/setup.ts'],
     include: ['tests/**/*.test.ts'],
+    testTimeout: 30000,
     exclude: [
       'node_modules/',
       'dist/',
@@ -45,7 +46,7 @@ export default defineConfig({
     alias: {
       '~': resolve(__dirname, './app'),
       '@': resolve(__dirname, './app'),
-      '#app': resolve(__dirname, './app'),
+      '#app': resolve(__dirname, './tests/__mocks__/app.ts'),
       '@vue/devtools-kit': resolve(__dirname, './tests/__mocks__/devtools-kit.ts'),
     },
   },

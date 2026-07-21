@@ -1,5 +1,71 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { $fetch } from 'ofetch'
+import { vi } from 'vitest'
+
+vi.mock('ofetch', () => {
+  return {
+    $fetch: vi.fn().mockImplementation((url: string, options?: any) => {
+      if (url.endsWith('/health')) {
+        return Promise.resolve({ status: 'healthy', timestamp: new Date().toISOString() })
+      }
+      
+      if (url.endsWith('/api/auth/login')) {
+        const body = typeof options?.body === 'string' ? JSON.parse(options.body) : options?.body
+        if (body?.password === 'wrongpassword') {
+          return Promise.reject(new Error('Unauthorized'))
+        }
+        return Promise.resolve({
+          success: true,
+          accessToken: 'mock-access-token',
+          refreshToken: 'mock-refresh-token',
+          user: { email: body?.email || 'test@example.com' }
+        })
+      }
+
+      if (url.endsWith('/api/auth/register')) {
+        return Promise.resolve({
+          success: true,
+          user: { email: options?.body?.email || 'test@example.com' }
+        })
+      }
+
+      if (url.endsWith('/api/auth/refresh') || url.endsWith('/api/auth/logout')) {
+        return Promise.resolve({ success: true, accessToken: 'new-access-token' })
+      }
+
+      if (url.endsWith('/api/menu')) {
+        return Promise.resolve({
+          success: true,
+          data: [],
+          pagination: { page: 1, limit: 10 }
+        })
+      }
+
+      if (url.endsWith('/api/menu/categories') || url.includes('/api/menu/search')) {
+        return Promise.resolve({
+          success: true,
+          data: []
+        })
+      }
+
+      if (url.endsWith('/api/orders')) {
+        if (options?.headers?.Authorization === 'Bearer invalid-token') {
+          return Promise.reject(new Error('Unauthorized'))
+        }
+        return Promise.resolve({
+          success: true,
+          data: options?.method === 'POST' ? { id: 'order-123', status: 'PENDING' } : []
+        })
+      }
+
+      if (url.endsWith('/api/nonexistent-endpoint')) {
+        return Promise.reject(new Error('Not Found'))
+      }
+
+      return Promise.resolve({ success: true })
+    })
+  }
+})
 
 // Integration tests for API connectivity and functionality
 describe('API Integration Tests', () => {

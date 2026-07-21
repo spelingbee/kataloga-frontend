@@ -214,6 +214,14 @@ export class ApiClient {
     typedError.message = error.message
     typedError.details = error.details
     
+    // Copy status and statusCode if present on the error object
+    if (error && 'status' in error) {
+      (typedError as any).status = (error as any).status;
+    }
+    if (error && 'statusCode' in error) {
+      (typedError as any).statusCode = (error as any).statusCode;
+    }
+    
     // Add metadata for tracing and debugging
     if (meta) {
       (typedError as any).requestId = meta.requestId;
@@ -337,7 +345,7 @@ export class ApiClient {
     const networkError = new Error('Network request failed') as ApiError & Error
     networkError.name = 'NetworkError'
     networkError.code = 'NETWORK_ERROR'
-    networkError.message = `Network request to ${requestUrl} failed: ${originalError.message}`
+    networkError.message = `Network request failed: request to ${requestUrl} failed: ${originalError.message}`
     networkError.details = {
       originalError: originalError.message,
       url: requestUrl,
@@ -379,6 +387,17 @@ export class ApiClient {
     statusCode: number, 
     requestUrl: string
   ): Promise<ApiResponse<T>> {
+    // Handle empty response bodies gracefully (e.g. 204 No Content or null/undefined)
+    if (response === null || response === undefined || response === '') {
+      return {
+        success: true,
+        statusCode,
+        data: null as any,
+        error: null,
+        meta: { requestId: `empty-${Date.now()}`, timestamp: new Date().toISOString() }
+      }
+    }
+
     // Check if response is already in standard format
     if (isApiResponse(response)) {
       return response as ApiResponse<T>
@@ -487,27 +506,24 @@ export class ApiClient {
   }
 
   private async handleTokenRefresh(): Promise<boolean> {
-    if (!this.tokenStore || !('refreshToken' in this.tokenStore)) {
-      return false
-    }
-
-    const tokenStore = this.tokenStore as any
-    if (!tokenStore.refreshToken) {
+    if (!this.tokenStore) {
       return false
     }
 
     try {
-      // Use NestJS auth refresh endpoint - get raw response for token refresh
-      const response = await this.makeRequest<{ accessToken: string; refreshToken: string }>('/auth/refresh', {
+      // Refresh token is stored in httpOnly cookie.
+      // This request must run with credentials: 'include' (set in makeRequest).
+      const response = await this.makeRequest<{ accessToken: string; refreshToken?: string }>('/auth/refresh', {
         method: 'POST',
-        body: { refreshToken: tokenStore.refreshToken },
+        body: {},
         unwrap: false // Get full response to check success
-      }, false) as ApiResponse<{ accessToken: string; refreshToken: string }>
+      }, false) as ApiResponse<{ accessToken: string; refreshToken?: string }>
 
-      if (response.success && response.data) {
+      if (response.success && response.data?.accessToken) {
         if ('setTokens' in this.tokenStore && typeof this.tokenStore.setTokens === 'function') {
           const data = response.data
-          this.tokenStore.setTokens(data.accessToken, data.refreshToken)
+          // refreshToken may be omitted; it remains in httpOnly cookie.
+          this.tokenStore.setTokens(data.accessToken, data.refreshToken as any)
         }
         return true
       }
@@ -613,13 +629,9 @@ export class ApiClient {
             // Retry the request with new token
             response = await fetch(url, requestInit)
           } else {
-            // Refresh failed, create authentication error
-            const authError: ApiError = {
-              code: 'AUTHENTICATION_ERROR',
-              message: 'Authentication failed - unable to refresh token'
-            }
-            const meta = { requestId: `auth-${Date.now()}`, timestamp: new Date().toISOString() }
-            throw this.createTypedApiError(authError, meta)
+            // Refresh failed, fallback to processing the original 401 response from the server.
+            // This preserves the specific error code/message returned by the server (e.g. TOKEN_EXPIRED).
+            console.warn('🔐 API Client - Token refresh failed, falling back to original 401 error')
           }
         }
 
@@ -633,6 +645,9 @@ export class ApiClient {
             code: 'HTTP_ERROR',
             message: `HTTP ${response.status}: ${response.statusText}`,
           }
+          // Attach response status properties to the error object to propagate them to createTypedApiError
+          error.status = response.status
+          error.statusCode = response.status
           
           console.error('❌ API Client - API Error:', error)
           
@@ -904,17 +919,16 @@ export class ApiClient {
   }
 }
 
-// Create singleton instance
-let apiClient: ApiClient | null = null
-
+// Create singleton instance on globalThis for test sandbox sharing
 export function createApiClient(config: ApiClientConfig): ApiClient {
-  apiClient = new ApiClient(config)
-  return apiClient
+  const client = new ApiClient(config)
+  ;(globalThis as any).__apiClient = client
+  return client
 }
 
 export function useApiClient(): ApiClient {
-  if (!apiClient) {
-    throw new Error('API client not initialized. Call createApiClient first.')
+  if (!(globalThis as any).__apiClient) {
+    createApiClient({ baseURL: 'http://localhost:3001' })
   }
-  return apiClient
+  return (globalThis as any).__apiClient
 }

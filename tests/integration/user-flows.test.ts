@@ -26,33 +26,76 @@ vi.mock('#app', () => ({
   })),
   useState: vi.fn((key, init) => ({
     value: init ? init() : null
-  }))
+  })),
+  useNuxtApp: () => {
+    const path = require('path')
+    const { useApiClient } = require(path.resolve(__dirname, '../../app/utils/api'))
+    const { MenuService } = require(path.resolve(__dirname, '../../app/services/menu.service'))
+    const { OrderService } = require(path.resolve(__dirname, '../../app/services/order.service'))
+    const apiClient = useApiClient()
+    return {
+      $apiClient: apiClient,
+      $services: {
+        menu: new MenuService(apiClient),
+        order: new OrderService(apiClient)
+      }
+    }
+  }
 }))
 
 // User flow integration tests
 describe('User Flow Integration Tests', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
+  beforeEach(async () => {
+    const pinia = createPinia()
+    
+    const { useApiClient } = await import('~/utils/api')
+    const { MenuService } = await import('~/services/menu.service')
+    const { OrderService } = await import('~/services/order.service')
+    
+    const apiClient = useApiClient()
+    pinia.use((ctx) => {
+      console.log('TEST PLUGIN RUNNING FOR STORE:', ctx.store.$id)
+      return {
+        $apiClient: apiClient,
+        $services: {
+          menu: new MenuService(apiClient),
+          order: new OrderService(apiClient)
+        }
+      }
+    })
+
+    setActivePinia(pinia)
     vi.clearAllMocks()
   })
 
   describe('Authentication Flow', () => {
     it('should complete login flow', async () => {
-      // Mock successful login response
+      // ApiClient expects the new envelope and returns response.data unwrapped.
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
         json: () => Promise.resolve({
           success: true,
-          accessToken: 'test-token',
-          refreshToken: 'refresh-token',
-          user: {
-            id: '1',
-            email: 'test@example.com',
-            firstName: 'Test',
-            lastName: 'User'
-          }
+          statusCode: 200,
+          data: {
+            accessToken: 'test-token',
+            refreshToken: 'refresh-token',
+            user: {
+              id: '1',
+              email: 'test@example.com',
+              firstName: 'Test',
+              lastName: 'User'
+            }
+          },
+          error: null,
+          meta: { requestId: 'login-test-123', timestamp: new Date().toISOString() }
         })
       })
+
+      const { getActivePinia } = await import('pinia')
+      const activePinia = getActivePinia()
+      console.log('ACTIVE PINIA:', !!activePinia, activePinia ? activePinia._p : 'no active pinia')
 
       const { useAuth } = await import('~/composables/useAuth')
       const auth = useAuth()
@@ -71,9 +114,13 @@ describe('User Flow Integration Tests', () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 401,
+        headers: new Headers({ 'content-type': 'application/json' }),
         json: () => Promise.resolve({
           success: false,
-          message: 'Invalid credentials'
+          statusCode: 401,
+          data: null,
+          error: { code: 'UNAUTHORIZED', message: 'Invalid credentials' },
+          meta: { requestId: 'login-fail-123', timestamp: new Date().toISOString() }
         })
       })
 
@@ -89,16 +136,45 @@ describe('User Flow Integration Tests', () => {
     })
 
     it('should complete registration flow', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({
-          success: true,
-          user: {
-            id: '1',
-            email: 'newuser@example.com',
-            firstName: 'New',
-            lastName: 'User'
-          }
+      // ApiClient expects the new envelope and returns response.data unwrapped.
+      global.fetch = vi.fn().mockImplementation((url: any) => {
+        const urlStr = String(url)
+        
+        if (urlStr.includes('/public/test-tenant/auth/register')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: () => Promise.resolve({
+              success: true,
+              statusCode: 200,
+              data: {
+                user: {
+                  id: '1',
+                  email: 'newuser@example.com',
+                  firstName: 'New',
+                  lastName: 'User'
+                },
+                accessToken: 'test-token',
+                refreshToken: 'refresh-token'
+              },
+              error: null,
+              meta: { requestId: 'register-test-123', timestamp: new Date().toISOString() }
+            })
+          })
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: () => Promise.resolve({
+            success: true,
+            statusCode: 200,
+            data: {},
+            error: null,
+            meta: { requestId: 'default-test-123', timestamp: new Date().toISOString() }
+          })
         })
       })
 
@@ -118,28 +194,90 @@ describe('User Flow Integration Tests', () => {
 
   describe('Menu Browsing Flow', () => {
     it('should load and display menu items', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({
-          success: true,
-          data: [
-            {
-              id: '1',
-              name: 'Pizza Margherita',
-              description: 'Classic pizza with tomato and mozzarella',
-              price: 12.99,
-              category: 'Pizza',
-              imageUrl: '/images/pizza-margherita.jpg'
-            },
-            {
-              id: '2',
-              name: 'Caesar Salad',
-              description: 'Fresh salad with caesar dressing',
-              price: 8.99,
-              category: 'Salads',
-              imageUrl: '/images/caesar-salad.jpg'
-            }
-          ]
+      global.fetch = vi.fn().mockImplementation((url: any) => {
+        const urlStr = String(url)
+
+        // fetchMenu() -> MenuService.getCategories() -> apiClient.get('/public/menu/<tenant>/categories')
+        if (urlStr.includes('/public/menu/test-tenant/categories')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: () => Promise.resolve({
+              success: true,
+              statusCode: 200,
+              data: [
+                { id: 'cat-1', name: 'Pizza', itemCount: 1 },
+                { id: 'cat-2', name: 'Salads', itemCount: 1 },
+              ],
+              error: null,
+              meta: { requestId: 'categories-test-123', timestamp: new Date().toISOString() }
+            })
+          })
+        }
+
+        // fetchMenu() -> MenuService.getMenuItems() -> apiClient.getRaw('/public/menu/<tenant>')
+        if (urlStr.includes('/public/menu/test-tenant')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: () => Promise.resolve({
+              success: true,
+              statusCode: 200,
+              data: [
+                {
+                  id: 'menu-1',
+                  items: [
+                    {
+                      id: '1',
+                      name: 'Pizza Margherita',
+                      description: 'Classic pizza with tomato and mozzarella',
+                      price: 12.99,
+                      isActive: true,
+                      category: { id: 'cat-1', name: 'Pizza' },
+                      categoryId: 'cat-1',
+                      imageUrl: '/images/pizza-margherita.jpg'
+                    },
+                    {
+                      id: '2',
+                      name: 'Caesar Salad',
+                      description: 'Fresh salad with caesar dressing',
+                      price: 8.99,
+                      isActive: true,
+                      category: { id: 'cat-2', name: 'Salads' },
+                      categoryId: 'cat-2',
+                      imageUrl: '/images/caesar-salad.jpg'
+                    }
+                  ]
+                }
+              ],
+              error: null,
+              meta: {
+                requestId: 'menu-test-123',
+                timestamp: new Date().toISOString(),
+                pagination: {
+                  page: 1,
+                  limit: 20,
+                  totalItems: 2,
+                  totalPages: 1,
+                }
+              }
+            })
+          })
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: () => Promise.resolve({
+            success: true,
+            statusCode: 200,
+            data: {},
+            error: null,
+            meta: { requestId: 'default-test-123', timestamp: new Date().toISOString() }
+          })
         })
       })
 
@@ -154,18 +292,67 @@ describe('User Flow Integration Tests', () => {
     })
 
     it('should filter menu items by category', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({
-          success: true,
-          data: [
-            {
-              id: '1',
-              name: 'Pizza Margherita',
-              category: 'Pizza',
-              price: 12.99
-            }
-          ]
+      // useMenu.loadMenuItems({ category }) calls fetchMenu(), which loads categories+items.
+      global.fetch = vi.fn().mockImplementation((url: any) => {
+        const urlStr = String(url)
+
+        if (urlStr.includes('/public/menu/test-tenant/categories')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: () => Promise.resolve({
+              success: true,
+              statusCode: 200,
+              data: [
+                { id: 'cat-pizza', name: 'Pizza', itemCount: 1 },
+              ],
+              error: null,
+              meta: { requestId: 'categories-test-456', timestamp: new Date().toISOString() }
+            })
+          })
+        }
+
+        if (urlStr.includes('/public/menu/test-tenant')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: () => Promise.resolve({
+              success: true,
+              statusCode: 200,
+              data: [
+                {
+                  id: 'menu-1',
+                  items: [
+                    {
+                      id: '1',
+                      name: 'Pizza Margherita',
+                      categoryId: 'cat-pizza',
+                      category: { id: 'cat-pizza', name: 'Pizza' },
+                      price: 12.99,
+                      isActive: true,
+                    }
+                  ]
+                }
+              ],
+              error: null,
+              meta: { requestId: 'menu-test-456', timestamp: new Date().toISOString() }
+            })
+          })
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: () => Promise.resolve({
+            success: true,
+            statusCode: 200,
+            data: {},
+            error: null,
+            meta: { requestId: 'default-test-123', timestamp: new Date().toISOString() }
+          })
         })
       })
 
@@ -179,18 +366,69 @@ describe('User Flow Integration Tests', () => {
     })
 
     it('should search menu items', async () => {
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({
-          success: true,
-          data: [
-            {
-              id: '1',
-              name: 'Pizza Margherita',
-              description: 'Classic pizza',
-              price: 12.99
-            }
-          ]
+      // searchItems() uses store.searchItems(), which calls menuService.searchMenuItems().
+      // We'll provide a menu with one item; filtering happens client-side after load.
+      global.fetch = vi.fn().mockImplementation((url: any) => {
+        const urlStr = String(url)
+
+        if (urlStr.includes('/public/menu/test-tenant/categories')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: () => Promise.resolve({
+              success: true,
+              statusCode: 200,
+              data: [
+                { id: 'cat-1', name: 'Pizza', itemCount: 1 },
+              ],
+              error: null,
+              meta: { requestId: 'categories-test-789', timestamp: new Date().toISOString() }
+            })
+          })
+        }
+
+        if (urlStr.includes('/public/menu/test-tenant')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            headers: new Headers({ 'content-type': 'application/json' }),
+            json: () => Promise.resolve({
+              success: true,
+              statusCode: 200,
+              data: [
+                {
+                  id: 'menu-1',
+                  items: [
+                    {
+                      id: '1',
+                      name: 'Pizza Margherita',
+                      description: 'Classic pizza',
+                      categoryId: 'cat-1',
+                      category: { id: 'cat-1', name: 'Pizza' },
+                      price: 12.99,
+                      isActive: true,
+                    }
+                  ]
+                }
+              ],
+              error: null,
+              meta: { requestId: 'menu-test-789', timestamp: new Date().toISOString() }
+            })
+          })
+        }
+
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: () => Promise.resolve({
+            success: true,
+            statusCode: 200,
+            data: {},
+            error: null,
+            meta: { requestId: 'default-test-123', timestamp: new Date().toISOString() }
+          })
         })
       })
 
@@ -279,8 +517,11 @@ describe('User Flow Integration Tests', () => {
     it('should create order successfully', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
         json: () => Promise.resolve({
           success: true,
+          statusCode: 200,
           data: {
             id: 'order-123',
             status: 'PENDING',
@@ -288,7 +529,9 @@ describe('User Flow Integration Tests', () => {
             items: [
               { id: '1', name: 'Pizza Margherita', quantity: 2, price: 12.99 }
             ]
-          }
+          },
+          error: null,
+          meta: { requestId: 'order-test-123', timestamp: new Date().toISOString() }
         })
       })
 
@@ -345,18 +588,23 @@ describe('User Flow Integration Tests', () => {
     it('should track order status', async () => {
       global.fetch = vi.fn().mockResolvedValue({
         ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
         json: () => Promise.resolve({
           success: true,
+          statusCode: 200,
           data: {
             id: 'order-123',
             status: 'PREPARING',
             estimatedDelivery: '2024-01-01T12:00:00Z',
-            statusHistory: [
-              { status: 'PENDING', timestamp: '2024-01-01T10:00:00Z' },
-              { status: 'CONFIRMED', timestamp: '2024-01-01T10:05:00Z' },
-              { status: 'PREPARING', timestamp: '2024-01-01T10:15:00Z' }
+            timeline: [
+              { status: 'PENDING', timestamp: '2024-01-01T10:00:00Z', message: 'Order pending' },
+              { status: 'CONFIRMED', timestamp: '2024-01-01T11:00:00Z', message: 'Order confirmed' },
+              { status: 'PREPARING', timestamp: '2024-01-01T12:00:00Z', message: 'Order preparing' }
             ]
-          }
+          },
+          error: null,
+          meta: { requestId: 'track-test-123', timestamp: new Date().toISOString() }
         })
       })
 
@@ -398,7 +646,15 @@ describe('User Flow Integration Tests', () => {
         }
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ success: true })
+          status: 200,
+          headers: new Headers({ 'content-type': 'application/json' }),
+          json: () => Promise.resolve({
+            success: true,
+            statusCode: 200,
+            data: { success: true },
+            error: null,
+            meta: { requestId: 'retry-test-123', timestamp: new Date().toISOString() }
+          })
         })
       })
 

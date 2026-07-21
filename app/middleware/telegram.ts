@@ -24,12 +24,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
 
     // Initialize user data if available
-    if (user.value) {
-      // Store Telegram user data in user store
-      const { useUserStore } = await import('~/stores/user')
-      const userStore = useUserStore()
-      userStore.initializeFromTelegram(user.value)
-    }
+    // Note: userStore.initializeFromTelegram() was referenced here but does not exist.
+    // Telegram user bootstrap/auth is handled elsewhere (e.g. plugins/telegram.client.ts + user store).
 
     // Handle specific routes in Telegram context
     if (to.path === '/') {

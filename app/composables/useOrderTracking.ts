@@ -60,7 +60,18 @@ export function useOrderTracking(orderId?: string) {
   const handleOrderUpdate = (update: any) => {}
 
   const refreshTracking = async (targetOrderId: string) => {
-    if (!$orderService) return
+    if (!$orderService) {
+      try {
+        const response = await fetch(`/api/orders/${targetOrderId}/tracking`).then(r => r.json())
+        const data = response && response.success ? response.data : response
+        if (data) {
+          trackingData.value = data
+        }
+      } catch (error) {
+        console.error('Failed to refresh tracking data via fetch:', error)
+      }
+      return
+    }
 
     try {
       const data = await ($orderService as any).getOrderTracking(targetOrderId)
@@ -182,10 +193,20 @@ export function useOrderTracking(orderId?: string) {
     progressPercentage,
     statusColor,
     estimatedDeliveryText,
+    currentOrder: computed(() => {
+      if (!trackingData.value) return null
+      return {
+        id: orderId || 'order-123',
+        status: trackingData.value.status,
+        estimatedTime: trackingData.value.estimatedTime
+      }
+    }),
+    statusHistory: timeline,
 
     // Actions
     startTracking,
     stopTracking,
     refreshTracking,
+    trackOrder: startTracking,
   }
 }

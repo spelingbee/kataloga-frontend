@@ -18,7 +18,15 @@ export function useOrders() {
   const isTracking = ref(false)
 
   // Actions
-  const createOrder = (orderData: CreateOrderDto) => orderStore.createOrder(orderData)
+  const createOrder = async (orderData: CreateOrderDto) => {
+    const order = await orderStore.createOrder(orderData)
+    if (!order) return null
+    return {
+      ...order,
+      success: true,
+      data: order
+    }
+  }
   const fetchOrderHistory = (page?: number, limit?: number) => orderStore.fetchOrderHistory(page, limit)
   const trackOrder = (orderId: string) => orderStore.trackOrder(orderId)
   const cancelOrder = (orderId: string, reason?: string) => orderStore.cancelOrder(orderId, reason)

@@ -1,5 +1,5 @@
 <template>
-  <div class="order-confirmation">
+  <div class="order-confirmation" data-testid="order-confirmation">
     <div class="order-confirmation__header">
       <div class="order-confirmation__icon">
         <BaseIcon name="check-circle" size="xl" />

@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-const { locale, locales, t } = useI18n()
+const { locale, locales, t, setLocale } = useI18n()
 const isOpen = ref(false)
 
 const availableLocales = computed(() => locales.value)
@@ -55,8 +55,17 @@ const toggleDropdown = () => {
   isOpen.value = !isOpen.value
 }
 
-const changeLocale = (code: string) => {
-  locale.value = code
+const changeLocale = async (code: string) => {
+  if (!['en', 'ru', 'ky'].includes(code)) return
+
+  if (locale.value !== code) {
+    await setLocale(code as 'en' | 'ru' | 'ky')
+
+    if (process.client) {
+      localStorage.setItem('user-locale', code)
+    }
+  }
+
   isOpen.value = false
 }
 

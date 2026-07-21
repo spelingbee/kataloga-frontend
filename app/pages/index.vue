@@ -212,7 +212,7 @@
             <div class="pricing-card pricing-card--popular">
               <div class="pricing-badge">{{ $t('menu.popular') }}</div>
               <h3>{{ $t('landing.pricing.start.title') }}</h3>
-              <div class="price">500 <span>{{ $t('landing.pricing.perMonth') }}</span></div>
+              <div class="price">1 490 <span>{{ $t('landing.pricing.perMonth') }}</span></div>
               <ul class="pricing-features">
                 <li><Icon name="check" size="16"/> {{ $t('landing.pricing.start.items') }}</li>
                 <li><Icon name="check" size="16"/> {{ $t('landing.pricing.start.orders') }}</li>
@@ -226,7 +226,7 @@
             <!-- PRO -->
             <div class="pricing-card">
               <h3>{{ $t('landing.pricing.pro.title') }}</h3>
-              <div class="price">1 500 <span>{{ $t('landing.pricing.perMonth') }}</span></div>
+              <div class="price">3 990 <span>{{ $t('landing.pricing.perMonth') }}</span></div>
               <ul class="pricing-features">
                 <li><Icon name="check" size="16"/> {{ $t('landing.pricing.pro.items') }}</li>
                 <li><Icon name="check" size="16"/> {{ $t('landing.pricing.pro.orders') }}</li>

@@ -68,7 +68,7 @@
         <Transition name="expand">
           <div v-if="isOrderExpanded" class="checkout-section__body">
             <div class="order-summary-list">
-              <div v-for="item in cart" :key="item.menuItem.id" class="order-summary-item">
+              <div v-for="item in cart" :key="item.menuItem.id" class="order-summary-item" data-testid="checkout-item-row">
                 <div class="order-summary-item__info">
                   <span class="order-summary-item__name">{{ item.menuItem.name }}</span>
                   <span v-if="item.quantity > 1" class="order-summary-item__qty">
@@ -169,6 +169,7 @@
           variant="primary"
           :loading="submitting"
           :disabled="!canSubmit"
+          data-testid="checkout-submit-btn"
           @click="handleSubmit"
         >
           {{ $t('checkout.placeOrder') }} •

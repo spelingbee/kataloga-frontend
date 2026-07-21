@@ -43,15 +43,20 @@ export interface OrderItemResponseDto {
 
 export interface PromotionResponseDto {
   id: string
-  tenantId: string
-  code: string
-  name: string
+  title: string
   description?: string
-  discountType: 'PERCENTAGE' | 'FIXED'
+  discountType: string
   discountValue: number
-  startDate?: string
-  endDate?: string
+  validFrom: string
+  validTo: string
   isActive: boolean
+  tenantId: string
+
+  /**
+   * NOTE: Backend model (schema.prisma) does not define a promo code.
+   * Keep optional for UI experiments; see D33 for product decision.
+   */
+  code?: string
 }
 
 
@@ -75,10 +80,13 @@ export type User = UserResponseDto & {
 }
 
 export enum UserRole {
-  CUSTOMER = 'CUSTOMER',
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  OWNER = 'OWNER',
+  TENANT_ADMIN = 'TENANT_ADMIN',
   ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  STAFF = 'STAFF'
+  TENANT_STAFF = 'TENANT_STAFF',
+  MEMBER = 'MEMBER',
+  CLIENT = 'CLIENT'
 }
 
 export interface UserPreferences {
@@ -278,9 +286,14 @@ export enum OrderStatus {
   CONFIRMED = 'CONFIRMED',
   PREPARING = 'PREPARING',
   READY = 'READY',
-  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
   DELIVERED = 'DELIVERED',
-  CANCELLED = 'CANCELLED'
+  CANCELLED = 'CANCELLED',
+
+  /**
+   * Deprecated UI-only status (no backend enum value in schema.prisma).
+   * Treat as READY on the client when mapping to backend values.
+   */
+  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY'
 }
 
 export interface CreateOrderDto {

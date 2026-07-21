@@ -50,7 +50,7 @@ export const useAuth = () => {
   }
 
   // Login with email and password
-  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+  const login = async (credentials: LoginCredentials): Promise<any> => {
     clearError()
     isLoading.value = true
 
@@ -61,18 +61,18 @@ export const useAuth = () => {
       }
 
       await authStore.login(loginData)
-      return true
+      return { success: true }
     } catch (err: any) {
       error.value = err.message || 'Login failed'
       console.error('Login error:', err)
-      return false
+      throw err
     } finally {
       isLoading.value = false
     }
   }
 
   // Register new user
-  const register = async (data: RegisterData): Promise<boolean> => {
+  const register = async (data: RegisterData): Promise<any> => {
     clearError()
     isLoading.value = true
 
@@ -83,11 +83,11 @@ export const useAuth = () => {
       }
 
       await authStore.register(registrationData)
-      return true
+      return { success: true }
     } catch (err: any) {
       error.value = err.message || 'Registration failed'
       console.error('Registration error:', err)
-      return false
+      throw err
     } finally {
       isLoading.value = false
     }
